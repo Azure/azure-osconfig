@@ -1,40 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Evaluator.h>
+#include <EnsureSysctl.h>
 #include <Regex.h>
 #include <StringTools.h>
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$", "value:Regex that the value of sysctl has to match:M")
+Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
     std::string procfsLocation = "/proc/sys";
 
-    auto it = args.find("sysctlName");
-    if (it == args.end())
-    {
-        return Error("Missing 'sysctlName' parameter", EINVAL);
-    }
-    auto sysctlName = std::move(it->second);
-
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("Missing 'value' parameter", EINVAL);
-    }
-    auto sysctlValue = std::move(it->second);
-
-    auto sysctlPath = sysctlName;
+    auto sysctlPath = params.sysctlName;
     std::replace(sysctlPath.begin(), sysctlPath.end(), '.', '/');
     std::string procSysPath = procfsLocation + std::string("/") + sysctlPath;
 
@@ -51,24 +33,13 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         sysctlOutput.erase(sysctlOutput.size() - 1);
     }
 
-    regex valueRegex;
-    try
+    if (regex_search(sysctlOutput, params.value) == false)
     {
-        valueRegex = regex(sysctlValue);
-    }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(log, "Regex error: %s", e.what());
-        return Error("Failed to compile regex '" + sysctlValue + "' error: " + e.what());
-    }
-
-    if (regex_search(sysctlOutput, valueRegex) == false)
-    {
-        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "' in runtime configuration");
+        return indicators.NonCompliant("Expected '" + params.sysctlName + "' got '" + sysctlOutput + "' in runtime configuration");
     }
     else
     {
-        indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in runtime configuration");
+        indicators.Compliant("Correct value for '" + params.sysctlName + "' in runtime configuration");
     }
 
     // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
@@ -141,10 +112,10 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
             runSysctlValue = line.substr(eqPos + 1, line.size() - eqPos);
             runSysctlValue = TrimWhiteSpaces(runSysctlValue);
 
-            if (name == sysctlName)
+            if (name == params.sysctlName)
             {
                 found = true;
-                if (not regex_search(runSysctlValue, valueRegex))
+                if (not regex_search(runSysctlValue, params.value))
                 {
                     invalid = true;
                 }
@@ -154,7 +125,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     // we found a match with correct value
     if (found && !invalid)
     {
-        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in stored configuration");
+        return indicators.Compliant("Correct value for '" + params.sysctlName + "' in stored configuration");
     }
 
     // lines are iterated backwards so filename is before last value marked by lines
@@ -183,12 +154,11 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
 
     if (found && invalid)
     {
-        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + runSysctlValue + "' found in: '" +
-                                       fileName + "'");
+        return indicators.NonCompliant("Expected '" + params.sysctlName + "' got '" + runSysctlValue + "' found in: '" + fileName + "'");
     }
     else
     {
-        indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in stored sysctl configuration");
+        indicators.NonCompliant("Expected '" + params.sysctlName + "' not found in stored sysctl configuration");
     }
 
     auto ufwDefaults = context.GetFileContents("/etc/default/ufw");
@@ -220,18 +190,18 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     {
         if (line.find(sysctlPath + "=", 0) == 0)
         {
-            auto value = line.substr(sysctlName.size() + 1);
-            if (regex_search(value, valueRegex))
+            auto value = line.substr(params.sysctlName.size() + 1);
+            if (regex_search(value, params.value))
             {
-                return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in UFW configuration");
+                return indicators.Compliant("Correct value for '" + params.sysctlName + "' in UFW configuration");
             }
             else
             {
-                return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + value + "' in UFW configuration");
+                return indicators.NonCompliant("Expected '" + params.sysctlName + "', got '" + value + "' in UFW configuration");
             }
         }
     }
 
-    return indicators.NonCompliant("Value not found in UFW configuration for '" + sysctlName + "'");
+    return indicators.NonCompliant("Value not found in UFW configuration for '" + params.sysctlName + "'");
 }
 } // namespace ComplianceEngine

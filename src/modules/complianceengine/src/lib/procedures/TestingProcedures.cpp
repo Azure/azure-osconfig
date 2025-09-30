@@ -3,69 +3,60 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Result.h>
+#include <TestingProcedures.h>
 #include <vector>
 
 namespace ComplianceEngine
 {
-REMEDIATE_FN(RemediationFailure, "message:message to be logged")
+Result<Status> RemediateRemediationFailure(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("message");
-    if (it != args.end())
+    if (params.message.HasValue())
     {
-        return indicators.NonCompliant(it->second);
+        return indicators.NonCompliant(params.message.Value());
     }
     return Status::NonCompliant;
 }
 
-REMEDIATE_FN(RemediationSuccess, "message:message to be logged")
+Result<Status> RemediateRemediationSuccess(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("message");
-    if (it != args.end())
+    if (params.message.HasValue())
     {
-        return indicators.NonCompliant(it->second);
+        return indicators.NonCompliant(params.message.Value());
     }
     return Status::Compliant;
 }
 
-AUDIT_FN(AuditFailure, "message:message to be logged")
+Result<Status> AuditAuditFailure(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("message");
-    if (it != args.end())
+    if (params.message.HasValue())
     {
-        return indicators.NonCompliant(it->second);
+        return indicators.NonCompliant(params.message.Value());
     }
     return Status::NonCompliant;
 }
 
-AUDIT_FN(AuditSuccess, "message:message to be logged")
+Result<Status> AuditAuditSuccess(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("message");
-    if (it != args.end())
+    if (params.message.HasValue())
     {
-        return indicators.Compliant(it->second);
+        return indicators.Compliant(params.message.Value());
     }
     return Status::Compliant;
 }
 
-REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - success or failure:M")
+Result<Status> RemediateRemediationParametrized(const TestingProcedureParametrizedParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(indicators);
-    auto it = args.find("result");
-    if (it == args.end())
-    {
-        return Error("Missing 'result' parameter");
-    }
-
-    OsConfigLogInfo(context.GetLogHandle(), "remediationParametrized: %s", it->second.c_str());
-    if (it->second == "success")
+    OsConfigLogInfo(context.GetLogHandle(), "remediationParametrized: %s", params.result.c_str());
+    if (params.result == "success")
     {
         return Status::Compliant;
     }
-    else if (it->second == "failure")
+    else if (params.result == "failure")
     {
         return Status::NonCompliant;
     }
@@ -73,22 +64,23 @@ REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - succ
     return Error("Invalid 'result' parameter");
 }
 
-AUDIT_FN(AuditGetParamValues)
+Result<Status> AuditAuditGetParamValues(const TestingProcedureGetParamValuesParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    const std::vector<std::string> keys = {"KEY1", "KEY2", "KEY3"};
+    using P = TestingProcedureGetParamValuesParams;
+    const std::vector<std::pair<const char*, Optional<std::string> P::*>> keys = {{"KEY1", &P::KEY1}, {"KEY2", &P::KEY2}, {"KEY3", &P::KEY3}};
     bool first = true;
     std::string rv;
     for (const auto& key : keys)
     {
-        auto it = args.find(key);
-        if (it != args.end())
+        const auto& member = params.*key.second;
+        if (member.HasValue())
         {
             if (!first)
             {
                 rv += ", ";
             }
-            rv += it->first + "=" + it->second;
+            rv += std::string(key.first) + "=" + member.Value();
             first = false;
         }
     }

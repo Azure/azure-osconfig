@@ -3,7 +3,7 @@
 #include "Result.h"
 
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <EnsureWirelessIsDisabled.h>
 #include <cerrno>
 #include <climits>
 #include <fts.h>
@@ -11,7 +11,6 @@
 #include <iostream>
 #include <pwd.h>
 #include <set>
-#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -20,18 +19,11 @@
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureWirelessIsDisabled)
+Result<Status> AuditEnsureWirelessIsDisabled(const EnsureWirelessIsDisabledParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.test_sysfs_class_net.HasValue());
     auto log = context.GetLogHandle();
-    std::string sysfsClassNet = "/sys/class/net";
-
-    auto it = args.find("test_sysfs_class_net");
-    if (it != args.end())
-    {
-        sysfsClassNet = std::move(it->second);
-    }
-
-    std::string sysfs = sysfsClassNet;
+    std::string sysfs = params.test_sysfs_class_net.Value();
     // normalize sysfs - remove trailing slash if necessary
     if (sysfs.back() == '/')
         sysfs = sysfs.substr(sysfs.length() - 1);

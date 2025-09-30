@@ -1,32 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
-#include <Evaluator.h>
-#include <Result.h>
+#include <SCE.h>
 
 namespace ComplianceEngine
 {
-AUDIT_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
+Result<Status> AuditSCE(const SCEParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("scriptName");
-    auto scriptName = it != args.end() ? std::move(it->second) : std::string();
-
-    it = args.find("ENVIRONMENT");
-    auto env = it != args.end() ? std::move(it->second) : std::string();
-
-    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + scriptName + "', env: '" + env + "')");
+    const auto env = params.ENVIRONMENT.ValueOr(std::string());
+    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + params.scriptName + "', env: '" + env + "')");
 }
 
-REMEDIATE_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
+Result<Status> RemediateSCE(const SCEParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    auto it = args.find("scriptName");
-    auto scriptName = it != args.end() ? std::move(it->second) : std::string();
-
-    it = args.find("ENVIRONMENT");
-    auto env = it != args.end() ? std::move(it->second) : std::string();
-
-    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + scriptName + "', env: '" + env + "')");
+    const auto env = params.ENVIRONMENT.ValueOr(std::string());
+    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + params.scriptName + "', env: '" + env + "')");
 }
 } // namespace ComplianceEngine

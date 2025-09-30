@@ -4,12 +4,13 @@
 #include "CommonUtils.h"
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureGroupIsOnlyGroupWith.h>
 #include <Optional.h>
 #include <fstream>
 
 using ComplianceEngine::AuditEnsureGroupIsOnlyGroupWith;
+using ComplianceEngine::EnsureGroupIsOnlyGroupWithParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
@@ -86,23 +87,14 @@ protected:
     }
 };
 
-TEST_F(EnsureGroupIsOnlyGroupWithTest, InvalidArguments_1)
-{
-    map<string, string> args;
-    auto result = AuditEnsureGroupIsOnlyGroupWith(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'group' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
 TEST_F(EnsureGroupIsOnlyGroupWithTest, EmptyFile)
 {
     auto path = CreateTestGroupFile("");
-    map<string, string> args;
-    args["group"] = "foo";
-    args["gid"] = "8888";
-    args["test_etcGroupPath"] = path;
-    auto result = AuditEnsureGroupIsOnlyGroupWith(args, mIndicators, mContext);
+    EnsureGroupIsOnlyGroupWithParams params;
+    params.group = "foo";
+    params.gid = 8888;
+    params.test_etcGroupPath = path;
+    auto result = AuditEnsureGroupIsOnlyGroupWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -111,10 +103,10 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, EmptyFile)
 TEST_F(EnsureGroupIsOnlyGroupWithTest, NoParameter)
 {
     auto path = CreateTestGroupFile(string("foo"), string("x"), 8888);
-    map<string, string> args;
-    args["group"] = "foo";
-    args["test_etcGroupPath"] = path;
-    auto result = AuditEnsureGroupIsOnlyGroupWith(args, mIndicators, mContext);
+    EnsureGroupIsOnlyGroupWithParams params;
+    params.group = "foo";
+    params.test_etcGroupPath = path;
+    auto result = AuditEnsureGroupIsOnlyGroupWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -123,11 +115,11 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, NoParameter)
 TEST_F(EnsureGroupIsOnlyGroupWithTest, SingleGID)
 {
     auto path = CreateTestGroupFile(string("foo"), string("x"), 8888);
-    map<string, string> args;
-    args["group"] = "foo";
-    args["gid"] = "8888";
-    args["test_etcGroupPath"] = path;
-    auto result = AuditEnsureGroupIsOnlyGroupWith(args, mIndicators, mContext);
+    EnsureGroupIsOnlyGroupWithParams params;
+    params.group = "foo";
+    params.gid = 8888;
+    params.test_etcGroupPath = path;
+    auto result = AuditEnsureGroupIsOnlyGroupWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -136,11 +128,11 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, SingleGID)
 TEST_F(EnsureGroupIsOnlyGroupWithTest, DuplicatedGID)
 {
     auto path = CreateTestGroupFile("foo:x:8888:\nbar:x:8888:");
-    map<string, string> args;
-    args["group"] = "foo";
-    args["gid"] = "8888";
-    args["test_etcGroupPath"] = path;
-    auto result = AuditEnsureGroupIsOnlyGroupWith(args, mIndicators, mContext);
+    EnsureGroupIsOnlyGroupWithParams params;
+    params.group = "foo";
+    params.gid = 8888;
+    params.test_etcGroupPath = path;
+    auto result = AuditEnsureGroupIsOnlyGroupWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "EnsureIptablesOpenPorts"
+            "EnsureIp6tablesOpenPorts"
           ],
           "additionalProperties": false,
           "properties": {
-            "EnsureIptablesOpenPorts": {
+            "EnsureIp6tablesOpenPorts": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -21,11 +21,11 @@
         {
           "type": "object",
           "required": [
-            "EnsureIp6tablesOpenPorts"
+            "EnsureIptablesOpenPorts"
           ],
           "additionalProperties": false,
           "properties": {
-            "EnsureIp6tablesOpenPorts": {
+            "EnsureIptablesOpenPorts": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

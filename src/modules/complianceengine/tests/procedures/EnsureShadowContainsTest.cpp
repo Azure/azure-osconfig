@@ -2,15 +2,17 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureShadowContains.h>
 #include <Optional.h>
 #include <fstream>
 
 using ComplianceEngine::AuditEnsureShadowContains;
+using ComplianceEngine::ComparisonOperation;
+using ComplianceEngine::EnsureShadowContainsParams;
 using ComplianceEngine::Error;
+using ComplianceEngine::Field;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
 using ComplianceEngine::Optional;
@@ -95,115 +97,63 @@ protected:
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_1)
 {
-    map<string, string> args;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'field' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
-{
-    map<string, string> args;
-    args["field"] = "x";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Invalid field name: x");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
-{
-    map<string, string> args;
-    args["field"] = "last_change";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
-{
-    map<string, string> args;
-    args["field"] = "last_change";
-    args["value"] = "42";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'operation' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(EnsureShadowContainsTest, InvalidArguments_5)
-{
-    map<string, string> args;
-    args["field"] = "last_change";
-    args["value"] = "42";
-    args["operation"] = "invalid_op";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Invalid operation: 'invalid_op'");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(EnsureShadowContainsTest, InvalidArguments_6)
-{
     if (0 != getuid())
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "last_change";
-    args["value"] = "42";
-    args["operation"] = "match";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::LastChange;
+    params.value = "42";
+    params.operation = ComparisonOperation::PatternMatch;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Unsupported comparison operation for an integer type");
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
-TEST_F(EnsureShadowContainsTest, InvalidArguments_7)
+TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
 {
     if (0 != getuid())
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "username";
-    args["value"] = "test";
-    args["operation"] = "match";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Username;
+    params.value = "test";
+    params.operation = ComparisonOperation::PatternMatch;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Username field comparison is not supported");
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
-TEST_F(EnsureShadowContainsTest, InvalidArguments_8)
+TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
 {
     if (0 != getuid())
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "encryption_method";
-    args["value"] = "asdf";
-    args["operation"] = "match";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::EncryptionMethod;
+    params.value = "asdf";
+    params.operation = ComparisonOperation::PatternMatch;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Unsupported comparison operation for encryption method");
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
-TEST_F(EnsureShadowContainsTest, InvalidArguments_9)
+TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser::0::::::");
-    args["field"] = "last_change";
-    args["value"] = "x";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::LastChange;
+    params.value = "x";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, string("invalid last password change date parameter value"));
@@ -215,12 +165,12 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_1)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "test";
-    args["operation"] = "match";
-    args["username"] = "root";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "test";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "root";
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -231,12 +181,12 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_2)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "^.*$";
-    args["operation"] = "match";
-    args["username"] = "root";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "^.*$";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "root";
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -247,13 +197,13 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "^.*$";
-    args["operation"] = "match";
-    args["username"] = "^root$";
-    args["username_operation"] = "match";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "^.*$";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "^root$";
+    params.username_operation = ComparisonOperation::PatternMatch;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -264,13 +214,13 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_4)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "^test$";
-    args["operation"] = "match";
-    args["username"] = "^$";
-    args["username_operation"] = "match";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "^test$";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "^$";
+    params.username_operation = ComparisonOperation::PatternMatch;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // No users matched the empty string pattern so we return compliant status
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -282,13 +232,13 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_5)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "^test$";
-    args["operation"] = "match";
-    args["username"] = "^root$";
-    args["username_operation"] = "eq";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "^test$";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "^root$";
+    params.username_operation = ComparisonOperation::Equal;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -299,28 +249,28 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_6)
     {
         GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
     }
-    map<string, string> args;
-    args["field"] = "password";
-    args["value"] = "^test$";
-    args["operation"] = "match";
-    args["username"] = "root";
-    args["username_operation"] = "eq";
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    EnsureShadowContainsParams params;
+    params.field = Field::Password;
+    params.value = "^test$";
+    params.operation = ComparisonOperation::PatternMatch;
+    params.username = "root";
+    params.username_operation = ComparisonOperation::Equal;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_1)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$6$rounds=5000$randomsalt$hashedpassword"));
-    args["field"] = "encryption_method";
-    args["value"] = "SHA-512";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "SHA-512";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     if (!result.HasValue())
     {
@@ -332,15 +282,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_1)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_2)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string(""));
-    args["field"] = "encryption_method";
-    args["value"] = "SHA-512";
-    args["operation"] = "ne";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "SHA-512";
+    params.operation = ComparisonOperation::NotEqual;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -348,15 +298,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_2)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_3)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("abcd"));
-    args["field"] = "encryption_method";
-    args["value"] = "DES";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "DES";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -364,15 +314,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_3)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_4)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("_abcd"));
-    args["field"] = "encryption_method";
-    args["value"] = "BSDi";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "BSDi";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -380,15 +330,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_4)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_5)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("!"));
-    args["field"] = "encryption_method";
-    args["value"] = "None";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "None";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -396,15 +346,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_5)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_6)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("*"));
-    args["field"] = "encryption_method";
-    args["value"] = "None";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "None";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -412,15 +362,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_6)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_7)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$1$"));
-    args["field"] = "encryption_method";
-    args["value"] = "MD5";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "MD5";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -428,15 +378,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_7)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_8)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$2$"));
-    args["field"] = "encryption_method";
-    args["value"] = "Blowfish";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "Blowfish";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -444,15 +394,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_8)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_9)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$2a$"));
-    args["field"] = "encryption_method";
-    args["value"] = "Blowfish";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "Blowfish";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -460,15 +410,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_9)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_10)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$2y$"));
-    args["field"] = "encryption_method";
-    args["value"] = "Blowfish";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "Blowfish";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -476,15 +426,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_10)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_11)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$md5$"));
-    args["field"] = "encryption_method";
-    args["value"] = "MD5";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "MD5";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -492,15 +442,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_11)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_12)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$5$"));
-    args["field"] = "encryption_method";
-    args["value"] = "SHA-256";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "SHA-256";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -508,15 +458,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_12)
 
 TEST_F(EnsureShadowContainsTest, EncryptionMethod_13)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"));
-    args["field"] = "encryption_method";
-    args["value"] = "YesCrypt";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::EncryptionMethod;
+    params.value = "YesCrypt";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -524,15 +474,15 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_13)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_1)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "last_change";
-    args["value"] = "1";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::LastChange;
+    params.value = "1";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -540,15 +490,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_1)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_2)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "min_age";
-    args["value"] = "2";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::MinAge;
+    params.value = "2";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -556,15 +506,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_2)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_3)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "max_age";
-    args["value"] = "3";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::MaxAge;
+    params.value = "3";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -572,15 +522,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_3)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_4)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "warn_period";
-    args["value"] = "4";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::WarnPeriod;
+    params.value = "4";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -588,15 +538,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_4)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_5)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "inactivity_period";
-    args["value"] = "5";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::InactivityPeriod;
+    params.value = "5";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -604,15 +554,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_5)
 
 TEST_F(EnsureShadowContainsTest, IntegerFields_6)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "expiration_date";
-    args["value"] = "6";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::ExpirationDate;
+    params.value = "6";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -620,15 +570,15 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_6)
 
 TEST_F(EnsureShadowContainsTest, FeatureFlag)
 {
-    map<string, string> args;
+    EnsureShadowContainsParams params;
     const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["field"] = "flag";
-    args["value"] = "6";
-    args["operation"] = "eq";
-    args["username"] = "testuser";
-    args["username_operation"] = "eq";
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    params.field = Field::Reserved;
+    params.value = "6";
+    params.operation = ComparisonOperation::Equal;
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, string("reserved field comparison is not supported"));

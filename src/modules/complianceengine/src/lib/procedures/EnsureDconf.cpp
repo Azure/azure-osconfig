@@ -1,50 +1,25 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <CommonUtils.h>
-#include <Evaluator.h>
+#include <ProcedureMap.h>
 #include <StringTools.h>
 #include <algorithm>
-#include <cctype>
-#include <cstdint>
 #include <functional>
 #include <map>
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be verified using the operation:M",
-    "operation:Type of operation, one of eq, ne:M:^(eq|ne)$")
+Result<Status> AuditEnsureDconf(const AuditEnsureDconfParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    // auto log = context.GetLogHandle();
-    auto it = args.find("key");
-    if (it == args.end())
-    {
-        return Error("No key arg provided", EINVAL);
-    }
-    auto key = EscapeForShell(it->second);
-
-    it = args.find("operation");
-    if (it == args.end())
-    {
-        return Error("No operation arg provided", EINVAL);
-    }
-    auto operation = std::move(it->second);
-    std::map<std::string, std::function<bool(const std::string&, const std::string&)>> ops{
-        {"eq", [](const std::string& x, const std::string& y) { return x == y; }},
-        {"ne", [](const std::string& x, const std::string& y) { return x != y; }}};
-    auto op = ops.find(operation);
-
+    const auto key = EscapeForShell(params.key);
+    static const std::map<DConfOperation, std::function<bool(const std::string&, const std::string&)>> ops{
+        {DConfOperation::Eq, [](const std::string& x, const std::string& y) { return x == y; }},
+        {DConfOperation::Ne, [](const std::string& x, const std::string& y) { return x != y; }}};
+    const auto op = ops.find(params.operation);
     if (op == ops.end())
     {
-        return Error("Not supported operation '" + operation + "'", EINVAL);
+        return Error("Not supported operation '" + std::to_string(params.operation) + "'", EINVAL);
     }
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("No value arg provided", EINVAL);
-    }
-    auto value = std::move(it->second);
 
     Result<std::string> dconfRead = context.ExecuteCommand("dconf read \"" + key + "\"");
     if (!dconfRead.HasValue())
@@ -59,16 +34,16 @@ AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be v
         dconfVal.erase(dconfVal.size() - 1);
     }
 
-    auto isCompliant = op->second(dconfVal, value);
+    auto isCompliant = op->second(dconfVal, params.value);
     if (isCompliant)
     {
-        return indicators.Compliant("Dconf read " + key + " " + operation + " value " + value);
+        return indicators.Compliant("Dconf read " + key + " " + std::to_string(params.operation) + " value " + params.value);
     }
     else
     {
-        return indicators.NonCompliant("Dconf read " + key + " " + operation + " value " + value);
+        return indicators.NonCompliant("Dconf read " + key + " " + std::to_string(params.operation) + " value " + params.value);
     }
-    return indicators.NonCompliant("Dconf read " + key + " " + operation + " value " + value + " Imposible");
+    return indicators.NonCompliant("Dconf read " + key + " " + std::to_string(params.operation) + " value " + params.value + " Imposible");
 }
 
 } // namespace ComplianceEngine

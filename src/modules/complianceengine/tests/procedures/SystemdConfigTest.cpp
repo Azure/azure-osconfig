@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <SystemdConfig.h>
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
@@ -14,6 +13,7 @@ using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
+using ComplianceEngine::SystemdParameterParams;
 using ::testing::Return;
 
 class SystemdConfigTest : public ::testing::Test
@@ -32,60 +32,26 @@ protected:
     }
 };
 
-TEST_F(SystemdConfigTest, MissingParameterArgument)
-{
-    std::map<std::string, std::string> args;
-    args["valueRegex"] = ".*";
-    args["file"] = "test.conf";
-
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'parameter' argument");
-}
-
-TEST_F(SystemdConfigTest, MissingValueRegexArgument)
-{
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["file"] = "test.conf";
-
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'valueRegex' argument");
-}
-
-TEST_F(SystemdConfigTest, InvalidRegexCompilation)
-{
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "[invalid regex";
-    args["file"] = "test.conf";
-
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
-}
-
 TEST_F(SystemdConfigTest, NeitherFileNorDirProvided)
 {
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = ".*";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Neither 'file' nor 'dir' argument is provided");
 }
 
 TEST_F(SystemdConfigTest, BothFileAndDirProvided)
 {
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = ".*";
-    args["file"] = "test.conf";
-    args["dir"] = "/etc/systemd";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
+    params.file = "test.conf";
+    params.dir = "/etc/systemd";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Both 'file' and 'dir' arguments are provided, only one is allowed");
 }
@@ -95,12 +61,12 @@ TEST_F(SystemdConfigTest, FileCommandExecutionFails)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf")))
         .WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = ".*";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Command execution failed");
 }
@@ -114,12 +80,12 @@ TEST_F(SystemdConfigTest, FileParameterNotFound)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = ".*";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -133,12 +99,12 @@ TEST_F(SystemdConfigTest, FileParameterFoundButRegexMismatch)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "^correctvalue$";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("^correctvalue$");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -152,12 +118,12 @@ TEST_F(SystemdConfigTest, FileParameterFoundAndRegexMatches)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "^correctvalue$";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("^correctvalue$");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -171,12 +137,12 @@ TEST_F(SystemdConfigTest, FileParameterWithComplexRegex)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config system.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "DefaultLimitNOFILE";
-    args["valueRegex"] = "^[0-9]+$";
-    args["file"] = "system.conf";
+    SystemdParameterParams params;
+    params.parameter = "DefaultLimitNOFILE";
+    params.valueRegex = regex("^[0-9]+$");
+    params.file = "system.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -192,12 +158,12 @@ TEST_F(SystemdConfigTest, FileWithMultipleConfigSections)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config system.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "DefaultLimitNOFILE";
-    args["valueRegex"] = "^65536$";
-    args["file"] = "system.conf";
+    SystemdParameterParams params;
+    params.parameter = "DefaultLimitNOFILE";
+    params.valueRegex = regex("^65536$");
+    params.file = "system.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -215,12 +181,12 @@ TEST_F(SystemdConfigTest, FileWithCommentsAndEmptyLines)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "value[0-9]+";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("value[0-9]+");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -235,12 +201,12 @@ TEST_F(SystemdConfigTest, FileWithInvalidLineFormat)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "correctvalue";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("correctvalue");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -253,12 +219,12 @@ TEST_F(SystemdConfigTest, FileParameterWithAnyValueRegex)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = ".*";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -272,12 +238,12 @@ TEST_F(SystemdConfigTest, FileParameterWithEmptyValue)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "^$";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("^$");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -290,12 +256,12 @@ TEST_F(SystemdConfigTest, FileParameterWithSpecialCharacters)
 
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
-    std::map<std::string, std::string> args;
-    args["parameter"] = "TestParam";
-    args["valueRegex"] = "/path/to/file with spaces";
-    args["file"] = "test.conf";
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex("/path/to/file with spaces");
+    params.file = "test.conf";
 
-    auto result = AuditSystemdParameter(args, mIndicators, mContext);
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }

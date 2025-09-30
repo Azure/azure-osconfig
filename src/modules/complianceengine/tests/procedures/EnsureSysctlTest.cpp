@@ -2,15 +2,13 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureSysctl.h>
 #include <algorithm>
 #include <dirent.h>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <linux/limits.h>
 #include <string.h>
 #include <string>
 #include <unistd.h>
@@ -18,6 +16,7 @@
 
 using ComplianceEngine::AuditEnsureSysctl;
 using ComplianceEngine::CompactListFormatter;
+using ComplianceEngine::EnsureSysctlParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -147,11 +146,11 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -165,11 +164,11 @@ TEST_F(EnsureSysctlTest, HappyPathAlternativeSystemdSysctlLocation)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Error("Missing")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -183,11 +182,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -200,11 +199,11 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWi
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -218,11 +217,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfigurationComment)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0Comment)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -235,11 +234,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -252,11 +251,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "0";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("0");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -270,11 +269,11 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverrid
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = ".";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex(".");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -287,11 +286,11 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverr
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "[0]";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("[0]");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -304,11 +303,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOve
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "[0]";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("[0]");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -321,31 +320,13 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "[0]";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("[0]");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
-}
-// Invalid Args tests
-TEST_F(EnsureSysctlTest, UnHappyPathRegexError)
-{
-    auto sysctlName = std::string("net.ipv4.ip_forward");
-    auto sysctlSlashedName = sysctlName;
-    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
-    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
-    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
-    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "(?)[1]";
-
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    auto should_contain = result.Error().message.find(std::string("Failed to compile regex '" + args["value"] + "' error:"));
-    ASSERT_TRUE(should_contain != std::string::npos);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
@@ -356,14 +337,14 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameTabs)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
-                    "value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' got "
+                    "'0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -376,14 +357,14 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameExtraSpaces)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
-                    "value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' got "
+                    "'0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -396,17 +377,17 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0WithFilenames)));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
-                    "value: '1' got '0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' got "
+                    "'0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
 }
 
 TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
@@ -422,11 +403,11 @@ TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
         EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>(value + "\n")));
         EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
         EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
-        std::map<std::string, std::string> args;
-        args["sysctlName"] = sysctlName;
-        args["value"] = value;
+        EnsureSysctlParams params;
+        params.sysctlName = sysctlName;
+        params.value = value;
 
-        auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+        auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
         ASSERT_TRUE(result.HasValue()) << "HappyPathValidateSysctlNameAndValues FAILED: nr " << i << " name '" << sysctlName << "'";
         ASSERT_EQ(result.Value(), Status::Compliant) << "HappyPathValidateSysctlNameAndValues FAILED: nr " << i << " name '" << sysctlName << "'";
@@ -447,11 +428,11 @@ TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>(value + "\n")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = value;
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = value;
 
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue()) << "HappyPathValidateSysctlNameAndValues FAILED: nr "
                                    << " name '" << sysctlName << "'";
@@ -470,10 +451,10 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileMissing)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
 
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to read /etc/default/ufw") != std::string::npos);
@@ -489,10 +470,10 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileNoIptSysctl)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("# No IPT_SYSCTL here\nFOO=bar\n")));
 
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to find IPT_SYSCTL") != std::string::npos);
@@ -509,10 +490,10 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileMissing)
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
 
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to read ufw sysctl config file") != std::string::npos);
@@ -529,10 +510,10 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueMatches)
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>("net/ipv4/ip_forward=1\n")));
 
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("in UFW configuration") != std::string::npos);
@@ -549,10 +530,10 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueDoesNotMatch)
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>("net/ipv4/ip_forward=0\n")));
 
-    std::map<std::string, std::string> args;
-    args["sysctlName"] = sysctlName;
-    args["value"] = "1";
-    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    EnsureSysctlParams params;
+    params.sysctlName = sysctlName;
+    params.value = regex("1");
+    auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("got '0' in UFW configuration") != std::string::npos);

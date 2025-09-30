@@ -3,21 +3,15 @@
 
 #include "KernelModuleTools.h"
 
-#include <CommonUtils.h>
+#include <EnsureKernelModule.h>
 #include <Evaluator.h>
 
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
+Result<Status> AuditEnsureKernelModuleUnavailable(const EnsureKernelModuleUnavailableParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("moduleName");
-    if (it == args.end())
-    {
-        return Error("No module name provided");
-    }
-    auto moduleName = std::move(it->second);
-
+    auto moduleName = params.moduleName;
     auto modulePresent = SearchFilesystemForModuleName(moduleName, context);
     if (!modulePresent.HasValue())
     {

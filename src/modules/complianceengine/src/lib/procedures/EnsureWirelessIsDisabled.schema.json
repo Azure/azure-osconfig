@@ -14,7 +14,12 @@
               "type": "object",
               "required": [],
               "additionalProperties": false,
-              "properties": {}
+              "properties": {
+                "test_sysfs_class_net": {
+                  "type": "string",
+                  "description": "Optional path to the sysfs net class directory to test against"
+                }
+              }
             }
           }
         }

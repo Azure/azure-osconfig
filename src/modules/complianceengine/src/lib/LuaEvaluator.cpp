@@ -210,8 +210,8 @@ void LuaEvaluator::RegisterProcedures()
         if (actions.audit)
         {
             std::string auditFunctionName = "Audit" + procedureName;
-            lua_pushstring(L, auditFunctionName.c_str());                     // upvalue 1: procedure name used for logging/messages
-            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.audit)); // upvalue 2: function pointer
+            lua_pushstring(L, auditFunctionName.c_str());
+            lua_pushlightuserdata(L, const_cast<void*>(reinterpret_cast<const void*>(&actions.audit)));
             lua_pushcclosure(L, LuaEvaluator::LuaProcedureWrapper, 2);
             lua_setfield(L, ceTableIndex, auditFunctionName.c_str());
         }
@@ -220,8 +220,8 @@ void LuaEvaluator::RegisterProcedures()
         if (actions.remediate)
         {
             std::string remediateFunctionName = "Remediate" + procedureName;
-            lua_pushstring(L, remediateFunctionName.c_str());                     // upvalue 1
-            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.remediate)); // upvalue 2
+            lua_pushstring(L, procedureName.c_str());
+            lua_pushlightuserdata(L, const_cast<void*>(reinterpret_cast<const void*>(&actions.remediate)));
             lua_pushcclosure(L, LuaEvaluator::LuaProcedureWrapper, 2);
             lua_setfield(L, ceTableIndex, remediateFunctionName.c_str());
         }
@@ -313,7 +313,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
         lua_error(L);
         return 0;
     }
-    ComplianceEngine::action_func_t actionFunc = reinterpret_cast<ComplianceEngine::action_func_t>(lua_touserdata(L, -1));
+    const ComplianceEngine::action_func_t* actionFunc = reinterpret_cast<const ComplianceEngine::action_func_t*>(lua_touserdata(L, -1));
     lua_pop(L, 1);
 
     if (!actionFunc)
@@ -350,7 +350,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
     }
 
     // Call the actual function
-    auto result = actionFunc(args, callContext->indicators, callContext->context);
+    auto result = (*actionFunc)(args, callContext->indicators, callContext->context);
 
     if (result.HasValue())
     {

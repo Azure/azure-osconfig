@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureSystemAccountsDoNotHaveValidShell.h>
 #include <Optional.h>
 #include <fstream>
 
@@ -56,7 +55,7 @@ protected:
 TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, NoEtcPasswdFile)
 {
     mContext.SetSpecialFilePath("/etc/passwd", "/tmp/somenonexistentfilename");
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -64,7 +63,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, NoLoginDefsFile_1)
 {
     mContext.SetSpecialFilePath("/etc/login.defs", "/tmp/somenonexistentfilename");
     mContext.SetSpecialFilePath("/etc/passwd", mContext.MakeTempfile(""));
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // No system accounts found
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -75,7 +74,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, NoLoginDefsFile_2)
     mContext.SetSpecialFilePath("/etc/login.defs", "/tmp/somenonexistentfilename");
     auto filename = CreateTestPasswdFile(1001, "/bin/bash");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // UID_MIN defaults to 1000 in case there's no /etc/login.defs file
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -84,7 +83,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, NoLoginDefsFile_2)
 TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, NoLoginDefsFile_3)
 {
     mContext.SetSpecialFilePath("/etc/login.defs", "/tmp/somenonexistentfilename");
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // Min UID is 1000 as there's no /etc/login.defs file
     // We currently have one user: 101 with /bin/bash
@@ -95,7 +94,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, LoginDefs_1)
 {
     auto filename = mContext.MakeTempfile("UID_MIN -1");
     mContext.SetSpecialFilePath("/etc/login.defs", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -103,7 +102,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, LoginDefs_2)
 {
     auto filename = mContext.MakeTempfile("#UID_MIN -1");
     mContext.SetSpecialFilePath("/etc/login.defs", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
 }
 
@@ -111,7 +110,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, LoginDefs_3)
 {
     auto filename = mContext.MakeTempfile("UID_MIN  foo bar");
     mContext.SetSpecialFilePath("/etc/login.defs", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -119,7 +118,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, LoginDefs_4)
 {
     auto filename = mContext.MakeTempfile("UID_MIN\t0 foo");
     mContext.SetSpecialFilePath("/etc/login.defs", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
 }
 
@@ -127,7 +126,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_1)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "root");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // 'root' is whitelisted
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -137,7 +136,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_2)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "halt");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // 'halt' is whitelisted
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -147,7 +146,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_3)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "shutdown");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // 'shutdown' is whitelisted
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -157,7 +156,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_4)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "nfsnobody");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // 'nfsnobody' is whitelisted
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -167,7 +166,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, SystemUser_1)
 {
     auto filename = CreateTestPasswdFile(99, "/bin/bash");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
     const auto* root = mIndicators.GetRootNode();
@@ -181,7 +180,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, SystemUser_2)
 {
     auto filename = CreateTestPasswdFile(99, "/bin/nologin");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
     const auto* root = mIndicators.GetRootNode();
@@ -195,7 +194,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, RegularUser_1)
 {
     auto filename = CreateTestPasswdFile(100, "/bin/bash");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
     const auto* root = mIndicators.GetRootNode();
@@ -207,7 +206,7 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, RegularUser_2)
 {
     auto filename = CreateTestPasswdFile(100, "/bin/nologin");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell({}, mIndicators, mContext);
+    auto result = AuditEnsureSystemAccountsDoNotHaveValidShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
     const auto* root = mIndicators.GetRootNode();

@@ -1,7 +1,7 @@
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureNoDuplicateEntriesExist.h>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <string>
@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 using ComplianceEngine::AuditEnsureNoDuplicateEntriesExist;
+using ComplianceEngine::EnsureNoDuplicateEntriesExistParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -66,63 +67,22 @@ protected:
 
 TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_1)
 {
-    auto result = AuditEnsureNoDuplicateEntriesExist({}, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().code, EINVAL);
-    ASSERT_EQ(result.Error().message, "Missing 'filename' argument");
-}
-
-TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_2)
-{
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().code, EINVAL);
-    ASSERT_EQ(result.Error().message, "Missing 'delimiter' argument");
-}
-
-TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_3)
-{
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    args["delimiter"] = ",,";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = "testfile.txt";
+    params.delimiter = ",,";
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
     ASSERT_EQ(result.Error().message, "Delimiter must be a single character");
 }
 
-TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_4)
+TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_2)
 {
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    args["delimiter"] = ",";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().code, EINVAL);
-    ASSERT_EQ(result.Error().message, "Missing 'column' argument");
-}
-
-TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_5)
-{
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    args["delimiter"] = ",";
-    args["column"] = "invalid"; // Non-integer value
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().code, EINVAL);
-    ASSERT_EQ(result.Error().message, "Failed to parse 'column' argument: stoi");
-}
-
-TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_6)
-{
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    args["delimiter"] = ",";
-    args["column"] = "-1"; // Negative value
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = "testfile.txt";
+    params.delimiter = ",";
+    params.column = -1; // Negative value
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
     ASSERT_EQ(result.Error().message, "Column must be a non-negative integer");
@@ -130,11 +90,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, InvalidArguments_6)
 
 TEST_F(EnsureNoDuplicateEntriesExistTest, MissingInputFile)
 {
-    map<string, string> args;
-    args["filename"] = "testfile.txt";
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = "testfile.txt";
+    params.delimiter = ",";
+    params.column = 0;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, ENOENT);
     ASSERT_EQ(result.Error().message, "Failed to open file: testfile.txt");
@@ -143,11 +103,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, MissingInputFile)
 TEST_F(EnsureNoDuplicateEntriesExistTest, EmptyInputFile)
 {
     auto filename = CreateTestFile("");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 0;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -156,11 +116,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, EmptyInputFile)
 TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue4,value5,value6\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 0;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -169,11 +129,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries)
 TEST_F(EnsureNoDuplicateEntriesExistTest, DuplicateEntries)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue1,value5,value6\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 0;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -182,11 +142,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, DuplicateEntries)
 TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries_SecondColumn)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue1,value5,value6\nvalue2,value8,value9\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "1";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 1;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -195,11 +155,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries_SecondColumn)
 TEST_F(EnsureNoDuplicateEntriesExistTest, DuplicateEntries_SecondColumn)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue1,value5,value6\nvalue2,value2,value9\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "1";
-    auto result = AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 1;
+    auto result = AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -208,11 +168,11 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, DuplicateEntries_SecondColumn)
 TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries_MessageWithoutContext)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue4,value5,value6\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 0;
+    AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(mIndicators.GetRootNode() != nullptr);
     ASSERT_FALSE(mIndicators.GetRootNode()->indicators.empty());
@@ -223,12 +183,12 @@ TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries_MessageWithoutConte
 TEST_F(EnsureNoDuplicateEntriesExistTest, NoDuplicateEntries_MessageWithContext)
 {
     auto filename = CreateTestFile("value1,value2,value3\nvalue4,value5,value6\n");
-    map<string, string> args;
-    args["filename"] = filename;
-    args["delimiter"] = ",";
-    args["column"] = "0";
-    args["context"] = "test entries";
-    AuditEnsureNoDuplicateEntriesExist(args, mIndicators, mContext);
+    EnsureNoDuplicateEntriesExistParams params;
+    params.filename = filename;
+    params.delimiter = ",";
+    params.column = 0;
+    params.context = "test entries";
+    AuditEnsureNoDuplicateEntriesExist(params, mIndicators, mContext);
     RemoveTestFile(filename);
     ASSERT_TRUE(mIndicators.GetRootNode() != nullptr);
     ASSERT_FALSE(mIndicators.GetRootNode()->indicators.empty());

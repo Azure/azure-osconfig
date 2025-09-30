@@ -4,8 +4,8 @@
 #include "CommonUtils.h"
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureDefaultUserUmaskIsConfigured.h>
 #include <Optional.h>
 #include <fstream>
 
@@ -47,7 +47,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_1)
 {
     auto filename = mContext.MakeTempfile("umask 027");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -61,7 +61,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_2)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=rx,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -75,7 +75,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_3)
 {
     auto filename = mContext.MakeTempfile("   umask\t\tu=rwx,g=rx,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -89,7 +89,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_4)
 {
     auto filename = mContext.MakeTempfile("UMASK 027");
     mContext.SetSpecialFilePath("/etc/login.defs", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -103,7 +103,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_MoreRestrictive_1)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=r,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -117,7 +117,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_MoreRestrictive_2)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=x,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -131,7 +131,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_MoreRestrictive_3)
 {
     auto filename = mContext.MakeTempfile("umask u=rx,g=rx,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -145,7 +145,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_MoreRestrictive_4)
 {
     auto filename = mContext.MakeTempfile("umask 037");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -159,7 +159,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_MoreRestrictive_5)
 {
     auto filename = mContext.MakeTempfile("umask 127");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -173,7 +173,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_1)
 {
     auto filename = mContext.MakeTempfile("umask 026");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -187,7 +187,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_2)
 {
     auto filename = mContext.MakeTempfile("umask 017");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -201,7 +201,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_3)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=rwx,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -215,7 +215,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_4)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=rx,o=r");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -229,7 +229,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_5)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=rx,o=w");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -243,7 +243,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_6)
 {
     auto filename = mContext.MakeTempfile("umask u=rwx,g=rx,o=x");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -257,7 +257,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_7)
 {
     auto filename = mContext.MakeTempfile("umask 028");
     mContext.SetSpecialFilePath("/etc/bashrc", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -269,7 +269,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_7)
 
 TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, NoUmask)
 {
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -284,7 +284,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, Precedence_1)
     auto filename1 = mContext.MakeTempfile("umask u=rwx,g=rx,o=x", ".sh");
     auto filename2 = mContext.MakeTempfile("umask u=rwx,g=rx,o=");
     mContext.SetSpecialFilePath("/etc/bashrc", filename2);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -300,7 +300,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, Precedence_2)
     auto filename1 = mContext.MakeTempfile("umask u=rwx,g=rx,o=", ".sh");
     auto filename2 = mContext.MakeTempfile("umask u=rwx,g=rx,o=x");
     mContext.SetSpecialFilePath("/etc/bashrc", filename2);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -314,7 +314,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_PAM_1)
 {
     auto filename = mContext.MakeTempfile("session pam_umask.so umask=027");
     mContext.SetSpecialFilePath("/etc/pam.d/postlogin", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -328,7 +328,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_PAM_2)
 {
     auto filename = mContext.MakeTempfile("session\tpam_umask.so\t \tumask=027");
     mContext.SetSpecialFilePath("/etc/pam.d/postlogin", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -342,7 +342,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_PAM_1)
 {
     auto filename = mContext.MakeTempfile("session\tpam_umask.so\t \tumask=026");
     mContext.SetSpecialFilePath("/etc/pam.d/postlogin", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -356,7 +356,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_PAM_2)
 {
     auto filename = mContext.MakeTempfile("session\tpam_umask.so\t \tumask=007");
     mContext.SetSpecialFilePath("/etc/pam.d/postlogin", filename);
-    auto result = AuditEnsureDefaultUserUmaskIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultUserUmaskIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 

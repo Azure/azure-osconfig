@@ -1,8 +1,5 @@
 #include <CommonUtils.h>
-#include <Evaluator.h>
-#include <Regex.h>
-#include <ScopeGuard.h>
-#include <StringTools.h>
+#include <EnsureUserIsOnlyAccountWith.h>
 #include <UsersIterator.h>
 #include <shadow.h>
 #include <vector>
@@ -13,50 +10,13 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match usernames against", "uid:A value to match the UID against::\\d+",
-    "gid:A value to match the GID against::\\d+", "test_etcPasswdPath:Alternative path to the /etc/passwd file to test against")
+Result<Status> AuditEnsureUserIsOnlyAccountWith(const EnsureUserIsOnlyAccountWithParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("username");
-    if (it == args.end())
-    {
-        return Error("Missing 'username' parameter", EINVAL);
-    }
-    const auto username = std::move(it->second);
-
-    string passwdPath = "/etc/passwd";
-    it = args.find("test_etcPasswdPath");
-    if (it != args.end())
-    {
-        passwdPath = std::move(it->second);
-    }
-
-    Optional<decltype(passwd::pw_uid)> uid;
+    assert(params.test_etcPasswdPath.HasValue());
     bool hasUid = false;
-    it = args.find("uid");
-    if (it != args.end())
-    {
-        auto parsedUID = TryStringToInt(std::move(it->second));
-        if (!parsedUID.HasValue())
-        {
-            return parsedUID.Error();
-        }
-        uid = parsedUID.Value();
-    }
-
-    Optional<decltype(passwd::pw_gid)> gid;
     bool hasGid = false;
-    it = args.find("gid");
-    if (it != args.end())
-    {
-        auto parsedGID = TryStringToInt(std::move(it->second));
-        if (!parsedGID.HasValue())
-        {
-            return parsedGID.Error();
-        }
-        gid = parsedGID.Value();
-    }
 
-    auto users = UsersRange::Make(passwdPath, context.GetLogHandle());
+    auto users = UsersRange::Make(params.test_etcPasswdPath.Value(), context.GetLogHandle());
     if (!users.HasValue())
     {
         return users.Error();
@@ -64,41 +24,41 @@ AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match user
 
     for (const auto& item : users.Value())
     {
-        if (uid.HasValue() && item.pw_uid == uid.Value())
+        if (params.uid.HasValue() && item.pw_uid == static_cast<decltype(item.pw_uid)>(params.uid.Value()))
         {
-            if (item.pw_name != username)
+            if (item.pw_name != params.username)
             {
-                OsConfigLogDebug(context.GetLogHandle(), "User '%s' has UID %d, but expected '%s'.", item.pw_name, item.pw_uid, username.c_str());
-                return indicators.NonCompliant("A user other than '" + username + "' has UID " + std::to_string(item.pw_uid));
+                OsConfigLogDebug(context.GetLogHandle(), "User '%s' has UID %d, but expected '%s'.", item.pw_name, item.pw_uid, params.username.c_str());
+                return indicators.NonCompliant("A user other than '" + params.username + "' has UID " + std::to_string(item.pw_uid));
             }
 
             hasUid = true;
         }
 
-        if (gid.HasValue() && item.pw_gid == gid.Value())
+        if (params.gid.HasValue() && item.pw_gid == static_cast<decltype(item.pw_uid)>(params.gid.Value()))
         {
-            if (item.pw_name != username)
+            if (item.pw_name != params.username)
             {
-                OsConfigLogDebug(context.GetLogHandle(), "User '%s' has GID %d, but expected '%s'.", item.pw_name, item.pw_gid, username.c_str());
-                return indicators.NonCompliant("A user other than '" + username + "' has GID " + std::to_string(item.pw_gid));
+                OsConfigLogDebug(context.GetLogHandle(), "User '%s' has GID %d, but expected '%s'.", item.pw_name, item.pw_gid, params.username.c_str());
+                return indicators.NonCompliant("A user other than '" + params.username + "' has GID " + std::to_string(item.pw_gid));
             }
 
             hasGid = true;
         }
     }
 
-    if (uid.HasValue() && !hasUid)
+    if (params.uid.HasValue() && !hasUid)
     {
-        OsConfigLogDebug(context.GetLogHandle(), "No user with UID %d found.", uid.Value());
-        return indicators.NonCompliant("No user with UID " + std::to_string(uid.Value()) + " found");
+        OsConfigLogDebug(context.GetLogHandle(), "No user with UID %d found.", params.uid.Value());
+        return indicators.NonCompliant("No user with UID " + std::to_string(params.uid.Value()) + " found");
     }
 
-    if (gid.HasValue() && !hasGid)
+    if (params.gid.HasValue() && !hasGid)
     {
-        OsConfigLogDebug(context.GetLogHandle(), "No user with GID %d found.", gid.Value());
-        return indicators.NonCompliant("No user with GID " + std::to_string(gid.Value()) + " found");
+        OsConfigLogDebug(context.GetLogHandle(), "No user with GID %d found.", params.gid.Value());
+        return indicators.NonCompliant("No user with GID " + std::to_string(params.gid.Value()) + " found");
     }
 
-    return indicators.Compliant("All criteria has been met for user '" + username + "'");
+    return indicators.Compliant("All criteria has been met for user '" + params.username + "'");
 }
 } // namespace ComplianceEngine

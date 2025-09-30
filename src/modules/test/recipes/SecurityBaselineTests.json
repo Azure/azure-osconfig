@@ -12,6 +12,12 @@
     "RunCommand": "echo 'remember=5' > /tmp/~test.test"
   },
   {
+    "RunCommand": "id -u syslog &>/dev/null || sudo useradd -r -s /usr/sbin/nologin -d /nonexistent syslog"
+  },
+  {
+    "RunCommand": "etent group adm >/dev/null || sudo groupadd -r adm"
+  },
+  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },

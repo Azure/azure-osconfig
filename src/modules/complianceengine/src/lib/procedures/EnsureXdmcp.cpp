@@ -2,18 +2,15 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <EnsureXdmcp.h>
 #include <Regex.h>
 #include <fstream>
 #include <string>
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(EnsureXdmcp)
+Result<Status> AuditEnsureXdmcp(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     auto log = context.GetLogHandle();
     regex xdmcpSection = regex(R"(\[xdmcp\])");
     regex xdmcpEnable = regex(R"(\s*Enable\s*=\s*true)");
