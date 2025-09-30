@@ -116,8 +116,8 @@ int CheckTextFoundInFolder(const char* directory, const char* text, const char* 
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
-char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log);
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, int base, OsConfigLogHandle log);
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
 int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log);
 int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log);
@@ -130,10 +130,10 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log);
 int EnableVirtualMemoryRandomization(OsConfigLogHandle log);
 int RemoveDotsFromPath(OsConfigLogHandle log);
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log);
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, int base, OsConfigLogHandle log);
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, char commentCharacter, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, char commentCharacter, int value, char** reason, int base, OsConfigLogHandle log);
 
 char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);
