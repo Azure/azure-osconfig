@@ -3129,9 +3129,11 @@ TEST_F(CommonUtilsTest, IsValidPointer)
     {
         p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
         EXPECT_EQ(0, IsValidPointer(p));
+
+        p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
+        EXPECT_EQ(0, IsValidPointer(p));
     }
 }
-
 
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
