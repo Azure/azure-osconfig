@@ -3110,19 +3110,19 @@ TEST_F(CommonUtilsTest, IsValidPointer)
     EXPECT_EQ(0, IsValidPointer(0));
     EXPECT_EQ(0, IsValidPointer(nullptr));
 
-    EXPECT_NE(nullptr, p = malloc(1));
+    EXPECT_NE(nullptr, p = (char*)malloc(1));
     EXPECT_EQ(1, IsValidPointer(p));
 
     FREE_MEMORY(p);
     EXPECT_EQ(0, IsValidPointer(p));
 
-    p = 0x1000 - 1;
+    p = (char*)(0x1000 - 1);
     EXPECT_EQ(0, IsValidPointer(p));
 
     p = (char*)0x1;
     EXPECT_EQ(0, IsValidPointer(p));
 
-    p = 0x00007FFFFFFFFFFF + 1;
+    p = (char*)(0x00007FFFFFFFFFFF + 1);
     EXPECT_EQ(0, IsValidPointer(p));
 
     p = (char*)0xFFFFFFFFFFFFFFFF;
