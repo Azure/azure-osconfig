@@ -158,7 +158,7 @@ jobs:
         policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v1
         with:
           submodules: recursive
           clean: true
