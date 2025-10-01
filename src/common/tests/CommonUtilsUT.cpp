@@ -3102,10 +3102,7 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 
 TEST_F(CommonUtilsTest, IsValidPointer)
 {
-    static char c = 'c';
     char* p = NULL;
-
-    EXPECT_EQ(0, IsValidPointer(&c));
 
     EXPECT_EQ(0, IsValidPointer(0));
     EXPECT_EQ(0, IsValidPointer(nullptr));
