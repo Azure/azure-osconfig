@@ -269,7 +269,7 @@ jobs:
         target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
         arch: [amd64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v1
 
       - run: ldd --version
 
@@ -330,7 +330,7 @@ jobs:
     needs: package
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=ubuntu-24.04']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v1
 
       - uses: actions/download-artifact@v4
         id: download
