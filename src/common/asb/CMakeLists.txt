@@ -13,10 +13,7 @@ target_include_directories(asb PUBLIC
     ${PLATFORM_INC_DIR})
 
 target_link_libraries(asb
-    PUBLIC
-        $<$<AND:$<BOOL:${BUILD_TELEMETRY}>,$<TARGET_EXISTS:telemetryjsonlib>>:telemetryjsonlib>
     PRIVATE
         logging
         commonutils
-        parsonlib
-)
+        parsonlib)
