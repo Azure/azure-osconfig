@@ -16,8 +16,12 @@
 
 #define UNUSED(a) (void)(a)
 
-// Checks for null, misalignment, low addresses, and out-of-range values distinguishings between 32-bit and 64-bit via UINTPTR_MAX
-#define VALID(a) ((uintptr_t)(a) != 0 && ((uintptr_t)(a) % (0 == sizeof(void*))) && (uintptr_t)(a) >= 0x1000 && (uintptr_t)(a) <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : 0x00007FFFFFFFFFFF))
+// Checks for null, misalignment, low addresses, and out-of-range values
+#define VALID(a) ((0 != (uintptr_t)(a)) &&\
+    (0 != sizeof(void*)) &&\
+    (0 == ((uintptr_t)(a) % sizeof(void*))) &&\
+    ((uintptr_t)(a) >= 0x1000) &&\
+    ((uintptr_t)(a) <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : 0x00007FFFFFFFFFFF)))
 
 #define FREE_MEMORY(a) {\
     void* b = (a);\
