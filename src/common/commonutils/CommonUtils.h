@@ -5,7 +5,6 @@
 #define COMMONUTILS_H
 
 #include <Logging.h>
-#include <Telemetry.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdbool.h>
