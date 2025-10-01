@@ -518,7 +518,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
         listSize = sizeof(SimplifiedGroup)* numberOfGroups;
 
-        if (NULL == (*groupList = malloc(listSize))
+        if (NULL == (*groupList = malloc(listSize)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             status = ENOMEM;
