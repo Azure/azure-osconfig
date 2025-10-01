@@ -3100,6 +3100,36 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
+TEST_F(CommonUtilsTest, IsValidPointer)
+{
+    static char c = 'c';
+    char* p = NULL;
+
+    EXPECT_EQ(0, IsValidPointer(&c));
+
+    EXPECT_EQ(0, IsValidPointer(0));
+    EXPECT_EQ(0, IsValidPointer(nullptr));
+
+    EXPECT_NE(nullptr, p = malloc(1));
+    EXPECT_EQ(1, IsValidPointer(p));
+
+    FREE_MEMORY(p);
+    EXPECT_EQ(0, IsValidPointer(p));
+
+    p = 0x1000 - 1;
+    EXPECT_EQ(0, IsValidPointer(p));
+
+    p = (char*)0x1;
+    EXPECT_EQ(0, IsValidPointer(p));
+
+    p = 0x00007FFFFFFFFFFF + 1;
+    EXPECT_EQ(0, IsValidPointer(p));
+
+    p = (char*)0xFFFFFFFFFFFFFFFF;
+    EXPECT_EQ(0, IsValidPointer(p));
+}
+
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";

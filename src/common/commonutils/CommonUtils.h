@@ -15,10 +15,14 @@
 
 #define UNUSED(a) (void)(a)
 
+// Checks for null, misalignment, low addresses, and out-of-range values distinguishings between 32-bit and 64-bit via UINTPTR_MAX
+#define VALID(a) ((uintptr_t)(a) != 0 && ((uintptr_t)(a) % (0 == sizeof(void*))) && (uintptr_t)(a) >= 0x1000 && (uintptr_t)(a) <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : 0x00007FFFFFFFFFFF))
+
 #define FREE_MEMORY(a) {\
-    if (NULL != a) {\
-        free(a);\
-        a = NULL;\
+    void* b = (a);\
+    (a) = NULL;\
+    if (VALID(b)) {\
+        free(b);\
     }\
 }\
 
@@ -48,6 +52,8 @@
 extern "C"
 {
 #endif
+
+int IsValidPointer(void* pointer);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
