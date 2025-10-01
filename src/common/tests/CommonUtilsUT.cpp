@@ -3124,6 +3124,12 @@ TEST_F(CommonUtilsTest, IsValidPointer)
 
     p = (char*)0xFFFFFFFFFFFFFFFF;
     EXPECT_EQ(0, IsValidPointer(p));
+
+    for (int i = 0; i < 100; i++)
+    {
+        p = (char*)rand();
+        EXPECT_EQ(0, IsValidPointer(p));
+    }
 }
 
 
