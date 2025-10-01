@@ -52,6 +52,7 @@ const std::set<std::string> STATUS_TRACE_SPECIFIC_REQUIRED_PARAMS = {
     "ScenarioName",
     "FunctionName",
     "RuleCodename",
+    "CallingFunctionName",
     "Microseconds",
     "ResultCode"
 };
