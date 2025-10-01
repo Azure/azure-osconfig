@@ -15,13 +15,14 @@ if (BUILD_TELEMETRY)
         set(CMAKE_ARGS -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5)
     endif()
     ExternalProject_Add(
-        telemetry
+        telemetry-external
         INSTALL_COMMAND ""  # No install target on telemetry target
         SOURCE_DIR
             ${COMMON_SRC_DIR}/telemetry
         CMAKE_ARGS
             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
             ${CMAKE_ARGS}
+            -DBUILD_EXTERNAL=ON
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
             -DVCPKG_INSTALLED_DIR=${CMAKE_BINARY_DIR}/vcpkg_installed
@@ -29,7 +30,7 @@ if (BUILD_TELEMETRY)
             -DGTEST_OUTPUT_DIR=${GTEST_OUTPUT_DIR}
             -DONEDS_CPP_SDK_VERSION=${ONEDS_CPP_SDK_VERSION}
     )
-    ExternalProject_Get_Property(telemetry BINARY_DIR)
+    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
 endif()
 
 add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
