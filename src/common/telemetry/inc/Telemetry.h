@@ -25,6 +25,9 @@
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define TELEMETRY_TIMEOUT_SECONDS 10
 
+#define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
+#define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
+
 // Helper macro to generate random filename
 #define generateRandomFilename() ({ \
     char temp_template[] = "/tmp/telemetry_XXXXXX"; \
@@ -121,12 +124,14 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     char line_str[MAX_INT_STRING_LENGTH] = {0}; \
     snprintf(line_str, sizeof(line_str), "%d", __LINE__); \
     const char* distroName = GetOsName(NULL); \
-    const char* correlationId = getenv("activityId"); \
+    const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
+    const char* ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
     char jsonBuffer[2048]; \
     snprintf(jsonBuffer, sizeof(jsonBuffer), \
-        "{\"EventName\":\"StatusTrace\",\"Timestamp\":\"%s\",\"Filename\":\"%s\",\"LineNumber\":\"%s\",\"FunctionName\":\"%s\",\"CallingFunctionName\":\"%s\",\"ResultCode\":\"%s\",\"DistroName\":\"%s\",\"CorrelationId\":\"%s\",\"Version\":\"%s\"}", \
+        "{\"EventName\":\"StatusTrace\",\"Timestamp\":\"%s\",\"Filename\":\"%s\",\"LineNumber\":\"%s\",\"FunctionName\":\"%s\",\"RuleCodename\":\"%s\",\"CallingFunctionName\":\"%s\",\"ResultCode\":\"%s\",\"DistroName\":\"%s\",\"CorrelationId\":\"%s\",\"Version\":\"%s\"}", \
         timestamp ? timestamp : "", __FILE__, line_str, __func__, \
+        ruleCodename ? ruleCodename : "", \
         (callingFunctionName) ? (callingFunctionName) : "-", \
         status_str, \
         distroName ? distroName : "unknown", \
@@ -139,7 +144,7 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     char durationSeconds_str[MAX_LONG_STRING_LENGTH] = {0}; \
     snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds)); \
     const char* distroName = GetOsName(NULL); \
-    const char* correlationId = getenv("activityId"); \
+    const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
     char jsonBuffer[2048]; \
     snprintf(jsonBuffer, sizeof(jsonBuffer), \
