@@ -25,63 +25,44 @@
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define TELEMETRY_TIMEOUT_SECONDS 10
 
-// Helper function to generate random filename
-static char* generateRandomFilename(void)
-{
-    char temp_template[] = "/tmp/telemetry_XXXXXX";
-    int fd = mkstemp(temp_template);
-    if (fd == -1)
-    {
-        return NULL;
-    }
+// Helper macro to generate random filename
+#define generateRandomFilename() ({ \
+    char temp_template[] = "/tmp/telemetry_XXXXXX"; \
+    int fd = mkstemp(temp_template); \
+    char* result = NULL; \
+    if (fd != -1) { \
+        close(fd); \
+        if (unlink(temp_template) == 0) { \
+            result = (char*)malloc(strlen(temp_template) + 6); \
+            if (result) { \
+                strcpy(result, temp_template); \
+                strcat(result, ".json"); \
+            } \
+        } \
+    } \
+    result; \
+})
 
-    close(fd);
-    if (unlink(temp_template) != 0)
-    {
-        return NULL;
-    }
-
-    // Append .json to the unique name
-    char* result = (char*)malloc(strlen(temp_template) + 6); // +5 for ".json" +1 for '\0'
-    if (result)
-    {
-        strcpy(result, temp_template);
-        strcat(result, ".json");
-    }
-
-    return result;
-}
-
-// Helper function to get module directory
-static char* getModuleDirectory(void)
-{
-    Dl_info dl_info;
-
-    // Get information about the current function's address
-    if (dladdr((void*)getModuleDirectory, &dl_info) != 0)
-    {
-        if (dl_info.dli_fname != NULL)
-        {
-            const char* fullPath = dl_info.dli_fname;
-
-            // Find the last slash to get the directory path
-            const char* lastSlash = strrchr(fullPath, '/');
-            if (lastSlash != NULL)
-            {
-                size_t dirLen = lastSlash - fullPath;
-                char* result = (char*)malloc(dirLen + 1);
-                if (result)
-                {
-                    strncpy(result, fullPath, dirLen);
-                    result[dirLen] = '\0';
-                    return result;
-                }
-            }
-        }
-    }
-
-    return NULL; // Return NULL on failure
-}
+// Helper macro to get module directory
+#define getModuleDirectory() ({ \
+    Dl_info dl_info; \
+    char* result = NULL; \
+    if (dladdr((void*)OSConfigTelemetryInit, &dl_info) != 0) { \
+        if (dl_info.dli_fname != NULL) { \
+            const char* fullPath = dl_info.dli_fname; \
+            const char* lastSlash = strrchr(fullPath, '/'); \
+            if (lastSlash != NULL) { \
+                size_t dirLen = lastSlash - fullPath; \
+                result = (char*)malloc(dirLen + 1); \
+                if (result) { \
+                    strncpy(result, fullPath, dirLen); \
+                    result[dirLen] = '\0'; \
+                } \
+            } \
+        } \
+    } \
+    result; \
+})
 
 // Buffer sizes for string conversion of numeric values
 // Based on maximum possible digits for each type plus sign and null terminator
