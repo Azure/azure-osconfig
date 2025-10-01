@@ -3,6 +3,11 @@
 
 #include "Internal.h"
 
+int IsValidPointer(void* pointer)
+{
+    return VALID(pointer) ? 1 : 0;
+}
+
 char* DuplicateString(const char* source)
 {
     if (NULL == source)
