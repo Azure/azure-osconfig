@@ -20,7 +20,3 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     complianceenginelib
     parsonlib
 )
-
-if (BUILD_COMPLIANCEENGINE)
-    target_compile_definitions(osconfig-fuzzer PRIVATE $<$<TARGET_EXISTS:complianceenginelib>:COMPLIANCEENGINE>)
-endif()
