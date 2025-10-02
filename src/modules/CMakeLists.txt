@@ -67,8 +67,7 @@ endif()
 add_module(securitybaseline)
 add_module(configuration)
 add_module(deviceinfo)
-# TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
-# add_module(complianceengine)
+add_module(complianceengine)
 
 if (BUILD_MODULETEST)
     add_subdirectory(test)
