@@ -5,7 +5,6 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
-<<<<<<< HEAD
 #if defined(COMPLIANCEENGINE)
 #include "Evaluator.h"
 #include "Optional.h"
@@ -13,15 +12,6 @@
 #include "Base64.h"
 #endif
 #include "parson.h"
-=======
-// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
-// #include "Evaluator.h"
-//#include "Optional.h"
-#include "parson.h"
-// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
-//#include "Base64.h"
-// #include "Procedure.h"
->>>>>>> 654cb8ac59af124bab8ee5736c7aa0404c87da82
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -34,7 +24,6 @@
 #include <vector>
 #include <sstream>
 
-<<<<<<< HEAD
 #if defined(COMPLIANCEENGINE)
 using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
@@ -42,14 +31,6 @@ using ComplianceEngine::Error;
 using ComplianceEngine::Evaluator;
 using ComplianceEngine::action_func_t;
 #endif
-=======
-// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
-//using ComplianceEngine::Optional;
-//using ComplianceEngine::Result;
-//using ComplianceEngine::Error;
-//using ComplianceEngine::Evaluator;
-//using ComplianceEngine::action_func_t;
->>>>>>> 654cb8ac59af124bab8ee5736c7aa0404c87da82
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -999,7 +980,6 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
 }
 
 #if defined(COMPLIANCEENGINE)
-
 static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
@@ -1085,8 +1065,6 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     return 0;
 }
 
-#endif
-
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
@@ -1149,10 +1127,8 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-#if defined(COMPLIANCEENGINE)
     { "Base64Decode.", Base64Decode_target },
     {"ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target},
-#endif
 };
 
 // libfuzzer entry point
