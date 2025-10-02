@@ -78,42 +78,17 @@ static char* g_fileName __attribute__((unused)) = NULL;
 static char* g_moduleDirectory __attribute__((unused)) = NULL;
 static int g_telemetryFileInitialized __attribute__((unused)) = 0;
 
-// Cleanup telemetry file - automatically called at program exit
-#define OSConfigProcessTelemetryFile() do { \
-    if (g_telemetryFile && g_fileName && g_moduleDirectory) { \
-        char* command = FormatAllocateString("%s/%s -v %s %d", g_moduleDirectory, TELEMETRY_BINARY_NAME, g_fileName, TELEMETRY_TIMEOUT_SECONDS); \
-        if (NULL != command) \
-        { \
-            ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL); \
-        } \
-        FREE_MEMORY(command); \
-    } \
-    g_telemetryFile = NULL; \
-    g_telemetryFileInitialized = 0; \
-    FREE_MEMORY(g_fileName); \
-    FREE_MEMORY(g_moduleDirectory); \
-} while(0)
+#ifdef DEBUG
+#define VERBOSE_FLAG_IF_DEBUG "-v"
+#else
+#define VERBOSE_FLAG_IF_DEBUG ""
+#endif
 
 // Initialize telemetry file - call once at program start (thread-safe)
-#define OSConfigTelemetryInit() do { \
-    if (!g_telemetryFileInitialized) { \
-        static int initLock = 0; \
-        if (__sync_bool_compare_and_swap(&initLock, 0, 1)) { \
-            if (!g_telemetryFile) { \
-                g_moduleDirectory = getModuleDirectory(); \
-                g_fileName = generateRandomFilename(); \
-                g_telemetryFile = fopen(g_fileName, "a"); \
-                if (g_telemetryFile) { \
-                    g_telemetryFileInitialized = 1; \
-                } \
-            } \
-        } else { \
-            while (!g_telemetryFileInitialized) { \
-                usleep(1000); \
-            } \
-        } \
-    } \
-} while(0)
+#define OSConfigTelemetryInit() do { if (!g_telemetryFileInitialized) { static int initLock = 0; if (__sync_bool_compare_and_swap(&initLock, 0, 1)) { if (!g_telemetryFile) { g_moduleDirectory = getModuleDirectory(); g_fileName = generateRandomFilename(); g_telemetryFile = fopen(g_fileName, "a"); if (g_telemetryFile) { g_telemetryFileInitialized = 1; } } } else { while (!g_telemetryFileInitialized) { usleep(1000); } } } } while(0)
+
+// Cleanup telemetry file - call on program exit
+#define OSConfigProcessTelemetryFile() do { if (g_telemetryFile && g_fileName && g_moduleDirectory) { char* command = FormatAllocateString("%s/%s %s %s %d", g_moduleDirectory, TELEMETRY_BINARY_NAME, VERBOSE_FLAG_IF_DEBUG, g_fileName, TELEMETRY_TIMEOUT_SECONDS); if (NULL != command) { ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL); } FREE_MEMORY(command); } g_telemetryFile = NULL; g_telemetryFileInitialized = 0; FREE_MEMORY(g_fileName); FREE_MEMORY(g_moduleDirectory); } while(0)
 
 // Helper macro to append raw JSON string to telemetry file
 #define OSConfigTelemetryAppendJSON(jsonString) do { if (!g_telemetryFileInitialized) { OSConfigTelemetryInit(); } if (g_telemetryFile) { fprintf(g_telemetryFile, "%s\n", jsonString); fflush(g_telemetryFile); } } while(0)
