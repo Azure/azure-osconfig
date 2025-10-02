@@ -50,7 +50,6 @@ int MmiGetInfo(
             {
                 OsConfigLogError(SampleLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, *payloadSizeBytes, status);
             }
-            OSConfigTelemetryStatusTrace("payload", status);
         }
     }};
 
@@ -75,7 +74,6 @@ MMI_HANDLE MmiOpen(
         }
         else
         {
-            OSConfigTelemetryStatusTrace("MmiOpen", status);
             OsConfigLogError(SampleLog::Get(), "MmiOpen(%s, %d) returned: %p, status: %d", clientName, maxPayloadSizeBytes, handle, status);
         }
     }};
@@ -87,7 +85,6 @@ MMI_HANDLE MmiOpen(
         if (nullptr == session)
         {
             status = ENOMEM;
-            OSConfigTelemetryStatusTrace("new", status);
             OsConfigLogError(SampleLog::Get(), "MmiOpen failed to allocate memory");
         }
         else
@@ -98,7 +95,6 @@ MMI_HANDLE MmiOpen(
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("clientName", status);
         OsConfigLogError(SampleLog::Get(), "MmiOpen called with null clientName");
     }
 
@@ -140,14 +136,12 @@ int MmiSet(
             {
                 OsConfigLogError(SampleLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
             }
-            OSConfigTelemetryStatusTrace("MmiSet", status);
         }
     }};
 
     if (nullptr == clientSession)
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("clientSession", status);
         OsConfigLogError(SampleLog::Get(), "MmiSet called with null clientSession");
     }
     else
@@ -182,14 +176,12 @@ int MmiGet(
             {
                 OsConfigLogError(SampleLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
-            OSConfigTelemetryStatusTrace("MmiGet", status);
         }
     }};
 
     if (nullptr == clientSession)
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("clientSession", status);
         OsConfigLogError(SampleLog::Get(), "MmiGet called with null clientSession");
     }
     else
