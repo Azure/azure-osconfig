@@ -978,6 +978,7 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
+/* TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
 static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
@@ -1028,6 +1029,7 @@ static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(
 
     return result;
 }
+*/
 
 // TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
 // static int Base64Decode_target(const char* data, std::size_t size) noexcept
