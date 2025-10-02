@@ -29,43 +29,10 @@
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
 
 // Helper macro to generate random filename
-#define generateRandomFilename() ({ \
-    char temp_template[] = "/tmp/telemetry_XXXXXX"; \
-    int fd = mkstemp(temp_template); \
-    char* filename_result = NULL; \
-    if (fd != -1) { \
-        close(fd); \
-        if (unlink(temp_template) == 0) { \
-            filename_result = (char*)malloc(strlen(temp_template) + 6); \
-            if (filename_result) { \
-                strcpy(filename_result, temp_template); \
-                strcat(filename_result, ".json"); \
-            } \
-        } \
-    } \
-    filename_result; \
-})
+#define generateRandomFilename() ({ char temp_template[] = "/tmp/telemetry_XXXXXX"; int fd = mkstemp(temp_template); char* filename_result = NULL; if (fd != -1) { close(fd); if (unlink(temp_template) == 0) { filename_result = (char*)malloc(strlen(temp_template) + 6); if (filename_result) { strcpy(filename_result, temp_template); strcat(filename_result, ".json"); } } } filename_result; })
 
 // Helper macro to get module directory
-#define getModuleDirectory() ({ \
-    Dl_info dl_info; \
-    char* directory_result = NULL; \
-    if (dladdr((void*)__func__, &dl_info) != 0) { \
-        if (dl_info.dli_fname != NULL) { \
-            const char* module_fullPath = dl_info.dli_fname; \
-            const char* lastSlash = strrchr(module_fullPath, '/'); \
-            if (lastSlash != NULL) { \
-                size_t dirLen = lastSlash - module_fullPath; \
-                directory_result = (char*)malloc(dirLen + 1); \
-                if (directory_result) { \
-                    strncpy(directory_result, module_fullPath, dirLen); \
-                    directory_result[dirLen] = '\0'; \
-                } \
-            } \
-        } \
-    } \
-    directory_result; \
-})
+#define getModuleDirectory() ({ Dl_info dl_info; char* directory_result = NULL; if (dladdr((void*)__func__, &dl_info) != 0) { if (dl_info.dli_fname != NULL) { const char* module_fullPath = dl_info.dli_fname; const char* lastSlash = strrchr(module_fullPath, '/'); if (lastSlash != NULL) { size_t dirLen = lastSlash - module_fullPath; directory_result = (char*)malloc(dirLen + 1); if (directory_result) { strncpy(directory_result, module_fullPath, dirLen); directory_result[dirLen] = '\0'; } } } } directory_result; })
 
 // Buffer sizes for string conversion of numeric values
 // Based on maximum possible digits for each type plus sign and null terminator
