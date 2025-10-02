@@ -86,7 +86,7 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
 #endif
 
 // Initialize telemetry file - call once at program start (thread-safe)
-#define OSConfigTelemetryInit() do { \
+#define OSConfigTelemetryInit() { \
     if (!g_telemetryFileInitialized) { \
         pthread_mutex_lock(&g_telemetryMutex); \
         if (!g_telemetryFileInitialized && !g_telemetryFile) { \
@@ -99,10 +99,10 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
         } \
         pthread_mutex_unlock(&g_telemetryMutex); \
     } \
-} while(0)
+}
 
 // Cleanup telemetry file - call on program exit
-#define OSConfigProcessTelemetryFile() do { \
+#define OSConfigProcessTelemetryFile() { \
     if (g_telemetryFile && g_fileName && g_moduleDirectory) { \
         char* command = FormatAllocateString("%s/%s %s %s %d", g_moduleDirectory, TELEMETRY_BINARY_NAME, VERBOSE_FLAG_IF_DEBUG, g_fileName, TELEMETRY_TIMEOUT_SECONDS); \
         if (NULL != command) { \
@@ -114,10 +114,10 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
     g_telemetryFileInitialized = 0; \
     FREE_MEMORY(g_fileName); \
     FREE_MEMORY(g_moduleDirectory); \
-} while(0)
+}
 
 // Helper macro to append raw JSON string to telemetry file
-#define OSConfigTelemetryAppendJSON(jsonString) do { \
+#define OSConfigTelemetryAppendJSON(jsonString) { \
     if (!g_telemetryFileInitialized) { \
         OSConfigTelemetryInit(); \
     } \
@@ -125,11 +125,11 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
         fprintf(g_telemetryFile, "%s\n", jsonString); \
         fflush(g_telemetryFile); \
     } \
-} while(0)
+}
 
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status) \
     OSConfigTelemetryStatusTraceImpl((callingFunctionName), (status), __LINE__)
-#define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line) do { \
+#define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line) { \
     char status_str[MAX_INT_STRING_LENGTH] = {0}; \
     snprintf(status_str, sizeof(status_str), "%d", (status)); \
     char line_str[MAX_INT_STRING_LENGTH] = {0}; \
@@ -143,9 +143,9 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
     FREE_MEMORY(telemetry_json); \
-} while(0)
+}
 
-#define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds) do { \
+#define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds) { \
     char durationSeconds_str[MAX_LONG_STRING_LENGTH] = {0}; \
     snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds)); \
     const char* distroName = GetOsName(NULL); \
@@ -156,9 +156,9 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
     FREE_MEMORY(telemetry_json); \
-} while(0)
+}
 
-#define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds) do { \
+#define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds) { \
     char objectResult_str[MAX_INT_STRING_LENGTH] = {0}; \
     snprintf(objectResult_str, sizeof(objectResult_str), "%d", (objectResult)); \
     char microseconds_str[MAX_LONG_STRING_LENGTH] = {0}; \
@@ -171,6 +171,6 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
     FREE_MEMORY(telemetry_json); \
-} while(0)
+}
 
 #endif // TELEMETRY_H
