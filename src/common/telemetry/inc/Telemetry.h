@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <link.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,6 +77,7 @@ static FILE* g_telemetryFile __attribute__((unused)) = NULL;
 static char* g_fileName __attribute__((unused)) = NULL;
 static char* g_moduleDirectory __attribute__((unused)) = NULL;
 static int g_telemetryFileInitialized __attribute__((unused)) = 0;
+static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_INITIALIZER;
 
 #ifdef DEBUG
 #define VERBOSE_FLAG_IF_DEBUG "-v"
@@ -86,21 +88,16 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
 // Initialize telemetry file - call once at program start (thread-safe)
 #define OSConfigTelemetryInit() do { \
     if (!g_telemetryFileInitialized) { \
-        static int initLock = 0; \
-        if (__sync_bool_compare_and_swap(&initLock, 0, 1)) { \
-            if (!g_telemetryFile) { \
-                g_moduleDirectory = getModuleDirectory(); \
-                g_fileName = generateRandomFilename(); \
-                g_telemetryFile = fopen(g_fileName, "a"); \
-                if (g_telemetryFile) { \
-                    g_telemetryFileInitialized = 1; \
-                } \
-            } \
-        } else { \
-            while (!g_telemetryFileInitialized) { \
-                usleep(1000); \
+        pthread_mutex_lock(&g_telemetryMutex); \
+        if (!g_telemetryFileInitialized && !g_telemetryFile) { \
+            g_moduleDirectory = getModuleDirectory(); \
+            g_fileName = generateRandomFilename(); \
+            g_telemetryFile = fopen(g_fileName, "a"); \
+            if (g_telemetryFile) { \
+                g_telemetryFileInitialized = 1; \
             } \
         } \
+        pthread_mutex_unlock(&g_telemetryMutex); \
     } \
 } while(0)
 
