@@ -12,7 +12,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
-#include <Internal.h>
+#include <Telemetry.h>
 
 #define SAMPLE_LOGFILE "/var/log/osconfig_sample.log"
 #define SAMPLE_ROLLEDLOGFILE "/var/log/osconfig_sample.bak"
