@@ -138,7 +138,19 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
     const char* ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
-    char* telemetry_json = FormatAllocateString("{\"EventName\":\"StatusTrace\",\"Timestamp\":\"%s\",\"Filename\":\"%s\",\"LineNumber\":\"%s\",\"FunctionName\":\"%s\",\"RuleCodename\":\"%s\",\"CallingFunctionName\":\"%s\",\"ResultCode\":\"%s\",\"DistroName\":\"%s\",\"CorrelationId\":\"%s\",\"Version\":\"%s\"}", timestamp ? timestamp : "", __FILE__, line_str, __func__, ruleCodename ? ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", status_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
+    char* telemetry_json = FormatAllocateString("{" \
+        "\"EventName\":\"StatusTrace\"," \
+        "\"Timestamp\":\"%s\"," \
+        "\"Filename\":\"%s\"," \
+        "\"LineNumber\":\"%s\"," \
+        "\"FunctionName\":\"%s\"," \
+        "\"RuleCodename\":\"%s\"," \
+        "\"CallingFunctionName\":\"%s\"," \
+        "\"ResultCode\":\"%s\"," \
+        "\"DistroName\":\"%s\"," \
+        "\"CorrelationId\":\"%s\"," \
+        "\"Version\":\"%s\"" \
+        "}", timestamp ? timestamp : "", __FILE__, line_str, __func__, ruleCodename ? ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", status_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
@@ -151,7 +163,16 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
     const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
-    char* telemetry_json = FormatAllocateString("{\"EventName\":\"BaselineRun\",\"Timestamp\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"DurationSeconds\":\"%s\",\"DistroName\":\"%s\",\"CorrelationId\":\"%s\",\"Version\":\"%s\"}", timestamp ? timestamp : "", (baselineName) ? (baselineName) : "N/A", (mode) ? (mode) : "N/A", durationSeconds_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
+    char* telemetry_json = FormatAllocateString("{" \
+        "\"EventName\":\"BaselineRun\"," \
+        "\"Timestamp\":\"%s\"," \
+        "\"BaselineName\":\"%s\"," \
+        "\"Mode\":\"%s\"," \
+        "\"DurationSeconds\":\"%s\"," \
+        "\"DistroName\":\"%s\"," \
+        "\"CorrelationId\":\"%s\"," \
+        "\"Version\":\"%s\"" \
+        "}", timestamp ? timestamp : "", (baselineName) ? (baselineName) : "N/A", (mode) ? (mode) : "N/A", durationSeconds_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
@@ -166,7 +187,17 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
     const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv("activityId"); \
     const char* timestamp = GetFormattedTime(); \
-    char* telemetry_json = FormatAllocateString("{\"EventName\":\"RuleComplete\",\"Timestamp\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s\",\"Microseconds\":\"%s\",\"DistroName\":\"%s\",\"CorrelationId\":\"%s\",\"Version\":\"%s\"}", timestamp ? timestamp : "", (componentName) ? (componentName) : "N/A", (objectName) ? (objectName) : "N/A", objectResult_str, microseconds_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
+    char* telemetry_json = FormatAllocateString("{" \
+        "\"EventName\":\"RuleComplete\"," \
+        "\"Timestamp\":\"%s\"," \
+        "\"ComponentName\":\"%s\"," \
+        "\"ObjectName\":\"%s\"," \
+        "\"ObjectResult\":\"%s\"," \
+        "\"Microseconds\":\"%s\"," \
+        "\"DistroName\":\"%s\"," \
+        "\"CorrelationId\":\"%s\"," \
+        "\"Version\":\"%s\"" \
+        "}", timestamp ? timestamp : "", (componentName) ? (componentName) : "N/A", (objectName) ? (objectName) : "N/A", objectResult_str, microseconds_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
