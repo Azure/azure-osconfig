@@ -21,11 +21,11 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Telemetry.h>
 #include <Mmi.h>
 #include <Mpi.h>
 #include <parson.h>
 #include <version.h>
+#include <Telemetry.h>
 
 #ifdef __cplusplus
 extern "C"
