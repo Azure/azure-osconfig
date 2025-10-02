@@ -13,7 +13,6 @@
 #include <Logging.h>
 #include <Telemetry.h>
 #include <Mmi.h>
-#include <Internal.h>
 
 #include "Configuration.h"
 
