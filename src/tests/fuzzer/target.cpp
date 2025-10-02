@@ -9,8 +9,8 @@
 // #include "Evaluator.h"
 //#include "Optional.h"
 #include "parson.h"
-#include "Base64.h"
 // TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//#include "Base64.h"
 // #include "Procedure.h"
 #include <unistd.h>
 #include <fcntl.h>
