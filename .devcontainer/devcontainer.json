@@ -3,6 +3,7 @@
 {
 	"name": "azure-osconfig",
 	"build": {
+		"context": "..",
 		"dockerfile": "Dockerfile"
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
@@ -20,5 +21,6 @@
 			]
 		}
 	},
+	"containerEnv": { "VCPKG_ROOT": "/vcpkg" },
 	"remoteUser": "root"
 }

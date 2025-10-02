@@ -1059,7 +1059,6 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     }
     return 0;
 }
-#endif
 
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
