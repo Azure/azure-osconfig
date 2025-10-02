@@ -5,11 +5,13 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
-#include "Evaluator.h"
-#include "Optional.h"
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+// #include "Evaluator.h"
+//#include "Optional.h"
 #include "parson.h"
-#include "Base64.h"
-#include "Procedure.h"
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//#include "Base64.h"
+// #include "Procedure.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -22,11 +24,12 @@
 #include <vector>
 #include <sstream>
 
-using ComplianceEngine::Optional;
-using ComplianceEngine::Result;
-using ComplianceEngine::Error;
-using ComplianceEngine::Evaluator;
-using ComplianceEngine::action_func_t;
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//using ComplianceEngine::Optional;
+//using ComplianceEngine::Result;
+//using ComplianceEngine::Error;
+//using ComplianceEngine::Evaluator;
+//using ComplianceEngine::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -975,6 +978,7 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
+/* TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
 static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
@@ -1025,40 +1029,42 @@ static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(
 
     return result;
 }
+*/
 
-static int Base64Decode_target(const char* data, std::size_t size) noexcept
-{
-    ComplianceEngine::Base64Decode(std::string(data, size));
-    return c_valid_input;
-}
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+// static int Base64Decode_target(const char* data, std::size_t size) noexcept
+// {
+//     ComplianceEngine::Base64Decode(std::string(data, size));
+//     return c_valid_input;
+// }
 
-static int ProcedureUpdateUserParameters_target(const char* data, std::size_t size) noexcept
-{
-    auto input = std::string(data, size);
-    for (auto& c : input)
-    {
-        if (!std::isspace(c) && !std::isprint(c))
-        {
-            return c_skip_input;
-        }
-    }
-    ComplianceEngine::Procedure proc;
-    proc.SetParameter("X", "1");
-    proc.SetParameter("Y", "2");
-    Optional<Error> error = proc.UpdateUserParameters(input);
-    if (error)
-    {
-        // printf("Error: %s\n", error->message.c_str());
-    }
-    else
-    {
-        for (auto& param : proc.Parameters())
-        {
-            // printf("Parameter: %s = %s\n", param.first.c_str(), param.second.c_str());
-        }
-    }
-    return 0;
-}
+// static int ProcedureUpdateUserParameters_target(const char* data, std::size_t size) noexcept
+// {
+//     auto input = std::string(data, size);
+//     for (auto& c : input)
+//     {
+//         if (!std::isspace(c) && !std::isprint(c))
+//         {
+//             return c_skip_input;
+//         }
+//     }
+//     ComplianceEngine::Procedure proc;
+//     proc.SetParameter("X", "1");
+//     proc.SetParameter("Y", "2");
+//     Optional<Error> error = proc.UpdateUserParameters(input);
+//     if (error)
+//     {
+//         // printf("Error: %s\n", error->message.c_str());
+//     }
+//     else
+//     {
+//         for (auto& param : proc.Parameters())
+//         {
+//             // printf("Parameter: %s = %s\n", param.first.c_str(), param.second.c_str());
+//         }
+//     }
+//     return 0;
+// }
 
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
@@ -1122,8 +1128,9 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-    { "Base64Decode.", Base64Decode_target },
-    {"ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target},
+    // TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+    // { "Base64Decode.", Base64Decode_target },
+    // {"ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target},
 };
 
 // libfuzzer entry point
