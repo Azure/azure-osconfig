@@ -179,7 +179,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                 status = errno;
             }
 
-            if (NULL == (info->components = (char**)malloc(componentsCount * sizeof(char*))))
+            if (NULL == (info->components = (char**)calloc(componentsCount,sizeof(char*))))
             {
                 OsConfigLogError(GetPlatformLog(), "ParseModuleInfo: failed to allocate memory for components");
                 status = ENOMEM;

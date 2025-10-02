@@ -1,10 +1,24 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(osconfig)
-
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
+
+# VCPKG integration
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if (DEFINED ENV{VCPKG_ROOT})
+        set (CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+        set (VCPKG_INSTALLED_DIR "$ENV{VCPKG_ROOT}/vcpkg_installed")
+        message (STATUS "VCPKG_ROOT found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    else()
+        if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake)
+            set (CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+            message (STATUS "VCPKG_ROOT not found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+        else()
+            message (ERROR "Ensure git submodules are initialized or VCPKG_ROOT is set and install the vcpkg ports")
+        endif()
+    endif()
+endif()
 
 cmake_minimum_required(VERSION 3.3)
 
@@ -22,9 +36,8 @@ option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
 option(BUILD_COMPLIANCEENGINE "Build ComplianceEngine" OFF)
 
+add_compile_options("-Wno-psabi;-fPIC")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    add_compile_options("-Wno-psabi;-fPIC")
-
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
         set(BUILD_PLATFORM OFF)
@@ -35,10 +48,6 @@ endif()
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)
 set(CMAKE_INSTALL_PREFIX /usr)
 set(CMAKE_TEMPLATES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/")
-
-set(CMAKE_PROJECT_VERSION_MAJOR ${MAJOR_VERSION})
-set(CMAKE_PROJECT_VERSION_MINOR ${MINOR_VERSION})
-set(CMAKE_PROJECT_VERSION_PATCH ${PATCH_VERSION})
 
 function(get_linux_lsb_release_information)
     find_program(LSB_RELEASE_EXEC lsb_release)
@@ -61,6 +70,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
         message(STATUS "Distro: Linux - Unknown")
     endif()
 endif()
+
+project(osconfig)
+
+set(CMAKE_PROJECT_VERSION_MAJOR ${MAJOR_VERSION})
+set(CMAKE_PROJECT_VERSION_MINOR ${MINOR_VERSION})
+set(CMAKE_PROJECT_VERSION_PATCH ${PATCH_VERSION})
 
 find_package(Git QUIET)
 
@@ -108,9 +123,12 @@ set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
+    message(STATUS "Google Unit Test: Enabled")
     enable_testing()
     add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
+else()
+    message(STATUS "Google Unit Test: Disabled")
 endif()
 
 if (BUILD_FUZZER)
