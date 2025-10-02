@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureUserIsOnlyAccountWith"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureUserIsOnlyAccountWith": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "description": "A pattern or value to match usernames against"
+                },
+                "uid": {
+                  "type": "string",
+                  "description": "A value to match the UID against",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*\\d+.*)$|(\\d+))"
+                },
+                "gid": {
+                  "type": "string",
+                  "description": "A value to match the GID against",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*\\d+.*)$|(\\d+))"
+                },
+                "test_etcPasswdPath": {
+                  "type": "string",
+                  "description": "Alternative path to the /etc/passwd file to test against"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

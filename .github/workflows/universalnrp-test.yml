@@ -55,7 +55,6 @@ jobs:
               { "os": "azurelinux", "version": "3" },
               { "os": "debian", "version": "11" },
               { "os": "debian", "version": "12" },
-              { "os": "mariner", "version": "2" },
               { "os": "oraclelinux", "version": "8" },
               { "os": "rhel", "version": "8" },
               { "os": "rhel", "version": "9" },

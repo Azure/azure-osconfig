@@ -4,6 +4,7 @@
 #ifndef COMPLIANCEENGINE_CONTEXTINTERFACE_H
 #define COMPLIANCEENGINE_CONTEXTINTERFACE_H
 
+#include "FilesystemScanner.h"
 #include "Logging.h"
 #include "Result.h"
 
@@ -19,6 +20,9 @@ public:
     virtual Result<std::string> GetFileContents(const std::string& filePath) const = 0;
 
     virtual OsConfigLogHandle GetLogHandle() const = 0;
+    virtual std::string GetSpecialFilePath(const std::string& path) const = 0;
+
+    virtual FilesystemScanner& GetFilesystemScanner() = 0;
 };
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_CONTEXT_H

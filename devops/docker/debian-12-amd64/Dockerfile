@@ -18,7 +18,10 @@ RUN apt -y update && apt-get -y install \
     gcovr \
     jq \
     bc \
-    file
+    file \
+    tar \
+    unzip \
+    zip
 
 WORKDIR /git
 

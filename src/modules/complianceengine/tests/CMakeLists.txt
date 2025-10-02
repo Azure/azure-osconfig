@@ -6,20 +6,66 @@ project(compliancetests)
 include(CTest)
 find_package(GTest REQUIRED)
 
-# Temporary solution, until we stabilize the list of procedures.
-FILE(GLOB PROCEDURES procedures/*.cpp)
+set(PROCEDURES
+    procedures/AuditdRulesCheckTest.cpp
+    procedures/EnsureAccountsWithoutShellAreLockedTest.cpp
+    procedures/EnsureApparmorProfilesTest.cpp
+    procedures/EnsureDconfTest.cpp
+    procedures/EnsureDefaultShellTimeoutIsConfiguredTest.cpp
+    procedures/EnsureDefaultUserUmaskIsConfiguredTest.cpp
+    procedures/EnsureFilePermissionsTest.cpp
+    procedures/EnsureFilesystemOptionTest.cpp
+    procedures/EnsureFirewallOpenPortsTest.cpp
+    procedures/EnsureKernelModuleTest.cpp
+    procedures/EnsureLogfileAccessTest.cpp
+    procedures/EnsureGroupIsOnlyGroupWithTest.cpp
+    procedures/EnsureGsettingsTest.cpp
+    procedures/EnsureMountPointExistsTest.cpp
+    procedures/EnsureMTAsLocalOnlyTest.cpp
+    procedures/EnsureNoDuplicateEntriesExistTest.cpp
+    procedures/EnsureNoWritablesTest.cpp
+    procedures/EnsurePasswordChangeIsInPastTest.cpp
+        procedures/EnsureNoUnownedTest.cpp
+    procedures/EnsureRootPathTest.cpp
+    procedures/EnsureSshKeyPermsTest.cpp
+    procedures/EnsureSshdOptionTest.cpp
+    procedures/EnsureSysctlTest.cpp
+    procedures/EnsureSystemAccountsDoNotHaveValidShellTest.cpp
+    procedures/EnsureUserIsOnlyAccountWithTest.cpp
+    procedures/EnsureWirelessIsDisabledTest.cpp
+    procedures/EnsureXdmcpTest.cpp
+    procedures/ExecuteCommandGrepTest.cpp
+    procedures/FileRegexMatchTest.cpp
+    procedures/PackageInstalledTest.cpp
+    procedures/SystemdConfigTest.cpp
+    procedures/SystemdUnitStateTest.cpp
+    procedures/ufwStatusTest.cpp
+    procedures/EnsureShadowContainsTest.cpp
+)
+
+# Check that all globbed procedures are in the PROCEDURES list
+file(GLOB GLOBBED_PROCEDURES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} procedures/*.cpp)
+foreach(proc ${GLOBBED_PROCEDURES})
+    if (NOT proc IN_LIST PROCEDURES)
+        message(SEND_ERROR "Globbed procedure ${proc} is not in the PROCEDURES list.")
+    endif()
+endforeach()
 
 add_executable(complianceenginetests
     Base64Test.cpp
+    BenchmarkInfoTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
+    FilesystemScannerTest.cpp
+    DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
+    LuaEvaluatorTest.cpp
+    NetworkToolsTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
     RegexTest.cpp
     ResultTest.cpp
-    Base64Test.cpp
     ${PROCEDURES}
 )
 # for ProcedureMap.h

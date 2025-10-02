@@ -6,7 +6,7 @@ project(osconfig)
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.3)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
@@ -136,6 +136,9 @@ endif()
 if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
+
+message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 

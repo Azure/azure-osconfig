@@ -6,6 +6,7 @@
 
 #include "TypeTraits.h"
 
+#include <stdexcept>
 #include <string>
 
 namespace ComplianceEngine
@@ -61,6 +62,14 @@ struct Error
 };
 std::ostream& operator<<(std::ostream& os, const ComplianceEngine::Error& error);
 
+namespace
+{
+constexpr std::size_t Max(std::size_t a, std::size_t b)
+{
+    return (a < b) ? b : a;
+}
+} // anonymous namespace
+
 template <typename T>
 class Result
 {
@@ -76,6 +85,7 @@ class Result
         Error
     };
 
+    alignas(Max(alignof(T), alignof(ComplianceEngine::Error))) char mBuffer[Max(sizeof(T), sizeof(ComplianceEngine::Error))];
     Tag mTag;
     Pointer mPointer;
 
@@ -83,13 +93,13 @@ public:
     Result(T value)
         : mTag(Tag::Value)
     {
-        mPointer.value = new T(std::move(value));
+        mPointer.value = new (mBuffer) T(std::move(value));
     }
 
     Result(ComplianceEngine::Error error)
         : mTag(Tag::Error)
     {
-        mPointer.error = new ComplianceEngine::Error(std::move(error));
+        mPointer.error = new (mBuffer) ComplianceEngine::Error(std::move(error));
     }
 
     Result(const Result& other)
@@ -97,40 +107,53 @@ public:
     {
         if (mTag == Tag::Value)
         {
-            mPointer.value = new T(*other.mPointer.value);
+            mPointer.value = new (mBuffer) T(*other.mPointer.value);
         }
         else
         {
-            mPointer.error = new ComplianceEngine::Error(*other.mPointer.error);
+            mPointer.error = new (mBuffer) ComplianceEngine::Error(*other.mPointer.error);
         }
     }
 
-    Result(Result&& other) noexcept
+    Result(Result&& other) noexcept(NoexceptMovable<T>())
         : mTag(other.mTag)
     {
         if (mTag == Tag::Value)
         {
-            mPointer.value = other.mPointer.value;
+            mPointer.value = new (mBuffer) T(std::move(*other.mPointer.value));
         }
         else
         {
-            mPointer.error = other.mPointer.error;
+            mPointer.error = new (mBuffer) ComplianceEngine::Error(std::move(*other.mPointer.error));
         }
 
-        other.mPointer.error = nullptr;
-        other.mTag = Tag::Error;
+        other.Reset();
     }
 
     ~Result()
     {
+        Reset();
+    }
+
+    void Reset() noexcept(NoexceptDestructible<T>())
+    {
         if (mTag == Tag::Value)
         {
-            delete mPointer.value;
+            if (nullptr != mPointer.value)
+            {
+                mPointer.value->~T();
+            }
         }
         else
         {
-            delete mPointer.error;
+            if (nullptr != mPointer.error)
+            {
+                using Type = ComplianceEngine::Error;
+                mPointer.error->~Type();
+            }
         }
+        mPointer.value = nullptr;
+        mTag = Tag::Error;
     }
 
     Result& operator=(const Result& other)
@@ -140,59 +163,39 @@ public:
             return *this;
         }
 
-        if (mTag == Tag::Value)
-        {
-            delete mPointer.value;
-        }
-        else
-        {
-            delete mPointer.error;
-        }
-
+        Reset();
         mTag = other.mTag;
-        other.mTag = Tag::Error;
-
         if (mTag == Tag::Value)
         {
-            mPointer.value = other.mPointer.value;
+            mPointer.value = new (mBuffer) T(*other.mPointer.value);
         }
         else
         {
-            mPointer.error = other.mPointer.error;
+            mPointer.error = new (mBuffer) ComplianceEngine::Error(*other.mPointer.error);
         }
 
-        other.mPointer.error = nullptr;
         return *this;
     }
 
-    Result& operator=(Result&& other) noexcept
+    Result& operator=(Result&& other) noexcept(NoexceptMovable<T>())
     {
         if (this == &other)
         {
             return *this;
         }
 
-        if (mTag == Tag::Value)
-        {
-            delete mPointer.value;
-        }
-        else
-        {
-            delete mPointer.error;
-        }
-
+        Reset();
         mTag = other.mTag;
         if (mTag == Tag::Value)
         {
-            mPointer.value = other.mPointer.value;
-            other.mPointer.value = nullptr;
+            mPointer.value = new (mBuffer) T(std::move(*other.mPointer.value));
         }
         else
         {
-            mPointer.error = other.mPointer.error;
-            other.mPointer.error = nullptr;
+            mPointer.error = new (mBuffer) ComplianceEngine::Error(std::move(*other.mPointer.error));
         }
 
+        other.Reset();
         return *this;
     }
 
@@ -216,7 +219,7 @@ public:
         return *mPointer.value;
     }
 
-    T ValueOr(T default_value) && noexcept(NoexceptCopyable<T>())
+    T ValueOr(T default_value) && noexcept(NoexceptMovable<T>())
     {
         if (mTag == Tag::Error)
         {
@@ -226,44 +229,68 @@ public:
         return std::move(*mPointer.value);
     }
 
-    const T& Value() const& noexcept(NoexceptCopyable<T>())
+    const T& Value() const&
     {
+        CheckValue();
         return *mPointer.value;
     }
 
-    T Value() && noexcept(NoexceptMovable<T>())
+    T Value() &&
     {
+        CheckValue();
         return std::move(*mPointer.value);
     }
 
     T& Value() &
     {
+        CheckValue();
         return *mPointer.value;
     }
 
     const T* operator->() const&
     {
+        CheckValue();
         return mPointer.value;
     }
 
     T* operator->() &
     {
+        CheckValue();
         return mPointer.value;
     }
 
     const ComplianceEngine::Error& Error() const&
     {
+        CheckError();
         return *mPointer.error;
     }
 
     ComplianceEngine::Error Error() &&
     {
+        CheckError();
         return std::move(*mPointer.error);
     }
 
     ComplianceEngine::Error& Error() &
     {
+        CheckError();
         return *mPointer.error;
+    }
+
+private:
+    void CheckError() const
+    {
+        if (mTag != Tag::Error)
+        {
+            throw std::logic_error("Result: unchecked access to Error");
+        }
+    }
+    void CheckValue() const
+    {
+        if (mTag != Tag::Value)
+        {
+            throw std::logic_error("Result: unchecked access to Value");
+        }
     }
 };
 } // namespace ComplianceEngine

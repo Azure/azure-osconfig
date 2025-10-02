@@ -5,6 +5,7 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
+<<<<<<< HEAD
 #if defined(COMPLIANCEENGINE)
 #include "Evaluator.h"
 #include "Optional.h"
@@ -12,6 +13,15 @@
 #include "Base64.h"
 #endif
 #include "parson.h"
+=======
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+// #include "Evaluator.h"
+//#include "Optional.h"
+#include "parson.h"
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//#include "Base64.h"
+// #include "Procedure.h"
+>>>>>>> 654cb8ac59af124bab8ee5736c7aa0404c87da82
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -24,6 +34,7 @@
 #include <vector>
 #include <sstream>
 
+<<<<<<< HEAD
 #if defined(COMPLIANCEENGINE)
 using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
@@ -31,6 +42,14 @@ using ComplianceEngine::Error;
 using ComplianceEngine::Evaluator;
 using ComplianceEngine::action_func_t;
 #endif
+=======
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//using ComplianceEngine::Optional;
+//using ComplianceEngine::Result;
+//using ComplianceEngine::Error;
+//using ComplianceEngine::Evaluator;
+//using ComplianceEngine::action_func_t;
+>>>>>>> 654cb8ac59af124bab8ee5736c7aa0404c87da82
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -391,8 +410,14 @@ static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) 
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto buffer = std::string(data, size);
-    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr));
+    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
     return 0;
 }
 
@@ -410,8 +435,14 @@ static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size)
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto buffer = std::string(data, size);
-    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
     return 0;
 }
 
@@ -509,8 +540,14 @@ static int GetStringOptionFromFile_target(const char* data, std::size_t size) no
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto filename = g_context.MakeTemporaryFile(data, size);
-    free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr));
+    free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
     g_context.Remove(filename);
     return 0;
 }
@@ -529,8 +566,14 @@ static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) n
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto filename = g_context.MakeTemporaryFile(data, size);
-    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
     g_context.Remove(filename);
     return 0;
 }
@@ -545,6 +588,12 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
     auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
     {
         return c_skip_input;
     }
@@ -572,7 +621,7 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), values, count, &reason, nullptr);
+    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), values, count, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     delete[] values;
@@ -589,6 +638,12 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
     {
         return c_skip_input;
     }
@@ -611,7 +666,7 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), value, &reason, nullptr);
+    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), value, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     return 0;
@@ -944,6 +999,7 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
 }
 
 #if defined(COMPLIANCEENGINE)
+
 static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
@@ -1028,6 +1084,7 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     }
     return 0;
 }
+
 #endif
 
 // List of supported fuzzing targets.

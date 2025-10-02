@@ -3,6 +3,7 @@ FROM registry.suse.com/bci/bci-base:15.5
 
 RUN zypper install -y \
     autoconf \
+    curl \
     gcc \
     gcc-c++ \
     git \
@@ -11,7 +12,10 @@ RUN zypper install -y \
     libtool \
     make \
     libopenssl-devel \
-    rpm-build
+    rpm-build \
+    tar \
+    unzip \
+    zip
 
 WORKDIR /git
 

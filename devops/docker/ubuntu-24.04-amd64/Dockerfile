@@ -23,7 +23,10 @@ RUN apt -y update && apt-get -y install \
     libasan8 \
     libubsan1 \
     clang \
-    clang-tools
+    clang-tools \
+    tar \
+    unzip \
+    zip
 
 WORKDIR /git
 

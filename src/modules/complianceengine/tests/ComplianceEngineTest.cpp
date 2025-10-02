@@ -4,11 +4,16 @@
 #include "ComplianceEngineInterface.h"
 
 #include <CommonUtils.h>
+#include <DistributionInfo.h>
+#include <Engine.h>
 #include <Mmi.h>
+#include <fstream>
 #include <gtest/gtest.h>
+#include <sys/utsname.h>
 #include <version.h>
 
 using namespace std;
+using ComplianceEngine::DistributionInfo;
 
 class ComplianceEngineTest : public ::testing::Test
 {
@@ -50,7 +55,7 @@ TEST_F(ComplianceEngineTest, ComplianceEngineMmiGetInfo_1)
     char* payload = nullptr;
     int payloadSizeBytes = 0;
     ASSERT_EQ(MMI_OK, ComplianceEngineMmiGetInfo("test", &payload, &payloadSizeBytes));
-    free(payload);
+    ComplianceEngineMmiFree(payload);
 }
 
 TEST_F(ComplianceEngineTest, ComplianceEngineMmiSet_InvalidArguments_1)
@@ -124,7 +129,7 @@ TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_InvalidArguments_3)
     ASSERT_EQ(result, MMI_OK);
     ASSERT_NE(payload, nullptr);
     ASSERT_TRUE(std::string(payload).find("Rule not found") != std::string::npos);
-    free(payload);
+    ComplianceEngineMmiFree(payload);
 }
 
 TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_InvalidArguments_4)
@@ -155,7 +160,7 @@ TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_1)
     ASSERT_EQ(MMI_OK, ComplianceEngineMmiGet(mHandle, "ComplianceEngine", "auditX", &payload, &payloadSizeBytes));
     ASSERT_NE(payload, nullptr);
     EXPECT_NE(0, strncmp(payload, "\"PASS", 5));
-    free(payload);
+    ComplianceEngineMmiFree(payload);
 }
 
 TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_2)
@@ -168,5 +173,54 @@ TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_2)
     ASSERT_NE(payload, nullptr);
     ASSERT_TRUE(payloadSizeBytes >= 5);
     EXPECT_EQ(0, strncmp(payload, "\"PASS", 5));
-    free(payload);
+    ComplianceEngineMmiFree(payload);
+}
+
+TEST_F(ComplianceEngineTest, ValidatePayload_1)
+{
+    ASSERT_EQ(EINVAL, ComplianceEngineCheckApplicability(nullptr, "/cis/ubuntu/22.04/v1.1.1/x/y/z", nullptr));
+    ASSERT_EQ(EINVAL, ComplianceEngineCheckApplicability(mHandle, nullptr, nullptr));
+}
+
+TEST_F(ComplianceEngineTest, ValidatePayload_2)
+{
+    ASSERT_EQ(EINVAL, ComplianceEngineCheckApplicability(mHandle, "/cis/foo/bar/v1.1.1/x/y/z", nullptr));
+}
+
+TEST_F(ComplianceEngineTest, ValidatePayload_3)
+{
+    auto& engine = *reinterpret_cast<ComplianceEngine::Engine*>(mHandle);
+    auto osRelease = engine.GetDistributionInfo();
+    ASSERT_TRUE(osRelease.HasValue());
+    std::string payloadKey = std::string("/cis/") + to_string(osRelease->distribution) + "/" + osRelease->version + "/v1.1.1/x/y/z";
+    ASSERT_EQ(0, ComplianceEngineCheckApplicability(mHandle, payloadKey.c_str(), nullptr));
+}
+
+TEST_F(ComplianceEngineTest, ValidatePayload_OverrideFile)
+{
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
+
+    struct stat st;
+    auto status = stat(DistributionInfo::cDefaultOverrideFilePath, &st);
+    if ((0 == status) || (ENOENT != errno))
+    {
+        GTEST_SKIP() << "This test suite modifies the override file which is already present";
+    }
+
+    std::ofstream overrideFile(DistributionInfo::cDefaultOverrideFilePath);
+    overrideFile << "OS=Linux ARCH=x86_64 DISTRO=ol VERSION=foo\n";
+    overrideFile.flush();
+    overrideFile.close();
+    ComplianceEngineShutdown();
+    auto handle = ComplianceEngineMmiOpen("test", cMaxPayloadSize);
+    EXPECT_EQ(0, remove(DistributionInfo::cDefaultOverrideFilePath));
+    ASSERT_NE(nullptr, handle);
+    auto& engine = *reinterpret_cast<ComplianceEngine::Engine*>(handle);
+    auto osRelease = engine.GetDistributionInfo();
+    ASSERT_TRUE(osRelease.HasValue());
+    EXPECT_EQ(0, ComplianceEngineCheckApplicability(handle, "/cis/ol/foo/v2.0.1/x/y/z", nullptr));
+    ComplianceEngineMmiClose(handle);
 }

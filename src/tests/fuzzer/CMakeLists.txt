@@ -17,10 +17,13 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     asb
     pthread
     securitybaselinelib
+if (BUILD_COMPLIANCEENGINE)
     $<$<TARGET_EXISTS:complianceenginelib>:complianceenginelib>
+    complianceenginelib
+endif()
     parsonlib
 )
 
-target_compile_definitions(osconfig-fuzzer PRIVATE
-    $<$<TARGET_EXISTS:complianceenginelib>:COMPLIANCEENGINE>
-)
+if (BUILD_COMPLIANCEENGINE)
+    target_compile_definitions(osconfig-fuzzer PRIVATE $<$<TARGET_EXISTS:complianceenginelib>:COMPLIANCEENGINE>)
+endif()
