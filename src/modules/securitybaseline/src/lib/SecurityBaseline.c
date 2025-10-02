@@ -16,7 +16,6 @@
 #include <Telemetry.h>
 #include <Asb.h>
 #include <Mmi.h>
-#include <Internal.h>
 
 #include "SecurityBaseline.h"
 

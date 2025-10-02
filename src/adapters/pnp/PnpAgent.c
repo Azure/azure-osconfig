@@ -722,6 +722,7 @@ done:
     CloseAgent();
 
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
+
     CloseLog(&g_agentLog);
 
     // Once the SDK is done, we can free these

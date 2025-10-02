@@ -19,8 +19,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <Logging.h>
-#include <CommonUtils.h>
+#include <version.h>
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define TELEMETRY_TIMEOUT_SECONDS 10

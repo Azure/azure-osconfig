@@ -13,7 +13,7 @@
 #include "Mmi.h"
 #include "Result.h"
 
-#include <Internal.h>
+#include <Telemetry.h>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
