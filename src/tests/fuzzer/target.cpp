@@ -24,11 +24,12 @@
 #include <vector>
 #include <sstream>
 
-using ComplianceEngine::Optional;
-using ComplianceEngine::Result;
-using ComplianceEngine::Error;
-using ComplianceEngine::Evaluator;
-using ComplianceEngine::action_func_t;
+// TODO: Re-add once ffaa61254a1ab80ec98f6fe8bf5f1f9fb42335d5 is re-added
+//using ComplianceEngine::Optional;
+//using ComplianceEngine::Result;
+//using ComplianceEngine::Error;
+//using ComplianceEngine::Evaluator;
+//using ComplianceEngine::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
