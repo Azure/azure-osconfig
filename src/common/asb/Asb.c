@@ -14,7 +14,7 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
-#include <Internal.h>
+#include <Telemetry.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
