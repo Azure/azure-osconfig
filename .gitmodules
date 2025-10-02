@@ -1,6 +1,6 @@
 [submodule "src/adapters/pnp/azure-iot-sdk-c"]
 	path = src/adapters/pnp/azure-iot-sdk-c
-	url = https://github.com/Azure/azure-iot-sdk-c
+	url = git@github.com:Azure/azure-iot-sdk-c.git
 [submodule "external/vcpkg"]
 	path = external/vcpkg
-	url = https://github.com/microsoft/vcpkg.git
+	url = git@github.com:microsoft/vcpkg.git
