@@ -17,7 +17,7 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     asb
     pthread
     securitybaselinelib
-    $<$<TARGET_EXISTS:complianceenginelib>:complianceenginelib>
+    complianceenginelib
     parsonlib
 )
 

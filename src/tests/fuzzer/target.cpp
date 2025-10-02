@@ -5,13 +5,11 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
-#if defined(COMPLIANCEENGINE)
 #include "Evaluator.h"
 #include "Optional.h"
-#include "Procedure.h"
-#include "Base64.h"
-#endif
 #include "parson.h"
+#include "Base64.h"
+#include "Procedure.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -24,13 +22,11 @@
 #include <vector>
 #include <sstream>
 
-#if defined(COMPLIANCEENGINE)
 using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
 using ComplianceEngine::Error;
 using ComplianceEngine::Evaluator;
 using ComplianceEngine::action_func_t;
-#endif
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -979,7 +975,6 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
-#if defined(COMPLIANCEENGINE)
 static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
@@ -1128,10 +1123,8 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-#if defined(COMPLIANCEENGINE)
     { "Base64Decode.", Base64Decode_target },
     {"ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target},
-#endif
 };
 
 // libfuzzer entry point
