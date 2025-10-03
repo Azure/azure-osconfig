@@ -3,7 +3,6 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <sstream>
 #include <string>
@@ -101,7 +100,6 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     catch (const regex_error& e)
     {
         OsConfigLogError(log, "Regex error: %s", e.what());
-        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
     }
 
@@ -178,7 +176,6 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
             catch (const regex_error& e)
             {
                 OsConfigLogError(log, "Regex error: %s", e.what());
-                OSConfigTelemetryStatusTrace("regex", EINVAL);
                 return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
             }
             if (regex_search(itConfig->second, valueRegex))

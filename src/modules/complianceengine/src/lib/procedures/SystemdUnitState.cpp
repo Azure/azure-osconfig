@@ -3,7 +3,6 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <algorithm>
 #include <iostream>
@@ -46,7 +45,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     if (it == args.end())
     {
         OsConfigLogError(log, "Error: EnsureSystemdUnit: missing 'unitName' parameter ");
-        OSConfigTelemetryStatusTrace("unitName", EINVAL);
         return Error("Missing 'unitName' parameter");
     }
     auto unitName = std::move(it->second);
@@ -69,7 +67,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         catch (const std::exception& e)
         {
             OsConfigLogError(log, "Regex error: %s", e.what());
-            OSConfigTelemetryStatusTrace("regex", EINVAL);
             return Error("Failed to compile regex '" + param.value + "' error: " + e.what());
         }
     }
@@ -78,7 +75,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     if (argFound == false)
     {
         OsConfigLogError(log, "Error: EnsureSystemdUnit: none of 'activeState loadState UnitFileState' parameters are present");
-        OSConfigTelemetryStatusTrace("argFound", EINVAL);
         return Error("None of 'activeState loadState UnitFileState' parameters are present");
     }
 
@@ -87,7 +83,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     {
         OsConfigLogError(log, "Failed to execute systemctl command '%s': %s (code: %d)", systemCtlCmd.c_str(), systemCtlOutput.Error().message.c_str(),
             systemCtlOutput.Error().code);
-        OSConfigTelemetryStatusTrace("ExecuteCommand", systemCtlOutput.Error().code);
         return indicators.NonCompliant("Failed to execute systemctl command " + systemCtlOutput.Error().message);
     }
     std::string line;
@@ -99,7 +94,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         if (eqSign == std::string::npos)
         {
             OsConfigLogError(log, "Error: EnsureSystemdUnit: invalid sysctl output, missing '=' sing in %s", line.c_str());
-            OSConfigTelemetryStatusTrace("find", EINVAL);
             return indicators.NonCompliant("invalid sysctl output, missing '='  in  output '" + line + "'");
         }
         auto name = line.substr(0, eqSign);
@@ -128,7 +122,6 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         if (matched == false)
         {
             OsConfigLogError(log, "Error match systemctl unit name '%s' state '%s' not matched any arguments", unitName.c_str(), name.c_str());
-            OSConfigTelemetryStatusTrace("matched", EINVAL);
             return Status::NonCompliant;
         }
     }

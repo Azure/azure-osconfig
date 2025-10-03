@@ -4,7 +4,6 @@
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
-#include <Internal.h>
 #include <ListValidShells.h>
 #include <Result.h>
 #include <UsersIterator.h>
@@ -30,7 +29,6 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -55,7 +53,6 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -88,7 +85,6 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 if (!subResult.HasValue())
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for file '%s': %s", path.c_str(), subResult.Error().message.c_str());
-                    OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
                     result = subResult.Error();
                     return;
                 }
@@ -138,7 +134,6 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -163,7 +158,6 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", user.pw_name, strerror(errno));
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             status = Status::NonCompliant;
         }
 
@@ -198,7 +192,6 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for file '%s': %s", path.c_str(),
                         subResult.Error().message.c_str());
-                    OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
                     result = subResult.Error();
                     return;
                 }
