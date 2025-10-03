@@ -46,7 +46,7 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
         return true;
     }
 
-        OsConfigLogInfo(m_log, "Initializing telemetry...");
+    OsConfigLogInfo(m_log, "Initializing telemetry...");
 
     try
     {
@@ -81,6 +81,7 @@ void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperti
 {
     if ((!m_initialized) || (!m_logger))
     {
+        OsConfigLogError(m_log, "Telemetry not initialized");
         return;
     }
 
@@ -92,6 +93,7 @@ void TelemetryManager::Shutdown()
 {
     if (!m_initialized)
     {
+        OsConfigLogError(m_log, "Telemetry not initialized");
         return;
     }
 
