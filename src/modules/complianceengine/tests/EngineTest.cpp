@@ -10,17 +10,19 @@
 #include <gtest/gtest.h>
 
 using ComplianceEngine::action_func_t;
+using ComplianceEngine::DebugFormatter;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
 using ComplianceEngine::JsonWrapper;
+using ComplianceEngine::PayloadFormatter;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
-class ComplianceEngineEngineTest : public ::testing::Test
+class EngineTest : public ::testing::Test
 {
 public:
-    ComplianceEngineEngineTest()
-        : mEngine(std::unique_ptr<ComplianceEngine::ContextInterface>(new MockContext))
+    EngineTest()
+        : mEngine(std::unique_ptr<ComplianceEngine::ContextInterface>(new MockContext), std::unique_ptr<PayloadFormatter>(new DebugFormatter()))
     {
     }
 
@@ -28,62 +30,62 @@ protected:
     Engine mEngine;
 };
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_InvalidArgument_1)
+TEST_F(EngineTest, MmiGet_InvalidArgument_1)
 {
     auto result = mEngine.MmiGet(nullptr);
     ASSERT_FALSE(result);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_InvalidArgument_2)
+TEST_F(EngineTest, MmiGet_InvalidArgument_2)
 {
     auto result = mEngine.MmiGet("");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Invalid object name"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_InvalidArgument_3)
+TEST_F(EngineTest, MmiGet_InvalidArgument_3)
 {
     auto result = mEngine.MmiGet("audit");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule name is empty"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_InvalidArgument_4)
+TEST_F(EngineTest, MmiGet_InvalidArgument_4)
 {
     auto result = mEngine.MmiGet("auditX");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule not found"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_InvalidArgument_5)
+TEST_F(EngineTest, MmiGet_InvalidArgument_5)
 {
     auto result = mEngine.MmiGet("auditNoAudit");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule not found"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_InvalidArgument_1)
+TEST_F(EngineTest, MmiSet_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet(nullptr, "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Invalid argument"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_InvalidArgument_5)
+TEST_F(EngineTest, MmiSet_InvalidArgument_5)
 {
     auto result = mEngine.MmiSet("procedure", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule name is empty"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_1)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("procedureX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_2)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_2)
 {
     std::string payload = "dGVzdA=="; // 'test' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -91,7 +93,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_2)
     EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_3)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_3)
 {
     std::string payload = "e30="; // '{}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -99,7 +101,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_3)
     EXPECT_EQ(result.Error().message, std::string("Missing 'audit' object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_4)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_4)
 {
     std::string payload = "W10="; // '[]' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -107,7 +109,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_4)
     EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_5)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_5)
 {
     std::string payload = "eyJhdWRpdCI6W119"; // '{"audit":[]}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -115,7 +117,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_5)
     EXPECT_EQ(result.Error().message, std::string("The 'audit' value is not an object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_6)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_6)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjoxMjN9"; // '{"audit":{}, "parameters":123}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -123,7 +125,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_6)
     EXPECT_EQ(result.Error().message, std::string("The 'parameters' value is not an object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_7)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_7)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOnt9fX0="; // '{"audit":{}, "parameters":{"K":{}}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -131,7 +133,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_7)
     EXPECT_EQ(result.Error().message, std::string("Failed to get parameter name and value"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_8)
+TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_8)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOltdfQ=="; // '{"audit":{}, "remediate":[]}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -139,7 +141,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_InvalidArgument_8)
     EXPECT_EQ(result.Error().message, std::string("The 'remediate' value is not an object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_1)
+TEST_F(EngineTest, MmiSet_setProcedure_1)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -147,7 +149,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_1)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_2)
+TEST_F(EngineTest, MmiSet_setProcedure_2)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOnt9fQ=="; // '{"audit":{}, "remediate":{}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -155,7 +157,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_2)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_3)
+TEST_F(EngineTest, MmiSet_setProcedure_3)
 {
     std::string payload = R"({"audit":{}, "remediate":{}})";
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -163,7 +165,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_3)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_4)
+TEST_F(EngineTest, MmiSet_setProcedure_4)
 {
     std::string payload = R"({ "audit": { } })";
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -171,21 +173,21 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_setProcedure_4)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_InvalidArgument_1)
+TEST_F(EngineTest, MmiSet_initAudit_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("initX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Out-of-order operation: procedure must be set first"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_InvalidArgument_2)
+TEST_F(EngineTest, MmiSet_initAudit_InvalidArgument_2)
 {
     auto result = mEngine.MmiSet("init", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule name is empty"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_InvalidArgument_3)
+TEST_F(EngineTest, MmiSet_initAudit_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -197,7 +199,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_InvalidArgument_3)
     EXPECT_EQ(result.Error().message, std::string("User parameter 'K' not found"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_1)
+TEST_F(EngineTest, MmiSet_initAudit_1)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOiJ2In19"; // '{"audit":{}, "parameters":{"K":"v"}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -209,21 +211,21 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_initAudit_1)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_1)
+TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("remediateX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Out-of-order operation: procedure must be set first"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_2)
+TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_2)
 {
     auto result = mEngine.MmiSet("remediate", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.Error().message, std::string("Rule name is empty"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_3)
+TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -234,7 +236,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_3)
     EXPECT_EQ(result.Error().message, std::string("Failed to get 'remediate' object"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_4)
+TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_4)
 {
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6e319"; // '{"audit":{},"remediate":{}}' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
@@ -246,7 +248,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_InvalidArgument_4)
     EXPECT_EQ(result.Error().message, std::string("User parameter 'K' not found"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_1)
+TEST_F(EngineTest, MmiSet_executeRemediation_1)
 {
     // '{"audit":{},"remediate":{"X":{}},"parameters":{"K":"v"}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJYIjp7fX0sInBhcmFtZXRlcnMiOnsiSyI6InYifX0=";
@@ -258,7 +260,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_1)
     EXPECT_EQ(result.Error().message, std::string("Unknown function 'X'"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_2)
+TEST_F(EngineTest, MmiSet_executeRemediation_2)
 {
     // '{"audit":{},"remediate":{"allOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJhbGxPZiI6W119fQ==";
@@ -270,7 +272,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_2)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_3)
+TEST_F(EngineTest, MmiSet_executeRemediation_3)
 {
     // '{"audit":{},"remediate":{"anyOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJhbnlPZiI6W119fQ==";
@@ -282,7 +284,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_executeRemediation_3)
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_1)
+TEST_F(EngineTest, MmiGet_1)
 {
     // '{"audit":{"X":{}}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJYIjp7fX19";
@@ -294,7 +296,7 @@ TEST_F(ComplianceEngineEngineTest, MmiGet_1)
     EXPECT_EQ(result.Error().message, std::string("Unknown function 'X'"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_2)
+TEST_F(EngineTest, MmiGet_2)
 {
     // '{"audit":{"allOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJhbGxPZiI6W119fQ==";
@@ -306,7 +308,7 @@ TEST_F(ComplianceEngineEngineTest, MmiGet_2)
     EXPECT_EQ(result.Value().status, Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiGet_3)
+TEST_F(EngineTest, MmiGet_3)
 {
     // '{"audit":{"anyOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==";
@@ -318,7 +320,7 @@ TEST_F(ComplianceEngineEngineTest, MmiGet_3)
     EXPECT_EQ(result.Value().status, Status::NonCompliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_1)
+TEST_F(EngineTest, MmiSet_externalParams_1)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -328,7 +330,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_1)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_3)
+TEST_F(EngineTest, MmiSet_externalParams_3)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -338,7 +340,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_3)
     EXPECT_EQ(result.Error().message, std::string("Invalid key: first character must not be a digit"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_4)
+TEST_F(EngineTest, MmiSet_externalParams_4)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -349,7 +351,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_4)
     EXPECT_EQ(result.Error().message, std::string("User parameter 'KEY_' not found"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_5)
+TEST_F(EngineTest, MmiSet_externalParams_5)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -360,7 +362,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_5)
     EXPECT_EQ(result.Error().message, std::string("Invalid key: only alphanumeric and underscore characters are allowed"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_6)
+TEST_F(EngineTest, MmiSet_externalParams_6)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -371,7 +373,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_6)
     EXPECT_EQ(result.Error().message, std::string("Invalid key-value pair: '=' expected"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_7)
+TEST_F(EngineTest, MmiSet_externalParams_7)
 {
     std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -382,7 +384,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_7)
     EXPECT_EQ(result.Error().message, std::string("Invalid key-value pair: missing value"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_1)
+TEST_F(EngineTest, MmiSet_externalParams_value_1)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -391,10 +393,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_1)
 
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1=value } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=value } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_2)
+TEST_F(EngineTest, MmiSet_externalParams_value_2)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -402,10 +404,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_2)
     ASSERT_TRUE(mEngine.MmiSet("initX", " KEY1=value  KEY2=value2   "));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1=value, KEY2=value2 } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=value, KEY2=value2 } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_3)
+TEST_F(EngineTest, MmiSet_externalParams_value_3)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -413,10 +415,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_3)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"( KEY1="  value" KEY2=value2   )"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1=  value, KEY2=value2 } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=  value, KEY2=value2 } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_4)
+TEST_F(EngineTest, MmiSet_externalParams_value_4)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -425,10 +427,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_4)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=" v " KEY2="value2\"")"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1= v , KEY2=value2" } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1= v , KEY2=value2" } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_5)
+TEST_F(EngineTest, MmiSet_externalParams_value_5)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -437,10 +439,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_5)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=" v " KEY2="\\value2")"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1= v , KEY2=\value2 } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1= v , KEY2=\value2 } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_6)
+TEST_F(EngineTest, MmiSet_externalParams_value_6)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -449,10 +451,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_6)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=" v " KEY2="value2\\")"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1= v , KEY2=value2\ } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1= v , KEY2=value2\ } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_7)
+TEST_F(EngineTest, MmiSet_externalParams_value_7)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -460,10 +462,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_7)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1="")"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1= } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1= } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_8)
+TEST_F(EngineTest, MmiSet_externalParams_value_8)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -472,7 +474,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_8)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1=")"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_9)
+TEST_F(EngineTest, MmiSet_externalParams_value_9)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -480,7 +482,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_9)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1=""")"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_10)
+TEST_F(EngineTest, MmiSet_externalParams_value_10)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -488,7 +490,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_10)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1="x)"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_11)
+TEST_F(EngineTest, MmiSet_externalParams_value_11)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"k1": "$KEY1"}},"parameters":{"k1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -500,7 +502,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_11)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(k1 =)"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_12)
+TEST_F(EngineTest, MmiSet_externalParams_value_12)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"k1": "$KEY1"}},"parameters":{"k1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -509,7 +511,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_12)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(k1="x\y")"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_13)
+TEST_F(EngineTest, MmiSet_externalParams_value_13)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"k1": "$KEY1"}},"parameters":{"k1":"VALUE1"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -518,7 +520,7 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_13)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(k1="x\)"));
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_14)
+TEST_F(EngineTest, MmiSet_externalParams_value_14)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2", "KEY3": "$KEY3"}},"parameters":{"KEY1":"v1", "KEY2":"v2", "KEY3":"v3"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -526,10 +528,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_14)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1="x" KEY2='y' KEY3=z)"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1=x, KEY2=y, KEY3=z } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=x, KEY2=y, KEY3=z } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_15)
+TEST_F(EngineTest, MmiSet_externalParams_value_15)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
@@ -537,10 +539,10 @@ TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_15)
     ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1="'x'" KEY2='"y"')"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.Value().payload, R"(PASS{ AuditGetParamValues: KEY1='x', KEY2="y" } == TRUE)");
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1='x', KEY2="y" } == TRUE)");
 }
 
-TEST_F(ComplianceEngineEngineTest, MmiSet_externalParams_value_16)
+TEST_F(EngineTest, MmiSet_externalParams_value_16)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));

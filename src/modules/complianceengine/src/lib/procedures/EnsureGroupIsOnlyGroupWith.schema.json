@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureGroupIsOnlyGroupWith"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureGroupIsOnlyGroupWith": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "group": {
+                  "type": "string",
+                  "description": "A pattern or value to match group names against"
+                },
+                "gid": {
+                  "type": "string",
+                  "description": "A value to match the GID against",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*\\d+.*)$|(\\d+))"
+                },
+                "test_etcGroupPath": {
+                  "type": "string",
+                  "description": "Alternative path to the /etc/group file to test against"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

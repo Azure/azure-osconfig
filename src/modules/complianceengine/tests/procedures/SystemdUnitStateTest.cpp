@@ -45,22 +45,20 @@ TEST_F(SystemdUnitStateTest, NullTest)
     std::map<std::string, std::string> args;
 
     auto result = AuditSystemdUnitState(args, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_FALSE(result.HasValue());
 }
 
-TEST_F(SystemdUnitStateTest, argTestNoSateChec)
+TEST_F(SystemdUnitStateTest, argTestNoStateCheck)
 {
 
     std::map<std::string, std::string> args;
     args["unitName"] = "foo.service";
 
     auto result = AuditSystemdUnitState(args, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_FALSE(result.HasValue());
 }
 
-TEST_F(SystemdUnitStateTest, argTestInvalidStateScheckArg)
+TEST_F(SystemdUnitStateTest, argTestInvalidStateCheckArg)
 {
 
     std::map<std::string, std::string> args;
@@ -68,8 +66,7 @@ TEST_F(SystemdUnitStateTest, argTestInvalidStateScheckArg)
     args["improper arg state to check for systedm service"] = "are you sure";
 
     auto result = AuditSystemdUnitState(args, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_FALSE(result.HasValue());
 }
 std::string systemCtlCmd = "systemctl show ";
 

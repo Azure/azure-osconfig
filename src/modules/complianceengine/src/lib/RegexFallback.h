@@ -281,6 +281,26 @@ public:
         return nullptr != mPmatch;
     }
 
+    std::size_t position(std::size_t i) const
+    {
+        assert(ready());
+        if (i < mSize)
+        {
+            return mPmatch[i].rm_so;
+        }
+        return std::string::npos;
+    }
+
+    std::size_t length(std::size_t i) const
+    {
+        assert(ready());
+        if (i < mSize)
+        {
+            return mPmatch[i].rm_eo - mPmatch[i].rm_so;
+        }
+        return 0;
+    }
+
     SubMatch operator[](std::size_t i) const
     {
         assert(ready());
@@ -321,16 +341,9 @@ private:
     friend bool regexMatch(const std::string& s, MatchResults& m, const Regex& r);
     MatchResults(std::string target, std::unique_ptr<regmatch_t[]> matches, std::size_t size)
         : mTarget(std::move(target)),
+          mSize(size),
           mPmatch(std::move(matches))
     {
-        mSize = 0;
-        for (mSize = 0; mSize < size; ++mSize)
-        {
-            if (mPmatch[mSize].rm_so == -1)
-            {
-                break;
-            }
-        }
     }
 
     std::string mTarget;

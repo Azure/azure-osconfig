@@ -14,6 +14,9 @@ Pull requests needs to be formatted according to .pre-commit-config.yaml. Each p
 
 Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
+# Coding style
+The coding style is described in a separate [style document](docs/style.md).
+
 ## Submitting a PR
 
 1. Create a GitHub account if you do not have one yet: [Join GitHub](https://github.com/join).

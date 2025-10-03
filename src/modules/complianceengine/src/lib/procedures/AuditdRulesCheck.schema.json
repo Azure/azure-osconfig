@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "AuditdRulesCheck"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "AuditdRulesCheck": {
+              "type": "object",
+              "required": [
+                "searchItem",
+                "requiredOptions"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "searchItem": {
+                  "type": "string",
+                  "description": "Item being audited"
+                },
+                "excludeOption": {
+                  "type": "string",
+                  "description": "Option the checked rule line cannot include"
+                },
+                "requiredOptions": {
+                  "type": "string",
+                  "description": "Options that should be included on the rule line, colon separated"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

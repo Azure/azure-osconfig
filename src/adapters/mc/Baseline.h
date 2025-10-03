@@ -10,6 +10,7 @@ extern "C"
 #endif
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log);
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log);
 
 void BaselineInitialize(OsConfigLogHandle log);
 void BaselineShutdown(OsConfigLogHandle log);

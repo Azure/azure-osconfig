@@ -5,6 +5,7 @@ RUN tdnf install -y \
     build-essential \
     ca-certificates \
     cmake \
+    curl \
     curl-devel \
     file \
     gcovr \

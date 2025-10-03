@@ -3,6 +3,11 @@
 
 #include "Internal.h"
 
+int IsValidPointer(void* pointer)
+{
+    return VALID(pointer) ? 1 : 0;
+}
+
 char* DuplicateString(const char* source)
 {
     if (NULL == source)
@@ -552,7 +557,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                 continue;
             }
 
-            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log)))
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', '#', log)))
             {
                 if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
                 {

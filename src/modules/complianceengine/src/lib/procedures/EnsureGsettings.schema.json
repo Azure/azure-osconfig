@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureGsettings"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureGsettings": {
+              "type": "object",
+              "required": [
+                "schema",
+                "key",
+                "keyType",
+                "operation",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "schema": {
+                  "type": "string",
+                  "description": "Name of the gsettings schema to get"
+                },
+                "key": {
+                  "type": "string",
+                  "description": "Nam of gsettings key to get"
+                },
+                "keyType": {
+                  "type": "string",
+                  "description": "Type of key, possible options string,number",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((number|string))$|(^(number|string)$))"
+                },
+                "operation": {
+                  "type": "string",
+                  "description": "Type of operation to perform on variable one of eq, ne, lt, gt,is-unlocked",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|gt|is-unlocked).*)$|(^(eq|ne|lt|gt|is-unlocked)))"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "value of operation to check acording to operation"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
