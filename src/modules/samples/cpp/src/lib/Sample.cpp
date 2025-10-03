@@ -224,7 +224,7 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
 {
     int status = MMI_OK;
 
-    if (nullptr == )
+    if (nullptr == payloadSizeBytes)
     {
         status = EINVAL;
         OsConfigLogError(SampleLog::Get(), "Invalid payloadSizeBytes");
