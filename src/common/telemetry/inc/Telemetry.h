@@ -128,10 +128,10 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     snprintf(status_str, sizeof(status_str), "%d", (status)); \
     char line_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(line_str, sizeof(line_str), "%d", (line)); \
-    const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
     const char* ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
+    char* distroName = GetOsName(NULL); \
     char* telemetry_json = FormatAllocateString("{" \
         "\"EventName\":\"StatusTrace\"," \
         "\"Timestamp\":\"%s\"," \
@@ -148,15 +148,16 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
+    FREE_MEMORY(distroName); \
     FREE_MEMORY(telemetry_json); \
 }
 
 #define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds) { \
     char durationSeconds_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds)); \
-    const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
     const char* timestamp = GetFormattedTime(); \
+    char* distroName = GetOsName(NULL); \
     char* telemetry_json = FormatAllocateString("{" \
         "\"EventName\":\"BaselineRun\"," \
         "\"Timestamp\":\"%s\"," \
@@ -170,6 +171,7 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
+    FREE_MEMORY(distroName); \
     FREE_MEMORY(telemetry_json); \
 }
 
@@ -178,9 +180,9 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     snprintf(objectResult_str, sizeof(objectResult_str), "%d", (objectResult)); \
     char microseconds_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(microseconds_str, sizeof(microseconds_str), "%ld", (long)(microseconds)); \
-    const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv("activityId"); \
     const char* timestamp = GetFormattedTime(); \
+    char* distroName = GetOsName(NULL); \
     char* telemetry_json = FormatAllocateString("{" \
         "\"EventName\":\"RuleComplete\"," \
         "\"Timestamp\":\"%s\"," \
@@ -195,6 +197,7 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     if (NULL != telemetry_json) { \
         OSConfigTelemetryAppendJSON(telemetry_json); \
     } \
+    FREE_MEMORY(distroName); \
     FREE_MEMORY(telemetry_json); \
 }
 
