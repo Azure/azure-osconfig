@@ -62,6 +62,16 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 --slave /
 
 WORKDIR /tmp
 
+# Install Git 2.14.0 from source (required for vcpkg)
+RUN curl -L https://github.com/git/git/archive/v2.14.0.tar.gz | tar xz
+RUN cd git-2.14.0 && \
+    make configure && \
+    ./configure --with-curl --with-openssl && \
+    make all -j$(nproc) && \
+    make install && \
+    hash -r && \
+    rm -rf /git/git-2.14.0
+
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b $CMAKE_VERSION
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake

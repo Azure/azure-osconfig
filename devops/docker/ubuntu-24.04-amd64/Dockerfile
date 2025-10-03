@@ -5,27 +5,28 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
-    git \
-    cmake \
-    build-essential \
-    curl \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    uuid-dev \
-    rapidjson-dev \
-    ninja-build \
-    python3-jsonschema \
-    wget \
-    gcovr\
-    jq \
     bc \
-    file \
-    libasan8 \
-    libubsan1 \
+    build-essential \
     clang \
     clang-tools \
+    cmake \
+    curl \
+    file \
+    gcovr\
+    git \
+    jq \
+    libasan8 \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libubsan1 \
+    ninja-build \
+    pkg-config \
+    python3-jsonschema \
+    rapidjson-dev \
     tar \
     unzip \
+    uuid-dev \
+    wget \
     zip
 
 WORKDIR /git
