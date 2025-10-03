@@ -12,12 +12,10 @@
 #include <errno.h>
 #include <limits.h>
 #include <link.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include <version.h>
@@ -68,16 +66,13 @@
 })
 
 // Buffer sizes for string conversion of numeric values
-// Based on maximum possible digits for each type plus sign and null terminator
-#define MAX_INT_STRING_LENGTH 16    // Accommodates 32-bit int values
-#define MAX_LONG_STRING_LENGTH 32   // Accommodates 64-bit long values
+#define MAX_NUM_STRING_LENGTH 32    // Accommodates 64-bit int/long values
 
-// Static file handle for telemetry logging with thread safety
+// Static file handle for telemetry logging
 static FILE* g_telemetryFile __attribute__((unused)) = NULL;
 static char* g_fileName __attribute__((unused)) = NULL;
 static char* g_moduleDirectory __attribute__((unused)) = NULL;
 static int g_telemetryFileInitialized __attribute__((unused)) = 0;
-static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_INITIALIZER;
 
 #ifdef DEBUG
 #define VERBOSE_FLAG_IF_DEBUG "-v"
@@ -85,10 +80,9 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
 #define VERBOSE_FLAG_IF_DEBUG ""
 #endif
 
-// Initialize telemetry file - call once at program start (thread-safe)
+// Initialize telemetry file - call once at start
 #define OSConfigTelemetryInit() { \
     if (!g_telemetryFileInitialized) { \
-        pthread_mutex_lock(&g_telemetryMutex); \
         if (!g_telemetryFileInitialized && !g_telemetryFile) { \
             g_moduleDirectory = getModuleDirectory(); \
             g_fileName = generateRandomFilename(); \
@@ -97,7 +91,6 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
                 g_telemetryFileInitialized = 1; \
             } \
         } \
-        pthread_mutex_unlock(&g_telemetryMutex); \
     } \
 }
 
@@ -130,9 +123,9 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status) \
     OSConfigTelemetryStatusTraceImpl((callingFunctionName), (status), __LINE__)
 #define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line) { \
-    char status_str[MAX_INT_STRING_LENGTH] = {0}; \
+    char status_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(status_str, sizeof(status_str), "%d", (status)); \
-    char line_str[MAX_INT_STRING_LENGTH] = {0}; \
+    char line_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(line_str, sizeof(line_str), "%d", (line)); \
     const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
@@ -158,7 +151,7 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
 }
 
 #define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds) { \
-    char durationSeconds_str[MAX_LONG_STRING_LENGTH] = {0}; \
+    char durationSeconds_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds)); \
     const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
@@ -180,9 +173,9 @@ static pthread_mutex_t g_telemetryMutex __attribute__((unused)) = PTHREAD_MUTEX_
 }
 
 #define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds) { \
-    char objectResult_str[MAX_INT_STRING_LENGTH] = {0}; \
+    char objectResult_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(objectResult_str, sizeof(objectResult_str), "%d", (objectResult)); \
-    char microseconds_str[MAX_LONG_STRING_LENGTH] = {0}; \
+    char microseconds_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(microseconds_str, sizeof(microseconds_str), "%ld", (long)(microseconds)); \
     const char* distroName = GetOsName(NULL); \
     const char* correlationId = getenv("activityId"); \
