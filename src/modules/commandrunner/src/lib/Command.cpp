@@ -45,6 +45,7 @@ Command::~Command()
     if (FileExists(m_tmpFile.c_str()) && (0 != remove(m_tmpFile.c_str())))
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Failed to remove file: %s", m_tmpFile.c_str());
+        OSConfigTelemetryStatusTrace("FileExists", errno);
     }
 }
 
@@ -255,6 +256,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
         if (0 != DeserializeMember(value, g_action.c_str(), actionValue))
         {
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s", g_commandArguments.c_str(), g_action.c_str());
+            OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
         }
         else
         {
@@ -271,6 +273,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                         if (id.empty())
                         {
                             OsConfigLogError(CommandRunnerLog::Get(), "%s.%s is empty", g_commandArguments.c_str(), g_commandId.c_str());
+                            OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
                         }
                         break;
 
@@ -300,16 +303,19 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                                 else
                                 {
                                     OsConfigLogError(CommandRunnerLog::Get(), "%s.%s is empty for command id: %s", g_commandArguments.c_str(), g_arguments.c_str(), id.c_str());
+                                    OSConfigTelemetryStatusTrace("command", EINVAL);
                                 }
                             }
                             else
                             {
                                 OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s for command id: %s", g_commandArguments.c_str(), g_arguments.c_str(), id.c_str());
+                                OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
                             }
                         }
                         else
                         {
                             OsConfigLogError(CommandRunnerLog::Get(), "%s.%s is empty", g_commandArguments.c_str(), g_commandId.c_str());
+                            OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
                         }
                         break;
 
@@ -323,6 +329,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid command arguments JSON value");
+        OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
     }
 
     return Command::Arguments(id, command, action, timeout, singleLineTextResult);
@@ -390,6 +397,7 @@ Command::Status Command::Status::Deserialize(const rapidjson::Value& value)
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid command status JSON value");
+        OSConfigTelemetryStatusTrace("value.IsObject", EINVAL);
     }
 
     return Command::Status(id, exitCode, textResult, state);
@@ -406,6 +414,7 @@ int Deserialize(const rapidjson::Value& object, const char* key, std::string& va
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "%s is not a string", key);
+        OSConfigTelemetryStatusTrace("IsString", EINVAL);
         status = EINVAL;
     }
 
@@ -423,6 +432,7 @@ int Deserialize(const rapidjson::Value& object, const char* key, int& value)
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "%s is not an int", key);
+        OSConfigTelemetryStatusTrace("IsInt", EINVAL);
         status = EINVAL;
     }
 
@@ -440,6 +450,7 @@ int Deserialize(const rapidjson::Value& object, const char* key, bool& value)
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "%s is not a bool", key);
+        OSConfigTelemetryStatusTrace("IsBool", EINVAL);
         status = EINVAL;
     }
 
@@ -457,6 +468,7 @@ int Deserialize(const rapidjson::Value& object, const char* key, unsigned int& v
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "%s is not an unsigned int", key);
+        OSConfigTelemetryStatusTrace("IsUint", EINVAL);
         status = EINVAL;
     }
 

@@ -13,6 +13,7 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Asb.h>
 #include <Mmi.h>
 
@@ -86,6 +87,7 @@ void SecurityBaselineMmiClose(MMI_HANDLE clientSession)
     else
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiClose() called outside of a valid session");
+        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
     }
 }
 
@@ -96,6 +98,7 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
+        OSConfigTelemetryStatusTrace("payload", status);
         return status;
     }
 
@@ -110,9 +113,10 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
     }
     else
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
-        *payloadSizeBytes = 0;
         status = ENOMEM;
+        OsConfigLogError(SecurityBaselineGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
+        OSConfigTelemetryStatusTrace("malloc", status);
+        *payloadSizeBytes = 0;
     }
 
     OsConfigLogDebug(SecurityBaselineGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -126,8 +130,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
+        OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
+        OSConfigTelemetryStatusTrace("payload", status);
         return status;
     }
 
@@ -140,8 +145,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     }
     else
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
+        OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
+        OSConfigTelemetryStatusTrace("IsValidSession", status);
     }
 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -159,8 +165,9 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     }
     else
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
+        OsConfigLogError(SecurityBaselineGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
+        OSConfigTelemetryStatusTrace("IsValidSession", status);
     }
 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
