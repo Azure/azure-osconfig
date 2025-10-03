@@ -74,8 +74,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
     if ((NULL == proxyData) || (NULL == proxyHostAddress) || (NULL == proxyPort))
     {
-        OSConfigTelemetryStatusTrace("proxyData", EINVAL);
         OsConfigLogError(log, "ParseHttpProxyData called with invalid arguments");
+        OSConfigTelemetryStatusTrace("proxyData", EINVAL);
         return result;
     }
 
@@ -100,15 +100,15 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     prefixLength = strlen(httpPrefix);
     if (proxyDataLength <= prefixLength)
     {
-        OSConfigTelemetryStatusTrace("proxyDataLength", EINVAL);
         OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
+        OSConfigTelemetryStatusTrace("proxyDataLength", EINVAL);
         return NULL;
     }
 
     if (strncmp(proxyData, httpPrefix, prefixLength) && strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix)))
     {
-        OSConfigTelemetryStatusTrace("strncmp", EINVAL);
         OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
+        OSConfigTelemetryStatusTrace("strncmp", EINVAL);
         return NULL;
     }
 
@@ -124,8 +124,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             // not valid as first character
             if (0 == i)
             {
-                OSConfigTelemetryStatusTrace("proxyData", EINVAL);
                 OsConfigLogError(log, "Unsupported proxy data (%s), invalid '@' prefix", proxyData);
+                OSConfigTelemetryStatusTrace("proxyData", EINVAL);
                 isBadAlphaNum = true;
                 break;
             }
@@ -139,8 +139,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 credentialsSeparatorCounter += 1;
                 if (credentialsSeparatorCounter > 1)
                 {
-                    OSConfigTelemetryStatusTrace("credentialsSeparatorCounter", EINVAL);
                     OsConfigLogError(log, "Unsupported proxy data (%s), too many '@' characters", proxyData);
+                    OSConfigTelemetryStatusTrace("credentialsSeparatorCounter", EINVAL);
                     isBadAlphaNum = true;
                     break;
                 }
@@ -151,16 +151,16 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             columnCounter += 1;
             if (columnCounter > 3)
             {
-                OSConfigTelemetryStatusTrace("columnCounter", EINVAL);
                 OsConfigLogError(log, "Unsupported proxy data (%s), too many ':' characters", proxyData);
+                OSConfigTelemetryStatusTrace("columnCounter", EINVAL);
                 isBadAlphaNum = true;
                 break;
             }
         }
         else
         {
-            OSConfigTelemetryStatusTrace("proxyData", EINVAL);
             OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData, proxyData[i], i);
+            OSConfigTelemetryStatusTrace("proxyData", EINVAL);
             isBadAlphaNum = true;
             break;
         }
@@ -168,8 +168,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
     if ((0 == columnCounter) && (false == isBadAlphaNum))
     {
-        OSConfigTelemetryStatusTrace("isBadAlphaNum", EINVAL);
         OsConfigLogError(log, "Unsupported proxy data (%s), missing ':'", proxyData);
+        OSConfigTelemetryStatusTrace("isBadAlphaNum", EINVAL);
         isBadAlphaNum = true;
     }
 
@@ -216,8 +216,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         (1 > strlen(lastColumn)) ||
         (1 > strlen(firstColumn)))
     {
-        OSConfigTelemetryStatusTrace("proxyData", EINVAL);
         OsConfigLogError(log, "Unsupported proxy data (%s) format", afterPrefix);
+        OSConfigTelemetryStatusTrace("proxyData", EINVAL);
     }
     else
     {
@@ -238,8 +238,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
 
@@ -256,8 +256,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
 
@@ -271,8 +271,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
 
@@ -287,8 +287,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
             }
@@ -305,8 +305,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
 
@@ -321,8 +321,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace("malloc", errno);
                         OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                        OSConfigTelemetryStatusTrace("malloc", errno);
                     }
                 }
             }

@@ -126,8 +126,8 @@ char* GetHttpProxyData(OsConfigLogHandle log)
             proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
-                OSConfigTelemetryStatusTrace("DuplicateString", errno);
                 OsConfigLogError(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
+                OSConfigTelemetryStatusTrace("DuplicateString", errno);
             }
             else
             {
@@ -209,8 +209,8 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
     if ((NULL == source) || (NULL == integers) || (NULL == numIntegers))
     {
-        OSConfigTelemetryStatusTrace("source", EINVAL);
         OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: invalid arguments");
+        OSConfigTelemetryStatusTrace("source", EINVAL);
         return EINVAL;
     }
 
@@ -223,8 +223,8 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     {
         if (NULL == (value = DuplicateString(&(source[i]))))
         {
-            OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
             OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to duplicate string");
+            OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
             status = ENOMEM;
             break;
         }
@@ -251,8 +251,8 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
             if (NULL == *integers)
             {
-                OSConfigTelemetryStatusTrace("realloc", ENOMEM);
                 OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
+                OSConfigTelemetryStatusTrace("realloc", ENOMEM);
                 *numIntegers = 0;
                 status = ENOMEM;
                 break;
@@ -527,8 +527,8 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                 }
 

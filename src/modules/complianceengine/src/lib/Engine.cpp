@@ -65,9 +65,9 @@ Optional<Error> Engine::LoadDistributionInfo()
         auto overrideInfo = DistributionInfo::ParseOverrideFile(DistributionInfo::cDefaultOverrideFilePath);
         if (!overrideInfo.HasValue())
         {
-            OSConfigTelemetryStatusTrace("ParseOverrideFile", overrideInfo.Error().code);
             OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultOverrideFilePath,
                 overrideInfo.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ParseOverrideFile", overrideInfo.Error().code);
             return overrideInfo.Error();
         }
 
@@ -80,9 +80,9 @@ Optional<Error> Engine::LoadDistributionInfo()
         auto osReleaseInfo = DistributionInfo::ParseEtcOsRelease(DistributionInfo::cDefaultEtcOsReleasePath);
         if (!osReleaseInfo.HasValue())
         {
-            OSConfigTelemetryStatusTrace("ParseEtcOsRelease", osReleaseInfo.Error().code);
             OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultEtcOsReleasePath,
                 osReleaseInfo.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ParseEtcOsRelease", osReleaseInfo.Error().code);
             return osReleaseInfo.Error();
         }
 
@@ -91,8 +91,8 @@ Optional<Error> Engine::LoadDistributionInfo()
     else
     {
         int status = errno;
-        OSConfigTelemetryStatusTrace("stat", status);
         OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to access %s: %s", DistributionInfo::cDefaultOverrideFilePath, strerror(status));
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Failed to access override file", status);
     }
 
@@ -176,8 +176,8 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
         ruleJSON = ComplianceEngine::ParseJson(payload.c_str());
         if (!ruleJSON.HasValue())
         {
-            OSConfigTelemetryStatusTrace("ComplianceEngine::ParseJson", ruleJSON.Error().code);
             OsConfigLogError(Log(), "Failed to parse JSON: %s", ruleJSON.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ComplianceEngine::ParseJson", ruleJSON.Error().code);
             return ruleJSON.Error();
         }
     }
@@ -207,8 +207,8 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
     }
     if (nullptr == procedure.Audit())
     {
-        OSConfigTelemetryStatusTrace("Procedure::SetAudit", ENOMEM);
         OsConfigLogError(Log(), "Failed to copy 'audit' object");
+        OSConfigTelemetryStatusTrace("Procedure::SetAudit", ENOMEM);
         return Error("Out of memory");
     }
 
@@ -227,8 +227,8 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
         }
         if (nullptr == procedure.Remediation())
         {
-            OSConfigTelemetryStatusTrace("Procedure::Remediation", ENOMEM);
             OsConfigLogError(Log(), "Failed to copy 'remediate' object");
+            OSConfigTelemetryStatusTrace("Procedure::Remediation", ENOMEM);
             return Error("Out of memory");
         }
     }
@@ -249,8 +249,8 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
             const char* val = json_object_get_string(paramsObj, key);
             if ((nullptr == key) || (nullptr == val))
             {
-                OSConfigTelemetryStatusTrace("json_object_get_name", EINVAL);
                 OsConfigLogError(Log(), "Failed to get parameter name and value");
+                OSConfigTelemetryStatusTrace("json_object_get_name", EINVAL);
                 return Error("Failed to get parameter name and value");
             }
 
@@ -315,8 +315,8 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
 {
     if (nullptr == objectName)
     {
-        OSConfigTelemetryStatusTrace("objectName", EINVAL);
         OsConfigLogError(Log(), "Object name is null");
+        OSConfigTelemetryStatusTrace("objectName", EINVAL);
         return Error("Invalid argument", EINVAL);
     }
 
@@ -353,8 +353,8 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
         return ExecuteRemediation(ruleName.substr(strlen(remediatePrefix)), payload);
     }
 
-    OSConfigTelemetryStatusTrace("objectName", EINVAL);
     OsConfigLogError(Log(), "Invalid object name: Must start with %s, %s or %s prefix", initPrefix, procedurePrefix, remediatePrefix);
+    OSConfigTelemetryStatusTrace("objectName", EINVAL);
     return Error("Invalid object name");
 }
 } // namespace ComplianceEngine

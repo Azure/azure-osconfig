@@ -37,8 +37,8 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
             return indicators.Compliant("File '" + filename + "' does not exist");
         }
 
-        OSConfigTelemetryStatusTrace("stat", status);
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -124,8 +124,8 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         perms = strtol(permissions.c_str(), &endptr, 8);
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             OsConfigLogError(log, "Invalid permissions: %s", permissions.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid permissions argument: " + permissions, EINVAL);
         }
         has_permissions = true;
@@ -139,16 +139,16 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         mask = strtol(maskArg.c_str(), &endptr, 8);
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid mask argument: " + maskArg, EINVAL);
         }
         has_mask = true;
     }
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
-        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both");
     }
     if (has_permissions)
@@ -201,8 +201,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
             return indicators.NonCompliant("File '" + filename + "' does not exist");
         }
 
-        OSConfigTelemetryStatusTrace("stat", status);
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -298,8 +298,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         if (0 != chown(filename.c_str(), uid, gid))
         {
             int status = errno;
-            OSConfigTelemetryStatusTrace("chown", status);
             OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
+            OSConfigTelemetryStatusTrace("chown", status);
             return Error(std::string("Chown error: ") + strerror(status), status);
         }
 
@@ -319,8 +319,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         perms = strtol(permissions.c_str(), &endptr, 8);
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             OsConfigLogError(log, "Invalid permissions argument: %s", permissions.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid permissions argument: " + permissions);
         }
         new_perms |= perms;
@@ -335,8 +335,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         mask = strtol(maskArg.c_str(), &endptr, 8);
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid mask argument: " + maskArg, EINVAL);
         }
         new_perms &= ~mask;
@@ -345,8 +345,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     // Sanity check - we can't have bits set in the mask and permissions at the same time.
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
-        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both", EINVAL);
     }
     if (new_perms != statbuf.st_mode)
@@ -355,8 +355,8 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         if (chmod(filename.c_str(), new_perms) < 0)
         {
             int status = errno;
-            OSConfigTelemetryStatusTrace("chmod", status);
             OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
+            OSConfigTelemetryStatusTrace("chmod", status);
             return Error(std::string("Chmod error: ") + strerror(status), status);
         }
 

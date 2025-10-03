@@ -91,9 +91,9 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
                                         AuditEnsureFilePermissionsHelper(fullPath, args, indicators, context);
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace(remediate ? "RemediateEnsureFilePermissionsHelper" : "AuditEnsureFilePermissionsHelper", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to %s permissions for logfile '%s': %s", remediate ? "remediate" : "audit", fullPath.c_str(),
             result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace(remediate ? "RemediateEnsureFilePermissionsHelper" : "AuditEnsureFilePermissionsHelper", result.Error().code);
         return result.Error();
     }
     indicators.Back().status = result.Value();
@@ -125,8 +125,8 @@ AUDIT_FN(EnsureLogfileAccess, "path:Path to log directory to check, default /var
 
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         return result.Error();
     }
 
@@ -155,8 +155,8 @@ REMEDIATE_FN(EnsureLogfileAccess, "path:Path to log directory to remediate, defa
 
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         return result.Error();
     }
 

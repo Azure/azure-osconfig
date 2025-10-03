@@ -29,8 +29,8 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -54,8 +54,8 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         const auto* group = getgrgid(pwd.pw_gid);
         if (nullptr == group)
         {
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -87,8 +87,8 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 auto subResult = AuditEnsureFilePermissionsHelper(path, arguments, indicators, context);
                 if (!subResult.HasValue())
                 {
-                    OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
                     OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for file '%s': %s", path.c_str(), subResult.Error().message.c_str());
+                    OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
                     result = subResult.Error();
                     return;
                 }
@@ -137,8 +137,8 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -162,8 +162,8 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         const auto* group = getgrgid(user.pw_gid);
         if (nullptr == group)
         {
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", user.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             status = Status::NonCompliant;
         }
 
@@ -196,9 +196,9 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 auto subResult = RemediateEnsureFilePermissionsHelper(path, arguments, indicators, context);
                 if (!subResult.HasValue())
                 {
-                    OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
                     OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for file '%s': %s", path.c_str(),
                         subResult.Error().message.c_str());
+                    OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
                     result = subResult.Error();
                     return;
                 }

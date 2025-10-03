@@ -31,8 +31,8 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -65,8 +65,8 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             }
             else
             {
-                OSConfigTelemetryStatusTrace("stat", status);
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -74,8 +74,8 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         const auto* group = getgrgid(pwd.pw_gid);
         if (nullptr == group)
         {
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -84,9 +84,9 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         auto subResult = AuditEnsureFilePermissionsHelper(std::string(pwd.pw_dir), std::move(arguments), indicators, context);
         if (!subResult.HasValue())
         {
-            OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name,
                 subResult.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
             return subResult;
         }
         indicators.Back().status = subResult.Value();
@@ -109,8 +109,8 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -142,15 +142,15 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
                 if (0 != mkdir(pwd.pw_dir, 0750))
                 {
                     status = errno;
-                    OSConfigTelemetryStatusTrace("mkdir", status);
                     OsConfigLogError(context.GetLogHandle(), "Failed to create home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                    OSConfigTelemetryStatusTrace("mkdir", status);
                     return Error(string("Failed to create home directory: ") + strerror(status), status);
                 }
             }
             else
             {
-                OSConfigTelemetryStatusTrace("stat", status);
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -158,8 +158,8 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         const auto* group = getgrgid(pwd.pw_gid);
         if (nullptr == group)
         {
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -168,9 +168,9 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         auto subResult = RemediateEnsureFilePermissionsHelper(pwd.pw_dir, std::move(arguments), indicators, context);
         if (!subResult.HasValue())
         {
-            OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd.pw_dir,
                 pwd.pw_name, subResult.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
             result = Status::NonCompliant;
         }
         indicators.Back().status = subResult.Value();

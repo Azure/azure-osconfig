@@ -24,8 +24,8 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string,
     auto it = args.find("directory");
     if (it == args.end())
     {
-        OSConfigTelemetryStatusTrace("directory", EINVAL);
         OsConfigLogError(log, "No directory provided");
+        OSConfigTelemetryStatusTrace("directory", EINVAL);
         return Error("No directory provided", EINVAL);
     }
     auto directory = std::move(it->second);
