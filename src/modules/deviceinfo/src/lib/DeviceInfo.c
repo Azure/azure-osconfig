@@ -146,8 +146,8 @@ void DeviceInfoMmiClose(MMI_HANDLE clientSession)
     }
     else
     {
-        OSConfigTelemetryStatusTrace("IsValidSession", EINVAL);
         OsConfigLogError(DeviceInfoGetLog(), "MmiClose() called outside of a valid session");
+        OSConfigTelemetryStatusTrace("IsValidSession", EINVAL);
     }
 }
 
@@ -172,8 +172,8 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
     else
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(DeviceInfoGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
+        OSConfigTelemetryStatusTrace("malloc", status);
         *payloadSizeBytes = 0;
 
     }
@@ -193,8 +193,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("payload", status);
         OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
+        OSConfigTelemetryStatusTrace("payload", status);
         return status;
     }
 
@@ -204,15 +204,15 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     if (!IsValidSession(clientSession))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("IsValidSession", status);
         OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
+        OSConfigTelemetryStatusTrace("IsValidSession", status);
     }
 
     if ((MMI_OK == status) && (strcmp(componentName, g_deviceInfoComponentName)))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("componentName", status);
         OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
+        OSConfigTelemetryStatusTrace("componentName", status);
     }
 
     if (MMI_OK == status)
@@ -291,8 +291,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("objectName", status);
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
+            OSConfigTelemetryStatusTrace("objectName", status);
         }
     }
 
@@ -303,9 +303,9 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            OSConfigTelemetryStatusTrace("payloadSizeBytes", EINVAL);
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+            OSConfigTelemetryStatusTrace("payloadSizeBytes", EINVAL);
 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
         }
@@ -319,8 +319,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         else
         {
             status = ENOMEM;
-            OSConfigTelemetryStatusTrace("malloc", status);
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+            OSConfigTelemetryStatusTrace("malloc", status);
             *payloadSizeBytes = 0;
         }
     }

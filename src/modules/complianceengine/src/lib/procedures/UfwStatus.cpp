@@ -24,8 +24,8 @@ AUDIT_FN(UfwStatus, "statusRegex:Regex that the status must match:M")
     }
     catch (const std::exception& e)
     {
-        OSConfigTelemetryStatusTrace("regex", EINVAL);
         OsConfigLogError(context.GetLogHandle(), "Regex error: %s", e.what());
+        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return Error("Failed to compile regex '" + statusRegexStr + "' error: " + e.what());
     }
 

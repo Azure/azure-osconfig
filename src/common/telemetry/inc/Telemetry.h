@@ -120,8 +120,9 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
     } \
 }
 
-#define OSConfigTelemetryStatusTrace(callingFunctionName, status) \
-    OSConfigTelemetryStatusTraceImpl((callingFunctionName), (status), __LINE__)
+#define OSConfigTelemetryStatusTrace(callingFunctionName, status) { \
+    OSConfigTelemetryStatusTraceImpl((callingFunctionName), (status), __LINE__); \
+}
 #define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line) { \
     char status_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(status_str, sizeof(status_str), "%d", (status)); \

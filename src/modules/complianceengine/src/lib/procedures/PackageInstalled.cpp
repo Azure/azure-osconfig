@@ -528,21 +528,21 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
             }
             else
             {
-                OSConfigTelemetryStatusTrace("SavePackageCache", saveResult.Error().code);
                 OsConfigLogError(log, "Failed to save package cache: %s", saveResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("SavePackageCache", saveResult.Error().code);
             }
         }
         else
         {
             if (cacheStale)
             {
-                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
                 OsConfigLogError(log, "Failed to get installed packages: %s, reusing stale cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
             }
             else
             {
-                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
                 OsConfigLogError(log, "Failed to get installed packages: %s, cannot use cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
                 return Error("Failed to get installed packages: " + cacheResult.Error().message);
             }
         }
