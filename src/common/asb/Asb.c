@@ -1109,9 +1109,9 @@ void AsbShutdown(OsConfigLogHandle log)
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
 
         // For telemetry:
-        OSConfigTelemetryBaselineRun(g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        OSConfigTelemetryBaselineRun(g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
 
     FREE_MEMORY(g_prettyName);
@@ -5022,9 +5022,9 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
         // For telemetry:
-        OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
+        OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
     }
 
     return status;
@@ -6011,10 +6011,9 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
             // For telemetry:
-            OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
-
+            OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
         }
     }
 
