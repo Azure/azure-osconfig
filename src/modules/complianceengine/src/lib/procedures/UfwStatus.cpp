@@ -3,7 +3,6 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <string>
 namespace ComplianceEngine
@@ -25,7 +24,6 @@ AUDIT_FN(UfwStatus, "statusRegex:Regex that the status must match:M")
     catch (const std::exception& e)
     {
         OsConfigLogError(context.GetLogHandle(), "Regex error: %s", e.what());
-        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return Error("Failed to compile regex '" + statusRegexStr + "' error: " + e.what());
     }
 

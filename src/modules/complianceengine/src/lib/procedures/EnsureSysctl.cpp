@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <Evaluator.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <StringTools.h>
 #include <algorithm>
@@ -60,7 +59,6 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     catch (const std::exception& e)
     {
         OsConfigLogError(log, "Regex error: %s", e.what());
-        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return Error("Failed to compile regex '" + sysctlValue + "' error: " + e.what());
     }
 
@@ -96,7 +94,6 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     if (!execResult.HasValue())
     {
         OsConfigLogError(log, "Failed to execute systemd-sysctl command");
-        OSConfigTelemetryStatusTrace("ExecuteCommand", execResult.Error().code);
         return execResult.Error();
     }
 

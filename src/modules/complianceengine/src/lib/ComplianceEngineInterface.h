@@ -7,7 +7,6 @@
 #include "../inc/Mmi.h"
 
 #include <Logging.h>
-#include <Telemetry.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -3,7 +3,6 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <algorithm>
 #include <fts.h>
@@ -27,7 +26,6 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to execute systemd-analyze command: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("ExecuteCommand", result.Error().code);
         return result.Error();
     }
     std::istringstream stream(result.Value());
@@ -51,7 +49,6 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
         if (eqSign == std::string::npos)
         {
             OsConfigLogError(context.GetLogHandle(), "Invalid line in systemd config: %s", line.c_str());
-            OSConfigTelemetryStatusTrace("getline", EINVAL);
             continue;
         }
         std::string key = line.substr(0, eqSign);
@@ -70,7 +67,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
     if (it == args.end())
     {
         OsConfigLogError(log, "Error: SystemdParameter: missing 'parameter' argument");
-        OSConfigTelemetryStatusTrace("parameter", EINVAL);
         return Error("Missing 'parameter' argument");
     }
     std::string parameter = it->second;
@@ -79,7 +75,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
     if (it == args.end())
     {
         OsConfigLogError(log, "Error: SystemdParameter: missing 'valueRegex' argument");
-        OSConfigTelemetryStatusTrace("valueRegex", EINVAL);
         return Error("Missing 'valueRegex' argument");
     }
     std::string valueRegex = it->second;
@@ -91,7 +86,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
     catch (const std::exception& e)
     {
         OsConfigLogError(log, "Failed to compile regex '%s': %s", valueRegex.c_str(), e.what());
-        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return Error("Failed to compile regex '" + valueRegex + "': " + e.what());
     }
 
@@ -112,13 +106,11 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
     if (dir.empty() && filename.empty())
     {
         OsConfigLogError(log, "Error: SystemdParameter: neither 'file' nor 'dir' argument is provided");
-        OSConfigTelemetryStatusTrace("dir.empty && filename.empty", EINVAL);
         return Error("Neither 'file' nor 'dir' argument is provided");
     }
     if (!dir.empty() && !filename.empty())
     {
         OsConfigLogError(log, "Error: SystemdParameter: both 'file' and 'dir' arguments are provided, only one is allowed");
-        OSConfigTelemetryStatusTrace("one dir or file only", EINVAL);
         return Error("Both 'file' and 'dir' arguments are provided, only one is allowed");
     }
 
@@ -130,7 +122,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
         if (!result.HasValue())
         {
             OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", filename.c_str(), result.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("GetSystemdConfig", result.Error().code);
             return result.Error();
         }
     }
@@ -143,7 +134,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
         if (!file_system)
         {
             OsConfigLogError(log, "Failed to open directory '%s' with fts", dir.c_str());
-            OSConfigTelemetryStatusTrace("fts_open", errno ? errno : EINVAL);
             return Error("Failed to open directory '" + dir + "'");
         }
 
@@ -160,7 +150,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
                     if (!result.HasValue())
                     {
                         OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", filePath.c_str(), result.Error().message.c_str());
-                        OSConfigTelemetryStatusTrace("GetSystemdConfig", result.Error().code);
                     }
                     else
                     {
@@ -174,7 +163,6 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
         if (!anySuccess)
         {
             OsConfigLogError(log, "No valid systemd config files found in directory '%s'", dir.c_str());
-            OSConfigTelemetryStatusTrace("fts_close", errno ? errno : EINVAL);
             return Error("No valid systemd config files found in directory '" + dir + "'");
         }
     }

@@ -3,7 +3,6 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
-#include <Internal.h>
 #include <ListValidShells.h>
 #include <Result.h>
 #include <UsersIterator.h>
@@ -32,7 +31,6 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -66,7 +64,6 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             else
             {
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
-                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -75,7 +72,6 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -86,7 +82,6 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name,
                 subResult.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("AuditEnsureFilePermissionsHelper", subResult.Error().code);
             return subResult;
         }
         indicators.Back().status = subResult.Value();
@@ -110,7 +105,6 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -143,14 +137,12 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
                 {
                     status = errno;
                     OsConfigLogError(context.GetLogHandle(), "Failed to create home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
-                    OSConfigTelemetryStatusTrace("mkdir", status);
                     return Error(string("Failed to create home directory: ") + strerror(status), status);
                 }
             }
             else
             {
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
-                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -159,7 +151,6 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
-            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -170,7 +161,6 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd.pw_dir,
                 pwd.pw_name, subResult.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
             result = Status::NonCompliant;
         }
         indicators.Back().status = subResult.Value();

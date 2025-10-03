@@ -3,7 +3,6 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
-#include <Internal.h>
 #include <errno.h>
 #include <fnmatch.h>
 #include <fts.h>
@@ -25,7 +24,6 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string,
     if (it == args.end())
     {
         OsConfigLogError(log, "No directory provided");
-        OSConfigTelemetryStatusTrace("directory", EINVAL);
         return Error("No directory provided", EINVAL);
     }
     auto directory = std::move(it->second);

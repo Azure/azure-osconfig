@@ -13,7 +13,6 @@
 #include "Mmi.h"
 #include "Result.h"
 
-#include <Telemetry.h>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
@@ -42,6 +41,7 @@ static const std::set<int> g_criticalErrors = {ENOMEM};
 // This function is called in library constructor by BaselineInitialize
 void ComplianceEngineInitialize(OsConfigLogHandle log)
 {
+    UNUSED(log);
     g_log = log;
 }
 
@@ -56,7 +56,6 @@ MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int ma
     if (nullptr == context)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);
-        OSConfigTelemetryStatusTrace("CommonContext", ENOMEM);
         return nullptr;
     }
     std::unique_ptr<ComplianceEngine::PayloadFormatter> formatter;
@@ -81,7 +80,6 @@ MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int ma
     if (error)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to load distribution info: %s", clientName, maxPayloadSizeBytes, error->message.c_str());
-        OSConfigTelemetryStatusTrace("LoadDistributionInfo", error->code);
         delete engine;
         return nullptr;
     }
@@ -101,7 +99,6 @@ int ComplianceEngineMmiGetInfo(const char* clientName, char** payload, int* payl
     if ((nullptr == payload) || (nullptr == payloadSizeBytes))
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("payload", EINVAL);
         return EINVAL;
     }
 
@@ -109,7 +106,6 @@ int ComplianceEngineMmiGetInfo(const char* clientName, char** payload, int* payl
     if (!*payload)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiGetInfo: failed to duplicate module info");
-        OSConfigTelemetryStatusTrace("strdup", ENOMEM);
         return ENOMEM;
     }
 
@@ -122,21 +118,18 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     if ((nullptr == componentName) || (nullptr == objectName) || (nullptr == payload) || (nullptr == payloadSizeBytes))
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("payload", EINVAL);
         return EINVAL;
     }
 
     if (nullptr == clientSession)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiGet(%s, %s) called outside of a valid session", componentName, objectName);
-        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         return EINVAL;
     }
 
     if (0 != strcmp(componentName, "ComplianceEngine"))
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiGet called for an unsupported component name (%s)", componentName);
-        OSConfigTelemetryStatusTrace("componentName", EINVAL);
         return EINVAL;
     }
     auto& engine = *reinterpret_cast<Engine*>(clientSession);
@@ -153,14 +146,12 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed with a critical error: %s (errno: %d)", result.Error().message.c_str(),
                     result.Error().code);
-                OSConfigTelemetryStatusTrace("MmiGet", result.Error().code);
                 return result.Error().code;
             }
             else
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed with a non-critical error: %s (errno: %d)",
                     result.Error().message.c_str(), result.Error().code);
-                OSConfigTelemetryStatusTrace("MmiGet", result.Error().code);
                 result = ComplianceEngine::AuditResult(Status::NonCompliant, "Audit failed with a non-critical error: " + result.Error().message);
             }
         }
@@ -175,13 +166,11 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         if (NULL == json)
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to create JSON object from string");
-            OSConfigTelemetryStatusTrace("JSONFromString", ENOMEM);
             return ENOMEM;
         }
         else if (NULL == (*payload = json_serialize_to_string(json.get())))
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to serialize JSON object");
-            OSConfigTelemetryStatusTrace("json_serialize_to_string", ENOMEM);
             return ENOMEM;
         }
         *payloadSizeBytes = static_cast<int>(strlen(*payload));
@@ -191,7 +180,6 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     catch (const std::exception& e)
     {
         OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: %s", e.what());
-        OSConfigTelemetryStatusTrace("MmiGet", -1);
     }
 
     return -1;
@@ -202,21 +190,18 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     if ((nullptr == componentName) || (nullptr == objectName) || (nullptr == payload) || (0 > payloadSizeBytes))
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiSet(%s, %s, %.*s) called with invalid arguments", componentName, objectName, payloadSizeBytes, payload);
-        OSConfigTelemetryStatusTrace("payload", EINVAL);
         return EINVAL;
     }
 
     if (nullptr == clientSession)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiSet(%s, %s, %.*s) called outside of a valid session", componentName, objectName, payloadSizeBytes, payload);
-        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         return EINVAL;
     }
 
     if (0 != strcmp(componentName, "ComplianceEngine"))
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiSet called for an unsupported component name (%s)", componentName);
-        OSConfigTelemetryStatusTrace("componentName", EINVAL);
         return EINVAL;
     }
     auto& engine = *reinterpret_cast<Engine*>(clientSession);
@@ -228,7 +213,6 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         if (NULL == object || (JSONString != json_value_get_type(object.get()) && JSONObject != json_value_get_type(object.get())))
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed: Failed to parse JSON string");
-            OSConfigTelemetryStatusTrace("ParseJson", EINVAL);
             return EINVAL;
         }
         std::string realPayload;
@@ -249,14 +233,12 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed with a critical error: %s (errno: %d)", result.Error().message.c_str(),
                     result.Error().code);
-                OSConfigTelemetryStatusTrace("MmiSet", result.Error().code);
                 return result.Error().code;
             }
             else
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed with a non-critical error: %s (errno: %d)",
                     result.Error().message.c_str(), result.Error().code);
-                OSConfigTelemetryStatusTrace("MmiSet", result.Error().code);
                 return MMI_OK;
             }
         }
@@ -268,7 +250,6 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     catch (const std::exception& e)
     {
         OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed: %s", e.what());
-        OSConfigTelemetryStatusTrace("MmiSet", -1);
     }
 
     return -1;
@@ -287,7 +268,6 @@ int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* pay
     if ((nullptr == clientSession) || (nullptr == payloadKey))
     {
         OsConfigLogError(log, "ComplianceEngineValidatePayload called with invalid arguments");
-        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         return EINVAL;
     }
 
@@ -296,7 +276,6 @@ int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* pay
     if (!distributionInfo.HasValue())
     {
         OsConfigLogError(log, "ComplianceEngineValidatePayload: Distribution info is not available");
-        OSConfigTelemetryStatusTrace("GetDistributionInfo", EINVAL);
         return EINVAL;
     }
 
@@ -304,7 +283,6 @@ int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* pay
     if (!benchmark.HasValue())
     {
         OsConfigLogError(log, "ComplianceEngineValidatePayload failed to parse benchmark: %s", benchmark.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("CISBenchmarkInfo::Parse", EINVAL);
         return EINVAL;
     }
 

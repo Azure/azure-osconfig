@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <FileTreeWalk.h>
-#include <Internal.h>
 #include <dirent.h>
 
 namespace ComplianceEngine
@@ -27,7 +26,6 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
         }
 
         OsConfigLogError(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
-        OSConfigTelemetryStatusTrace("opendir", status);
         return Error("Failed to open directory '" + path + "': " + strerror(status), status);
     }
 
@@ -69,7 +67,6 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
         {
             int status = errno;
             OsConfigLogError(context.GetLogHandle(), "Failed to lstat '%s': %s", directory.c_str(), strerror(status));
-            OSConfigTelemetryStatusTrace("lstat", status);
             result = Error("Failed to lstat '" + directory + "': " + strerror(status), status);
             break;
         }
@@ -103,7 +100,6 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
     if (0 != status)
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to iterate directory '%s': %s", path.c_str(), strerror(status));
-        OSConfigTelemetryStatusTrace("readdir", status);
         return Error("Failed to iterate directory '" + path + "': " + strerror(status), status);
     }
 

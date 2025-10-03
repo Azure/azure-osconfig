@@ -9,7 +9,6 @@
 #include "Reasons.h"
 #include "Result.h"
 
-#include <Internal.h>
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -41,7 +40,6 @@ Result<AuditResult> Evaluator::ExecuteAudit(const PayloadFormatter& formatter)
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("EvaluateProcedure", result.Error().code);
         return result.Error();
     }
 
@@ -51,7 +49,6 @@ Result<AuditResult> Evaluator::ExecuteAudit(const PayloadFormatter& formatter)
     if (!payloadResult.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Failed to format payload: %s", payloadResult.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("Format", payloadResult.Error().code);
         return AuditResult{result.Value(), std::string("Failed to format payload: ") + payloadResult.Error().message};
     }
 
@@ -64,7 +61,6 @@ Result<Status> Evaluator::ExecuteRemediation()
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("EvaluateProcedure", result.Error().code);
         return result.Error();
     }
 
@@ -78,7 +74,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     if (nullptr == object)
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("object", EINVAL);
         return Error("invalid json argument", EINVAL);
     }
 
@@ -87,7 +82,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     if ((nullptr == name) || (nullptr == value))
     {
         OsConfigLogError(mContext.GetLogHandle(), "Rule name or value is null");
-        OSConfigTelemetryStatusTrace("json_object_get_name", EINVAL);
         return Error("Rule name or value is null");
     }
 
@@ -98,7 +92,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("EvaluateList", result.Error().code);
             return result;
         }
         mIndicators.Back().status = result.Value();
@@ -113,7 +106,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("EvaluateNot", result.Error().code);
             return result;
         }
         mIndicators.Back().status = result.Value();
@@ -128,7 +120,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("EvaluateLua", result.Error().code);
             return result;
         }
         mIndicators.Back().status = result.Value();
@@ -141,7 +132,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("EvaluateBuiltinProcedure", result.Error().code);
         return result;
     }
     mIndicators.Back().status = result.Value();
@@ -158,14 +148,12 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
     if (nullptr == value)
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("value", EINVAL);
         return Error("invalid argument", EINVAL);
     }
 
     if (json_value_get_type(value) != JSONArray)
     {
         OsConfigLogError(mContext.GetLogHandle(), "%s value is not an array", actionName);
-        OSConfigTelemetryStatusTrace("json_value_get_type", EINVAL);
         return Error(std::string(actionName) + " value is not an array", EINVAL);
     }
 
@@ -178,7 +166,6 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            OSConfigTelemetryStatusTrace("EvaluateProcedure", result.Error().code);
             return result;
         }
 
@@ -205,14 +192,12 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
     if (nullptr == value)
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("value", EINVAL);
         return Error("invalid argument", EINVAL);
     }
 
     if (json_value_get_type(value) != JSONObject)
     {
         OsConfigLogError(mContext.GetLogHandle(), "not value is not an object");
-        OSConfigTelemetryStatusTrace("json_value_get_type", EINVAL);
         return Error("not value is not an object", EINVAL);
     }
 
@@ -226,7 +211,6 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("EvaluateProcedure", result.Error().code);
         return result;
     }
 
@@ -247,14 +231,12 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
     if (nullptr == value)
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("value", EINVAL);
         return Error("invalid argument", EINVAL);
     }
 
     if (json_value_get_type(value) != JSONObject)
     {
         OsConfigLogError(mContext.GetLogHandle(), "Lua value is not an object");
-        OSConfigTelemetryStatusTrace("json_value_get_type", EINVAL);
         return Error("Lua value is not an object", EINVAL);
     }
 
@@ -264,7 +246,6 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
     if (!arguments.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Failed to get Lua arguments: %s", arguments.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("GetBuiltinProcedureArguments", arguments.Error().code);
         return arguments.Error();
     }
 
@@ -273,7 +254,6 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
     if (scriptIt == arguments.Value().end())
     {
         OsConfigLogError(mContext.GetLogHandle(), "No script content provided");
-        OSConfigTelemetryStatusTrace("script", EINVAL);
         return Error("No script content provided", EINVAL);
     }
 
@@ -281,7 +261,6 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Lua evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("LuaEvaluator::Evaluate", result.Error().code);
         return result.Error();
     }
 
@@ -295,7 +274,6 @@ Result<map<string, string>> Evaluator::GetBuiltinProcedureArguments(const json_v
     if ((nullptr == value) || (json_value_get_type(value) != JSONObject))
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("value", EINVAL);
         return Error("invalid argument", EINVAL);
     }
 
@@ -309,14 +287,12 @@ Result<map<string, string>> Evaluator::GetBuiltinProcedureArguments(const json_v
         if ((nullptr == key) || (nullptr == val))
         {
             OsConfigLogError(mContext.GetLogHandle(), "Key or value is null");
-            OSConfigTelemetryStatusTrace("json_object_get_name", EINVAL);
             return Error("Key or value is null", EINVAL);
         }
 
         if (json_value_get_type(val) != JSONString)
         {
             OsConfigLogError(mContext.GetLogHandle(), "Argument type is not a string for a key '%s'", key);
-            OSConfigTelemetryStatusTrace("json_value_get_type", EINVAL);
             return Error("Argument type is not a string", EINVAL);
         }
 
@@ -328,7 +304,6 @@ Result<map<string, string>> Evaluator::GetBuiltinProcedureArguments(const json_v
             if (paramSubstitution == mParameters.end())
             {
                 OsConfigLogError(mContext.GetLogHandle(), "Unknown parameter '%s'", paramValue.c_str());
-                OSConfigTelemetryStatusTrace("json_value_get_string", EINVAL);
                 return Error("Unknown parameter", EINVAL);
             }
             it->second = paramSubstitution->second;
@@ -345,7 +320,6 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     if ((nullptr == value) || (json_value_get_type(value) != JSONObject))
     {
         OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        OSConfigTelemetryStatusTrace("value", EINVAL);
         return Error("invalid argument");
     }
 
@@ -353,7 +327,6 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     if (!arguments.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Failed to get builtin procedure arguments: %s", arguments.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("GetBuiltinProcedureArguments", arguments.Error().code);
         return arguments.Error();
     }
 
@@ -361,7 +334,6 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     if (procedure == mProcedureMap.end())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Unknown function '%s'", procedureName.c_str());
-        OSConfigTelemetryStatusTrace("procedureName", ENOENT);
         return Error("Unknown function '" + procedureName + "'", ENOENT);
     }
 
@@ -382,7 +354,6 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     if (nullptr == fn)
     {
         OsConfigLogError(mContext.GetLogHandle(), "Function not found");
-        OSConfigTelemetryStatusTrace("fn", ENOENT);
         return Error("Function not found", ENOENT);
     }
 
@@ -390,7 +361,6 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     if (!result.HasValue())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Builtin procedure evaluation failed: %s", result.Error().message.c_str());
-        OSConfigTelemetryStatusTrace("fn", result.Error().code);
         return result.Error();
     }
 

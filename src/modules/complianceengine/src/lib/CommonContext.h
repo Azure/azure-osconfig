@@ -7,7 +7,6 @@
 #include "ContextInterface.h"
 #include "Logging.h"
 #include "Result.h"
-#include "Telemetry.h"
 
 #include <sstream>
 #include <string>

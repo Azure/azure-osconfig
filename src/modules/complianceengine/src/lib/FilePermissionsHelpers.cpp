@@ -3,7 +3,6 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
-#include <Internal.h>
 #include <Regex.h>
 #include <dirent.h>
 #include <errno.h>
@@ -38,7 +37,6 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
-        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -125,7 +123,6 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid permissions: %s", permissions.c_str());
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid permissions argument: " + permissions, EINVAL);
         }
         has_permissions = true;
@@ -140,7 +137,6 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid mask argument: " + maskArg, EINVAL);
         }
         has_mask = true;
@@ -148,7 +144,6 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
-        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both");
     }
     if (has_permissions)
@@ -202,7 +197,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
-        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -299,7 +293,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         {
             int status = errno;
             OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
-            OSConfigTelemetryStatusTrace("chown", status);
             return Error(std::string("Chown error: ") + strerror(status), status);
         }
 
@@ -320,7 +313,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid permissions argument: %s", permissions.c_str());
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid permissions argument: " + permissions);
         }
         new_perms |= perms;
@@ -336,7 +328,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
-            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid mask argument: " + maskArg, EINVAL);
         }
         new_perms &= ~mask;
@@ -346,7 +337,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
-        OSConfigTelemetryStatusTrace("permissions/mask", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both", EINVAL);
     }
     if (new_perms != statbuf.st_mode)
@@ -356,7 +346,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         {
             int status = errno;
             OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
-            OSConfigTelemetryStatusTrace("chmod", status);
             return Error(std::string("Chmod error: ") + strerror(status), status);
         }
 
