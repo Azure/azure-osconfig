@@ -12,7 +12,6 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
-#include <Telemetry.h>
 
 #define SAMPLE_LOGFILE "/var/log/osconfig_sample.log"
 #define SAMPLE_ROLLEDLOGFILE "/var/log/osconfig_sample.bak"
@@ -28,12 +27,10 @@ public:
     static void OpenLog()
     {
         m_log = ::OpenLog(SAMPLE_LOGFILE, SAMPLE_ROLLEDLOGFILE);
-        OSConfigTelemetryOpen(m_log);
     }
 
     static void CloseLog()
     {
-        OSConfigTelemetryClose();
         ::CloseLog(&m_log);
     }
 

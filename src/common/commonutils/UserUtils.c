@@ -2056,6 +2056,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
     unsigned int userListSize = 0, i = 0;
     int status = 0;
     long etcLoginDefsDays = GetPassMaxDays(log);
+
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
@@ -2332,6 +2333,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle l
     unsigned int userListSize = 0, i = 0;
     int status = 0;
     long etcLoginDefsDays = GetPassWarnAge(log);
+
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)

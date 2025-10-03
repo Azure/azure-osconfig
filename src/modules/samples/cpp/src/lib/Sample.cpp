@@ -42,7 +42,6 @@ const std::string Sample::m_info = R""""({
     "UserAccount": 0})"""";
 
 OsConfigLogHandle SampleLog::m_log = nullptr;
-OSConfigTelemetryHandle SampleLog::m_telemetry = nullptr;
 
 Sample::Sample(unsigned int maxPayloadSizeBytes) :
     m_stringValue(""),
@@ -63,19 +62,16 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
 
     if (nullptr == clientName)
     {
-        OSConfigTelemetryStatusTrace("clientName", EINVAL);
         OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OSConfigTelemetryStatusTrace("payload", EINVAL);
         OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OSConfigTelemetryStatusTrace("payloadSizeBytes", EINVAL);
         OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
         status = EINVAL;
     }
@@ -87,7 +83,6 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
         if (nullptr == *payload)
         {
             status = ENOMEM;
-            OSConfigTelemetryStatusTrace("new", status);
             OsConfigLogError(SampleLog::Get(), "MmiGetInfo failed to allocate memory");
         }
         else
@@ -107,7 +102,6 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
-        OSConfigTelemetryStatusTrace("Parse", EINVAL);
         OsConfigLogError(SampleLog::Get(), "Unabled to parse JSON payload: %s", payload);
         status = EINVAL;
     }
@@ -128,7 +122,6 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("!IsString", EINVAL);
                     OsConfigLogError(SampleLog::Get(), "JSON payload is not a string");
                     status = EINVAL;
                 }
@@ -144,7 +137,6 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("!IsBool", EINVAL);
                     OsConfigLogError(SampleLog::Get(), "JSON payload is not a boolean");
                     status = EINVAL;
                 }
@@ -160,7 +152,6 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("!IsInt", EINVAL);
                     OsConfigLogError(SampleLog::Get(), "JSON payload is not an integer");
                     status = EINVAL;
                 }
@@ -180,13 +171,11 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                     else
                     {
                         status = EINVAL;
-                        OSConfigTelemetryStatusTrace("DeserializeObject", status);
                         OsConfigLogError(SampleLog::Get(), "Failed to deserialize object");
                     }
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("!IsObject", EINVAL);
                     OsConfigLogError(SampleLog::Get(), "JSON payload is not an object");
                     status = EINVAL;
                 }
@@ -206,13 +195,11 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                     else
                     {
                         status = EINVAL;
-                        OSConfigTelemetryStatusTrace("DeserializeObjectArray", status);
                         OsConfigLogError(SampleLog::Get(), "Failed to deserialize array of objects");
                     }
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace("!IsArray", EINVAL);
                     OsConfigLogError(SampleLog::Get(), "JSON payload is not an array");
                     status = EINVAL;
                 }
@@ -220,14 +207,12 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
             else
             {
                 status = EINVAL;
-                OSConfigTelemetryStatusTrace("objectName", status);
                 OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
             }
         }
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("componentName", status);
             OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
         }
     }
@@ -242,7 +227,6 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
     if (nullptr == )
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("payloadSizeBytes", status);
         OsConfigLogError(SampleLog::Get(), "Invalid payloadSizeBytes");
     }
     else
@@ -299,7 +283,6 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
                 else
                 {
                     status = EINVAL;
-                    OSConfigTelemetryStatusTrace("SerializeObject", status);
                     OsConfigLogError(SampleLog::Get(), "Failed to serialize object");
                 }
             }
@@ -319,21 +302,18 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
                 else
                 {
                     status = EINVAL;
-                    OSConfigTelemetryStatusTrace("SerializeObjectArray", status);
                     OsConfigLogError(SampleLog::Get(), "Failed to serialize array of objects");
                 }
             }
             else
             {
                 status = EINVAL;
-                OSConfigTelemetryStatusTrace("objectName", status);
                 OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
             }
         }
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("componentName", status);
             OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
         }
     }
@@ -360,7 +340,6 @@ int Sample::SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer
             break;
         default:
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("value", status);
             OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %d", static_cast<int>(value));
     }
 
@@ -492,7 +471,6 @@ int Sample::DeserializeStringEnumeration(std::string str, Sample::StringEnumerat
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("m_stringEnumeration", status);
         OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %s", str.c_str());
     }
 
@@ -513,14 +491,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsString", status);
             OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringSettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string setting");
     }
 
@@ -534,14 +510,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsBool", status);
             OsConfigLogError(SampleLog::Get(), "%s is not a boolean", m_booleanSettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain a boolean setting");
     }
 
@@ -555,14 +529,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsInt", status);
             OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerSettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("DeserializeObject", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer setting");
     }
 
@@ -576,14 +548,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsInt", status);
             OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerEnumerationSettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer enumeration setting");
     }
 
@@ -598,14 +568,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsString", status);
             OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringEnumerationSettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string enumeration setting");
     }
 
@@ -623,7 +591,6 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 else
                 {
                     status = EINVAL;
-                    OSConfigTelemetryStatusTrace("!IsString", status);
                     OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string array at position %d", i);
                 }
             }
@@ -631,14 +598,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsArray", status);
             OsConfigLogError(SampleLog::Get(), "%s is not an array", m_stringArraySettingName.c_str());
         }
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string array setting");
     }
 
@@ -656,7 +621,6 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 else
                 {
                     status = EINVAL;
-                    OSConfigTelemetryStatusTrace("!IsInt", status);
                     OsConfigLogError(SampleLog::Get(), "Invalid integer in JSON object integer array at position %d", i);
                 }
             }
@@ -664,7 +628,6 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         else
         {
             status = EINVAL;
-            OSConfigTelemetryStatusTrace("!IsArray", status);
             OsConfigLogError(SampleLog::Get(), "%s is not an array", m_integerArraySettingName.c_str());
 
         }
@@ -672,7 +635,6 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace("HasMember", status);
         OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer array setting");
     }
 
@@ -788,7 +750,6 @@ int Sample::SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING*
     if ((0 != maxPayloadSizeBytes) && (buffer.GetSize() > maxPayloadSizeBytes))
     {
         status = E2BIG;
-        OSConfigTelemetryStatusTrace("buffer", status);
         OsConfigLogError(SampleLog::Get(), "Failed to serialize JSON object to buffer");
     }
     else
@@ -807,7 +768,6 @@ int Sample::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* pa
     if (nullptr == *payload)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace("new", ENOMEM);
         OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
     }
     else
