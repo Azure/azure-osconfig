@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
