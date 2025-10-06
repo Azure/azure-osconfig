@@ -348,7 +348,7 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
     return status;
 }
 
-static const g_firewalld = "firewalld";
+static const char* g_firewalld = "firewalld";
 
 int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
 {
