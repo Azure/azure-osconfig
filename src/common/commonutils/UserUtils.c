@@ -713,16 +713,16 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
                     }
                 }
 
-                IsValidPointer(&userGroupList);
+                IsValidPointer(&userGroupList, log);
                 FreeGroupList(&userGroupList, userGroupListSize);
             }
         }
     }
 
-    IsValidPointer(&userList);
+    IsValidPointer(&userList, log);
     FreeUsersList(&userList, userListSize);
 
-    IsValidPointer(&groupList);
+    IsValidPointer(&groupList, log);
     FreeGroupList(&groupList, groupListSize);
 
     if (0 == status)
