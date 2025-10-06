@@ -348,6 +348,49 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
     return status;
 }
 
+static const g_firewalld = "firewalld";
+
+int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
+{
+    const char* ipTablesCommand = "iptables -S | (grep -qP '^-P INPUT DROP$' && grep -qP '^-P FORWARD DROP$' && grep -qP '^-P OUTPUT DROP$)";
+    const char* firewallCommand = "firewall-cmd --get-default-zone | grep -q '^drop$' && firewall-cmd --list-all --zone=drop | grep -q '^target: DROP$'";
+    int status = ENOENT;
+
+    if (0 != (status = ExecuteCommand(NULL, ipTablesCommand, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
+        OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
+
+        if (IsDaemonActive(firewalld, log))
+        {
+            if (0 == (status = ExecuteCommand(NULL, firewallCommand, true, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogInfo(log, "'%s' is active, 'drop' found in response from command 'firewall-cmd --get-default-zone', "
+                    "'target: DROP' found in response from command  by 'firewall-cmd --list-all --zone=drop'", g_firewalld);
+                OsConfigCaptureSuccessReason(reason, "'%s' is active, 'drop' found in response from command 'firewall-cmd --get-default-zone', "
+                    "'target: DROP' found in response from command  by 'firewall-cmd --list-all --zone=drop'", g_firewalld);
+            }
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
+        OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
+    }
+
+    if (status)
+    {
+        OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not found in response from command 'iptables -S', "
+            "'%s' is not active, 'drop' not found in response from command 'firewall-cmd --get-default-zone', and/or "
+            "'target: DROP' found in response from command  by 'firewall-cmd --list-all --zone=drop'", g_firewalld);
+        OsConfigCaptureReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not found in response from command 'iptables -S', "
+            "'%s' is not active, 'drop' not found in response from command 'firewall-cmd --get-default-zone', and/or "
+            "'target: DROP' found in response from command  by 'firewall-cmd --list-all --zone=drop'", g_firewalld);
+    }
+
+    return status;
+}
+
 int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
 {
     const char* acceptInput = "iptables -A INPUT -j ACCEPT";
@@ -356,6 +399,9 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     const char* dropInput = "iptables -P INPUT DROP";
     const char* dropForward = "iptables -P FORWARD DROP";
     const char* dropOutput = "iptables -P OUTPUT DROP";
+    const char* startFirewall = "systemctl start firewalld";
+    const char* setDefaultZoneDrop = "firewall-cmd --set-default-zone=drop";
+    const char* setPermanentZoneDrop = "firewall-cmd --permanent --zone=drop --add-service=ssh";
     int status = 0;
 
     // First, ensure all current traffic is accepted:
@@ -371,21 +417,29 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
     }
-
-    if (0 == status)
+    // Then set default to drop:
+    else if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
     {
-        // Then set default to drop:
-        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+    }
+    // And if nothing else, also try via firewall:
+    else if (status && StartDaemon(g_firewalld, log))
+    {
+        if (0 != (status = ExecuteCommand(NULL, setDefaultZoneDrop, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", setDefaultZoneDrop, status);
         }
-        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
+        else if (0 != (status = ExecuteCommand(NULL, setPermanentZoneDrop, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
-        }
-        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", setPermanentZoneDrop, status);
         }
     }
 

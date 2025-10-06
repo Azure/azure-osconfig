@@ -245,6 +245,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value);
 
 int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log);
 int DisableAllWirelessInterfaces(OsConfigLogHandle log);
+int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log);
 int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log);
 
 typedef struct ReportedProperty
