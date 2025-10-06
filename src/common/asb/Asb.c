@@ -1854,14 +1854,11 @@ static char* AuditEnsureKernelCompiledFromApprovedSources(OsConfigLogHandle log)
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
 {
-    const char* readIpTables = "iptables -S";
     char* reason = NULL;
     int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ?
         g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 
-    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    if (0 != CheckDefaultDenyFirewallPolicy(&reason, log))
     {
         FREE_MEMORY(reason);
         reason = FormatAllocateString("Ensure that all necessary communication channels have explicit "
