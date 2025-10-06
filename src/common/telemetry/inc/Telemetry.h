@@ -26,53 +26,24 @@
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
 
-// Helper macro to generate random filename
-#define generateRandomFilename() ({ \
-    char temp_template[] = "/tmp/telemetry_XXXXXX"; \
-    int fd = mkstemp(temp_template); \
-    char* filename_result = NULL; \
-    if (fd != -1) { \
-        close(fd); \
-        if (unlink(temp_template) == 0) { \
-            filename_result = (char*)malloc(strlen(temp_template) + 6); \
-            if (filename_result) { \
-                strcpy(filename_result, temp_template); \
-                strcat(filename_result, ".json"); \
-            } \
-        } \
-    } \
-    filename_result; \
-})
-
-// Helper macro to get module directory
-#define getModuleDirectory() ({ \
-    Dl_info dl_info; \
-    char* directory_result = NULL; \
-    if (dladdr((void*)__func__, &dl_info) != 0) { \
-        if (dl_info.dli_fname != NULL) { \
-            const char* module_fullPath = dl_info.dli_fname; \
-            const char* lastSlash = strrchr(module_fullPath, '/'); \
-            if (lastSlash != NULL) { \
-                size_t dirLen = lastSlash - module_fullPath; \
-                directory_result = (char*)malloc(dirLen + 1); \
-                if (directory_result) { \
-                    strncpy(directory_result, module_fullPath, dirLen); \
-                    directory_result[dirLen] = '\0'; \
-                } \
-            } \
-        } \
-    } \
-    directory_result; \
-})
-
 // Buffer sizes for string conversion of numeric values
 #define MAX_NUM_STRING_LENGTH 32    // Accommodates 64-bit int/long values
 
-// Static file handle for telemetry logging
-static FILE* g_telemetryFile __attribute__((unused)) = NULL;
-static char* g_fileName __attribute__((unused)) = NULL;
-static char* g_moduleDirectory __attribute__((unused)) = NULL;
-static int g_telemetryFileInitialized __attribute__((unused)) = 0;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void OSConfigTelemetryInit(void);
+void OSConfigTelemetryCleanup(void);
+void OSConfigTelemetryAppendJSON(const char* jsonString);
+FILE* OSConfigTelemetryGetFile(void);
+const char* OSConfigTelemetryGetFileName(void);
+const char* OSConfigTelemetryGetModuleDirectory(void);
+int OSConfigTelemetryIsInitialized(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef DEBUG
 #define VERBOSE_FLAG_IF_DEBUG "-v"
@@ -80,43 +51,17 @@ static int g_telemetryFileInitialized __attribute__((unused)) = 0;
 #define VERBOSE_FLAG_IF_DEBUG ""
 #endif
 
-// Initialize telemetry file - call once at start
-#define OSConfigTelemetryInit() { \
-    if (!g_telemetryFileInitialized) { \
-        if (!g_telemetryFileInitialized && !g_telemetryFile) { \
-            g_moduleDirectory = getModuleDirectory(); \
-            g_fileName = generateRandomFilename(); \
-            g_telemetryFile = fopen(g_fileName, "a"); \
-            if (g_telemetryFile) { \
-                g_telemetryFileInitialized = 1; \
-            } \
-        } \
-    } \
-}
-
-// Cleanup telemetry file - call on program exit
 #define OSConfigProcessTelemetryFile() { \
-    if (g_telemetryFile && g_fileName && g_moduleDirectory) { \
-        char* command = FormatAllocateString("%s/%s %s %s %d", g_moduleDirectory, TELEMETRY_BINARY_NAME, VERBOSE_FLAG_IF_DEBUG, g_fileName, TELEMETRY_TIMEOUT_SECONDS); \
+    FILE* telemetryFileMacro = OSConfigTelemetryGetFile(); \
+    const char* telemetryFileNameMacro = OSConfigTelemetryGetFileName(); \
+    const char* telemetryModuleDirectoryMacro = OSConfigTelemetryGetModuleDirectory(); \
+    if (telemetryFileMacro && telemetryFileNameMacro && telemetryModuleDirectoryMacro) { \
+        char* command = FormatAllocateString("%s/%s %s %s %d", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, VERBOSE_FLAG_IF_DEBUG, telemetryFileNameMacro, TELEMETRY_TIMEOUT_SECONDS); \
+        OSConfigTelemetryCleanup(); \
         if (NULL != command) { \
             ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL); \
         } \
         FREE_MEMORY(command); \
-    } \
-    g_telemetryFile = NULL; \
-    g_telemetryFileInitialized = 0; \
-    FREE_MEMORY(g_fileName); \
-    FREE_MEMORY(g_moduleDirectory); \
-}
-
-// Helper macro to append raw JSON string to telemetry file
-#define OSConfigTelemetryAppendJSON(jsonString) { \
-    if (!g_telemetryFileInitialized) { \
-        OSConfigTelemetryInit(); \
-    } \
-    if (g_telemetryFile) { \
-        fprintf(g_telemetryFile, "%s\n", jsonString); \
-        fflush(g_telemetryFile); \
     } \
 }
 
