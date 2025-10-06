@@ -63,8 +63,8 @@ find_package(CURL REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 find_package(OpenSSL REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 find_package(Threads REQUIRED)  # Threads can still use system
 find_package(unofficial-sqlite3 REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
+find_package(nlohmann_json REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 
-add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)
 add_subdirectory(../../logging ${CMAKE_CURRENT_BINARY_DIR}/logging)
 
 # Add telemetry ingestion key (if defined)
@@ -84,8 +84,8 @@ add_dependencies(telemetrylib 1dscpplib)
 
 target_link_libraries(telemetrylib
     PUBLIC
-        parsonlib
         logging
+        nlohmann_json::nlohmann_json
     PRIVATE
         ${MAT_SDK_LIB}/libmat.a
         unofficial::sqlite3::sqlite3

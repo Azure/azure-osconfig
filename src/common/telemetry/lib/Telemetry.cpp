@@ -226,124 +226,86 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
         return;
     }
 
-    JSON_Value* jsonValue = nullptr;
-    JSON_Object* jsonObject = nullptr;
-
     try
     {
         // Parse the JSON string
-        jsonValue = json_parse_string(jsonLine.c_str());
-        if (!jsonValue)
-        {
-            OsConfigLogError(m_log, "Failed to parse JSON line: %s", jsonLine.c_str());
-            return;
-        }
+        nlohmann::json jsonObject = nlohmann::json::parse(jsonLine);
 
-        jsonObject = json_value_get_object(jsonValue);
-        if (!jsonObject)
+        // Verify it's an object
+        if (!jsonObject.is_object())
         {
             OsConfigLogError(m_log, "JSON line is not an object: %s", jsonLine.c_str());
-            json_value_free(jsonValue);
             return;
         }
 
         // Extract event name - required field
-        const char* eventName = json_object_get_string(jsonObject, "EventName");
-        if (!eventName)
+        if (!jsonObject.contains("EventName") || !jsonObject["EventName"].is_string())
         {
             OsConfigLogError(m_log, "JSON object missing 'EventName' field: %s", jsonLine.c_str());
-            json_value_free(jsonValue);
             return;
         }
 
+        std::string eventName = jsonObject["EventName"].get<std::string>();
+
         // Collect all JSON keys for validation
         std::set<std::string> jsonKeys;
-        size_t count = json_object_get_count(jsonObject);
-        for (size_t i = 0; i < count; i++)
+        for (auto it = jsonObject.begin(); it != jsonObject.end(); ++it)
         {
-            const char* key = json_object_get_name(jsonObject, i);
-            if (key)
-            {
-                jsonKeys.insert(std::string(key));
-            }
+            jsonKeys.insert(it.key());
         }
 
         // Validate parameters against the event's parameter set
-        if (!ValidateEventParameters(std::string(eventName), jsonKeys))
+        if (!ValidateEventParameters(eventName, jsonKeys))
         {
-            OsConfigLogError(m_log, "Parameter validation failed for event '%s': %s", eventName, jsonLine.c_str());
-            json_value_free(jsonValue);
+            OsConfigLogError(m_log, "Parameter validation failed for event '%s': %s", eventName.c_str(), jsonLine.c_str());
             return;
         }
 
         // Create event with the event name
-        OsConfigLogDebug(m_log, "Processing event: %s", eventName);
+        OsConfigLogDebug(m_log, "Processing event: %s", eventName.c_str());
         EventProperties event(eventName);
 
         // Iterate over all key/value pairs in the JSON object
-        for (size_t i = 0; i < count; i++)
+        for (auto it = jsonObject.begin(); it != jsonObject.end(); ++it)
         {
-            const char* key = json_object_get_name(jsonObject, i);
-            if (!key || strcmp(key, "EventName") == 0)
+            const std::string& key = it.key();
+            if (key == "EventName")
             {
                 // Skip the EventName since it's already used for the event type
                 continue;
             }
 
-            JSON_Value* value = json_object_get_value(jsonObject, key);
-            if (!value)
-            {
-                continue;
-            }
+            const auto& value = it.value();
 
-            OsConfigLogDebug(m_log, "Processing key: %s", key);
+            OsConfigLogDebug(m_log, "Processing key: %s", key.c_str());
 
             // Handle different JSON value types
-            JSON_Value_Type valueType = json_value_get_type(value);
-            switch (valueType)
+            if (value.is_string())
             {
-                case JSONString:
-                {
-                    const char* stringValue = json_value_get_string(value);
-                    if (stringValue)
-                    {
-                        event.SetProperty(key, std::string(stringValue));
-                    }
-                    break;
-                }
-                case JSONNumber:
-                {
-                    double numberValue = json_value_get_number(value);
-                    event.SetProperty(key, numberValue);
-                    break;
-                }
-                case JSONBoolean:
-                {
-                    int boolValue = json_value_get_boolean(value);
-                    event.SetProperty(key, boolValue != 0);
-                    break;
-                }
-                case JSONNull:
-                {
-                    // For null values, we could either skip them or set as empty string
-                    event.SetProperty(key, std::string(""));
-                    break;
-                }
-                case JSONObject:
-                case JSONArray:
-                {
-                    // For complex types (objects/arrays), serialize them as strings
-                    char* serializedValue = json_serialize_to_string(value);
-                    if (serializedValue)
-                    {
-                        event.SetProperty(key, std::string(serializedValue));
-                        json_free_serialized_string(serializedValue);
-                    }
-                    break;
-                }
-                default:
-                    // Skip unknown types
-                    break;
+                event.SetProperty(key, value.get<std::string>());
+            }
+            else if (value.is_number_float())
+            {
+                event.SetProperty(key, value.get<double>());
+            }
+            else if (value.is_number_integer())
+            {
+                // Convert integer to double for consistency
+                event.SetProperty(key, static_cast<double>(value.get<int64_t>()));
+            }
+            else if (value.is_boolean())
+            {
+                event.SetProperty(key, value.get<bool>());
+            }
+            else if (value.is_null())
+            {
+                // For null values, we could either skip them or set as empty string
+                event.SetProperty(key, std::string(""));
+            }
+            else if (value.is_object() || value.is_array())
+            {
+                // For complex types (objects/arrays), serialize them as strings
+                event.SetProperty(key, value.dump());
             }
         }
 
@@ -353,12 +315,6 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     catch (const std::exception& e)
     {
         OsConfigLogError(m_log, "Exception processing JSON line '%s': %s", jsonLine.c_str(), e.what());
-    }
-
-    // Cleanup
-    if (jsonValue)
-    {
-        json_value_free(jsonValue);
     }
 }
 
