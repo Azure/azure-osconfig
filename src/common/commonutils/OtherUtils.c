@@ -14,8 +14,8 @@
 // Checks for null, misalignment, low addresses, and out-of-range values
 int IsValidPointer(void* pointer)
 {
-    return ((0 != (uintptr_t)(a)) && (0 != sizeof(void*)) && (0 == ((uintptr_t)(a) % sizeof(void*))) &&
-        ((uintptr_t)(a) >= 0x1000) && ((uintptr_t)(a) <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : VALID_MAX_ADDR))) ? 1 : 0;
+    return ((0 != (uintptr_t)(pointer)) && (0 != sizeof(void*)) && (0 == ((uintptr_t)(pointer) % sizeof(void*))) &&
+        ((uintptr_t)pointer >= 0x1000) && ((uintptr_t)pointer <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : VALID_MAX_ADDR))) ? 1 : 0;
 }
 
 char* DuplicateString(const char* source)
