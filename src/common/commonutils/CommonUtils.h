@@ -16,9 +16,10 @@
 #define UNUSED(a) (void)(a)
 
 #define FREE_MEMORY(a) {\
-    if (NULL != a) {\
-        free(a);\
-        a = NULL;\
+    void* b = (a);\
+    (a) = NULL;\
+    if (NULL != b) {\
+        free(b);\
     }\
 }\
 
@@ -48,6 +49,8 @@
 extern "C"
 {
 #endif
+
+int IsValidPointer(void* pointer);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);

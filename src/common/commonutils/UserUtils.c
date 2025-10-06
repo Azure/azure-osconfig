@@ -713,9 +713,24 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
                     }
                 }
 
+                if (!IsValidPointer(&userGroupList))
+                {
+                    OsConfigLogWarning(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: user group list %p appears invalid", &userGroupList);
+                }
+
                 FreeGroupList(&userGroupList, userGroupListSize);
             }
         }
+    }
+
+    if (!IsValidPointer(&userList))
+    {
+        OsConfigLogWarning(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: user list %p appears invalid", &userList);
+    }
+
+    if (!IsValidPointer(&groupList))
+    {
+        OsConfigLogWarning(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group list %p appears invalid", &groupList);
     }
 
     FreeUsersList(&userList, userListSize);
