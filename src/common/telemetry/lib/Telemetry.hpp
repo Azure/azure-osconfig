@@ -5,7 +5,7 @@
 #define TELEMETRY_HPP
 
 #include <memory>
-#include <parson.h>
+#include <nlohmann/json.hpp>
 #include <set>
 #include <string>
 #include <unordered_map>

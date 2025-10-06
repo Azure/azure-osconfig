@@ -10,6 +10,10 @@
       "name": "lua",
       "features": ["cpp"]
     },
-    "sqlite3"
+    "sqlite3",
+    {
+      "name": "nlohmann-json",
+      "version>=": "3.11.3"
+    }
   ]
 }
