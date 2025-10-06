@@ -361,7 +361,7 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
         OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
 
-        if (IsDaemonActive(firewalld, log))
+        if (IsDaemonActive(g_firewalld, log))
         {
             if (0 == (status = ExecuteCommand(NULL, firewallCommand, true, false, 0, 0, NULL, NULL, log)))
             {
@@ -399,7 +399,6 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     const char* dropInput = "iptables -P INPUT DROP";
     const char* dropForward = "iptables -P FORWARD DROP";
     const char* dropOutput = "iptables -P OUTPUT DROP";
-    const char* startFirewall = "systemctl start firewalld";
     const char* setDefaultZoneDrop = "firewall-cmd --set-default-zone=drop";
     const char* setPermanentZoneDrop = "firewall-cmd --permanent --zone=drop --add-service=ssh";
     int status = 0;
