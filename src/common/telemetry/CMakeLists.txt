@@ -3,12 +3,13 @@
 
 project(telemetry)
 
-add_library(telemetry STATIC
-	src/Telemetry.c)
+add_library(telemetry
+    STATIC
+	    Telemetry.c)
 
 target_include_directories(telemetry
 	PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR}/inc)
+		${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(telemetry
     PRIVATE
