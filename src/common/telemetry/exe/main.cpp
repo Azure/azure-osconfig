@@ -67,12 +67,17 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
 
     // Parse options
     int opt;
-    while ((opt = getopt_long(argc, argv, "v", long_options, nullptr)) != -1)
+    opterr = 0; // Suppress getopt error messages
+    optind = 1; // Reset option index
+    while ((opt = getopt_long(argc, argv, "+v", long_options, nullptr)) != -1)
     {
         switch (opt)
         {
             case 'v':
                 args.verbose = true;
+                break;
+            case '?':
+                // Unknown option or missing argument - ignore and continue
                 break;
             default:
                 print_usage(argv[0]);
@@ -80,21 +85,32 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
         }
     }
 
+    // Collect non-option arguments by scanning all args
+    std::vector<std::string> non_option_args;
+    for (int i = 1; i < argc; i++)
+    {
+        std::string arg = argv[i];
+        if (arg != "-v" && arg != "--verbose")
+        {
+            non_option_args.push_back(arg);
+        }
+    }
+
     // Get filepath (first non-option argument)
-    if (optind >= argc)
+    if (non_option_args.empty())
     {
         OsConfigLogError(log, "Error: JSON file path is required.");
         print_usage(argv[0]);
         return false;
     }
-    args.filepath = argv[optind++];
+    args.filepath = non_option_args[0];
 
-    // Parse optional teardown time argument
-    if (optind < argc)
+    // Parse optional teardown time argument (second non-option argument)
+    if (non_option_args.size() > 1)
     {
         try
         {
-            args.teardown_time = std::stoi(argv[optind]);
+            args.teardown_time = std::stoi(non_option_args[1]);
             if (args.teardown_time < 0)
             {
                 OsConfigLogError(log, "Error: Teardown time must be a non-negative integer.");
@@ -103,9 +119,16 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
         }
         catch (const std::exception& e)
         {
-            OsConfigLogError(log, "Error: Invalid teardown time argument '%s'. Must be a valid integer.", argv[optind]);
+            OsConfigLogError(log, "Error: Invalid teardown time argument '%s'. Must be a valid integer.", non_option_args[1].c_str());
             return false;
         }
+    }
+
+    if (non_option_args.size() > 2)
+    {
+        OsConfigLogError(log, "Error: Too many arguments provided.");
+        print_usage(argv[0]);
+        return false;
     }
 
     return true;
