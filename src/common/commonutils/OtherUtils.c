@@ -11,11 +11,33 @@
 #define VALID_MAX_ADDR UINTPTR_MAX
 #endif
 
-// Checks for null, misalignment, low addresses, and out-of-range values
-int IsValidPointer(void* pointer)
+bool IsValidPointer(void* pointer, OsConfigLogHandle log)
 {
-    return ((0 != (uintptr_t)pointer) && (0 != sizeof(void*)) && (0 == ((uintptr_t)pointer % sizeof(void*))) &&
-        ((uintptr_t)pointer >= 0x1000) && (((uintptr_t)pointer <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : VALID_MAX_ADDR))) ? 1 : 0;
+    bool result = false;
+
+    if (NULL == pointer)
+    {
+        OsConfigLogWarning(log, "IsValidPointer: NULL");
+    }
+    else if ((0 != sizeof(void*)) && (0 != ((uintptr_t)pointer % sizeof(void*))))
+    {
+        OsConfigLogWarning(log, "IsValidPointer: %p is misaligned", pointer);
+    }
+    else if ((uintptr_t)pointer < 0x1000)
+    {
+        OsConfigLogWarning(log, "IsValidPointer: %p is low address", pointer);
+    }
+    else if ((uintptr_t)pointer > ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : VALID_MAX_ADDR))
+    {
+        OsConfigLogWarning(log, "IsValidPointer: %p is out of range", pointer);
+    }
+    else
+    {
+        OsConfigLogWarning(log, "IsValidPointer: %p appears valid", pointer);
+        result = true;
+    }
+    
+    return result;
 }
 
 char* DuplicateString(const char* source)

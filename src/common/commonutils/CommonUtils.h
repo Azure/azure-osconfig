@@ -50,7 +50,7 @@ extern "C"
 {
 #endif
 
-int IsValidPointer(void* pointer);
+bool IsValidPointer(void* pointer, OsConfigLogHandle log);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
