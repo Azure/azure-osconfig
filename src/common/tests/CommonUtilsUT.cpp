@@ -3118,37 +3118,37 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     EXPECT_FALSE(SafeFree(0, nullptr));
     EXPECT_FALSE(SafeFree(nullptr, nullptr));
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
 
     EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
-    EXPECT_TRUE(SafeFree(p, nullptr));
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_TRUE(SafeFree(&p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
     EXPECT_EQ(nullptr, nullptr);
 
     p = (char*)(0x1000 - 1);
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
 
     p = (char*)0x1;
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
 
     p = (char*)(0x00007FFFFFFFFFFF + 1);
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
 
     p = (char*)0xFFFFFFFFFFFFFFFF;
-    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(&p, nullptr));
 
     for (int i = 0; i < 100; i++)
     {
         EXPECT_NE(nullptr, p = (char*)SafeMalloc((i * 17), nullptr));
-        EXPECT_TRUE(SafeFree(p, nullptr));
-        EXPECT_FALSE(SafeFree(p, nullptr));
+        EXPECT_TRUE(SafeFree(&p, nullptr));
+        EXPECT_FALSE(SafeFree(&p, nullptr));
         EXPECT_EQ(nullptr, p);
 
         p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
-        EXPECT_FALSE(SafeFree(p, nullptr));
+        EXPECT_FALSE(SafeFree(&p, nullptr));
 
         p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
-        EXPECT_FALSE(SafeFree(p, nullptr));
+        EXPECT_FALSE(SafeFree(&p, nullptr));
     }
 }
 
