@@ -27,7 +27,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     {
         OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
     }
-    if (NULL == (pointer = malloc(size)))
+    else if (NULL == (pointer = malloc(size)))
     {
         OsConfigLogError(log, "SafeMalloc: memory allocation of %zu bytes failed", size);
     }
