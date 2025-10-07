@@ -106,6 +106,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
                    g_head = current->next;
                 }
 
+                OsConfigLogError(log, "SafeFree: %p to be freed", p ? *p : NULL); ////
+
                 FREE_MEMORY(current);
                 FREE_MEMORY(pointer);
                 *p = NULL;
@@ -117,11 +119,11 @@ bool SafeFree(void** p, OsConfigLogHandle log)
             previous = current;
             current = current->next;
         }
-    }
 
-    if (false == result)
-    {
-        OsConfigLogError(log, "SafeFree: pointer '%p' not tracked or already freed", pointer);
+        if (false == result)
+        {
+            OsConfigLogError(log, "SafeFree: pointer '%p' not tracked or already freed", pointer);
+        }
     }
 
     return result;
