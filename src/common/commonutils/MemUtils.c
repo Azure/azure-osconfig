@@ -19,7 +19,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     void* pointer = NULL;
     uintptr_t address = 0;
 
-    if (size >= SIZE_MAX))
+    if (size >= SIZE_MAX)
     {
         OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
     }
