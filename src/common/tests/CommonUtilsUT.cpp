@@ -3111,6 +3111,7 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 
 TEST_F(CommonUtilsTest, SafeMallocFree)
 {
+    char* s[] = {NULL, NULL, NULL};
     char* p = nullptr;
 
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
@@ -3137,7 +3138,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     p = (char*)0xFFFFFFFFFFFFFFFF;
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 1; i < 100; i++)
     {
         EXPECT_NE(nullptr, p = (char*)SafeMalloc((i * 17), nullptr));
         EXPECT_TRUE(SafeFree((void**)&p, nullptr));
@@ -3149,6 +3150,18 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
         p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
         EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+    }
+
+    for (i = 0; i < 3; i++)
+    {
+        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
+    }
+
+    for (i = 0; i < 3; i++)
+    {
+        EXPECT_TRUE(SafeFree((void**)&(s[i]), nullptr));
+        EXPECT_FALSE(SafeFree((void**)&(s[i]), nullptr));
+        EXPECT_EQ(nullptr, s[i]);
     }
 }
 

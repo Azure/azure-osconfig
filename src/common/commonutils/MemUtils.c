@@ -63,7 +63,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         }
     }
 
-    OsConfigLogError(log, "SafeMalloc: %p", pointer); ////
     return pointer;
 }
 
@@ -72,8 +71,6 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     void* pointer = NULL;
     uintptr_t addrress = 0;
     bool result = false;
-
-    OsConfigLogError(log, "SafeFree: %p", p ? *p : NULL); ////
 
     if ((NULL == p) || (NULL == *p))
     {
@@ -105,8 +102,6 @@ bool SafeFree(void** p, OsConfigLogHandle log)
                 {
                    g_head = current->next;
                 }
-
-                OsConfigLogError(log, "SafeFree: %p to be freed", p ? *p : NULL); ////
 
                 FREE_MEMORY(current);
                 FREE_MEMORY(pointer);
