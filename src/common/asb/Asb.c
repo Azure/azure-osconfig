@@ -4268,6 +4268,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     else
     {
         setenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR, objectName, 1);
+        OSConfigTimeStampSave();
+
         if (0 == strcmp(objectName, g_auditEnsureLoggingLevelObject))
         {
             result = AuditEnsureLoggingLevel(log);

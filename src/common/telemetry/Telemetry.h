@@ -10,12 +10,14 @@
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <version.h>
@@ -25,6 +27,7 @@
 
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
+#define TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR "_Microseconds"
 
 // Buffer sizes for string conversion of numeric values
 #define MAX_NUM_STRING_LENGTH 32    // Accommodates 64-bit int/long values
@@ -51,6 +54,27 @@ int OSConfigTelemetryIsInitialized(void);
 #define VERBOSE_FLAG_IF_DEBUG ""
 #endif
 
+static inline int64_t ts_to_us(struct timespec ts) {
+    return (int64_t)ts.tv_sec * 1000000LL + (int64_t)ts.tv_nsec / 1000LL;
+}
+
+#define OSConfigTimeStampSave() { \
+    struct timespec _start; \
+    clock_gettime(CLOCK_MONOTONIC, &_start); \
+    char _start_str[MAX_NUM_STRING_LENGTH] = {0}; \
+    snprintf(_start_str, sizeof(_start_str), "%" PRId64, ts_to_us(_start)); \
+    setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, _start_str, 1); \
+}
+
+#define OSConfigGetElapsedTime(elapsed_us_var) { \
+    struct timespec _end; \
+    const char *_start_str = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR); \
+    char *end; errno = 0; \
+    int64_t _start_us = strtoll(_start_str, &end, 10); \
+    clock_gettime(CLOCK_MONOTONIC, &_end); \
+    elapsed_us_var = ts_to_us(_end) - _start_us; \
+}
+
 #define OSConfigProcessTelemetryFile() { \
     FILE* telemetryFileMacro = OSConfigTelemetryGetFile(); \
     const char* telemetryFileNameMacro = OSConfigTelemetryGetFileName(); \
@@ -73,11 +97,13 @@ int OSConfigTelemetryIsInitialized(void);
     snprintf(status_str, sizeof(status_str), "%d", (status)); \
     char line_str[MAX_NUM_STRING_LENGTH] = {0}; \
     snprintf(line_str, sizeof(line_str), "%d", (line)); \
-    const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
-    const char* ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR); \
-    const char* timestamp = GetFormattedTime(); \
-    char* distroName = GetOsName(NULL); \
-    char* telemetry_json = FormatAllocateString("{" \
+    const char* _correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR); \
+    const char* _ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR); \
+    const char* _timestamp = GetFormattedTime(); \
+    int64_t _elapsed_us = 0; \
+    OSConfigGetElapsedTime(_elapsed_us); \
+    char* _distroName = GetOsName(NULL); \
+    char* _telemetry_json = FormatAllocateString("{" \
         "\"EventName\":\"StatusTrace\"," \
         "\"Timestamp\":\"%s\"," \
         "\"FileName\":\"%s\"," \
@@ -86,15 +112,16 @@ int OSConfigTelemetryIsInitialized(void);
         "\"RuleCodename\":\"%s\"," \
         "\"CallingFunctionName\":\"%s\"," \
         "\"ResultCode\":\"%s\"," \
+        "\"Microseconds\":\"%" PRId64 "\"," \
         "\"DistroName\":\"%s\"," \
         "\"CorrelationId\":\"%s\"," \
         "\"Version\":\"%s\"" \
-        "}", timestamp ? timestamp : "", __FILE__, line_str, __func__, ruleCodename ? ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", status_str, distroName ? distroName : "unknown", correlationId ? correlationId : "", OSCONFIG_VERSION); \
-    if (NULL != telemetry_json) { \
-        OSConfigTelemetryAppendJSON(telemetry_json); \
+        "}", _timestamp ? _timestamp : "", __FILE__, line_str, __func__, _ruleCodename ? _ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", status_str, _elapsed_us, _distroName ? _distroName : "unknown", _correlationId ? _correlationId : "", OSCONFIG_VERSION); \
+    if (NULL != _telemetry_json) { \
+        OSConfigTelemetryAppendJSON(_telemetry_json); \
     } \
-    FREE_MEMORY(distroName); \
-    FREE_MEMORY(telemetry_json); \
+    FREE_MEMORY(_distroName); \
+    FREE_MEMORY(_telemetry_json); \
 }
 
 #define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds) { \
