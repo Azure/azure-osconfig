@@ -18,9 +18,9 @@ static void ResetUserEntry(SimplifiedUser* target, OsConfigLogHandle log)
 {
     if (NULL != target)
     {
-        SafeFree(target->username, log);
-        SafeFree(target->home, log);
-        SafeFree(target->shell, log);
+        SafeFree(&(target->username), log);
+        SafeFree(&(target->home), log);
+        SafeFree(&(target->shell), log);
 
         target->userId = -1;
         target->groupId = -1;
@@ -51,7 +51,7 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle
             ResetUserEntry(&((*source)[i]), log);
         }
 
-        SafeFree(*source, log);
+        SafeFree(source, log);
     }
 }
 
@@ -442,10 +442,10 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHa
     {
         for (i = 0; i < size; i++)
         {
-            SafeFree(((*groupList)[i]).groupName, log);
+            SafeFree(&((*groupList)[i]).groupName, log);
         }
 
-        SafeFree(*groupList, log);
+        SafeFree(groupList, log);
     }
 }
 
@@ -486,7 +486,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
         {
             OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
-            SafeFree(groupIds, log);
+            SafeFree(&groupIds, log);
 
             if (0 < numberOfGroups)
             {
@@ -578,7 +578,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (0 == *size)
     {
-        SafeFree(*groupList, log);
+        SafeFree(groupList, log);
     }
 
     if (status)
@@ -586,7 +586,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         OsConfigCaptureReason(reason, "Failed to enumerate groups for users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
 
-    SafeFree(groupIds, log);
+    SafeFree(&groupIds, log);
 
     return status;
 }
