@@ -3116,9 +3116,9 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
     EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
 
-    EXPECT_FALSE(SafeFree(0, nullptr));
-    EXPECT_FALSE(SafeFree(nullptr, nullptr));
+    EXPECT_FALSE(SafeFree((void**)0, nullptr));
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+    EXPECT_FALSE(SafeFree(nullptr, nullptr));
 
     EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
     EXPECT_TRUE(SafeFree((void**)&p, nullptr));
