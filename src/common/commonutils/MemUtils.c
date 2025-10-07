@@ -69,19 +69,24 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 
 bool SafeFree(void** p, OsConfigLogHandle log)
 {
-    void* pointer = *p;
-    uintptr_t addrress = (uintptr_t)pointer;
+    void* pointer = NULL;
+    uintptr_t addrress = 0;
     bool result = false;
 
     OsConfigLogError(log, "SafeFree: %p", p ? *p : NULL); ////
 
+    if ((NULL == p) || (NULL == *p))
+    {
+        OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
+        return result;
+    }
+
+    pointer = *p;
+    addrress = (uintptr_t)pointer;
+
     if ((addrress < g_minPointer) || (addrress > g_maxPointer))
     {
         OsConfigLogError(log, "SafeFree: pointer '%p' is outside valid allocation range", pointer);
-    }
-    else if ((NULL == p) || (NULL == *p))
-    {
-        OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
     }
     else
     {
