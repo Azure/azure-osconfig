@@ -3111,10 +3111,10 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 
 TEST_F(CommonUtilsTest, SafeMallocFree)
 {
-    char* p = NULL;
+    char* p = nullptr;
 
-    EXPECT_EQ(NULL, SafeMalloc(0, nullptr));
-    EXPECT_EQ(NULL, SafeMalloc(-1, nullptr));
+    EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
+    EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
 
     EXPECT_FALSE(SafeFree(0, nullptr));
     EXPECT_FALSE(SafeFree(nullptr, nullptr));
