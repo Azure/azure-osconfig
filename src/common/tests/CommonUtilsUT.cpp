@@ -3112,6 +3112,7 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 TEST_F(CommonUtilsTest, SafeMallocFree)
 {
     char* s[] = {NULL, NULL, NULL};
+    static const char* c = "test";
     char* p = nullptr;
     int i = 0;
 
@@ -3126,6 +3127,8 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     EXPECT_TRUE(SafeFree((void**)&p, nullptr));
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
     EXPECT_EQ(nullptr, nullptr);
+
+    EXPECT_FALSE(SafeFree((void**)&c, nullptr));
 
     p = (char*)(0x1000 - 1);
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
