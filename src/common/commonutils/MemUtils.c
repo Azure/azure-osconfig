@@ -19,7 +19,11 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     void* pointer = NULL;
     uintptr_t address = 0;
 
-    if (size >= SIZE_MAX)
+    if (0 == size)
+    {
+        OsConfigLogError(log, "SafeMalloc: requested size is 0 bytes, nothing to allocate");
+    }
+    else if (size >= SIZE_MAX)
     {
         OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
     }
@@ -29,7 +33,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     }
     else if (0 != ((address = (uintptr_t)pointer) % 8))
     {
-
         OsConfigLogError(log, "SafeMalloc: pointer '%p' is not aligned to 8 bytes", pointer);
         FREE_MEMORY(pointer);
     }
