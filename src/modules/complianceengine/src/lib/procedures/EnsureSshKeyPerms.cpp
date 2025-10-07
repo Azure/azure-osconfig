@@ -7,6 +7,8 @@
 #include <FileTreeWalk.h>
 #include <sstream>
 
+// TODO(bob): delete
+#include <iostream>
 namespace ComplianceEngine
 {
 namespace
@@ -68,9 +70,11 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
                 "SSH PRIVATE KEY", "-----BEGIN OPENSSH PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----", "-----BEGIN ENCRYPTED PRIVATE KEY"};
             for (auto p : privPrefixes)
             {
+                std::cerr << "[" << __func__ << ":" << __LINE__ << "] Checking prefix: '" << p << "' against line: '" << firstLine << "'" << std::endl;
                 if (firstLine.rfind(p, 0) == 0)
                 {
                     isKey = true;
+                    std::cerr << "[" << __func__ << ":" << __LINE__ << "] Matched private key prefix" << std::endl;
                     break;
                 }
             }
@@ -78,6 +82,7 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
 
         if (!isKey)
         {
+            std::cerr << "[" << __func__ << ":" << __LINE__ << "] Not a key" << std::endl;
             return Status::Compliant;
         }
 

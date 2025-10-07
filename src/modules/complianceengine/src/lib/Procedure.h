@@ -16,9 +16,26 @@ struct json_object_t;
 
 namespace ComplianceEngine
 {
+class ProcedureParameters : public std::map<std::string, std::string>
+{
+public:
+    ProcedureParameters() = default;
+    ProcedureParameters(const ProcedureParameters&) = default;
+    ProcedureParameters(ProcedureParameters&&) = default;
+    ProcedureParameters& operator=(const ProcedureParameters&) = default;
+    ProcedureParameters& operator=(ProcedureParameters&&) = default;
+    ~ProcedureParameters() = default;
+
+    // Parse JSON representation of the input parameters
+    static Result<ProcedureParameters> Parse(const json_object_t& input);
+
+    // Parse key/value pairs in the form key1=value1 key2="value 2" key3='value 3'
+    static Result<ProcedureParameters> Parse(const std::string& input);
+};
+
 class Procedure
 {
-    std::map<std::string, std::string> mParameters;
+    ProcedureParameters mParameters;
     JsonWrapper mAuditRule;
     JsonWrapper mRemediationRule;
 
@@ -38,10 +55,13 @@ public:
     const json_object_t* Audit() const noexcept;
     const json_object_t* Remediation() const noexcept;
 
-    void SetParameter(const std::string& key, std::string value);
+    void SetParameters(ProcedureParameters value);
     Optional<Error> UpdateUserParameters(const std::string& userParameters);
     Optional<Error> SetAudit(const json_value_t* rule);
     Optional<Error> SetRemediation(const json_value_t* rule);
+
+private:
+    Optional<Error> UpdateUserParameters(const ProcedureParameters& userParameters);
 };
 } // namespace ComplianceEngine
 

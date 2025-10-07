@@ -3,21 +3,61 @@
 
 #include "JsonWrapper.h"
 
-#include "parson.h"
+#include <Base64.h>
+#include <parson.h>
 
 namespace ComplianceEngine
 {
-void JsonWrapperDeleter::operator()(json_value_t* value) const
+Result<JsonWrapper> JsonWrapper::FromString(const char* input)
 {
-    json_value_free(value);
+    auto result = JsonWrapperPointerType(json_parse_string(input), &json_value_free);
+    if (nullptr == result)
+    {
+        return Error("Failed to parse JSON", EINVAL);
+    }
+
+    return JsonWrapper(std::move(result));
 }
 
-JsonWrapper ParseJson(const char* input)
+Result<JsonWrapper> JsonWrapper::FromString(const std::string& input)
 {
-    return JsonWrapper(json_parse_string(input), JsonWrapperDeleter());
+    return FromString(input.c_str());
 }
-JsonWrapper JSONFromString(const char* input)
+
+Result<JsonWrapper> JsonWrapper::FromBase64(const std::string& input)
 {
-    return JsonWrapper(json_value_init_string(input), JsonWrapperDeleter());
+    const auto decodedString = Base64Decode(input);
+    if (!decodedString.HasValue())
+    {
+        return decodedString.Error();
+    }
+
+    return FromString(decodedString.Value());
+}
+
+Result<JsonWrapper> JsonWrapper::FromJsonString(const std::string& input)
+{
+    auto result = JsonWrapperPointerType(json_value_init_string(input.c_str()), &json_value_free);
+    if (nullptr == result)
+    {
+        return Error("Failed to parse JSON-encoded string", EINVAL);
+    }
+
+    if (JSONString != json_value_get_type(result.get()))
+    {
+        return Error("Failed to parse a JSON-encoded string: the parsed value is not a string", EINVAL);
+    }
+
+    return JsonWrapper(std::move(result));
+}
+
+JsonWrapper::JsonWrapper()
+    : JsonWrapperPointerType(nullptr, &json_value_free)
+{
+}
+
+JsonWrapper::JsonWrapper(JsonWrapperPointerType&& value)
+    : JsonWrapperPointerType(std::move(value))
+{
 }
 } // namespace ComplianceEngine

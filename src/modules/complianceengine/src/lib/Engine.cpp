@@ -141,22 +141,6 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
     return evaluator.ExecuteAudit(*mFormatter);
 }
 
-Result<JsonWrapper> Engine::DecodeB64Json(const std::string& input) const
-{
-    auto decodedString = Base64Decode(input);
-    if (!decodedString.HasValue())
-    {
-        return decodedString.Error();
-    }
-    auto result = json_parse_string(decodedString.Value().c_str());
-    if (nullptr == result)
-    {
-        return Error("Failed to parse JSON", EINVAL);
-    }
-
-    return JsonWrapper(result);
-}
-
 Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::string& payload)
 {
     if (ruleName.empty())
@@ -165,11 +149,11 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
     }
 
     mDatabase.erase(ruleName);
-    auto ruleJSON = DecodeB64Json(payload);
+    auto ruleJSON = JsonWrapper::FromBase64(payload);
     if (!ruleJSON.HasValue())
     {
         // Fall back to plain JSON, both formats are supported
-        ruleJSON = ComplianceEngine::ParseJson(payload.c_str());
+        ruleJSON = JsonWrapper::FromString(payload);
         if (!ruleJSON.HasValue())
         {
             OsConfigLogError(Log(), "Failed to parse JSON: %s", ruleJSON.Error().message.c_str());
@@ -234,20 +218,19 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
             return Error("The 'parameters' value is not an object");
         }
 
-        auto paramsObj = json_value_get_object(jsonValue);
-        auto count = json_object_get_count(paramsObj);
-        for (decltype(count) i = 0; i < count; ++i)
+        const auto* paramsObj = json_value_get_object(jsonValue);
+        if (nullptr == paramsObj)
         {
-            const char* key = json_object_get_name(paramsObj, i);
-            const char* val = json_object_get_string(paramsObj, key);
-            if ((nullptr == key) || (nullptr == val))
-            {
-                OsConfigLogError(Log(), "Failed to get parameter name and value");
-                return Error("Failed to get parameter name and value");
-            }
-
-            procedure.SetParameter(key, val);
+            return Error("The 'parameters' object is null");
         }
+
+        auto parameters = ProcedureParameters::Parse(*paramsObj);
+        if (!parameters.HasValue())
+        {
+            return parameters.Error();
+        }
+
+        procedure.SetParameters(std::move(parameters.Value()));
     }
     mDatabase.emplace(std::move(ruleName), std::move(procedure));
     return Optional<Error>();
@@ -269,6 +252,7 @@ Optional<Error> Engine::InitAudit(const std::string& ruleName, const std::string
     auto error = it->second.UpdateUserParameters(payload);
     if (error)
     {
+        OsConfigLogError(Log(), "ERROR: Failed to update user parameters: %s", error->message.c_str());
         return error.Value();
     }
 

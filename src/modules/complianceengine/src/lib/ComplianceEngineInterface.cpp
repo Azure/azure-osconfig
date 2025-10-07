@@ -26,8 +26,7 @@
 using ComplianceEngine::CISBenchmarkInfo;
 using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
-using ComplianceEngine::JSONFromString;
-using ComplianceEngine::ParseJson;
+using ComplianceEngine::JsonWrapper;
 using ComplianceEngine::Status;
 
 namespace
@@ -181,17 +180,20 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             payloadString = "PASS" + payloadString;
         }
 
-        auto json = JSONFromString(payloadString.c_str());
-        if (NULL == json)
+        auto json = JsonWrapper::FromJsonString(payloadString);
+        if (!json.HasValue())
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to create JSON object from string");
             return ENOMEM;
         }
-        else if (NULL == (*payload = json_serialize_to_string(json.get())))
+
+        *payload = json_serialize_to_string(json->get());
+        if (nullptr == *payload)
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to serialize JSON object");
             return ENOMEM;
         }
+
         *payloadSizeBytes = static_cast<int>(strlen(*payload));
         OsConfigLogDebug(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
@@ -228,20 +230,26 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     try
     {
         std::string payloadStr(payload, payloadSizeBytes);
-        auto object = ParseJson(payloadStr.c_str());
-        if (NULL == object || (JSONString != json_value_get_type(object.get()) && JSONObject != json_value_get_type(object.get())))
+        auto json = JsonWrapper::FromString(payloadStr.c_str());
+        if (!json.HasValue())
+        {
+            OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed: Failed to parse JSON string");
+            return EINVAL;
+        }
+
+        if ((JSONString != json_value_get_type(json->get())) && (JSONObject != json_value_get_type(json->get())))
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiSet failed: Failed to parse JSON string");
             return EINVAL;
         }
         std::string realPayload;
-        if (json_value_get_type(object.get()) == JSONString)
+        if (json_value_get_type(json->get()) == JSONString)
         {
-            realPayload = json_value_get_string(object.get());
+            realPayload = json_value_get_string(json->get());
         }
-        else if (json_value_get_type(object.get()) == JSONObject)
+        else
         {
-            char* tmp = json_serialize_to_string(object.get());
+            char* tmp = json_serialize_to_string(json->get());
             realPayload = tmp;
             json_free_serialized_string(tmp);
         }
