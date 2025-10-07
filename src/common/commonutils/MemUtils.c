@@ -19,44 +19,45 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     void* pointer = NULL;
     uintptr_t address = 0;
 
-    if (NULL != (pointer = malloc(size)))
+    if (size >= SIZE_MAX))
     {
-        address = (uintptr_t)pointer;
-        if (0 == (address % 8))
-        {
-            if (address < g_minPointer)
-            {
-                g_minPointer = address;
-            }
+        OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
+    }
+    if (NULL == (pointer = malloc(size)))
+    {
+        OsConfigLogError(log, "SafeMalloc: memory allocation of %zu bytes failed", size);
+    }
+    else if (0 != ((address = (uintptr_t)pointer) % 8))
+    {
 
-            if ((address + size) > g_maxPointer)
-            {
-                g_maxPointer = address + size;
-            }
-
-            if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
-            {
-                node->pointer = pointer;
-                node->next = g_head;
-                g_head = node;
-
-                memset(pointer, 0, size);
-            }
-            else
-            {
-                OsConfigLogError(log, "SafeMalloc: failed to allocate tracking node");
-                FREE_MEMORY(pointer);
-            }
-        }
-        else
-        {
-            OsConfigLogError(log, "SafeMalloc: pointer '%p' is not aligned to 8 bytes", pointer);
-            FREE_MEMORY(pointer);
-        }
+        OsConfigLogError(log, "SafeMalloc: pointer '%p' is not aligned to 8 bytes", pointer);
+        FREE_MEMORY(pointer);
     }
     else
     {
-        OsConfigLogError(log, "SafeMalloc: memory allocation of %zu bytes failed", size);
+        if (address < g_minPointer)
+        {
+            g_minPointer = address;
+        }
+
+        if ((address + size) > g_maxPointer)
+        {
+            g_maxPointer = address + size;
+        }
+
+        if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
+        {
+            node->pointer = pointer;
+            node->next = g_head;
+            g_head = node;
+
+            memset(pointer, 0, size);
+        }
+        else
+        {
+            OsConfigLogError(log, "SafeMalloc: failed to allocate tracking node");
+            FREE_MEMORY(pointer);
+        }
     }
 
     return pointer;

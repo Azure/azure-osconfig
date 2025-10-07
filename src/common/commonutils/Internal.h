@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
+#include <limits.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
