@@ -242,8 +242,8 @@ jobs:
         run: |
           mkdir  osconfig-logs
           stat /var/log/osconfig_nrp.log
-          cp -r /var/log/osconfig* osconfig-logs/
           sudo chown -R $USER:$USER ./osconfig-logs
+          cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
