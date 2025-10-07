@@ -3113,6 +3113,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 {
     char* s[] = {NULL, NULL, NULL};
     char* p = nullptr;
+    int i = 0;
 
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
     EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
@@ -3138,7 +3139,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     p = (char*)0xFFFFFFFFFFFFFFFF;
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
 
-    for (int i = 1; i < 100; i++)
+    for (i = 1; i < 100; i++)
     {
         EXPECT_NE(nullptr, p = (char*)SafeMalloc((i * 17), nullptr));
         EXPECT_TRUE(SafeFree((void**)&p, nullptr));
