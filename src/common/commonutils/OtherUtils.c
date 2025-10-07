@@ -351,9 +351,9 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
     const char* firewallCommand = "firewall-cmd --get-default-zone | grep -q '^drop$' && firewall-cmd --list-all --zone=drop | grep -q '^target: DROP$'";
     int status = ENOENT;
 
-    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", reason, log)))
     {
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not all found in response from command 'iptables -S'");
         OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not all found in response from command 'iptables -S'");
