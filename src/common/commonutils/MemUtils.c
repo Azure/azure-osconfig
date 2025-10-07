@@ -63,6 +63,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         }
     }
 
+    OsConfigLogError(log, "SafeMalloc: %p", pointer); ////
     return pointer;
 }
 
