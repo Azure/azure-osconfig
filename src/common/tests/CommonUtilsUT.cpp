@@ -3145,10 +3145,10 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
         EXPECT_EQ(nullptr, p);
 
         p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
-        EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+        EXPECT_FALSE(SafeFree(p, nullptr));
 
         p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
-        EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+        EXPECT_FALSE(SafeFree(p, nullptr));
     }
 }
 
