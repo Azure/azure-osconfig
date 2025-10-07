@@ -24,7 +24,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         address = (uintptr_t)pointer;
         if (0 == (address % 8))
         {
-            if (address < min_ptr)
+            if (address < g_minPointer)
             {
                 g_minPointer = address;
             }
@@ -34,7 +34,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
                 g_maxPointer = address + size;
             }
 
-            if (NULL != (node = malloc(sizeof(OsConfigPointerNode)))
+            if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
             {
                 node->pointer = pointer;
                 node->next = g_head;
