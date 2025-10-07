@@ -3112,14 +3112,14 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
 {
     InstallOrUpdatePackage("iptables", nullptr);
-    if (IsPackageInstalled("iptables"))
+    if (IsPackageInstalled("iptables", nullptr))
     {
         EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
         EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
     }
 
     InstallOrUpdatePackage("firewall", nullptr);
-    if (IsPackageInstalled("firewall"))
+    if (IsPackageInstalled("firewall", nullptr))
     {
         UninstallPackage("iptables", nullptr);
 
