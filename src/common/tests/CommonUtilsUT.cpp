@@ -1510,11 +1510,11 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
             EXPECT_NE(nullptr, groupList[j].groupName);
         }
 
-        FreeGroupList(&groupList, groupListSize);
+        FreeGroupList(&groupList, groupListSize, nullptr);
         EXPECT_EQ(nullptr, groupList);
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, nullptr);
     EXPECT_EQ(nullptr, userList);
 }
 
@@ -1532,7 +1532,7 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
         EXPECT_NE(nullptr, groupList[i].groupName);
     }
 
-    FreeGroupList(&groupList, groupListSize);
+    FreeGroupList(&groupList, groupListSize, nullptr);
     EXPECT_EQ(nullptr, groupList);
 }
 
