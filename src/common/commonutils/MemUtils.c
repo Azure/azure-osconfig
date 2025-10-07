@@ -69,7 +69,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 bool SafeFree(void** p, OsConfigLogHandle log)
 {
     void* pointer = NULL;
-    uintptr_t addrress = 0;
+    uintptr_t address = 0;
     bool result = false;
 
     if ((NULL == p) || (NULL == *p))
@@ -79,9 +79,9 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     }
 
     pointer = *p;
-    addrress = (uintptr_t)pointer;
+    address = (uintptr_t)pointer;
 
-    if ((addrress < g_minPointer) || (addrress > g_maxPointer))
+    if ((address < g_minPointer) || (address > g_maxPointer))
     {
         OsConfigLogError(log, "SafeFree: pointer '%p' is outside valid allocation range", pointer);
     }
