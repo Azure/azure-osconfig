@@ -3109,6 +3109,52 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
+TEST_F(CommonUtilsTest, SafeMallocFree)
+{
+    char* p = NULL;
+    
+    void* SafeMalloc(size_t size, OsConfigLogHandle log);
+    bool SafeFree(void** p, OsConfigLogHandle log);
+
+    EXPECT_EQ(NULL, SafeMalloc(0, nullptr));
+    EXPECT_EQ(NULL, SafeMalloc(nullptr, nullptr));
+
+    EXPECT_FALSE(SafeFree(0, nullptr));
+    EXPECT_FALSE(SafeFree(nullptr, nullptr));
+    EXPECT_FALSE(SafeFree(p, nullptr));
+
+    EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
+    EXPECT_TRUE(SafeFree(p, nullptr));
+    EXPECT_FALSE(SafeFree(p, nullptr));
+    EXPECT_EQ(nullptr, nullptr);
+
+    p = (char*)(0x1000 - 1);
+    EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+
+    p = (char*)0x1;
+    EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+
+    p = (char*)(0x00007FFFFFFFFFFF + 1);
+    EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+
+    p = (char*)0xFFFFFFFFFFFFFFFF;
+    EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+
+    for (int i = 0; i < 100; i++)
+    {
+        EXPECT_NE(nullptr, p = (char*)SafeMalloc((i * 17), nullptr));
+        EXPECT_TRUE(SafeFree(p, nullptr));
+        EXPECT_FALSE(SafeFree(p, nullptr));
+        EXPECT_EQ(nullptr, p);
+
+        p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
+        EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+
+        p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
+        EXPECT_EQ(nullptr, p = (char*)SafeMalloc(p, nullptr));
+    }
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";

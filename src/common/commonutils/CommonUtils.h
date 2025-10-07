@@ -49,6 +49,9 @@ extern "C"
 {
 #endif
 
+void* SafeMalloc(size_t size, OsConfigLogHandle log);
+bool SafeFree(void** p, OsConfigLogHandle log);
+
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool FileEndsInEol(const char* fileName, OsConfigLogHandle log);
