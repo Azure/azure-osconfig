@@ -73,13 +73,13 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     uintptr_t addrress = (uintptr_t)pointer;
     bool result = false;
 
-    if ((NULL == p) || (NULL == *p))
-    {
-        OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
-    }
-    else if ((addrress < g_minPointer) || (addrress > g_maxPointer))
+    if ((addrress < g_minPointer) || (addrress > g_maxPointer))
     {
         OsConfigLogError(log, "SafeFree: pointer '%p' is outside valid allocation range", pointer);
+    }
+    else if ((NULL == p) || (NULL == *p))
+    {
+        OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
     }
     else
     {
