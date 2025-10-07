@@ -18,9 +18,9 @@ static void ResetUserEntry(SimplifiedUser* target, OsConfigLogHandle log)
 {
     if (NULL != target)
     {
-        SafeFree(&(target->username), log);
-        SafeFree(&(target->home), log);
-        SafeFree(&(target->shell), log);
+        SafeFree((void**)&(target->username), log);
+        SafeFree((void**)&(target->home), log);
+        SafeFree((void**)&(target->shell), log);
 
         target->userId = -1;
         target->groupId = -1;
@@ -51,7 +51,7 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle
             ResetUserEntry(&((*source)[i]), log);
         }
 
-        SafeFree(source, log);
+        SafeFree((void**)source, log);
     }
 }
 
@@ -66,11 +66,11 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
         return EINVAL;
     }
 
-    ResetUserEntry(destination);
+    ResetUserEntry(destination, log);
 
     if (0 < (length = (source->pw_name ? strlen(source->pw_name) : 0)))
     {
-        if (NULL == (destination->username = SafeAlloc(length + 1, log)))
+        if (NULL == (destination->username = (char*)SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name for user %u", source->pw_uid);
             status = ENOMEM;
@@ -92,7 +92,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if ((0 == status) && (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0)))
     {
-        if (NULL == (destination->home = SafeAlloc(length + 1, log)))
+        if (NULL == (destination->home = (char*)SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
@@ -106,7 +106,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if ((0 == status) && (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0)))
     {
-        if (NULL == (destination->shell = SafeAlloc(length + 1, log)))
+        if (NULL == (destination->shell = (char*)SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
@@ -121,7 +121,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if (0 != status)
     {
-        ResetUserEntry(destination);
+        ResetUserEntry(destination, log);
     }
 
     return status;
@@ -377,7 +377,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile)))
     {
         listSize = (*size) * sizeof(SimplifiedUser);
-        if (NULL != (*userList = SafeAlloc(listSize, log)))
+        if (NULL != (*userList = (SimplifiedUser*)SafeAlloc(listSize, log)))
         {
             memset(*userList, 0, listSize);
 
@@ -442,10 +442,10 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHa
     {
         for (i = 0; i < size; i++)
         {
-            SafeFree(&((*groupList)[i]).groupName, log);
+            SafeFree((void**)&((*groupList)[i]).groupName, log);
         }
 
-        SafeFree(groupList, log);
+        SafeFree((void**)groupList, log);
     }
 }
 
@@ -474,7 +474,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     *groupList = NULL;
     *size = 0;
 
-    if (NULL == (groupIds = SafeAlloc(listSize, log)))
+    if (NULL == (groupIds = (gid_t*)SafeAlloc(listSize, log)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
         numberOfGroups = 0;
@@ -486,11 +486,11 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
         {
             OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
-            SafeFree(&groupIds, log);
+            SafeFree((void**)&groupIds, log);
 
             if (0 < numberOfGroups)
             {
-                if (NULL != (groupIds = SafeAlloc(listSize, log)))
+                if (NULL != (groupIds = (gid_t*)SafeAlloc(listSize, log)))
                 {
                     memset(groupIds, 0, listSize);
                     getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
@@ -518,7 +518,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
         listSize = sizeof(SimplifiedGroup)* numberOfGroups;
 
-        if (NULL == (*groupList = SafeAlloc(listSize, log)))
+        if (NULL == (*groupList = (SimplifiedGroup*)SafeAlloc(listSize, log)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             status = ENOMEM;
@@ -555,7 +555,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
                     if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                     {
-                        if (NULL != ((*groupList)[i].groupName = SafeAlloc(groupNameLength + 1, log)))
+                        if (NULL != ((*groupList)[i].groupName = (char*)SafeAlloc(groupNameLength + 1, log)))
                         {
                             memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                             memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
@@ -578,7 +578,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (0 == *size)
     {
-        SafeFree(groupList, log);
+        SafeFree((void**)groupList, log);
     }
 
     if (status)
@@ -586,7 +586,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         OsConfigCaptureReason(reason, "Failed to enumerate groups for users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
 
-    SafeFree(&groupIds, log);
+    SafeFree((void**)&groupIds, log);
 
     return status;
 }
@@ -612,7 +612,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
     if (0 != (*size = GetNumberOfLinesInFile(groupFile)))
     {
         listSize = (*size) * sizeof(SimplifiedGroup);
-        if (NULL != (*groupList = SafeAlloc(listSize, log)))
+        if (NULL != (*groupList = (SimplifiedGroup*)SafeAlloc(listSize, log)))
         {
             memset(*groupList, 0, listSize);
 
@@ -626,7 +626,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
 
                 if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                 {
-                    if (NULL != ((*groupList)[i].groupName = SafeAlloc(groupNameLength + 1, log)))
+                    if (NULL != ((*groupList)[i].groupName = (char*)SafeAlloc(groupNameLength + 1, log)))
                     {
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
@@ -713,13 +713,13 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
                     }
                 }
 
-                FreeGroupList(&userGroupList, userGroupListSize);
+                FreeGroupList(&userGroupList, userGroupListSize, log);
             }
         }
     }
 
-    FreeUsersList(&userList, userListSize);
-    FreeGroupList(&groupList, groupListSize);
+    FreeUsersList(&userList, userListSize, log);
+    FreeGroupList(&groupList, groupListSize, log);
 
     if (0 == status)
     {
@@ -799,13 +799,13 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                     }
                 }
 
-                FreeGroupList(&userGroupList, userGroupListSize);
+                FreeGroupList(&userGroupList, userGroupListSize, log);
             }
         }
     }
 
-    FreeUsersList(&userList, userListSize);
-    FreeGroupList(&groupList, groupListSize);
+    FreeUsersList(&userList, userListSize, log);
+    FreeGroupList(&groupList, groupListSize, log);
 
     if (0 == status)
     {
@@ -847,7 +847,7 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -986,7 +986,7 @@ int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1144,7 +1144,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1337,7 +1337,7 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1395,7 +1395,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1426,7 +1426,7 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1460,7 +1460,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1492,7 +1492,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1538,7 +1538,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1600,7 +1600,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1683,7 +1683,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1745,7 +1745,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1814,7 +1814,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -1930,7 +1930,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2010,7 +2010,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2078,7 +2078,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2152,7 +2152,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2223,7 +2223,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2298,7 +2298,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2345,7 +2345,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle l
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2419,7 +2419,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2487,7 +2487,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2523,7 +2523,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHan
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2580,7 +2580,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2609,7 +2609,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2649,7 +2649,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2692,7 +2692,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2753,7 +2753,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
             {
                 length = templateLength + strlen(userList[i].home);
 
-                if (NULL == (dotPath = SafeAlloc(length, log)))
+                if (NULL == (dotPath = (char*)SafeAlloc(length, log)))
                 {
                     OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: out of memory");
                     status = ENOMEM;
@@ -2788,7 +2788,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2833,7 +2833,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = SafeAlloc(length + 1, log)))
+                        if (NULL == (path = (char*)SafeAlloc(length + 1, log)))
                         {
                             OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;
@@ -2878,7 +2878,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -2923,7 +2923,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = SafeAlloc(length + 1, log)))
+                        if (NULL == (path = (char*)SafeAlloc(length + 1, log)))
                         {
                             OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;
@@ -2974,7 +2974,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
         }
     }
 
-    FreeUsersList(&userList, userListSize);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
@@ -3118,7 +3118,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
                         status = _status;
                     }
 
-                    ResetUserEntry(&simplifiedUser);
+                    ResetUserEntry(&simplifiedUser, log);
                 }
             }
 
