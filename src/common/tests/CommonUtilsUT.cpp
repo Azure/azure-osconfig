@@ -3109,6 +3109,12 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
+TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
+{
+    EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
+    EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr);
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
