@@ -14,13 +14,13 @@ static const char* g_redacted = "***";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
-static void ResetUserEntry(SimplifiedUser* target)
+static void ResetUserEntry(SimplifiedUser* target, OsConfigLogHandle log)
 {
     if (NULL != target)
     {
-        FREE_MEMORY(target->username);
-        FREE_MEMORY(target->home);
-        FREE_MEMORY(target->shell);
+        SafeFree(target->username, log);
+        SafeFree(target->home, log);
+        SafeFree(target->shell, log);
 
         target->userId = -1;
         target->groupId = -1;
@@ -40,7 +40,7 @@ static void ResetUserEntry(SimplifiedUser* target)
     }
 }
 
-void FreeUsersList(SimplifiedUser** source, unsigned int size)
+void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle log)
 {
     unsigned int i = 0;
 
@@ -48,10 +48,10 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size)
     {
         for (i = 0; i < size; i++)
         {
-            ResetUserEntry(&((*source)[i]));
+            ResetUserEntry(&((*source)[i]), log);
         }
 
-        FREE_MEMORY(*source);
+        SafeFree(*source, log);
     }
 }
 
@@ -70,7 +70,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if (0 < (length = (source->pw_name ? strlen(source->pw_name) : 0)))
     {
-        if (NULL == (destination->username = malloc(length + 1)))
+        if (NULL == (destination->username = SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name for user %u", source->pw_uid);
             status = ENOMEM;
@@ -92,7 +92,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if ((0 == status) && (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0)))
     {
-        if (NULL == (destination->home = malloc(length + 1)))
+        if (NULL == (destination->home = SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
@@ -106,7 +106,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if ((0 == status) && (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0)))
     {
-        if (NULL == (destination->shell = malloc(length + 1)))
+        if (NULL == (destination->shell = SafeAlloc(length + 1, log)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
@@ -377,7 +377,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile)))
     {
         listSize = (*size) * sizeof(SimplifiedUser);
-        if (NULL != (*userList = malloc(listSize)))
+        if (NULL != (*userList = SafeAlloc(listSize, log)))
         {
             memset(*userList, 0, listSize);
 
@@ -434,7 +434,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     return status;
 }
 
-void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
+void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHandle log)
 {
     unsigned int i = 0;
 
@@ -442,10 +442,10 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
     {
         for (i = 0; i < size; i++)
         {
-            FREE_MEMORY(((*groupList)[i]).groupName);
+            SafeFree(((*groupList)[i]).groupName, log);
         }
 
-        FREE_MEMORY(*groupList);
+        SafeFree(*groupList, log);
     }
 }
 
@@ -474,7 +474,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     *groupList = NULL;
     *size = 0;
 
-    if (NULL == (groupIds = malloc(listSize)))
+    if (NULL == (groupIds = SafeAlloc(listSize, log)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
         numberOfGroups = 0;
@@ -486,11 +486,11 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
         {
             OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
-            FREE_MEMORY(groupIds);
+            SafeFree(groupIds, log);
 
             if (0 < numberOfGroups)
             {
-                if (NULL != (groupIds = malloc(listSize)))
+                if (NULL != (groupIds = SafeAlloc(listSize, log)))
                 {
                     memset(groupIds, 0, listSize);
                     getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
@@ -518,7 +518,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
         listSize = sizeof(SimplifiedGroup)* numberOfGroups;
 
-        if (NULL == (*groupList = malloc(listSize)))
+        if (NULL == (*groupList = SafeAlloc(listSize, log)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             status = ENOMEM;
@@ -555,7 +555,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
                     if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                     {
-                        if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                        if (NULL != ((*groupList)[i].groupName = SafeAlloc(groupNameLength + 1, log)))
                         {
                             memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                             memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
@@ -578,7 +578,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (0 == *size)
     {
-        FREE_MEMORY(*groupList);
+        SafeFree(*groupList, log);
     }
 
     if (status)
@@ -586,7 +586,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         OsConfigCaptureReason(reason, "Failed to enumerate groups for users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
 
-    FREE_MEMORY(groupIds);
+    SafeFree(groupIds, log);
 
     return status;
 }
@@ -612,7 +612,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
     if (0 != (*size = GetNumberOfLinesInFile(groupFile)))
     {
         listSize = (*size) * sizeof(SimplifiedGroup);
-        if (NULL != (*groupList = malloc(listSize)))
+        if (NULL != (*groupList = SafeAlloc(listSize, log)))
         {
             memset(*groupList, 0, listSize);
 
@@ -626,7 +626,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
 
                 if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                 {
-                    if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                    if (NULL != ((*groupList)[i].groupName = SafeAlloc(groupNameLength + 1, log)))
                     {
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
@@ -2753,7 +2753,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
             {
                 length = templateLength + strlen(userList[i].home);
 
-                if (NULL == (dotPath = malloc(length)))
+                if (NULL == (dotPath = SafeAlloc(length, log)))
                 {
                     OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: out of memory");
                     status = ENOMEM;
@@ -2833,7 +2833,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = malloc(length + 1)))
+                        if (NULL == (path = SafeAlloc(length + 1, log)))
                         {
                             OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;
@@ -2923,7 +2923,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = malloc(length + 1)))
+                        if (NULL == (path = SafeAlloc(length + 1, log)))
                         {
                             OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;

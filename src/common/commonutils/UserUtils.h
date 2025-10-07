@@ -71,11 +71,11 @@ extern "C"
 #endif
 
 int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason, OsConfigLogHandle log);
-void FreeUsersList(SimplifiedUser** source, unsigned int size);
+void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle log);
 
 int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log);
 int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log);
-void FreeGroupList(SimplifiedGroup** groupList, unsigned int size);
+void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHandle log);
 
 int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log);
 int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log);
