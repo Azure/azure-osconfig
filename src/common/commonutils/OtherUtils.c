@@ -356,7 +356,7 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
         OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
 
-        if (IsDaemonActive(g_firewalld, log))
+        if (0 == CheckDaemonActive(g_firewalld, reason, log))
         {
             if (0 == (status = ExecuteCommand(NULL, firewallCommand, true, false, 0, 0, NULL, NULL, log)))
             {
@@ -371,6 +371,7 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
         OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
+        statys = 0;
     }
 
     if (status)
