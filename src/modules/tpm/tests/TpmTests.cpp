@@ -172,7 +172,8 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(payload, nullptr);
         EXPECT_EQ(payloadSizeBytes, 0);
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
     }
 
     TEST_F(TpmTests, GetStatus)
@@ -190,7 +191,8 @@ namespace OSConfig::Platform::Tests
         std::string payloadString(payload, payloadSizeBytes);
         EXPECT_STREQ(expectedStatus.c_str(), payloadString.c_str());
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
     }
 
     TEST_F(TpmTests, GetVersion)
@@ -208,7 +210,8 @@ namespace OSConfig::Platform::Tests
         std::string payloadString(payload, payloadSizeBytes);
         EXPECT_STREQ(expectedVersion.c_str(), payloadString.c_str());
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
     }
 
     TEST_F(TpmTests, GetManufacturer)
@@ -226,6 +229,7 @@ namespace OSConfig::Platform::Tests
         std::string payloadString(payload, payloadSizeBytes);
         EXPECT_STREQ(expectedManufacturer.c_str(), payloadString.c_str());
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
     }
 }

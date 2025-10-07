@@ -34,12 +34,18 @@ static void FreeModuleInfo(MODULE_INFO* info)
 
     if (info)
     {
-        FREE_MEMORY(info->name);
-        FREE_MEMORY(info->description);
-        FREE_MEMORY(info->manufacturer);
-        FREE_MEMORY(info->versionInfo);
-        FREE_MEMORY(info->licenseUri);
-        FREE_MEMORY(info->projectUri);
+        free(info->name);
+        info->name=NULL;
+        free(info->description);
+        info->description=NULL;
+        free(info->manufacturer);
+        info->manufacturer=NULL;
+        free(info->versionInfo);
+        info->versionInfo=NULL;
+        free(info->licenseUri);
+        info->licenseUri=NULL;
+        free(info->projectUri);
+        info->projectUri=NULL;
 
         if (info->components)
         {
@@ -47,14 +53,17 @@ static void FreeModuleInfo(MODULE_INFO* info)
             {
                 if (NULL != info->components[i])
                 {
-                    FREE_MEMORY(info->components[i]);
+                    free(info->components[i]);
+                    info->components[i]=NULL;
                 }
             }
 
-            FREE_MEMORY(info->components);
+            free(info->components);
+            info->components=NULL;
         }
 
-        FREE_MEMORY(info);
+        free(info);
+        info=NULL;
     }
 }
 
@@ -355,7 +364,9 @@ void UnloadModule(MODULE* module)
 
         FreeModuleInfo(module->info);
 
-        FREE_MEMORY(module->path);
-        FREE_MEMORY(module);
+        free(module->path);
+        module->path=NULL;
+        free(module);
+        module=NULL;
     }
 }

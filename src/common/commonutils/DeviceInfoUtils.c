@@ -109,7 +109,8 @@ char* GetOsPrettyName(OsConfigLogHandle log)
     }
     else
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     OsConfigLogDebug(log, "OS pretty name: '%s'", textResult);
@@ -140,7 +141,8 @@ char* GetOsName(OsConfigLogHandle log)
         }
         else
         {
-            FREE_MEMORY(textResult);
+            free(textResult);
+            textResult=NULL;
         }
     }
 
@@ -164,7 +166,8 @@ char* GetOsVersion(OsConfigLogHandle log)
     }
     else
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     OsConfigLogDebug(log, "OS version: '%s'", textResult);
@@ -193,7 +196,8 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     }
     else
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     return textResult;
@@ -215,7 +219,8 @@ static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log)
     }
     else
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     return textResult;
@@ -282,7 +287,8 @@ unsigned int GetNumberOfCpuCores(OsConfigLogHandle log)
 
     OsConfigLogDebug(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return numberOfCores;
 }
@@ -312,7 +318,8 @@ bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, OsConfigLogHandle
         OsConfigCaptureReason(reason, "The device's CPU does not support '%s'", cpuFlag);
     }
 
-    FREE_MEMORY(cpuFlags);
+    free(cpuFlags);
+    cpuFlags=NULL;
 
     return result;
 }
@@ -326,7 +333,8 @@ long GetTotalMemory(OsConfigLogHandle log)
     if (NULL != textResult)
     {
         totalMemory = atol(textResult);
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     OsConfigLogDebug(log, "Total memory: %lu kB", totalMemory);
@@ -343,7 +351,8 @@ long GetFreeMemory(OsConfigLogHandle log)
     if (NULL != textResult)
     {
         freeMemory = atol(textResult);
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     OsConfigLogDebug(log, "Free memory: %lu kB", freeMemory);
@@ -359,7 +368,8 @@ char* GetProductName(OsConfigLogHandle log)
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
         textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
 
@@ -376,7 +386,8 @@ char* GetProductVendor(OsConfigLogHandle log)
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
         textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
 
@@ -393,7 +404,8 @@ char* GetProductVersion(OsConfigLogHandle log)
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
         textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
@@ -459,10 +471,12 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             }
             else
             {
-                FREE_MEMORY(result);
+                free(result);
+                result=NULL;
             }
 
-            FREE_MEMORY(command);
+            free(command);
+            command=NULL;
         }
     }
 
@@ -490,10 +504,14 @@ static void ClearOsDistroInfo(OsDistroInfo* info)
 {
     if (info)
     {
-        FREE_MEMORY(info->id);
-        FREE_MEMORY(info->release);
-        FREE_MEMORY(info->codename);
-        FREE_MEMORY(info->description);
+        free(info->id);
+        info->id=NULL;
+        free(info->release);
+        info->release=NULL;
+        free(info->codename);
+        info->codename=NULL;
+        free(info->description);
+        info->description=NULL;
     }
 }
 
@@ -514,28 +532,32 @@ bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log)
     distro.id = GetEtcReleaseEntry("DISTRIB_ID", log);
     if (0 == strcmp(distro.id, none))
     {
-        FREE_MEMORY(distro.id);
+        free(distro.id);
+        distro.id=NULL;
         distro.id = GetLsbReleaseEntry("Distributor ID", log);
     }
 
     distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
     if (0 == strcmp(distro.release, none))
     {
-        FREE_MEMORY(distro.release);
+        free(distro.release);
+        distro.release=NULL;
         distro.release = GetLsbReleaseEntry("Release", log);
     }
 
     distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log);
     if (0 == strcmp(distro.codename, none))
     {
-        FREE_MEMORY(distro.codename);
+        free(distro.codename);
+        distro.codename=NULL;
         distro.codename = GetLsbReleaseEntry("Codename", log);
     }
 
     distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
     if (0 == strcmp(distro.description, none))
     {
-        FREE_MEMORY(distro.description);
+        free(distro.description);
+        distro.description=NULL;
         distro.description = GetLsbReleaseEntry("Description", log);
     }
 
@@ -583,8 +605,10 @@ bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(kernelName);
-    FREE_MEMORY(kernelVersion);
+    free(kernelName);
+    kernelName=NULL;
+    free(kernelVersion);
+    kernelVersion=NULL;
 
     ClearOsDistroInfo(&distro);
     ClearOsDistroInfo(&os);
@@ -606,7 +630,8 @@ char* GetLoginUmask(char** reason, OsConfigLogHandle log)
     else
     {
         OsConfigCaptureReason(reason, "'%s' failed, cannot check the current login UMASK", command);
-        FREE_MEMORY(result);
+        free(result);
+        result=NULL;
     }
 
     OsConfigLogDebug(log, "UMASK: '%s'", result);
@@ -645,7 +670,8 @@ int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log)
             status = ENOENT;
         }
 
-        FREE_MEMORY(current);
+        free(current);
+        current=NULL;
     }
 
     return status;
@@ -686,8 +712,10 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log)
             days = atol(result);
         }
 
-        FREE_MEMORY(result);
-        FREE_MEMORY(command);
+        free(result);
+        result=NULL;
+        free(command);
+        command=NULL;
     }
 
     OsConfigLogDebug(log, "%s: %ld", name, days);
@@ -741,7 +769,8 @@ static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     return status;
 }
@@ -790,7 +819,8 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(prettyName);
+    free(prettyName);
+    prettyName=NULL;
 
     return result;
 }
@@ -834,7 +864,8 @@ static bool IsRedHatBasedInternal(OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(prettyName);
+    free(prettyName);
+    prettyName=NULL;
 
     return result;
 }
@@ -897,7 +928,8 @@ bool IsCommodore(OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return status;
 }
@@ -946,7 +978,8 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
         }
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     if (0 != status)
     {
@@ -972,7 +1005,8 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
             OsConfigCaptureReason(reason, "'*hard core 0' is not present uncommented in '/etc/security/limits.conf' or in any file under '/etc/security/limits.d/'");
         }
 
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     return status;

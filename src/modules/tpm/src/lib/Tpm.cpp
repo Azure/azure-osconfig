@@ -106,7 +106,8 @@ std::string Tpm::RunCommand(const char* command)
         commandOutput = (nullptr != textResult) ? std::string(textResult) : "";
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return commandOutput;
 }
@@ -338,7 +339,8 @@ int Tpm::GetPropertiesFromDeviceFile(Properties& properties)
             close(tpm);
         }
 
-        FREE_MEMORY(buffer);
+        free(buffer);
+        buffer=NULL;
     }
 
     return status;

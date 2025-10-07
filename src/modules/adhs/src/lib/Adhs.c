@@ -269,7 +269,8 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
     OsConfigLogDebug(AdhsGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
-    FREE_MEMORY(fileContent);
+    free(fileContent);
+    fileContent=NULL;
 
     return status;
 }
@@ -331,7 +332,8 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
                     status = EIO;
                 }
 
-                FREE_MEMORY(fileContent);
+                free(fileContent);
+                fileContent=NULL;
             }
             else
             {
@@ -348,5 +350,6 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
 void AdhsMmiFree(MMI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
 }

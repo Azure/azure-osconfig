@@ -99,18 +99,30 @@ void __attribute__((destructor)) Destroy()
         RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
     }
 
-    FREE_MEMORY(g_resourceId);
-    FREE_MEMORY(g_ruleId);
-    FREE_MEMORY(g_payloadKey);
-    FREE_MEMORY(g_componentName);
-    FREE_MEMORY(g_initObjectName);
-    FREE_MEMORY(g_procedureObjectName);
-    FREE_MEMORY(g_procedureObjectValue);
-    FREE_MEMORY(g_reportedObjectName);
-    FREE_MEMORY(g_expectedObjectValue);
-    FREE_MEMORY(g_desiredObjectName);
-    FREE_MEMORY(g_desiredObjectValue);
-    FREE_MEMORY(g_reportedObjectValue);
+    free(g_resourceId);
+    g_resourceId=NULL;
+    free(g_ruleId);
+    g_ruleId=NULL;
+    free(g_payloadKey);
+    g_payloadKey=NULL;
+    free(g_componentName);
+    g_componentName=NULL;
+    free(g_initObjectName);
+    g_initObjectName=NULL;
+    free(g_procedureObjectName);
+    g_procedureObjectName=NULL;
+    free(g_procedureObjectValue);
+    g_procedureObjectValue=NULL;
+    free(g_reportedObjectName);
+    g_reportedObjectName=NULL;
+    free(g_expectedObjectValue);
+    g_expectedObjectValue=NULL;
+    free(g_desiredObjectName);
+    g_desiredObjectName=NULL;
+    free(g_desiredObjectValue);
+    g_desiredObjectValue=NULL;
+    free(g_reportedObjectValue);
+    g_reportedObjectValue=NULL;
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
 
@@ -148,7 +160,8 @@ static void LogOsConfigVersion(MI_Context* context)
                 json_value_free(jsonValue);
             }
 
-            FREE_MEMORY(payloadString);
+            free(payloadString);
+            payloadString=NULL;
         }
 
         CallMpiFree(objectValue);
@@ -365,7 +378,8 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, const char* comp
                 }
             }
 
-            FREE_MEMORY(payloadString);
+            free(payloadString);
+            payloadString=NULL;
         }
         else
         {
@@ -454,7 +468,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* c
                     jsonString = json_value_get_string(jsonValue);
                     if (jsonString)
                     {
-                        FREE_MEMORY(g_reportedObjectValue);
+                        free(g_reportedObjectValue);
+                        g_reportedObjectValue=NULL;
                         if (NULL == (g_reportedObjectValue = DuplicateString(jsonString)))
                         {
                             mpiResult = ENOMEM;
@@ -478,7 +493,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* c
                     LogError(context, miResult, GetLog(), "[%s] json_parse_string(%s) failed", who, payloadString);
                 }
 
-                FREE_MEMORY(payloadString);
+                free(payloadString);
+                payloadString=NULL;
             }
             else
             {
@@ -487,7 +503,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* c
                 LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, objectValueLength + 1);
             }
 
-            FREE_MEMORY(objectValue);
+            free(objectValue);
+            objectValue=NULL;
         }
     }
     else
@@ -547,7 +564,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
     // Try to read the resource id from the input resource values, do not fail here if we cannot
-    FREE_MEMORY(g_resourceId);
+    free(g_resourceId);
+    g_resourceId=NULL;
     if ((MI_TRUE == in->InputResource.value->ResourceId.exists) && (NULL != in->InputResource.value->ResourceId.value))
     {
         g_resourceId = DuplicateString(in->InputResource.value->ResourceId.value);
@@ -560,7 +578,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the rule id from the input resource values
     if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
     {
-        FREE_MEMORY(g_ruleId);
+        free(g_ruleId);
+        g_ruleId=NULL;
         if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
@@ -579,7 +598,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_payloadKey);
+        free(g_payloadKey);
+        g_payloadKey=NULL;
         if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
@@ -598,7 +618,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the MIM component name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
     {
-        FREE_MEMORY(g_componentName);
+        free(g_componentName);
+        g_componentName=NULL;
         if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
@@ -617,7 +638,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the MIM initialization object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->InitObjectName.exists) && (NULL != in->InputResource.value->InitObjectName.value))
     {
-        FREE_MEMORY(g_initObjectName);
+        free(g_initObjectName);
+        g_initObjectName=NULL;
         if (NULL == (g_initObjectName = DuplicateString(in->InputResource.value->InitObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->InitObjectName.value);
@@ -630,13 +652,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Get] No InitObjectName");
-        FREE_MEMORY(g_initObjectName);
+        free(g_initObjectName);
+        g_initObjectName=NULL;
     }
 
     // Check if we have the optional MIM procedure object name in the input resource value
     if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
         if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
@@ -649,7 +673,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             // We have a procedure object name, next see if we also have a procedure object value (also optional)
             if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
             {
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
                     miResult = MI_RESULT_FAILED;
@@ -668,7 +693,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
                 // Cannot have a procedure object name without a procedure object value
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ProcedureObjectValue");
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 goto Exit;
             }
         }
@@ -677,13 +703,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Get] No ProcedureObjectName");
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
     }
 
     // Read the MIM reported object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
     {
-        FREE_MEMORY(g_reportedObjectName);
+        free(g_reportedObjectName);
+        g_reportedObjectName=NULL;
         if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
@@ -702,7 +730,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the MIM desired object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
     {
-        FREE_MEMORY(g_desiredObjectName);
+        free(g_desiredObjectName);
+        g_desiredObjectName=NULL;
         if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
@@ -717,7 +746,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the desired MIM object value from the input resource values
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        FREE_MEMORY(g_desiredObjectValue);
+        free(g_desiredObjectValue);
+        g_desiredObjectValue=NULL;
         if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
@@ -741,7 +771,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the expected MIM object value from the input resource values, we'll use this to determine compliance
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
-        FREE_MEMORY(g_expectedObjectValue);
+        free(g_expectedObjectValue);
+        g_expectedObjectValue=NULL;
         if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->ExpectedObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
@@ -979,8 +1010,10 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
-    FREE_MEMORY(reasonCode);
-    FREE_MEMORY(reasonPhrase);
+    free(reasonCode);
+    reasonCode=NULL;
+    free(reasonPhrase);
+    reasonPhrase=NULL;
 
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(reasonObject))))
@@ -1050,7 +1083,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the rule id from the input resource values
     if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
     {
-        FREE_MEMORY(g_ruleId);
+        free(g_ruleId);
+        g_ruleId=NULL;
         if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
@@ -1069,7 +1103,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_payloadKey);
+        free(g_payloadKey);
+        g_payloadKey=NULL;
         if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
@@ -1088,7 +1123,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the MIM component name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
     {
-        FREE_MEMORY(g_componentName);
+        free(g_componentName);
+        g_componentName=NULL;
         if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
@@ -1107,7 +1143,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the MIM initialization object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->InitObjectName.exists) && (NULL != in->InputResource.value->InitObjectName.value))
     {
-        FREE_MEMORY(g_initObjectName);
+        free(g_initObjectName);
+        g_initObjectName=NULL;
         if (NULL == (g_initObjectName = DuplicateString(in->InputResource.value->InitObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->InitObjectName.value);
@@ -1120,13 +1157,15 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No InitObjectName");
-        FREE_MEMORY(g_initObjectName);
+        free(g_initObjectName);
+        g_initObjectName=NULL;
     }
 
     // Read the MIM reported object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
     {
-        FREE_MEMORY(g_reportedObjectName);
+        free(g_reportedObjectName);
+        g_reportedObjectName=NULL;
         if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
@@ -1145,7 +1184,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the desired MIM object value from the input resource values
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        FREE_MEMORY(g_desiredObjectValue);
+        free(g_desiredObjectValue);
+        g_desiredObjectValue=NULL;
         if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
@@ -1156,7 +1196,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Check if we have the optional MIM procedure object name in the input resource value
     if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
         if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
@@ -1169,7 +1210,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
             // We have a procedure object name, next see if we also have a procedure object value (also optional)
             if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
             {
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
                     miResult = MI_RESULT_FAILED;
@@ -1188,7 +1230,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
                 // Cannot have a procedure object name without a procedure object value
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ProcedureObjectValue");
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 goto Exit;
             }
         }
@@ -1197,7 +1240,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
     }
 
     if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog()))
@@ -1304,7 +1348,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the rule id from the input resource values
     if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
     {
-        FREE_MEMORY(g_ruleId);
+        free(g_ruleId);
+        g_ruleId=NULL;
         if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
@@ -1323,7 +1368,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_payloadKey);
+        free(g_payloadKey);
+        g_payloadKey=NULL;
         if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
@@ -1342,7 +1388,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the MIM component name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
     {
-        FREE_MEMORY(g_componentName);
+        free(g_componentName);
+        g_componentName=NULL;
         if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
@@ -1361,7 +1408,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the MIM desired object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
     {
-        FREE_MEMORY(g_desiredObjectName);
+        free(g_desiredObjectName);
+        g_desiredObjectName=NULL;
         if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
@@ -1380,7 +1428,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the MIM desired object value from the input resource values
     if ((MI_TRUE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
     {
-        FREE_MEMORY(g_desiredObjectValue);
+        free(g_desiredObjectValue);
+        g_desiredObjectValue=NULL;
         if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
@@ -1399,7 +1448,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Check if we have the optional MIM procedure object name in the input resource value
     if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
         if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
@@ -1412,7 +1462,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
             // We have a procedure object name, next see if we also have a procedure object value (also optional)
             if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
             {
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
                     miResult = MI_RESULT_FAILED;
@@ -1431,7 +1482,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
                 // Cannot have a procedure object name without a procedure object value
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ProcedureObjectValue");
-                FREE_MEMORY(g_procedureObjectValue);
+                free(g_procedureObjectValue);
+                g_procedureObjectValue=NULL;
                 goto Exit;
             }
         }
@@ -1440,7 +1492,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
-        FREE_MEMORY(g_procedureObjectName);
+        free(g_procedureObjectName);
+        g_procedureObjectName=NULL;
     }
 
     if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog()))

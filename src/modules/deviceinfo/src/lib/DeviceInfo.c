@@ -102,19 +102,32 @@ void DeviceInfoInitialize(void)
 
 void DeviceInfoShutdown(void)
 {
-    FREE_MEMORY(g_osName);
-    FREE_MEMORY(g_osVersion);
-    FREE_MEMORY(g_cpuType);
-    FREE_MEMORY(g_cpuVendor);
-    FREE_MEMORY(g_cpuModel);
-    FREE_MEMORY(g_kernelName);
-    FREE_MEMORY(g_kernelRelease);
-    FREE_MEMORY(g_kernelVersion);
-    FREE_MEMORY(g_productVendor);
-    FREE_MEMORY(g_productName);
-    FREE_MEMORY(g_productVersion);
-    FREE_MEMORY(g_systemCapabilities);
-    FREE_MEMORY(g_systemConfiguration);
+    free(g_osName);
+    g_osName=NULL;
+    free(g_osVersion);
+    g_osVersion=NULL;
+    free(g_cpuType);
+    g_cpuType=NULL;
+    free(g_cpuVendor);
+    g_cpuVendor=NULL;
+    free(g_cpuModel);
+    g_cpuModel=NULL;
+    free(g_kernelName);
+    g_kernelName=NULL;
+    free(g_kernelRelease);
+    g_kernelRelease=NULL;
+    free(g_kernelVersion);
+    g_kernelVersion=NULL;
+    free(g_productVendor);
+    g_productVendor=NULL;
+    free(g_productName);
+    g_productName=NULL;
+    free(g_productVersion);
+    g_productVersion=NULL;
+    free(g_systemCapabilities);
+    g_systemCapabilities=NULL;
+    free(g_systemConfiguration);
+    g_systemConfiguration=NULL;
 
     OsConfigLogInfo(DeviceInfoGetLog(), "%s shutting down", g_deviceInfoModuleName);
 
@@ -334,5 +347,6 @@ int DeviceInfoMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
 
 void DeviceInfoMmiFree(MMI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
 }

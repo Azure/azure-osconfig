@@ -284,7 +284,8 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                         status = HTTP_INTERNAL_SERVER_ERROR;
                     }
 
-                    FREE_MEMORY(uuid);
+                    free(uuid);
+                    uuid=NULL;
                 }
                 else
                 {
@@ -549,11 +550,16 @@ static void* MpiServerWorker(void* arguments)
             contentLength = 0;
             responseSize = 0;
 
-            FREE_MEMORY(requestBody);
-            FREE_MEMORY(responseBody);
-            FREE_MEMORY(httpReason);
-            FREE_MEMORY(buffer);
-            FREE_MEMORY(uri);
+            free(requestBody);
+            requestBody=NULL;
+            free(responseBody);
+            responseBody=NULL;
+            free(httpReason);
+            httpReason=NULL;
+            free(buffer);
+            buffer=NULL;
+            free(uri);
+            uri=NULL;
 
             SleepMilliseconds(MPI_WORKER_SLEEP);
         }

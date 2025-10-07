@@ -276,7 +276,8 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
 void ComplianceEngineMmiFree(char* payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload = NULL;
 }
 
 int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* payloadKey, OsConfigLogHandle log)

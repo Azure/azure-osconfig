@@ -273,7 +273,8 @@ TEST_F(SecurityBaselineTest, MmiGetInfo)
     EXPECT_STREQ(m_expectedMmiInfo, payloadString);
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     SecurityBaselineMmiFree(payload);
 }
 
@@ -501,7 +502,8 @@ TEST_F(SecurityBaselineTest, MmiGet)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        FREE_MEMORY(payloadString);
+        free(payloadString);
+        payloadString=NULL;
         SecurityBaselineMmiFree(payload);
     }
 
@@ -522,7 +524,8 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     SecurityBaselineMmiFree(payload);
     SecurityBaselineMmiClose(handle);
 }

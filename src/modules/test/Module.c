@@ -36,12 +36,18 @@ void FreeModuleInfo(MODULE_INFO* info)
         return;
     }
 
-    FREE_MEMORY(info->name);
-    FREE_MEMORY(info->description);
-    FREE_MEMORY(info->manufacturer);
-    FREE_MEMORY(info->versionInfo);
-    FREE_MEMORY(info->licenseUri);
-    FREE_MEMORY(info->projectUri);
+    free(info->name);
+    info->name=NULL;
+    free(info->description);
+    info->description=NULL;
+    free(info->manufacturer);
+    info->manufacturer=NULL;
+    free(info->versionInfo);
+    info->versionInfo=NULL;
+    free(info->licenseUri);
+    info->licenseUri=NULL;
+    free(info->projectUri);
+    info->projectUri=NULL;
 
     if (NULL != info->components)
     {
@@ -338,10 +344,12 @@ MANAGEMENT_MODULE* LoadModule(const char* client, const char* path)
     if ((status != 0) && (module != NULL))
     {
         UnloadModule(module);
-        FREE_MEMORY(module);
+        free(module);
+        module=NULL;
     }
     json_value_free(value);
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
     return module;
 }
 
@@ -369,7 +377,8 @@ void UnloadModule(MANAGEMENT_MODULE* module)
         module->handle = NULL;
     }
 
-    FREE_MEMORY(module->name);
+    free(module->name);
+    module->name=NULL;
 
     FreeModuleInfo(module->info);
 }

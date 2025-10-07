@@ -101,7 +101,8 @@ TEST_F(AdhsTest, MmiGetValidConfigFile1)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "1");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     AdhsMmiFree(payload);
 
     AdhsMmiClose(handle);
@@ -126,7 +127,8 @@ TEST_F(AdhsTest, MmiGetValidConfigFile2)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "1");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     AdhsMmiFree(payload);
 
     AdhsMmiClose(handle);
@@ -151,7 +153,8 @@ TEST_F(AdhsTest, MmiGetEmptyConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "0");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     AdhsMmiFree(payload);
 
     AdhsMmiClose(handle);
@@ -176,7 +179,8 @@ TEST_F(AdhsTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     AdhsMmiFree(payload);
 
     AdhsMmiClose(handle);
@@ -245,7 +249,8 @@ TEST_F(AdhsTest, MmiSet)
     EXPECT_EQ(MMI_OK, AdhsMmiSet(handle, m_adhsComponentName, g_desiredOptInObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_adhsConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
-    FREE_MEMORY(actualFileContent);
+    free(actualFileContent);
+    actualFileContent=NULL;
     EXPECT_EQ(0, remove(m_adhsConfigFile));
 
     AdhsMmiClose(handle);

@@ -352,7 +352,8 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
 
     if (AIS_SUCCESS != result)
     {
-        FREE_MEMORY(*response);
+        free(*response);
+        *response=NULL;
     }
 
     if (AIS_SUCCESS == result)
@@ -426,13 +427,16 @@ static int RequestSignatureFromAis(const char* keyHandle, const char* deviceUri,
     }
 
     json_value_free(payloadValue);
-    FREE_MEMORY(serializedPayload);
+    free(serializedPayload);
+    serializedPayload=NULL;
     STRING_delete(encodedUriToSign);
-    FREE_MEMORY(uriToSign);
+    free(uriToSign);
+    uriToSign=NULL;
 
     if (AIS_SUCCESS != result)
     {
-        FREE_MEMORY(*response);
+        free(*response);
+        *response=NULL;
     }
 
     OsConfigLogInfo(GetLog(), "RequestSignatureFromAis: %d", result);
@@ -462,7 +466,8 @@ static int RequestCertificateFromAis(const char* certificateId, char** response)
         result = SendAisRequest(AIS_CERT_SOCKET, requestUri, NULL, response);
     }
 
-    FREE_MEMORY(requestUri);
+    free(requestUri);
+    requestUri=NULL;
 
     return result;
 }
@@ -692,17 +697,24 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
     json_value_free(identityResponseJson);
     json_value_free(signResponseJson);
     json_value_free(certificateResponseJson);
-    FREE_MEMORY(resourceUri);
-    FREE_MEMORY(sharedAccessSignature);
-    FREE_MEMORY(identityResponseString);
-    FREE_MEMORY(signResponseString);
+    free(resourceUri);
+    resourceUri=NULL;
+    free(sharedAccessSignature);
+    sharedAccessSignature=NULL;
+    free(identityResponseString);
+    identityResponseString=NULL;
+    free(signResponseString);
+    signResponseString=NULL;
     STRING_delete(encodedSignature);
 
     if (AIS_SUCCESS != result)
     {
-        FREE_MEMORY(connectionString);
-        FREE_MEMORY(*x509Certificate);
-        FREE_MEMORY(*x509PrivateKeyHandle);
+        free(connectionString);
+        connectionString=NULL;
+        free(*x509Certificate);
+        *x509Certificate=NULL;
+        free(*x509PrivateKeyHandle);
+        *x509PrivateKeyHandle=NULL;
     }
 
     return connectionString;
