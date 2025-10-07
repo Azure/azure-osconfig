@@ -17,7 +17,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
     OsConfigPointerNode* node = NULL;
     void* pointer = NULL;
-    uintptr_t addrress = 0;
+    uintptr_t address = 0;
 
     if (NULL != (pointer = malloc(size)))
     {
@@ -80,7 +80,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     {
         OsConfigPointerNode* previous = NULL;
         OsConfigPointerNode* current = g_head;
-        
+
         while (current)
         {
             if (current->pointer == pointer)
@@ -96,7 +96,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
                 FREE_MEMORY(current);
                 FREE_MEMORY(p);
-                
+
                 result = true;
                 break;
             }
@@ -105,10 +105,11 @@ bool SafeFree(void** p, OsConfigLogHandle log)
             current = current->next;
         }
     }
-    else
+
+    if (false == result)
     {
         OsConfigLogError(log, "SafeFree: pointer '%p' not tracked or already freed", pointer);
     }
-    
+
     return result;
 }
