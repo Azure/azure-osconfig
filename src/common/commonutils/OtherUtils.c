@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+static const char* g_firewalld = "firewalld";
+
 char* DuplicateString(const char* source)
 {
     if (NULL == source)
@@ -343,18 +345,18 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
     return status;
 }
 
-static const char* g_firewalld = "firewalld";
-
 int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
 {
-    const char* ipTablesCommand = "iptables -S | (grep -qP '^-P INPUT DROP$' && grep -qP '^-P FORWARD DROP$' && grep -qP '^-P OUTPUT DROP$)";
+    const char* readIpTables = "iptables -S";
     const char* firewallCommand = "firewall-cmd --get-default-zone | grep -q '^drop$' && firewall-cmd --list-all --zone=drop | grep -q '^target: DROP$'";
     int status = ENOENT;
 
-    if (0 != (status = ExecuteCommand(NULL, ipTablesCommand, true, false, 0, 0, NULL, NULL, log)))
+    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
     {
-        OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
-        OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' found in response from command 'iptables -S'");
+        OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not all found in response from command 'iptables -S'");
+        OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not all found in response from command 'iptables -S'");
 
         if (0 == CheckDaemonActive(g_firewalld, reason, log))
         {
@@ -374,7 +376,7 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
         status = 0;
     }
 
-    if (status)
+    if (0 != status)
     {
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' not found in response from command 'iptables -S', "
             "'%s' is not active, 'drop' not found in response from command 'firewall-cmd --get-default-zone', and/or "
