@@ -37,9 +37,9 @@ TEST_F(EvaluatorTest, Contructor)
 
 TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_1)
 {
-    auto json = ComplianceEngine::ParseJson("{}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -48,17 +48,17 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_1)
 
 TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":null}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":null}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("anyOf value is not an array"));
 
-    json = ComplianceEngine::ParseJson("{\"anyOf\":{}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator2("test", json_value_get_object(json.get()), mParameters, mContext);
+    json = JsonWrapper::FromString("{\"anyOf\":{}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("anyOf value is not an array"));
@@ -66,17 +66,17 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_2)
 
 TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_3)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":1234}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":1234}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("allOf value is not an array"));
 
-    json = ComplianceEngine::ParseJson("{\"allOf\":{}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator2("test", json_value_get_object(json.get()), mParameters, mContext);
+    json = JsonWrapper::FromString("{\"allOf\":{}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("allOf value is not an array"));
@@ -84,17 +84,17 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_3)
 
 TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_4)
 {
-    auto json = ComplianceEngine::ParseJson("{\"not\":\"foo\"}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"not\":\"foo\"}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("not value is not an object"));
 
-    json = ComplianceEngine::ParseJson("{\"not\":[]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator2("test", json_value_get_object(json.get()), mParameters, mContext);
+    json = JsonWrapper::FromString("{\"not\":[]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
     ASSERT_EQ(result.Error().message, std::string("not value is not an object"));
@@ -102,9 +102,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_4)
 
 TEST_F(EvaluatorTest, ExecuteAudit_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -113,9 +113,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_1)
 
 TEST_F(EvaluatorTest, ExecuteAudit_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"foo\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"foo\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -124,9 +124,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_2)
 
 TEST_F(EvaluatorTest, ExecuteAudit_3)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"AuditSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -135,9 +135,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_3)
 
 TEST_F(EvaluatorTest, ExecuteAudit_4)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"AuditFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -146,9 +146,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_4)
 
 TEST_F(EvaluatorTest, ExecuteAudit_5)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -157,9 +157,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_5)
 
 TEST_F(EvaluatorTest, ExecuteAudit_6)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -168,9 +168,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_6)
 
 TEST_F(EvaluatorTest, ExecuteAudit_7)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -179,9 +179,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_7)
 
 TEST_F(EvaluatorTest, ExecuteAudit_8)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -190,9 +190,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_8)
 
 TEST_F(EvaluatorTest, ExecuteAudit_9)
 {
-    auto json = ComplianceEngine::ParseJson("{\"not\":{\"AuditSuccess\":{}}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"not\":{\"AuditSuccess\":{}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -201,9 +201,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_9)
 
 TEST_F(EvaluatorTest, ExecuteAudit_10)
 {
-    auto json = ComplianceEngine::ParseJson("{\"not\":{\"AuditFailure\":{}}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"not\":{\"AuditFailure\":{}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -212,9 +212,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_10)
 
 TEST_F(EvaluatorTest, ExecuteAudit_11)
 {
-    auto json = ComplianceEngine::ParseJson("{\"not\":{\"not\":{\"AuditFailure\":{}}}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"not\":{\"not\":{\"AuditFailure\":{}}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -223,9 +223,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_11)
 
 TEST_F(EvaluatorTest, ExecuteAudit_12)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"foo\":[]}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"foo\":[]}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -234,9 +234,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_12)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -245,9 +245,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_1)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -256,9 +256,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_2)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_3)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -267,9 +267,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_3)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_4)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -278,9 +278,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_4)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_5)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -289,9 +289,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_5)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_6)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -300,9 +300,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_6)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_7)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -311,9 +311,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_7)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_8)
 {
-    auto json = ComplianceEngine::ParseJson("{\"allOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -322,9 +322,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_8)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_9)
 {
-    auto json = ComplianceEngine::ParseJson("{\"not\":{\"RemediationSuccess\":{}}}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"not\":{\"RemediationSuccess\":{}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -332,9 +332,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_9)
 
 TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"AuditFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -342,9 +342,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_1)
 
 TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"AuditFailure\":{}}, {\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditFailure\":{}}, {\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -352,9 +352,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_2)
 
 TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_3)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"RemediationSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"RemediationSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
@@ -363,9 +363,9 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_3)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"foo\":{}}, {\"RemediationFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"foo\":{}}, {\"RemediationFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -373,9 +373,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_1)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"foo\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"foo\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -384,9 +384,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_2)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditSuccess\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -395,9 +395,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_1)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditFailure\":{}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -406,9 +406,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_2)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_1)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"foo\":\"bar\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"foo\":\"bar\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -417,9 +417,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_1)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_2)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"bar\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"bar\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -427,9 +427,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_2)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_3)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"success\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"success\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -438,9 +438,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_3)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_4)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"failure\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"failure\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -449,9 +449,9 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_4)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_5)
 {
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":123}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":123}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -461,17 +461,17 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_5)
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
 {
     mParameters = {{"placeholder", "failure"}};
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 }
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
 {
     mParameters = {{"placeholder", "success"}};
-    auto json = ComplianceEngine::ParseJson("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
-    ASSERT_TRUE(json.get());
-    Evaluator evaluator1("test", json_value_get_object(json.get()), mParameters, mContext);
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);

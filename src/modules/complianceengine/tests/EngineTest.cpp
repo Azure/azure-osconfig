@@ -82,7 +82,7 @@ TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("procedureX", "");
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
+    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON"));
 }
 
 TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_2)
@@ -90,7 +90,7 @@ TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_2)
     std::string payload = "dGVzdA=="; // 'test' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
+    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON"));
 }
 
 TEST_F(EngineTest, MmiSet_setProcedure_InvalidArgument_3)
@@ -549,4 +549,37 @@ TEST_F(EngineTest, MmiSet_externalParams_value_16)
 
     // Space should be required between the key and the value
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1="'x'"KEY2='"y"')"));
+}
+
+TEST_F(EngineTest, MmiSet_externalParams_base64_json_1)
+{
+    std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Invalid base64 value
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(foobarbaz)"));
+}
+
+TEST_F(EngineTest, MmiSet_externalParams_base64_json_2)
+{
+    std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Input: {"KEY1":"x", "KEY2":"y"}
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(eyJLRVkxIjoieCIsICJLRVkyIjoieSJ9Cg==)"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=x, KEY2=y } == TRUE)");
+}
+
+TEST_F(EngineTest, MmiSet_externalParams_base64_json_3)
+{
+    std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Input: {"KEY1":"test", "KEY2":""}
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(eyJLRVkxIjoidGVzdCIsICJLRVkyIjoiIn0K)"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=test, KEY2= } == TRUE)");
 }
