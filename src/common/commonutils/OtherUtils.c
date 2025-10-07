@@ -371,7 +371,7 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
         OsConfigCaptureSuccessReason(reason, "'-P INPUT DROP', '-P FORWARD DROP', '-P OUTPUT DROP' all found in output of command 'iptables -S'");
-        statys = 0;
+        status = 0;
     }
 
     if (status)
