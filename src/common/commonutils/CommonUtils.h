@@ -17,8 +17,9 @@
 
 #define FREE_MEMORY(a) {\
     if (NULL != a) {\
-        free(a);\
-        a = NULL;\
+        void* b = (a);\
+        a = NULL; \
+        free(b);\
     }\
 }\
 
