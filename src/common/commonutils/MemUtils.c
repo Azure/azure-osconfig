@@ -116,7 +116,7 @@ void SafeFreeAll(void)
     {
         if ((NULL != current->pointer) && (false == current->freed))
         {
-            current->freed = false;
+            current->freed = true;
             FREE_MEMORY(current->pointer);
         }
 
@@ -135,7 +135,11 @@ size_t GetNumberOfUnfreedPointers(void)
 
     while (current)
     {
-        ++count;
+        if (false == current->freed)
+        {
+            ++count;
+        }
+
         current = current->next;
     }
 
