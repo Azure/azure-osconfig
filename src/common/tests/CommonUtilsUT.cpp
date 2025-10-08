@@ -3111,10 +3111,9 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 
 TEST_F(CommonUtilsTest, SafeMallocFree)
 {
-    char* s[] = {NULL, NULL, NULL};
+    //char* s[] = {NULL, NULL, NULL};
     static const char* c = "test";
     char* p = nullptr;
-    size_t pointers = 0;
     int i = 0;
 
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
