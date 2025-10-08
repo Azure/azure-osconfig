@@ -3116,6 +3116,12 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     char* p = nullptr;
     int i = 0;
 
+    EXPECT_NE(nullptr, p = (char*)malloc(1));
+    FREE_MEMORY(p);
+    EXPECT_EQ(nullptr, p);
+    FREE_MEMORY(p);
+    EXPECT_EQ(nullptr, p);
+
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
