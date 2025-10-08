@@ -43,6 +43,8 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
             g_head = node;
 
             memset(pointer, 0, size);
+
+            OsConfigLogInfo(log, "SafeMalloc: pointer '%p' allocated", pointer);
         }
         else
         {
@@ -79,6 +81,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
                 g_head = current->next;
             }
 
+            OsConfigLogInfo(log, "SafeFree: pointer '%p' will be freed", pointer);
+
             FREE_MEMORY(pointer);
             FREE_MEMORY(current);
             *p = NULL;
@@ -100,8 +104,10 @@ void SafeFreeAll(void)
 
     while (current)
     {
-        if (current->pointer)
+        if (NULL != current->pointer)
         {
+            OsConfigLogInfo(log, "SafeFreeAll: pointer '%p' will be freed", current->pointer);
+
             FREE_MEMORY(current->pointer);
         }
 
