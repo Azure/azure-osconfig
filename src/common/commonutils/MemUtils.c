@@ -123,3 +123,52 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     return result;
 }
+
+void SafeFreeAll(void)
+{
+    OsConfigPointerNode* current = g_head;
+    OsConfigPointerNode* next = NULL;
+
+    while (current)
+    {
+        if (current->pointer)
+        {
+            FREE_MEMORY(current->pointer);
+        }
+
+        next = current->next;
+        FREE_MEMORY(current);
+        current = next;
+    }
+
+    g_head = NULL;
+    g_minPointer = UINTPTR_MAX;
+    g_maxPointer = 0;
+}
+
+size_t GetNumberOfUnfreedPointers(void)
+{
+    size_t count = 0;
+    OsConfigPointerNode* current = g_head;
+
+    while (current)
+    {
+        ++count;
+        current = current->next;
+    }
+
+    return count;
+}
+
+void MemoryCleanup(OsConfigLogHandle log)
+{
+    size_t leaks = GetNumberOfUnfreedPointers();
+
+    if (leaks > 0)
+    {
+        OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
+        SafeFreeAll(log);
+    }
+
+    return;
+}

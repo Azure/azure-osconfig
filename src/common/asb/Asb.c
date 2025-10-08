@@ -1116,6 +1116,8 @@ void AsbShutdown(OsConfigLogHandle log)
 
     FREE_MEMORY(g_prettyName);
 
+    MemoryCleanup(OsConfigLogHandle log);
+
     CloseLog(&g_perfLog);
 
     // When done, allow others access to read the performance log

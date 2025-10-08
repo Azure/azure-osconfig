@@ -51,6 +51,9 @@ extern "C"
 
 void* SafeMalloc(size_t size, OsConfigLogHandle log);
 bool SafeFree(void** p, OsConfigLogHandle log);
+void SafeFreeAll(void);
+size_t GetNumberOfUnfreedPointers(void);
+void MemoryCleanup(OsConfigLogHandle log);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
