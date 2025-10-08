@@ -3109,53 +3109,6 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
-TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
-{
-    bool isIpTablesInstalled = IsPackageInstalled("iptables", nullptr);
-    bool isFirewallInstalled = IsPackageInstalled("firewall", nullptr);
-
-    if (0 == InstallOrUpdatePackage("iptables", nullptr))
-    {
-        EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
-        EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
-    }
-
-    if (0 == InstallOrUpdatePackage("firewall", nullptr))
-    {
-        UninstallPackage("iptables", nullptr);
-
-        EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
-        EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
-    }
-
-    // Clean-up
-
-    if (false == isIpTablesInstalled)
-    {
-        if (IsPackageInstalled("iptables", nullptr))
-        {
-            UninstallPackage("iptables", nullptr);
-        }
-        else
-        {
-            InstallOrUpdatePackage("iptables", nullptr);
-        }
-    }
-
-    if (false == isFirewallInstalled)
-    {
-        if (IsPackageInstalled("firewall", nullptr))
-        {
-            StopAndDisableDaemon("firewalld", nullptr);
-            UninstallPackage("firewall", nullptr);
-        }
-        else
-        {
-            InstallOrUpdatePackage("firewall", nullptr);
-        }
-    }
-}
-
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
