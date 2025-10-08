@@ -66,6 +66,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     void* pointer = *p;
     OsConfigPointerNode* current = g_head;
+    OsConfigPointerNode* previous = NULL;
 
     while (current)
     {
