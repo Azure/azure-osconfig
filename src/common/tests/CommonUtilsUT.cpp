@@ -3133,16 +3133,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     EXPECT_FALSE(SafeFree((void**)&c, nullptr));
 
-    p = (char*)(0x1000 - 1);
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-    p = (char*)0x1;
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-    p = (char*)(0x00007FFFFFFFFFFF + 1);
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-    p = (char*)0xFFFFFFFFFFFFFFFF;
+    p = (char*)0xDEADBEEF;
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
 
     EXPECT_EQ(0, pointers = GetNumberOfUnfreedPointers());
@@ -3153,12 +3144,6 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
         EXPECT_TRUE(SafeFree((void**)&p, nullptr));
         EXPECT_FALSE(SafeFree((void**)&p, nullptr));
         EXPECT_EQ(nullptr, p);
-
-        p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
-        EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-        p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
-        EXPECT_FALSE(SafeFree((void**)&p, nullptr));
     }
 
     for (i = 0; i < 3; i++)

@@ -10,8 +10,6 @@ typedef struct OsConfigPointerNode
 } OsConfigPointerNode;
 
 static OsConfigPointerNode* g_head = NULL;
-static uintptr_t g_minPointer = UINTPTR_MAX;
-static uintptr_t g_maxPointer = 0;
 
 void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
@@ -38,16 +36,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     }
     else
     {
-        if (address < g_minPointer)
-        {
-            g_minPointer = address;
-        }
-
-        if ((address + size) > g_maxPointer)
-        {
-            g_maxPointer = address + size;
-        }
-
         if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
         {
             node->pointer = pointer;
@@ -133,8 +121,6 @@ void SafeFreeAll(void)
     }
 
     g_head = NULL;
-    g_minPointer = UINTPTR_MAX;
-    g_maxPointer = 0;
 }
 
 size_t GetNumberOfUnfreedPointers(void)
