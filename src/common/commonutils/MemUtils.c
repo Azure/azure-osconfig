@@ -73,6 +73,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
         {
             OsConfigLogInfo(log, "SafeFree: pointer '%p' will be freed", pointer);
             FREE_MEMORY(current->pointer);
+            FREE_MEMORY(pointer);
             *p = NULL;
             return true;
         }
@@ -91,8 +92,8 @@ void SafeFreeAll(void)
 
     while (current)
     {
-        FREE_MEMORY(current->pointer);
         next = current->next;
+        FREE_MEMORY(current->pointer);
         FREE_MEMORY(current);
         current = next;
     }
