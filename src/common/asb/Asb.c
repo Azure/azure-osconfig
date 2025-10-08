@@ -1116,7 +1116,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
     FREE_MEMORY(g_prettyName);
 
-    MemoryCleanup(OsConfigLogHandle log);
+    MemoryCleanup(log);
 
     CloseLog(&g_perfLog);
 
