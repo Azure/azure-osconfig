@@ -69,7 +69,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 bool SafeFree(void** p, OsConfigLogHandle log)
 {
     void* pointer = NULL;
-    uintptr_t address = 0;
     bool result = false;
 
     if ((NULL == p) || (NULL == *p))
@@ -79,46 +78,38 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     }
 
     pointer = *p;
-    address = (uintptr_t)pointer;
 
-    if ((address < g_minPointer) || (address > g_maxPointer))
-    {
-        OsConfigLogError(log, "SafeFree: pointer '%p' is outside valid allocation range", pointer);
-    }
-    else
-    {
-        OsConfigPointerNode* previous = NULL;
-        OsConfigPointerNode* current = g_head;
+    OsConfigPointerNode* previous = NULL;
+    OsConfigPointerNode* current = g_head;
 
-        while (current)
+    while (current)
+    {
+        if (current->pointer == pointer)
         {
-            if (current->pointer == pointer)
+            if (previous)
             {
-                if (previous)
-                {
-                    previous->next = current->next;
-                }
-                else
-                {
-                   g_head = current->next;
-                }
-
-                FREE_MEMORY(current);
-                FREE_MEMORY(pointer);
-                *p = NULL;
-
-                result = true;
-                break;
+                previous->next = current->next;
+            }
+            else
+            {
+                g_head = current->next;
             }
 
-            previous = current;
-            current = current->next;
+            FREE_MEMORY(current);
+            FREE_MEMORY(pointer);
+            *p = NULL;
+
+            result = true;
+            break;
         }
 
-        if (false == result)
-        {
-            OsConfigLogError(log, "SafeFree: pointer '%p' not tracked or already freed", pointer);
-        }
+        previous = current;
+        current = current->next;
+    }
+
+    if (false == result)
+    {
+        OsConfigLogError(log, "SafeFree: pointer '%p' not tracked or already freed", pointer);
     }
 
     return result;
