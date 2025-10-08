@@ -58,10 +58,34 @@ class CommonUtilsTest : public ::testing::Test
                 }
             }
 
-            MemoryCleanup(nullptr);
-
             return true;
         }
+
+
+        // Called before each test
+        void SetUp() override
+        {
+            // nothing for now
+        }
+
+        // Called after each test
+        void TearDown() override
+        {
+            // nothing for now
+        }
+
+        // Called once before all tests in this test suite
+        static void SetUpTestSuite()
+        {
+            MemoryCleanup(nullptr);
+        }
+
+        // Called once after all tests in this test suite
+        static void TearDownTestSuite()
+        {
+            MemoryCleanup(nullptr);
+        }
+
 };
 
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
@@ -3181,8 +3205,6 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     SafeFreeAll();
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-
-    MemoryCleanup(nullptr);
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
