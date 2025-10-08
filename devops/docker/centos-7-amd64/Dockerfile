@@ -9,8 +9,8 @@ COPY ./centos.repo /etc/yum.repos.d/centos.repo
 RUN yum install -y \
     autoconf \
     curl \
-    gcc \
-    gcc-c++ \
+    devtoolset-7-gcc \
+    devtoolset-7-gcc-c++ \
     gettext-devel \
     jq \
     libcurl-devel \
@@ -26,6 +26,9 @@ RUN yum install -y \
     unzip \
     zip \
     zlib-devel
+
+# Add devtoolset-7 bin to PATH (GCC 7)
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
 WORKDIR /git
 

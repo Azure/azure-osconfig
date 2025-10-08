@@ -6,8 +6,8 @@ RUN yum install -y oracle-softwarecollection-release-el7
 
 RUN yum install -y \
     autoconf \
-    gcc \
-    gcc-c++ \
+    devtoolset-7-gcc \
+    devtoolset-7-gcc-c++ \
     gettext \
     jq \
     libcurl-devel \
