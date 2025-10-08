@@ -66,30 +66,17 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     void* pointer = *p;
     OsConfigPointerNode* current = g_head;
-    OsConfigPointerNode* previous = NULL;
 
     while (current)
     {
         if (current->pointer == pointer)
         {
-            if (previous)
-            {
-                previous->next = current->next;
-            }
-            else
-            {
-                g_head = current->next;
-            }
-
             OsConfigLogInfo(log, "SafeFree: pointer '%p' will be freed", pointer);
-
-            FREE_MEMORY(pointer);
-            FREE_MEMORY(current);
+            FREE_MEMORY(current->pointer);
             *p = NULL;
             return true;
         }
 
-        previous = current;
         current = current->next;
     }
 
@@ -104,13 +91,7 @@ void SafeFreeAll(void)
 
     while (current)
     {
-        if (NULL != current->pointer)
-        {
-            OsConfigLogInfo(NULL, "SafeFreeAll: pointer '%p' will be freed", current->pointer); ////////////////
-
-            FREE_MEMORY(current->pointer);
-        }
-
+        FREE_MEMORY(current->pointer);
         next = current->next;
         FREE_MEMORY(current);
         current = next;
@@ -126,7 +107,11 @@ size_t GetNumberOfUnfreedPointers(void)
 
     while (current)
     {
-        ++count;
+        if (NULL != current->pointer)
+        {
+            ++count;
+        }
+
         current = current->next;
     }
 
