@@ -6,7 +6,6 @@
 typedef struct OsConfigPointerNode
 {
     void* pointer;
-    bool freed;
     struct OsConfigPointerNode* next;
 } OsConfigPointerNode;
 
@@ -40,7 +39,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
         {
             node->pointer = pointer;
-            node->freed = false;
             node->next = g_head;
             g_head = node;
 
@@ -70,13 +68,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     while (current)
     {
-        if ((current->pointer == pointer) && (false == current->freed))
+        if (current->pointer == pointer)
         {
-            current->freed = true;
-            current->pointer = NULL;
-            FREE_MEMORY(pointer);
-            *p = NULL;
-
             if (previous)
             {
                 previous->next = current->next;
@@ -86,7 +79,9 @@ bool SafeFree(void** p, OsConfigLogHandle log)
                 g_head = current->next;
             }
 
+            FREE_MEMORY(pointer);
             FREE_MEMORY(current);
+            *p = NULL;
             return true;
         }
 
@@ -105,9 +100,8 @@ void SafeFreeAll(void)
 
     while (current)
     {
-        if ((NULL != current->pointer) && (false == current->freed))
+        if (current->pointer)
         {
-            current->freed = true;
             FREE_MEMORY(current->pointer);
         }
 
@@ -126,11 +120,7 @@ size_t GetNumberOfUnfreedPointers(void)
 
     while (current)
     {
-        if (false == current->freed)
-        {
-            ++count;
-        }
-
+        ++count;
         current = current->next;
     }
 
