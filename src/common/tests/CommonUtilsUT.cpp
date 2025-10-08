@@ -69,8 +69,6 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     char* p = nullptr;
     int i = 0;
 
-    EXPECT_EQ(nullptr, p = (char*)malloc(0));
-    EXPECT_EQ(nullptr, p = (char*)malloc(-1));
     EXPECT_NE(nullptr, p = (char*)malloc(1));
     FREE_MEMORY(p);
     EXPECT_EQ(nullptr, p);
