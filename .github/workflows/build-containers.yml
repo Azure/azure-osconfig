@@ -98,6 +98,7 @@ jobs:
           context: .
           file: ${{ matrix.container }}
           # Only push the image when a pull request is merged to dev
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+          # push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
