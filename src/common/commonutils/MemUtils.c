@@ -6,6 +6,7 @@
 typedef struct OsConfigPointerNode
 {
     void* pointer;
+    bool freed;
     struct OsConfigPointerNode* next;
 } OsConfigPointerNode;
 
@@ -39,6 +40,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
         {
             node->pointer = pointer;
+            node->freed = false;
             node->next = g_head;
             g_head = node;
 
@@ -72,8 +74,10 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     while (current)
     {
-        if (current->pointer == pointer)
+        if ((current->pointer == pointer) && (false == current->freed))
         {
+            current->freed = true;
+
             if (previous)
             {
                 previous->next = current->next;
