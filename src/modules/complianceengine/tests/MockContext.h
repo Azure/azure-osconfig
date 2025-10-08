@@ -134,7 +134,7 @@ struct MockContext : public ComplianceEngine::ContextInterface
         mSpecialFilesMap[path] = overridden;
     }
 
-    ComplianceEngine::FilesystemScanner& GetFilesystemScanner()
+    ComplianceEngine::FilesystemScanner& GetFilesystemScanner() override
     {
         return *mFsScannerp;
     }
