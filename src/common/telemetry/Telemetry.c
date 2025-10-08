@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "CommonUtils.h"
 #include "Telemetry.h"
+
+#include "CommonUtils.h"
 
 #include <dlfcn.h>
 #include <errno.h>
