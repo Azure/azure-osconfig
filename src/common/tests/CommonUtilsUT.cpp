@@ -3116,6 +3116,8 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     char* p = nullptr;
     int i = 0;
 
+    MemoryCleanup(nullptr);
+
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
     EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
 
