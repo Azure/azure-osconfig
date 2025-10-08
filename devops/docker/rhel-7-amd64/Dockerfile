@@ -1,20 +1,23 @@
 # ubi7 images are missing RPM devtools, copy from centos7
-FROM centos:centos7 as centos
+FROM centos:centos7 AS centos
 RUN rm /etc/yum.repos.d/*.repo
 # Docker context is at the root of the project
 COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-# Docker context is at the root of the project
 COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
-RUN yumdownloader rpm-build && yumdownloader elfutils
+RUN yumdownloader rpm-build elfutils
+
+# Download devtoolset-7 packages
+RUN yumdownloader --resolve --destdir=/devtoolset devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-runtime devtoolset-7-libstdc++-devel devtoolset-7-binutils
 
 # TODO: Add mcr.io retagged images
 FROM registry.access.redhat.com/ubi7/ubi
 COPY --from=centos /rpm-build*.rpm /rpm-build.rpm
 COPY --from=centos /elfutils*.rpm /elfutils.rpm
+COPY --from=centos /devtoolset/ /devtoolset/
 
 RUN yum-config-manager --enable ubi-7-server-devtools-rpms
 RUN yum install -y --disableplugin=subscription-manager \
@@ -32,6 +35,10 @@ RUN yum install -y --disableplugin=subscription-manager \
     tar \
     unzip \
     zip
+
+# Install and enable devtoolset-7
+RUN yum install -y /devtoolset/*.rpm && rm -rf /devtoolset
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
 WORKDIR /git
 
