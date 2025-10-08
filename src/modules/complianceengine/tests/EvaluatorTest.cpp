@@ -39,6 +39,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_1)
 {
     auto json = JsonWrapper::FromString("{}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator.ExecuteAudit(mFormatter);
@@ -50,6 +51,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":null}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -58,6 +60,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_2)
 
     json = JsonWrapper::FromString("{\"anyOf\":{}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -68,6 +71,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_3)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":1234}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -76,6 +80,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_3)
 
     json = JsonWrapper::FromString("{\"allOf\":{}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -86,6 +91,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_4)
 {
     auto json = JsonWrapper::FromString("{\"not\":\"foo\"}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -94,6 +100,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_InvalidJSON_4)
 
     json = JsonWrapper::FromString("{\"not\":[]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator2("test", json_value_get_object(json->get()), mParameters, mContext);
     result = evaluator2.ExecuteAudit(mFormatter);
     ASSERT_FALSE(result);
@@ -104,6 +111,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_1)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -115,6 +123,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_2)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"foo\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -126,6 +135,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_3)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -137,6 +147,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_4)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -148,6 +159,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_5)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -159,6 +171,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_6)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -170,6 +183,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_7)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditFailure\":{}}, {\"AuditSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -181,6 +195,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_8)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditSuccess\":{}}, {\"AuditFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -192,6 +207,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_9)
 {
     auto json = JsonWrapper::FromString("{\"not\":{\"AuditSuccess\":{}}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -203,6 +219,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_10)
 {
     auto json = JsonWrapper::FromString("{\"not\":{\"AuditFailure\":{}}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -214,6 +231,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_11)
 {
     auto json = JsonWrapper::FromString("{\"not\":{\"not\":{\"AuditFailure\":{}}}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -225,6 +243,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_12)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"foo\":[]}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -236,6 +255,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_1)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -247,6 +267,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -258,6 +279,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_3)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -269,6 +291,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_4)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -280,6 +303,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_5)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -291,6 +315,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_6)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -302,6 +327,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_7)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationFailure\":{}}, {\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -313,6 +339,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_8)
 {
     auto json = JsonWrapper::FromString("{\"allOf\":[{\"RemediationSuccess\":{}}, {\"RemediationFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -324,6 +351,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_9)
 {
     auto json = JsonWrapper::FromString("{\"not\":{\"RemediationSuccess\":{}}}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -334,6 +362,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_1)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"AuditFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -344,6 +373,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditFailure\":{}}, {\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -354,6 +384,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_3)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditSuccess\":{}}, {\"RemediationSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteAudit(mFormatter);
@@ -365,6 +396,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_1)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"foo\":{}}, {\"RemediationFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -375,6 +407,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationSuccess\":{}}, {\"foo\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -386,6 +419,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_1)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditSuccess\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -397,6 +431,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationFailure\":{}}, {\"AuditFailure\":{}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -408,6 +443,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_1)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"foo\":\"bar\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -419,6 +455,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_2)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"bar\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -429,6 +466,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_3)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"success\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -440,6 +478,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_4)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"failure\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -451,6 +490,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_5)
 {
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":123}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
@@ -463,6 +503,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
     mParameters = {{"placeholder", "failure"}};
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 }
 
@@ -471,6 +512,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
     mParameters = {{"placeholder", "success"}};
     auto json = JsonWrapper::FromString("{\"anyOf\":[{\"RemediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.HasValue());
+    ASSERT_TRUE(json->get());
     Evaluator evaluator1("test", json_value_get_object(json->get()), mParameters, mContext);
 
     auto result = evaluator1.ExecuteRemediation();
