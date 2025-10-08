@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMPLIANCEENGINE_JSON_H
-#define COMPLIANCEENGINE_JSON_H
+#ifndef COMPLIANCEENGINE_JSON_WRAPPER_H
+#define COMPLIANCEENGINE_JSON_WRAPPER_H
 
 #include <Result.h>
 #include <memory>
@@ -42,4 +42,4 @@ private:
 };
 } // namespace ComplianceEngine
 
-#endif // COMPLIANCEENGINE_JSON_H
+#endif // COMPLIANCEENGINE_JSON_WRAPPER_H
