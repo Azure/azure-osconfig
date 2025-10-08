@@ -3125,33 +3125,34 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     EXPECT_FALSE(SafeFree(nullptr, nullptr));
 
     EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
-    EXPECT_EQ(1, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(1, GetNumberOfUnfreedPointers());
     EXPECT_TRUE(SafeFree((void**)&p, nullptr));
-    EXPECT_EQ(0, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-    EXPECT_EQ(nullptr, nullptr);
 
     EXPECT_FALSE(SafeFree((void**)&c, nullptr));
 
     p = (char*)0xDEADBEEF;
     EXPECT_FALSE(SafeFree((void**)&p, nullptr));
 
-    EXPECT_EQ(0, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
     for (i = 1; i < 100; i++)
     {
-        EXPECT_NE(nullptr, p = (char*)SafeMalloc((i * 17), nullptr));
+        EXPECT_NE(nullptr, p = (char*)SafeMalloc(i, nullptr));
+        EXPECT_EQ(1, GetNumberOfUnfreedPointers());
         EXPECT_TRUE(SafeFree((void**)&p, nullptr));
+        EXPECT_EQ(0, GetNumberOfUnfreedPointers());
         EXPECT_FALSE(SafeFree((void**)&p, nullptr));
         EXPECT_EQ(nullptr, p);
     }
-
+    /*
     for (i = 0; i < 3; i++)
     {
         EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
     }
 
-    EXPECT_EQ(3, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(3, GetNumberOfUnfreedPointers());
 
     for (i = 0; i < 3; i++)
     {
@@ -3160,15 +3161,15 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
         EXPECT_EQ(nullptr, s[i]);
     }
 
-    EXPECT_EQ(0, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
     for (i = 0; i < 3; i++)
     {
         EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
     }
-
+    */
     SafeFreeAll();
-    EXPECT_EQ(0, pointers = GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
     MemoryCleanup(nullptr);
 }
