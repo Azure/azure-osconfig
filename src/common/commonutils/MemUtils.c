@@ -121,20 +121,7 @@ size_t GetNumberOfUnfreedPointers(void)
     return count;
 }
 
-void MemoryCleanup(OsConfigLogHandle log)
-{
-    size_t leaks = GetNumberOfUnfreedPointers();
-
-    if (leaks > 0)
-    {
-        OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
-        SafeFreeAll();
-    }
-
-    return;
-}
-
-void DumpTrackedPointers(OsConfigLogHandle log)
+static void DumpTrackedPointers(OsConfigLogHandle log)
 {
     OsConfigPointerNode* current = g_head;
     size_t index = 0;
@@ -144,4 +131,18 @@ void DumpTrackedPointers(OsConfigLogHandle log)
         OsConfigLogError(log, "Node[%zu]: pointer = %p", index++, current->pointer);
         current = current->next;
     }
+}
+
+void MemoryCleanup(OsConfigLogHandle log)
+{
+    size_t leaks = GetNumberOfUnfreedPointers();
+
+    if (leaks > 0)
+    {
+        OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
+        DumpTrackedPointers(log);
+        SafeFreeAll();
+    }
+
+    return;
 }

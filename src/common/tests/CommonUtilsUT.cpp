@@ -62,74 +62,6 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
-TEST_F(CommonUtilsTest, SafeMallocFree)
-{
-    char* s[] = { NULL, NULL, NULL };
-    static const char* c = "test";
-    char* p = nullptr;
-    int i = 0;
-
-    DumpTrackedPointers(nullptr);
-    MemoryCleanup(nullptr);
-
-    EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
-    EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
-
-    EXPECT_FALSE(SafeFree((void**)0, nullptr));
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-    EXPECT_FALSE(SafeFree(nullptr, nullptr));
-
-    EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
-    EXPECT_EQ(1, GetNumberOfUnfreedPointers());
-    EXPECT_TRUE(SafeFree((void**)&p, nullptr));
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-    EXPECT_FALSE(SafeFree((void**)&c, nullptr));
-
-    p = (char*)0xDEADBEEF;
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-
-    for (i = 1; i < 100; i++)
-    {
-        EXPECT_NE(nullptr, p = (char*)SafeMalloc(i, nullptr));
-        EXPECT_EQ(1, GetNumberOfUnfreedPointers());
-        EXPECT_TRUE(SafeFree((void**)&p, nullptr));
-        EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-        EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-        EXPECT_EQ(nullptr, p);
-    }
-
-    for (i = 0; i < 3; i++)
-    {
-        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
-    }
-
-    EXPECT_EQ(3, GetNumberOfUnfreedPointers());
-
-    for (i = 0; i < 3; i++)
-    {
-        EXPECT_TRUE(SafeFree((void**)&(s[i]), nullptr));
-        EXPECT_FALSE(SafeFree((void**)&(s[i]), nullptr));
-        EXPECT_EQ(nullptr, s[i]);
-    }
-
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-
-    for (i = 0; i < 3; i++)
-    {
-        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
-    }
-
-    DumpTrackedPointers(nullptr);
-    SafeFreeAll();
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-
-    MemoryCleanup(nullptr);
-}
-
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
@@ -3175,6 +3107,72 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_STREQ("88", value = GetStringOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', nullptr));
     FREE_MEMORY(value);
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
+}
+
+TEST_F(CommonUtilsTest, SafeMallocFree)
+{
+    char* s[] = { NULL, NULL, NULL };
+    static const char* c = "test";
+    char* p = nullptr;
+    int i = 0;
+
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+
+    EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
+    EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
+
+    EXPECT_FALSE(SafeFree((void**)0, nullptr));
+    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+    EXPECT_FALSE(SafeFree(nullptr, nullptr));
+
+    EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
+    EXPECT_EQ(1, GetNumberOfUnfreedPointers());
+    EXPECT_TRUE(SafeFree((void**)&p, nullptr));
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+
+    EXPECT_FALSE(SafeFree((void**)&c, nullptr));
+
+    p = (char*)0xDEADBEEF;
+    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+
+    for (i = 1; i < 100; i++)
+    {
+        EXPECT_NE(nullptr, p = (char*)SafeMalloc(i, nullptr));
+        EXPECT_EQ(1, GetNumberOfUnfreedPointers());
+        EXPECT_TRUE(SafeFree((void**)&p, nullptr));
+        EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+        EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+        EXPECT_EQ(nullptr, p);
+    }
+
+    for (i = 0; i < 3; i++)
+    {
+        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
+    }
+
+    EXPECT_EQ(3, GetNumberOfUnfreedPointers());
+
+    for (i = 0; i < 3; i++)
+    {
+        EXPECT_TRUE(SafeFree((void**)&(s[i]), nullptr));
+        EXPECT_FALSE(SafeFree((void**)&(s[i]), nullptr));
+        EXPECT_EQ(nullptr, s[i]);
+    }
+
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+
+    for (i = 0; i < 3; i++)
+    {
+        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
+    }
+
+    SafeFreeAll();
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+
+    MemoryCleanup(nullptr);
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
