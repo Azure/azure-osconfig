@@ -64,7 +64,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     if ((NULL == p) || (NULL == *p))
     {
         OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
-        return result;
+        return false;
     }
 
     pointer = *p;
@@ -77,6 +77,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
         if ((current->pointer == pointer) && (false == current->freed))
         {
             current->freed = true;
+            FREE_MEMORY(pointer);
+            *p = NULL;
 
             if (previous)
             {
@@ -88,9 +90,6 @@ bool SafeFree(void** p, OsConfigLogHandle log)
             }
 
             FREE_MEMORY(current);
-            FREE_MEMORY(pointer);
-            *p = NULL;
-
             result = true;
             break;
         }
