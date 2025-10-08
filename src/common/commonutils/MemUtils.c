@@ -20,6 +20,10 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     {
         OsConfigLogError(log, "SafeMalloc: requested size is 0 bytes, nothing to allocate");
     }
+    else if (size >= SIZE_MAX)
+    {
+        OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
+    }
     else if (NULL == (pointer = malloc(size)))
     {
         OsConfigLogError(log, "SafeMalloc: memory allocation of %zu bytes failed", size);
@@ -54,7 +58,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     void* pointer = *p;
     OsConfigPointerNode* current = g_head;
-    OsConfigPointerNode* previous = NULL;
+    OsConfigPointerNode* previous = g_head;
 
     while (current)
     {
