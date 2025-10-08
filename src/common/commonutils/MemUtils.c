@@ -167,7 +167,7 @@ void MemoryCleanup(OsConfigLogHandle log)
     if (leaks > 0)
     {
         OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
-        SafeFreeAll(log);
+        SafeFreeAll();
     }
 
     return;
