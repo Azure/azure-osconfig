@@ -347,9 +347,6 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
 
 int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
 {
-    "rules=$(iptables -S) echo '$rules' | grep - qP '^-P INPUT DROP$' && echo '$rules' | grep - qP '^-P FORWARD DROP$' && echo '$rules' | grep - qP '^-P OUTPUT DROP$'"
-
-
     const char* readIpTables = "iptables -S";
     const char* firewallCommand = "firewall-cmd --get-default-zone | grep -q '^drop$' && firewall-cmd --list-all --zone=drop | grep -q '^target: DROP$'";
     int status = ENOENT;
