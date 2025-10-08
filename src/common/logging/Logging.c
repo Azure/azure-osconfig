@@ -13,7 +13,7 @@
 #include <limits.h>
 #include "Logging.h"
 
-#define TIME_FORMAT_STRING_LENGTH 20
+#define TIME_FORMAT_STRING_LENGTH 64
 
 struct OsConfigLog
 {
@@ -192,7 +192,7 @@ FILE* GetLogFile(OsConfigLogHandle log)
 
 static char g_logTime[TIME_FORMAT_STRING_LENGTH] = {0};
 
-// Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS (for example: 2014-03-19 11:11:52)
+// Returns the local date/time with GMT offset, formatted as YYYY-MM-DD HH:MM:SS-GGGG (for example: 2025-09-26 15:49:55-0700)
 char* GetFormattedTime(void)
 {
     time_t rawTime = {0};
@@ -200,7 +200,7 @@ char* GetFormattedTime(void)
     struct tm result = {0};
     time(&rawTime);
     timeInfo = localtime_r(&rawTime, &result);
-    strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S", timeInfo);
+    strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S%z", timeInfo);
     return g_logTime;
 }
 
