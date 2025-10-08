@@ -1069,10 +1069,9 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
         }
     }
     ComplianceEngine::Procedure proc;
-    ProcedureParameters params = {
-        { "X", "1" },
-        { "Y", "2" },
-    };
+    ComplianceEngine::ProcedureParameters params;
+    params["X"] = "1";
+    params["Y"] = "2";
     proc.SetParameters(std::move(params));
     Optional<Error> error = proc.UpdateUserParameters(input);
     if (error)
@@ -1164,7 +1163,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
     { "Base64Decode.", Base64Decode_target },
-    { "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
+    {  "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
 #ifdef BUILD_TELEMETRY
     { "ProcessJsonFile.", ProcessJsonFile_target },
 #endif
