@@ -3113,7 +3113,7 @@ TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
 {
     bool isIpTablesInstalled = IsPackageInstalled("iptables", nullptr);
     bool isFirewallInstalled = IsPackageInstalled("firewall", nullptr);
-    
+
     if (0 == InstallOrUpdatePackage("iptables", nullptr))
     {
         EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
@@ -3144,6 +3144,7 @@ TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
     {
         if (IsPackageInstalled("firewall", nullptr))
         {
+            StopAndDisableDaemon("firewalld", nullptr);
             UninstallPackage("firewall", nullptr);
         }
         else
