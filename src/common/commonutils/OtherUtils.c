@@ -516,7 +516,7 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     // And if nothing else, also try via firewall the same (allow current, and then drop future):
     else if (status && StartDaemon(g_firewalld, log))
     {
-        if (0 != AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log))
+        if (0 != AllowCurrentTrafficInFirewalldDropZone(log))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: AllowCurrentTrafficInFirewalldDropZone failed with %d", status);
         }
