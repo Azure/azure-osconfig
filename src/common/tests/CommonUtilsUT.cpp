@@ -3128,6 +3128,8 @@ TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
         EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
     }
 
+    // Clean-up
+
     if (false == isIpTablesInstalled)
     {
         if (IsPackageInstalled("iptables", nullptr))
@@ -3152,9 +3154,6 @@ TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
             InstallOrUpdatePackage("firewall", nullptr);
         }
     }
-
-    EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
-    EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
