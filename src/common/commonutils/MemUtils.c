@@ -71,13 +71,22 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     {
         if (current->pointer == pointer)
         {
-            OsConfigLogInfo(log, "SafeFree: pointer '%p' will be freed", pointer);
+            if (NULL != previous)
+            {
+                previous->next = current->next;
+            }
+            else
+            {
+                g_head = current->next;
+            }
+
             FREE_MEMORY(current->pointer);
             FREE_MEMORY(pointer);
             *p = NULL;
             return true;
         }
 
+        previous = current;
         current = current->next;
     }
 
@@ -130,4 +139,16 @@ void MemoryCleanup(OsConfigLogHandle log)
     }
 
     return;
+}
+
+void DumpTrackedPointers(OsConfigLogHandle log)
+{
+    OsConfigPointerNode* current = g_head;
+    size_t index = 0;
+
+    while (current)
+    {
+        OsConfigLogError(log, "Node[%zu]: pointer = %p", index++, current->pointer);
+        current = current->next;
+    }
 }

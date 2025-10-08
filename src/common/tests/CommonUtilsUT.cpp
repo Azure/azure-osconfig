@@ -3116,6 +3116,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     char* p = nullptr;
     int i = 0;
 
+    DumpTrackedPointers(nullptr);
     MemoryCleanup(nullptr);
 
     EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
@@ -3169,6 +3170,8 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
         EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
     }
     */
+
+    DumpTrackedPointers(nullptr);
     SafeFreeAll();
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
