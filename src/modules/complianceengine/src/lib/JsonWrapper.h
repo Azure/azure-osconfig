@@ -8,8 +8,6 @@
 #include <memory>
 #include <parson.h>
 
-struct json_value_t;
-
 namespace ComplianceEngine
 {
 using JsonWrapperPointerType = std::unique_ptr<json_value_t, void (*)(json_value_t*)>;
