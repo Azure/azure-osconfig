@@ -3111,6 +3111,9 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 
 TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
 {
+    bool isIpTablesInstalled = IsPackageInstalled("iptables", nullptr);
+    bool isFirewallInstalled = IsPackageInstalled("firewall", nullptr);
+    
     if (0 == InstallOrUpdatePackage("iptables", nullptr))
     {
         EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
@@ -3124,6 +3127,33 @@ TEST_F(CommonUtilsTest, DefaultDenyFirewallPolicy)
         EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
         EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
     }
+
+    if (false == isIpTablesInstalled)
+    {
+        if (IsPackageInstalled("iptables", nullptr))
+        {
+            UninstallPackage("iptables", nullptr);
+        }
+        else
+        {
+            InstallOrUpdatePackage("iptables", nullptr);
+        }
+    }
+
+    if (false == isFirewallInstalled)
+    {
+        if (IsPackageInstalled("firewall", nullptr))
+        {
+            UninstallPackage("firewall", nullptr);
+        }
+        else
+        {
+            InstallOrUpdatePackage("firewall", nullptr);
+        }
+    }
+
+    EXPECT_EQ(0, SetDefaultDenyFirewallPolicy(nullptr));
+    EXPECT_EQ(0, CheckDefaultDenyFirewallPolicy(nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
