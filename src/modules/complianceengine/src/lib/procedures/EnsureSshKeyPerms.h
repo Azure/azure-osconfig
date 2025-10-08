@@ -9,8 +9,11 @@ namespace ComplianceEngine
 {
 enum class SshKeyType
 {
+    /// label: public
     Public,
-    Private
+
+    /// label: private
+    Private,
 };
 
 struct EnsureSshKeyPermsParams

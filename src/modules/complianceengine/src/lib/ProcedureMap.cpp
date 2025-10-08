@@ -47,7 +47,7 @@ const char* Bindings<EnsurePasswordChangeIsInPastParams>::names[] = {"test_etcSh
 // EnsureShadowContains.h:90
 const char* Bindings<EnsureShadowContainsParams>::names[] = {"username", "username_operation", "field", "value", "operation", "test_etcShadowPath"};
 
-// EnsureSshKeyPerms.h:21
+// EnsureSshKeyPerms.h:24
 const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 
 // EnsureSshdOption.h:61

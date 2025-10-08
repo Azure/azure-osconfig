@@ -129,7 +129,8 @@ template <>
 inline const std::map<std::string, SshKeyType>& MapEnum<SshKeyType>()
 {
     static const std::map<std::string, SshKeyType> map = {
-        {"Public", SshKeyType::Public},
+        {"public", SshKeyType::Public},
+        {"private", SshKeyType::Private},
     };
     return map;
 }
