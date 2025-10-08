@@ -114,8 +114,9 @@ void SafeFreeAll(void)
 
     while (current)
     {
-        if (current->pointer)
+        if ((NULL != current->pointer) && (false == current->freed))
         {
+            current->freed = false;
             FREE_MEMORY(current->pointer);
         }
 
