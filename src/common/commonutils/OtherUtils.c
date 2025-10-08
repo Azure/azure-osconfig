@@ -392,9 +392,10 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
 static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
 {
     const char* services = "services:";
+    const char* ports = "ports:";
     FILE* pipe = NULL;
     char buffer[1024] = {0};
-    char command[256] = {0};
+    char* command = NULL;
     char* zone = NULL;
     char* token = NULL;
     char* ports = NULL;
@@ -441,9 +442,9 @@ static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
             break;
         }
 
-        if (NULL != (ports = strstr(buffer, "ports:")))
+        if (NULL != (ports = strstr(buffer, ports)))
         {
-            ports += strlen("ports:");
+            ports += strlen(ports);
             while (NULL != (token = strtok(ports, " \n")))
             {
                 if (NULL == (command = FormatAllocateString("firewall-cmd --zone=drop --add-port=%s", token)))
