@@ -347,6 +347,9 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
 
 int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
 {
+    "rules=$(iptables -S) echo '$rules' | grep - qP '^-P INPUT DROP$' && echo '$rules' | grep - qP '^-P FORWARD DROP$' && echo '$rules' | grep - qP '^-P OUTPUT DROP$'"
+
+
     const char* readIpTables = "iptables -S";
     const char* firewallCommand = "firewall-cmd --get-default-zone | grep -q '^drop$' && firewall-cmd --list-all --zone=drop | grep -q '^target: DROP$'";
     int status = ENOENT;
@@ -389,6 +392,91 @@ int CheckDefaultDenyFirewallPolicy(char** reason, OsConfigLogHandle log)
     return status;
 }
 
+static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
+{
+    const char* services = "services:";
+    FILE* pipe = NULL;
+    char buffer[1024] = {0};
+    char command[256] = {0};
+    char* zone = NULL;
+    char* token = NULL;
+    char* ports = NULL;
+    int status = 0;
+
+    // List all zones and their services
+    if (NULL == (pipe = popen("firewall-cmd --list-all-zones", "r")))
+    {
+        OsConfigLogInfo(log, "AllowCurrentTrafficInFirewalldDropZone: failed to run firewall-cmd");
+        return -1;
+    }
+
+    // Parse output and extract services and ports
+    while (NULL != fgets(buffer, sizeof(buffer), pipe))
+    {
+        if (NULL != (zone = strstr(buffer, services)))
+        {
+            zone += strlen(services);
+
+            while (NULL != (token = strtok(zone, " \n")))
+            {
+                if (NULL == (command = FormatAllocateString("firewall-cmd --zone=drop --add-service=%s", token)))
+                {
+                    OsConfigLogError(log, "AllowCurrentTrafficInFirewalldDropZone: 'out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
+                {
+                    OsConfigLogInfo(log, "AllowCurrentTrafficInFirewalldDropZone: '%s' failed with %d", command, status);
+
+                    // Continue for next zone
+                    status = 0;
+                }
+
+                token = strtok(NULL, " \n");
+
+                FREE_MEMORY(command);
+            }
+        }
+
+        if (0 != status)
+        {
+            break;
+        }
+
+        if (NULL != (ports = strstr(buffer, "ports:")))
+        {
+            ports += strlen("ports:");
+            while (NULL != (token = strtok(ports, " \n")))
+            {
+                if (NULL == (command = FormatAllocateString("firewall-cmd --zone=drop --add-port=%s", token)))
+                {
+                    OsConfigLogError(log, "AllowCurrentTrafficInFirewalldDropZone: 'out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
+                {
+                    OsConfigLogInfo(log, "AllowCurrentTrafficInFirewalldDropZone: '%s' failed with %d", command, status);
+
+                    // Continue for next port
+                    status = 0;
+                }
+
+                token = strtok(NULL, " \n");
+
+                FREE_MEMORY(command);
+            }
+        }
+    }
+
+    pclose(pipe);
+
+    FREE_MEMORY(command);
+
+    return status;
+}
+
 int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
 {
     const char* acceptInput = "iptables -A INPUT -j ACCEPT";
@@ -427,9 +515,13 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
     }
-    // And if nothing else, also try via firewall:
+    // And if nothing else, also try via firewall the same (allow current, and then drop future):
     else if (status && StartDaemon(g_firewalld, log))
     {
+        if (0 != AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log))
+        {
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: AllowCurrentTrafficInFirewalldDropZone failed with %d", status);
+        }
         if (0 != (status = ExecuteCommand(NULL, setDefaultZoneDrop, true, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", setDefaultZoneDrop, status);
