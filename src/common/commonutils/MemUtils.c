@@ -106,7 +106,7 @@ void SafeFreeAll(void)
     {
         if (NULL != current->pointer)
         {
-            OsConfigLogInfo(log, "SafeFreeAll: pointer '%p' will be freed", current->pointer);
+            OsConfigLogInfo(NULL, "SafeFreeAll: pointer '%p' will be freed", current->pointer); ////////////////
 
             FREE_MEMORY(current->pointer);
         }
