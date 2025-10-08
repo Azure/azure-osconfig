@@ -74,7 +74,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
             }
 
             FREE_MEMORY(current->pointer);
-            FREE_MEMORY(pointer);
+            FREE_MEMORY(current);
             *p = NULL;
             return true;
         }
