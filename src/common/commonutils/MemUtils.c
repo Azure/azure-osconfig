@@ -15,7 +15,6 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
     OsConfigPointerNode* node = NULL;
     void* pointer = NULL;
-    uintptr_t address = 0;
 
     if (0 == size)
     {
