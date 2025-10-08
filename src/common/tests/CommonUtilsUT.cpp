@@ -58,6 +58,8 @@ class CommonUtilsTest : public ::testing::Test
                 }
             }
 
+            MemoryCleanup(nullptr);
+
             return true;
         }
 };
