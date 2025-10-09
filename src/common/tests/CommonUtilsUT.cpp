@@ -62,7 +62,7 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
-#ifdef 0
+#ifdef DONT_SKIP_THIS
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
