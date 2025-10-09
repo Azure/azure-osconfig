@@ -48,10 +48,6 @@ ExternalProject_Add(
         -DCMAKE_C_FLAGS="-w"      # Suppress all warnings
         # Pass vcpkg paths to the 1DS SDK build
         -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-        -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}
-        # Force OpenSSL from vcpkg
-        -DOPENSSL_ROOT_DIR=${VCPKG_PACKAGES_DIR}
-        -DOPENSSL_USE_STATIC_LIBS=TRUE
         # Install to vcpkg's installed directory instead of system paths
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/1ds_install
     INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install
