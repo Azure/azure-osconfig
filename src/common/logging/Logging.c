@@ -133,9 +133,9 @@ void SetMaxLogSizeDebugMultiplier(unsigned int value)
     g_maxLogSizeDebugMultiplier = value;
 }
 
-static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
+static int RestrictLogFileAccess(const char* fileName)
 {
-    return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP);
 }
 
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName)
@@ -154,12 +154,12 @@ OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName)
     if (NULL != newLog->logFileName)
     {
         newLog->log = fopen(newLog->logFileName, "a");
-        RestrictFileAccessToCurrentAccountOnly(newLog->logFileName);
+        RestrictLogFileAccess(newLog->logFileName);
     }
 
     if (NULL != newLog->backLogFileName)
     {
-        RestrictFileAccessToCurrentAccountOnly(newLog->backLogFileName);
+        RestrictLogFileAccess(newLog->backLogFileName);
     }
 
     return newLog;
@@ -242,11 +242,11 @@ void TrimLog(OsConfigLogHandle log)
             log->log = fopen(log->logFileName, "a");
 
             // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictFileAccessToCurrentAccountOnly(log->logFileName);
+            RestrictLogFileAccess(log->logFileName);
             if (NULL != log->backLogFileName)
             {
                 // Reapply restrictions to the backup file:
-                RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
+                RestrictLogFileAccess(log->backLogFileName);
             }
         }
     }
