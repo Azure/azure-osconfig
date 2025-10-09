@@ -379,7 +379,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     {
         listSize = (*size) * sizeof(SimplifiedUser);
         //if (NULL != (*userList = malloc(listSize)))
-        if (NULL != (*userList = (SimplifiedUser**)SafeMalloc(listSize, log)))
+        if (NULL != (*userList = (SimplifiedUser*)SafeMalloc(listSize, log)))
         {
             memset(*userList, 0, listSize);
 
@@ -620,7 +620,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
     {
         listSize = (*size) * sizeof(SimplifiedGroup);
         //if (NULL != (*groupList = malloc(listSize)))
-        if (NULL != (*groupList = (SimplifiedGroup*)SafeMalloc(listSize)))
+        if (NULL != (*groupList = (SimplifiedGroup*)SafeMalloc(listSize, log)))
         {
             memset(*groupList, 0, listSize);
 
@@ -2086,7 +2086,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
         }
     }
 
-    FreeUsersList(&userList, userListSizem, log);
+    FreeUsersList(&userList, userListSize, log);
 
     if (0 == status)
     {
