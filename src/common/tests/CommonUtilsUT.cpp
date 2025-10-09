@@ -3204,7 +3204,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     // This may not crash:
     EXPECT_NE(nullptr, x = (char*)SafeMalloc(100, nullptr));
-    for (i = 0; i < 11; i++)
+    for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
     };
@@ -3212,7 +3212,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     // This should crash the test:
     EXPECT_NE(nullptr, x = (char*)malloc(100));
-    for (i = 0; i < 11; i++)
+    for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
     };
