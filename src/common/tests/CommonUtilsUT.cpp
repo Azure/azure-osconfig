@@ -3194,8 +3194,8 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
         EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
     }
 
-    // Validate SafeFreeAll frees the entire sequence of tracked allocations
-    SafeFreeAll(nullptr);
+    // Validate MemoryCleanup frees the entire sequence of 'about to be leaked' tracked allocations
+    MemoryCleanup(nullptr);
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 }
 
