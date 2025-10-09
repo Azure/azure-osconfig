@@ -3,17 +3,22 @@
 
 #include "Internal.h"
 
-typedef struct OsConfigPointerNode
+typedef struct PointerNode
 {
     void* pointer;
-    struct OsConfigPointerNode* next;
-} OsConfigPointerNode;
+    struct PointerNode* next;
+} PointerNode;
 
-static OsConfigPointerNode* g_head = NULL;
+static PointerNode* g_start = NULL;
+
+/*
+void *malloc(size_t size);
+void free(void *ptr);
+*/
 
 void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
-    OsConfigPointerNode* node = NULL;
+    PointerNode* node = NULL;
     void* pointer = NULL;
 
     if (0 == size)
@@ -30,11 +35,11 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     }
     else
     {
-        if (NULL != (node = malloc(sizeof(OsConfigPointerNode))))
+        if (NULL != (node = malloc(sizeof(PointerNode))))
         {
             node->pointer = pointer;
-            node->next = g_head;
-            g_head = node;
+            node->next = NULL;
+            g_start = node;
 
             memset(pointer, 0, size);
         }
@@ -57,8 +62,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     }
 
     void* pointer = *p;
-    OsConfigPointerNode* current = g_head;
-    OsConfigPointerNode* previous = NULL;
+    PointerNode* current = g_start;
+    PointerNode* previous = NULL;
 
     while (NULL != current)
     {
@@ -70,7 +75,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
             }
             else
             {
-                g_head = current->next;
+                g_start = current->next;
             }
 
             FREE_MEMORY(current->pointer);
@@ -89,30 +94,32 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
 void SafeFreeAll(void)
 {
-    OsConfigPointerNode* current = g_head;
-    OsConfigPointerNode* next = NULL;
+    PointerNode* current = g_start;
+    PointerNode* next = NULL;
 
     while (NULL != current)
     {
         next = current->next;
+
         FREE_MEMORY(current->pointer);
         FREE_MEMORY(current);
+
         current = next;
     }
 
-    g_head = NULL;
+    g_start = NULL;
 }
 
 size_t GetNumberOfUnfreedPointers(void)
 {
     size_t count = 0;
-    OsConfigPointerNode* current = g_head;
+    PointerNode* current = g_start;
 
     while (NULL != current)
     {
         if (NULL != current->pointer)
         {
-            ++count;
+            count += 1;
         }
 
         current = current->next;
