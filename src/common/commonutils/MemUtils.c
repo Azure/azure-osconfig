@@ -38,7 +38,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
         if (NULL != (node = malloc(sizeof(PointerNode))))
         {
             node->pointer = pointer;
-            node->next = NULL;
+            node->next = g_start;
             g_start = node;
 
             memset(pointer, 0, size);
