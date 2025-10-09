@@ -32,7 +32,14 @@ jobs:
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
     secrets:
-      onedstenant: ${{ github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD || '' }}
+      onedstenant: >-
+        ${{
+          (github.ref == 'refs/heads/dev' ||
+           github.ref == 'refs/heads/telemetry_staging' ||
+           github.ref == 'refs/heads/telemetry_staging_test')
+          && secrets.ONEDS_TENANT_NONPROD
+          || ''
+        }}
 
   setup-matrix:
     name: Setup Matrix
