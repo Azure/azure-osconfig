@@ -3199,12 +3199,12 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
     // Simulate crash
-    char a[10] = {0};
-    char *x = nullptr;
+    char a[10];
+    char *x;
 
     // This may not crash:
     EXPECT_NE(nullptr, x = (char*)SafeMalloc(100, nullptr));
-    for (i = 0; i < 18; i++)
+    for (i = 0; i < 11; i++)
     {
         a[i] = 0xde;
     };
@@ -3212,7 +3212,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
 
     // This should crash the test:
     EXPECT_NE(nullptr, x = (char*)malloc(100));
-    for (i = 0; i < 18; i++)
+    for (i = 0; i < 11; i++)
     {
         a[i] = 0xde;
     };
