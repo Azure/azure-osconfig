@@ -37,6 +37,8 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
             g_start = node;
 
             memset(pointer, 0, size);
+
+            OsConfigLogInfo(log, "SafeMalloc: allocated pointer '%p'", pointer);
         }
         else
         {
@@ -64,6 +66,8 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     {
         if (current->pointer == pointer)
         {
+            OsConfigLogInfo(log, "SafeFree: freeing pointer '%p'", pointer);
+
             if (NULL != previous)
             {
                 previous->next = current->next;
@@ -123,6 +127,18 @@ size_t GetNumberOfUnfreedPointers(void)
     return count;
 }
 
+static void DumpTrackedPointers(OsConfigLogHandle log)
+{
+    OsConfigPointerNode* current = g_start;
+    size_t index = 0;
+
+    while (current)
+    {
+        OsConfigLogError(log, "DumpTrackedPointers: node[%zu]: pointer=%p", index++, current->pointer);
+        current = current->next;
+    }
+}
+
 void MemoryCleanup(OsConfigLogHandle log)
 {
     size_t leaks = GetNumberOfUnfreedPointers();
@@ -130,6 +146,7 @@ void MemoryCleanup(OsConfigLogHandle log)
     if (leaks > 0)
     {
         OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
+        DumpTrackedPointers(log);
         SafeFreeAll();
     }
 
