@@ -3207,6 +3207,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
+        EXPECT_EQ(a[i], 0xde);
     };
     EXPECT_FALSE(SafeFree((void**)&x, nullptr));
 
@@ -3215,10 +3216,11 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
+        EXPECT_EQ(a[i], 0xde);
     };
     FREE_MEMORY(x);
 
-    EXPECT_EQ(18, GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
