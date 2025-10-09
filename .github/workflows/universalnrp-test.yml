@@ -242,7 +242,7 @@ jobs:
         run: |
           mkdir  osconfig-logs
           stat /var/log/osconfig_nrp.log
-          sudo chown -R $USER:$USER /var/log/osconfig*
+          sudo chown -R $USER:$(id -gn) /var/log/osconfig*
           cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
@@ -377,7 +377,7 @@ jobs:
             sudo find . \( -name '*.log' -o -name '*.bak' \) -exec mv -t ../../logs/$base_dir -- {} +
             popd
           done
-          sudo chown -R $USER:$USER ./staging
+          sudo chown -R $USER:$(id -gn) ./staging
 
           echo "Listing reports:"
           find ./staging/reports -type f -print | xargs ls -l
