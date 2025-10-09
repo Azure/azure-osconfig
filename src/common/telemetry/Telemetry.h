@@ -74,9 +74,16 @@ static inline int64_t TsToUs(struct timespec ts)
         const char* _start_str = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);                                                                       \
         char* end;                                                                                                                                     \
         errno = 0;                                                                                                                                     \
-        int64_t _start_us = strtoll(_start_str, &end, 10);                                                                                             \
-        clock_gettime(CLOCK_MONOTONIC, &_end);                                                                                                         \
-        (elapsed_us_var) = TsToUs(_end) - _start_us;                                                                                                   \
+        int64_t _start_us = (_start_str != NULL) ? strtoll(_start_str, &end, 10) : 0;                                                                  \
+        if (_start_us == 0)                                                                                                                            \
+        {                                                                                                                                              \
+            (elapsed_us_var) = 0;                                                                                                                      \
+        }                                                                                                                                              \
+        else                                                                                                                                           \
+        {                                                                                                                                              \
+            clock_gettime(CLOCK_MONOTONIC, &_end);                                                                                                     \
+            (elapsed_us_var) = TsToUs(_end) - _start_us;                                                                                               \
+        }                                                                                                                                              \
     }
 
 #define OSConfigProcessTelemetryFile()                                                                                                                 \
