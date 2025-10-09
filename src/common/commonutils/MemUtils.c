@@ -57,7 +57,7 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 
 bool SafeFree(void** p, OsConfigLogHandle log)
 {
-#ifndef TEST_CODE    
+#ifndef TEST_CODE
     UNUSED(log);
     MEMORY_FREE(*p);
     return true;
@@ -104,7 +104,7 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
 void SafeFreeAll(OsConfigLogHandle log)
 {
-#ifndef TEST_CODE    
+#ifndef TEST_CODE
     UNUSED(log);
 #else
     PointerNode* current = g_start;
