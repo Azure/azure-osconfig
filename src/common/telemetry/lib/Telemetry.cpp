@@ -102,7 +102,7 @@ void TelemetryManager::Shutdown()
     try
     {
         LogManager::UploadNow();
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // Without sleep, the upload may not complete
+        std::this_thread::sleep_for(std::chrono::microseconds(10)); // Without sleep, the upload may not complete
         LogManager::FlushAndTeardown();
         m_initialized = false;
         OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
