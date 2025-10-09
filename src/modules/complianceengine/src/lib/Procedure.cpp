@@ -93,13 +93,29 @@ std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::str
 }
 } // namespace
 
-void Procedure::SetParameter(const std::string& key, std::string value)
+Result<ProcedureParameters> ProcedureParameters::Parse(const json_object_t& input)
 {
-    mParameters[key] = std::move(value);
+    Result<ProcedureParameters> result = ProcedureParameters();
+
+    auto count = json_object_get_count(&input);
+    for (decltype(count) i = 0; i < count; ++i)
+    {
+        const char* key = json_object_get_name(&input, i);
+        const char* val = json_object_get_string(&input, key);
+        if ((nullptr == key) || (nullptr == val))
+        {
+            return Error("Failed to get parameter name and value");
+        }
+
+        result->emplace(std::string(key), std::string(val));
+    }
+
+    return result;
 }
 
-Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
+Result<ProcedureParameters> ProcedureParameters::Parse(const std::string& input)
 {
+    Result<ProcedureParameters> result = ProcedureParameters();
     size_t pos = 0;
     while (pos < input.size())
     {
@@ -112,12 +128,12 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
 
         // Parse key
         const size_t keyStart = pos;
-        auto result = ParseKey(input, pos);
-        if (!result.HasValue())
+        auto keyResult = ParseKey(input, pos);
+        if (!keyResult.HasValue())
         {
-            return result.Error();
+            return keyResult.Error();
         }
-        pos = result.Value();
+        pos = keyResult.Value();
         if (keyStart == pos)
         {
             return Error("Invalid key-value pair: empty key");
@@ -172,13 +188,63 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
             value = input.substr(valueStart, pos - valueStart);
         }
 
+        result->emplace(std::move(key), std::move(value));
+    }
+
+    return result;
+}
+
+void Procedure::SetParameters(ProcedureParameters value)
+{
+    mParameters = std::move(value);
+}
+
+Optional<Error> Procedure::UpdateUserParameters(const std::string& userParameters)
+{
+    // Attempt to parse the input as base64-encoded JSON first
+    auto json = JsonWrapper::FromBase64(userParameters);
+    if (json.HasValue())
+    {
+        const auto* object = json_value_get_object(json->get());
+        if (nullptr == object)
+        {
+            return Error("A JSON object expected", EINVAL);
+        }
+
+        const auto result = ProcedureParameters::Parse(*object);
+        if (!result.HasValue())
+        {
+            return result.Error();
+        }
+
+        return UpdateUserParameters(result.Value());
+    }
+
+    // Fall back to key=value parsing
+    const auto result = ProcedureParameters::Parse(userParameters);
+    if (!result.HasValue())
+    {
+        return result.Error();
+    }
+
+    return UpdateUserParameters(result.Value());
+}
+
+Optional<Error> Procedure::UpdateUserParameters(const ProcedureParameters& userParameters)
+{
+    // This is an update function - only update parameters that are already defined
+    for (const auto& pair : userParameters)
+    {
+        const auto& key = pair.first;
+        const auto& value = pair.second;
+
         auto it = mParameters.find(key);
         if (it == mParameters.end())
         {
             return Error(std::string("User parameter '") + key + std::string("' not found"));
         }
 
-        it->second = value;
+        mParameters[key] = value;
     }
 
     return Optional<Error>();
