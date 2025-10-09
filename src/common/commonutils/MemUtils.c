@@ -13,6 +13,10 @@ static PointerNode* g_start = NULL;
 
 void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
+#ifndef TEST_CODE
+    UNUSED(log);
+    return malloc(size);
+#else
     PointerNode* node = NULL;
     void* pointer = NULL;
 
@@ -48,10 +52,16 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
     }
 
     return pointer;
+#endif
 }
 
 bool SafeFree(void** p, OsConfigLogHandle log)
 {
+#ifndef TEST_CODE    
+    UNUSED(log);
+    MEMORY_FREE(*p);
+    return true;
+#else
     if ((NULL == p) || (NULL == *p))
     {
         OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
@@ -89,10 +99,14 @@ bool SafeFree(void** p, OsConfigLogHandle log)
 
     OsConfigLogError(log, "SafeFree: pointer %p not tracked or already freed", pointer);
     return false;
+#endif
 }
 
 void SafeFreeAll(OsConfigLogHandle log)
 {
+#ifndef TEST_CODE    
+    UNUSED(log);
+#else
     PointerNode* current = g_start;
     PointerNode* next = NULL;
 
@@ -106,10 +120,14 @@ void SafeFreeAll(OsConfigLogHandle log)
     }
 
     g_start = NULL;
+#endif
 }
 
 size_t GetNumberOfUnfreedPointers(void)
 {
+#ifndef TEST_CODE
+    return 0;
+#else
     size_t count = 0;
     PointerNode* current = g_start;
 
@@ -124,10 +142,14 @@ size_t GetNumberOfUnfreedPointers(void)
     }
 
     return count;
+#endif
 }
 
 static void DumpTrackedPointers(OsConfigLogHandle log)
 {
+#ifndef TEST_CODE
+    UNUSED(log);
+#else
     PointerNode* current = g_start;
     size_t leaks = GetNumberOfUnfreedPointers();
     size_t index = 0;
@@ -147,18 +169,20 @@ static void DumpTrackedPointers(OsConfigLogHandle log)
         }
         current = current->next;
     }
+#endif
 }
 
 void MemoryCleanup(OsConfigLogHandle log)
 {
+#ifndef TEST_CODE
+    UNUSED(log);
+#else
     size_t leaks = GetNumberOfUnfreedPointers();
-
     if (leaks > 0)
     {
         OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
         DumpTrackedPointers(log);
         SafeFreeAll(log);
     }
-
-    return;
+#endif
 }
