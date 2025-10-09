@@ -1476,8 +1476,8 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
     EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_EQ(1, GetNumberOfLinesInFile(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, "Test1\nTest2\nTest3\nTest4\nTest5"));
+    EXPECT_EQ(5, GetNumberOfLinesInFile(m_path));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
