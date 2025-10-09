@@ -129,7 +129,7 @@ size_t GetNumberOfUnfreedPointers(void)
 
 static void DumpTrackedPointers(OsConfigLogHandle log)
 {
-    OsConfigPointerNode* current = g_start;
+    PointerNode* current = g_start;
     size_t index = 0;
 
     while (current)
