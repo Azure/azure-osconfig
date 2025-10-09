@@ -11,11 +11,6 @@ typedef struct PointerNode
 
 static PointerNode* g_start = NULL;
 
-/*
-void *malloc(size_t size);
-void free(void *ptr);
-*/
-
 void* SafeMalloc(size_t size, OsConfigLogHandle log)
 {
     PointerNode* node = NULL;

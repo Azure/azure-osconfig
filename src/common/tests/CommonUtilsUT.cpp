@@ -62,7 +62,6 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
-#ifdef DONT_SKIP_THIS
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
@@ -3109,8 +3108,6 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     FREE_MEMORY(value);
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
-
-#endif
 
 TEST_F(CommonUtilsTest, SafeMallocFree)
 {
