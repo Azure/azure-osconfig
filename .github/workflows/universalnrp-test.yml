@@ -242,7 +242,6 @@ jobs:
         run: |
           mkdir  osconfig-logs
           stat /var/log/osconfig_nrp.log
-          sudo chown -R $USER:$USER ./osconfig-logs
           cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
