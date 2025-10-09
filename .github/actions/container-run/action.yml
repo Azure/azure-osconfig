@@ -16,6 +16,10 @@ inputs:
     description: The container tag.
     required: false
     default: latest
+  args:
+    description: Additional arguments to pass to the container.
+    required: false
+    default: ""
 
 outputs:
   id:
@@ -41,7 +45,7 @@ runs:
       id: container
       run: |
         echo Running container ${{ steps.setup.outputs.container }}:${{ inputs.tag }}...
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
+        id=$(docker run -di --privileged ${{ inputs.args }} -v ${{ inputs.mount }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
 
         echo Container ID: $id
         echo id=$id >> $GITHUB_OUTPUT
