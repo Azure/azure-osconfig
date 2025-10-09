@@ -3195,31 +3195,28 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     }
 
     // Validate SafeFreeAll frees the entire sequence of tracked allocations
-    SafeFreeAll();
+    SafeFreeAll(nullptr);
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 
-    // Simulate crash
+    // A final test
     char a[10];
     char *x;
-
-    // This may not crash:
     EXPECT_NE(nullptr, x = (char*)SafeMalloc(100, nullptr));
     for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
-        EXPECT_EQ(a[i], 0xde);
+        EXPECT_EQ(a[i], 222);
     };
-    EXPECT_FALSE(SafeFree((void**)&x, nullptr));
-
-    // This should crash the test:
+    EXPECT_TRUE(SafeFree((void**)&x, nullptr));
+    EXPECT_EQ(nullptr, x);
     EXPECT_NE(nullptr, x = (char*)malloc(100));
     for (i = 0; i < 10; i++)
     {
         a[i] = 0xde;
-        EXPECT_EQ(a[i], 0xde);
+        EXPECT_EQ(a[i], 222);
     };
     FREE_MEMORY(x);
-
+    EXPECT_EQ(nullptr, x);
     EXPECT_EQ(0, GetNumberOfUnfreedPointers());
 }
 

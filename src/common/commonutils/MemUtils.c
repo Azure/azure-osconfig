@@ -91,18 +91,17 @@ bool SafeFree(void** p, OsConfigLogHandle log)
     return false;
 }
 
-void SafeFreeAll(void)
+void SafeFreeAll(OsConfigLogHandle log)
 {
     PointerNode* current = g_start;
     PointerNode* next = NULL;
 
     while (NULL != current)
     {
+        OsConfigLogInfo(log, "SafeFreeAll: freeing pointer %p", current);
         next = current->next;
-
         FREE_MEMORY(current->pointer);
         FREE_MEMORY(current);
-
         current = next;
     }
 
@@ -158,7 +157,7 @@ void MemoryCleanup(OsConfigLogHandle log)
     {
         OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
         DumpTrackedPointers(log);
-        //SafeFreeAll();
+        SafeFreeAll(log);
     }
 
     return;

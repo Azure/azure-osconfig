@@ -52,7 +52,7 @@ extern "C"
 
 void* SafeMalloc(size_t size, OsConfigLogHandle log);
 bool SafeFree(void** p, OsConfigLogHandle log);
-void SafeFreeAll(void);
+void SafeFreeAll(OsConfigLogHandle log);
 size_t GetNumberOfUnfreedPointers(void);
 void MemoryCleanup(OsConfigLogHandle log);
 
