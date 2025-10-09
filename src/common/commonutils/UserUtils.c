@@ -584,7 +584,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (0 == *size)
     {
-        FREE_MEMORY(*groupList);
+        //FREE_MEMORY(*groupList);  //BUGBUG
+        SafeFree((SimplifiedGroup**)groupList, log);
     }
 
     if (status)
