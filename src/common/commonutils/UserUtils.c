@@ -541,7 +541,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
             for (i = 0; i < numberOfGroups; i++)
             {
                 errno = 0;
-                
+
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
                     if (0 == errno)
