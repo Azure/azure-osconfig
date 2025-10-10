@@ -3129,74 +3129,74 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     EXPECT_EQ(nullptr, p);
 
     // Number of tracked allocations must be zero at this point
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfTrackedPointers());
 
-    // Validate invalid SafeMalloc invocations
-    EXPECT_EQ(nullptr, SafeMalloc(0, nullptr));
-    EXPECT_EQ(nullptr, SafeMalloc(-1, nullptr));
+    // Validate invalid TrackedPointerAlloc invocations
+    EXPECT_EQ(nullptr, TrackedPointerAlloc(0, nullptr));
+    EXPECT_EQ(nullptr, TrackedPointerAlloc(-1, nullptr));
 
-    // Validate invalid SafeFree invocations
-    EXPECT_FALSE(SafeFree((void**)0, nullptr));
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
-    EXPECT_FALSE(SafeFree(nullptr, nullptr));
+    // Validate invalid TrackedPointerFree invocations
+    EXPECT_FALSE(TrackedPointerFree((void**)0, nullptr));
+    EXPECT_FALSE(TrackedPointerFree((void**)&p, nullptr));
+    EXPECT_FALSE(TrackedPointerFree(nullptr, nullptr));
 
-    // Validate SafeMalloc and SafeFree
-    EXPECT_NE(nullptr, p = (char*)SafeMalloc(1, nullptr));
-    EXPECT_EQ(1, GetNumberOfUnfreedPointers());
-    EXPECT_TRUE(SafeFree((void**)&p, nullptr));
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+    // Validate TrackedPointerAlloc and TrackedPointerFree
+    EXPECT_NE(nullptr, p = (char*)TrackedPointerAlloc(1, nullptr));
+    EXPECT_EQ(1, GetNumberOfTrackedPointers());
+    EXPECT_TRUE(TrackedPointerFree((void**)&p, nullptr));
+    EXPECT_EQ(0, GetNumberOfTrackedPointers());
+    EXPECT_FALSE(TrackedPointerFree((void**)&p, nullptr));
 
     // Validate that a static constant pointer won't be freed (as it's not tracked)
-    EXPECT_FALSE(SafeFree((void**)&c, nullptr));
+    EXPECT_FALSE(TrackedPointerFree((void**)&c, nullptr));
 
     // Validate that a not allocated and non NULL pointer won't be freed (as it's not tracked)
     p = (char*)0xDEADBEEF;
-    EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+    EXPECT_FALSE(TrackedPointerFree((void**)&p, nullptr));
 
     // Number of tracked allocations must be zero at this point
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfTrackedPointers());
 
-    // Validate SafeMalloc and SafeFree in a sequence of 1 pointer allocated and freed at same time
+    // Validate TrackedPointerAlloc and TrackedPointerFree in a sequence of 1 pointer allocated and freed at same time
     for (i = 0; i < 3; i++)
     {
-        EXPECT_NE(nullptr, p = (char*)SafeMalloc(i + 1, nullptr));
-        EXPECT_EQ(1, GetNumberOfUnfreedPointers());
-        EXPECT_TRUE(SafeFree((void**)&p, nullptr));
-        EXPECT_EQ(0, GetNumberOfUnfreedPointers());
-        EXPECT_FALSE(SafeFree((void**)&p, nullptr));
+        EXPECT_NE(nullptr, p = (char*)TrackedPointerAlloc(i + 1, nullptr));
+        EXPECT_EQ(1, GetNumberOfTrackedPointers());
+        EXPECT_TRUE(TrackedPointerFree((void**)&p, nullptr));
+        EXPECT_EQ(0, GetNumberOfTrackedPointers());
+        EXPECT_FALSE(TrackedPointerFree((void**)&p, nullptr));
         EXPECT_EQ(nullptr, p);
     }
 
-    // Validate SafeMalloc in a sequence of allocations without free
+    // Validate TrackedPointerAlloc in a sequence of allocations without free
     for (i = 0; i < 3; i++)
     {
-        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
+        EXPECT_NE(nullptr, s[i] = (char*)TrackedPointerAlloc(((i + 1) * 17), nullptr));
     }
 
     // Number of tracked pointers now muct match the number of precedent allocations
-    EXPECT_EQ(3, GetNumberOfUnfreedPointers());
+    EXPECT_EQ(3, GetNumberOfTrackedPointers());
 
-    // Validate SafeFree to clear the precedent sequence of allocations
+    // Validate TrackedPointerFree to clear the precedent sequence of allocations
     for (i = 0; i < 3; i++)
     {
-        EXPECT_TRUE(SafeFree((void**)&(s[i]), nullptr));
-        EXPECT_FALSE(SafeFree((void**)&(s[i]), nullptr));
+        EXPECT_TRUE(TrackedPointerFree((void**)&(s[i]), nullptr));
+        EXPECT_FALSE(TrackedPointerFree((void**)&(s[i]), nullptr));
         EXPECT_EQ(nullptr, s[i]);
     }
 
     // Number of tracked allocations must be zero at this point
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+    EXPECT_EQ(0, GetNumberOfTrackedPointers());
 
-    // Validate SafeMalloc in a sequence of allocations without free
+    // Validate TrackedPointerAlloc in a sequence of allocations without free
     for (i = 0; i < 3; i++)
     {
-        EXPECT_NE(nullptr, s[i] = (char*)SafeMalloc(((i + 1) * 17), nullptr));
+        EXPECT_NE(nullptr, s[i] = (char*)TrackedPointerAlloc(((i + 1) * 17), nullptr));
     }
 
-    // Validate MemoryCleanup frees the entire sequence of 'about to be leaked' tracked allocations
-    MemoryCleanup(nullptr);
-    EXPECT_EQ(0, GetNumberOfUnfreedPointers());
+    // Validate TrackedPointersCleanup frees the entire sequence of 'about to be leaked' tracked allocations
+    TrackedPointersCleanup(nullptr);
+    EXPECT_EQ(0, GetNumberOfTrackedPointers());
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
