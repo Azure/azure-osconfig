@@ -16,7 +16,7 @@ RUN apt-get -y update && apt-get -y install \
 WORKDIR /git
 
 # Git
-RUN wget https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz \
+RUN curl -L https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz -o v${GIT_VERSION}.tar.gz \
     && tar xf v${GIT_VERSION}.tar.gz \
     && cd git-${GIT_VERSION} \
     && make configure \
