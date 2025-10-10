@@ -1,39 +1,24 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "UfwStatus.h"
+
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Regex.h>
-#include <string>
+#include <StringTools.h>
+
 namespace ComplianceEngine
 {
-AUDIT_FN(UfwStatus, "statusRegex:Regex that the status must match:M")
+Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("statusRegex");
-    if (it == args.end())
-    {
-        return Error("Missing 'statusRegex' parameter", EINVAL);
-    }
-    auto statusRegexStr = std::move(it->second);
-
-    regex statusRegex;
-    try
-    {
-        statusRegex = regex(statusRegexStr);
-    }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(context.GetLogHandle(), "Regex error: %s", e.what());
-        return Error("Failed to compile regex '" + statusRegexStr + "' error: " + e.what());
-    }
-
     auto output = context.ExecuteCommand("ufw status verbose");
     if (!output.HasValue())
     {
         return indicators.NonCompliant("ufw not found: " + output.Error().message);
     }
 
-    if (regex_search(output.Value(), statusRegex) == false)
+    if (regex_search(output.Value(), params.statusRegex) == false)
     {
         return indicators.NonCompliant("Searched value not found in UFW output");
     }

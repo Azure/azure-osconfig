@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
-#include <Optional.h>
+#include <EnsurePasswordChangeIsInPast.h>
 #include <fstream>
 
 using ComplianceEngine::AuditEnsurePasswordChangeIsInPast;
 using ComplianceEngine::CompactListFormatter;
+using ComplianceEngine::EnsurePasswordChangeIsInPastParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Optional;
@@ -95,10 +93,10 @@ protected:
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_1)
 {
-    map<string, string> args;
+    EnsurePasswordChangeIsInPastParams params;
     auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsurePasswordChangeIsInPast(args, mIndicators, mContext);
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsurePasswordChangeIsInPast(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -106,11 +104,11 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_1)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_2)
 {
-    map<string, string> args;
+    EnsurePasswordChangeIsInPastParams params;
     auto today = time(nullptr) / (24 * 3600); // Set to today
     auto path = CreateTestShadowFile("testuser", string("$y$"), today, 2, 3, 4, 5, 6);
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsurePasswordChangeIsInPast(args, mIndicators, mContext);
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsurePasswordChangeIsInPast(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -118,11 +116,11 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_2)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_1)
 {
-    map<string, string> args;
+    EnsurePasswordChangeIsInPastParams params;
     auto tomorrow = time(nullptr) / (24 * 3600) + 1; // Set to tomorrow
     auto path = CreateTestShadowFile("testuser", string("$y$"), tomorrow, 2, 3, 4, 5, 6);
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsurePasswordChangeIsInPast(args, mIndicators, mContext);
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsurePasswordChangeIsInPast(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -130,7 +128,7 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_1)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_2)
 {
-    map<string, string> args;
+    EnsurePasswordChangeIsInPastParams params;
     string contents = "user1:$y$:99999:2:3:4:5:6:";
     contents += "\nuser2:$y$:99999:2:3:4:5:6:";
     contents += "\nuser3:$y$:99999:2:3:4:5:6:";
@@ -140,8 +138,8 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_2)
     contents += "\nuser7:$y$:99999:2:3:4:5:6:";
     contents += "\nuser8:$y$:99999:2:3:4:5:6:";
     auto path = CreateTestShadowFile(std::move(contents));
-    args["test_etcShadowPath"] = path;
-    auto result = AuditEnsurePasswordChangeIsInPast(args, mIndicators, mContext);
+    params.test_etcShadowPath = path;
+    auto result = AuditEnsurePasswordChangeIsInPast(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

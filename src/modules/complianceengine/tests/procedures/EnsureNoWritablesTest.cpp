@@ -1,7 +1,7 @@
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureNoWritables.h>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <sys/stat.h>
@@ -38,7 +38,7 @@ TEST_F(EnsureNoWritablesTest, WorldWritableFileNonCompliant)
     // Prime scanner after artifact creation
     (void)mContext.GetFilesystemScanner().GetFullFilesystem();
 
-    auto result = AuditEnsureNoWritables({}, indicators, mContext);
+    auto result = AuditEnsureNoWritables(indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -62,7 +62,7 @@ TEST_F(EnsureNoWritablesTest, WorldWritableDirWithoutStickyNonCompliant)
     bool found = full.Value()->entries.find(badDir) != full.Value()->entries.end();
     ASSERT_TRUE(found) << "Directory not found in scanner entries";
 
-    auto result = AuditEnsureNoWritables({}, indicators, mContext);
+    auto result = AuditEnsureNoWritables(indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -80,7 +80,7 @@ TEST_F(EnsureNoWritablesTest, CompliantWhenNoViolations)
     // Prime scanner after creating objects
     (void)mContext.GetFilesystemScanner().GetFullFilesystem();
 
-    auto result = AuditEnsureNoWritables({}, indicators, mContext);
+    auto result = AuditEnsureNoWritables(indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }

@@ -1,19 +1,14 @@
 #include <CommonUtils.h>
-#include <Evaluator.h>
-#include <grp.h>
-#include <iostream>
+#include <EnsureRootPath.h>
 #include <pwd.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-#include <unistd.h>
-#include <vector>
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureRootPath)
+Result<Status> AuditEnsureRootPath(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     UNUSED(context);
 
     // Directory must not be world- or group-writable

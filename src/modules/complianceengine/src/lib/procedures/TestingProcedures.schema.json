@@ -17,7 +17,32 @@
               "properties": {
                 "message": {
                   "type": "string",
-                  "description": "message to be logged"
+                  "description": "The message to be logged"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "AuditGetParamValues"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "AuditGetParamValues": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "KEY1": {
+                  "type": "string"
+                },
+                "KEY2": {
+                  "type": "string"
+                },
+                "KEY3": {
+                  "type": "string"
                 }
               }
             }
@@ -37,24 +62,9 @@
               "properties": {
                 "message": {
                   "type": "string",
-                  "description": "message to be logged"
+                  "description": "The message to be logged"
                 }
               }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "AuditGetParamValues"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "AuditGetParamValues": {
-              "type": "object",
-              "required": [],
-              "additionalProperties": false,
-              "properties": {}
             }
           }
         }
@@ -76,27 +86,7 @@
               "properties": {
                 "message": {
                   "type": "string",
-                  "description": "message to be logged"
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "RemediationSuccess"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "RemediationSuccess": {
-              "type": "object",
-              "required": [],
-              "additionalProperties": false,
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "description": "message to be logged"
+                  "description": "The message to be logged"
                 }
               }
             }
@@ -118,7 +108,28 @@
               "properties": {
                 "result": {
                   "type": "string",
-                  "description": "Expected remediation result - success or failure"
+                  "description": "Expected remediation result - success or failure",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*(success|failure).*)$|((success|failure)))"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "RemediationSuccess"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "RemediationSuccess": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The message to be logged"
                 }
               }
             }

@@ -1,10 +1,10 @@
 #include "../Evaluator.h"
 
 #include <CommonUtils.h>
+#include <EnsureFilesystemOption.h>
 #include <algorithm>
 #include <ctime>
 #include <fstream>
-#include <iostream>
 #include <linux/limits.h>
 #include <map>
 #include <mntent.h>
@@ -104,151 +104,99 @@ static Status CheckOptions(const std::vector<std::string>& options, const std::s
     }
 
     return indicators.Compliant("All required options are set and no forbidden options are set");
-};
+}
 
-AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
-    "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file", "test_mtab:Location of the mtab file")
+Result<Status> AuditEnsureFilesystemOption(const EnsureFilesystemOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    if (args.find("mountpoint") == args.end())
-    {
-        return Error("No mountpoint provided");
-    }
-    std::string mountpoint = args["mountpoint"];
-    std::string fstab = "/etc/fstab";
-    std::string mtab = "/etc/mtab";
-    if (args.find("test_fstab") != args.end())
-    {
-        fstab = args["test_fstab"];
-    }
-    if (args.find("test_mtab") != args.end())
-    {
-        mtab = args["test_mtab"];
-    }
-    auto fstabEntries = ParseFstab(fstab);
+    assert(params.test_fstab.HasValue());
+    assert(params.test_mtab.HasValue());
+    assert(params.test_mount.HasValue());
+    auto fstabEntries = ParseFstab(params.test_fstab.Value());
     if (!fstabEntries.HasValue())
     {
         return fstabEntries.Error();
     }
 
-    auto mtabEntries = ParseFstab(mtab);
+    auto mtabEntries = ParseFstab(params.test_mtab.Value());
     if (!mtabEntries.HasValue())
     {
         return mtabEntries.Error();
     }
 
     std::set<std::string> optionsSet, optionsNotSet;
-    if (args.find("optionsSet") != args.end())
+    if (params.optionsSet.HasValue())
     {
-        std::istringstream iss(args.at("optionsSet"));
-        std::string option;
-        while (std::getline(iss, option, ','))
-        {
-            optionsSet.insert(option);
-        }
+        std::copy(params.optionsSet->items.cbegin(), params.optionsSet->items.cend(), std::inserter(optionsSet, optionsSet.begin()));
     }
-    if (args.find("optionsNotSet") != args.end())
+    if (params.optionsNotSet.HasValue())
     {
-        std::istringstream iss(args.at("optionsNotSet"));
-        std::string option;
-        while (std::getline(iss, option, ','))
-        {
-            optionsNotSet.insert(option);
-        }
+        std::copy(params.optionsNotSet->items.cbegin(), params.optionsNotSet->items.cend(), std::inserter(optionsNotSet, optionsNotSet.begin()));
     }
 
-    if (fstabEntries->find(mountpoint) != fstabEntries->end())
+    if (fstabEntries->find(params.mountpoint) != fstabEntries->end())
     {
-        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
+        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
             return Status::NonCompliant;
         }
     }
     else
     {
-        indicators.Compliant("Mountpoint " + mountpoint + " not found in /etc/fstab");
+        indicators.Compliant("Mountpoint " + params.mountpoint + " not found in /etc/fstab");
     }
 
-    if (mtabEntries->find(mountpoint) != mtabEntries->end())
+    if (mtabEntries->find(params.mountpoint) != mtabEntries->end())
     {
-        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
+        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
             return Status::NonCompliant;
         }
     }
     else
     {
-        indicators.Compliant("Mountpoint " + mountpoint + " not found in /etc/mtab");
+        indicators.Compliant("Mountpoint " + params.mountpoint + " not found in /etc/mtab");
     }
 
     return indicators.Compliant("All /etc/fstab and /etc/mtab options are verified");
 }
 
-REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
-    "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file",
-    "test_mtab:Location of the mtab file", "test_mount:Location of the mount binary")
+Result<Status> RemediateEnsureFilesystemOption(const EnsureFilesystemOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
-    if (args.find("mountpoint") == args.end())
-    {
-        return Error("No mountpoint provided");
-    }
-    std::string mountpoint = args["mountpoint"];
-    std::string fstab = "/etc/fstab";
-    std::string mtab = "/etc/mtab";
-    if (args.find("test_fstab") != args.end())
-    {
-        fstab = args["test_fstab"];
-    }
-    if (args.find("test_mtab") != args.end())
-    {
-        mtab = args["test_mtab"];
-    }
-    std::string mount = "/sbin/mount";
-    if (args.find("test_mount") != args.end())
-    {
-        mount = args["test_mount"];
-    }
+    assert(params.test_fstab.HasValue());
+    assert(params.test_mtab.HasValue());
+    assert(params.test_mount.HasValue());
 
-    auto fstabEntries = ParseFstab(fstab);
+    auto fstabEntries = ParseFstab(params.test_fstab.Value());
     if (!fstabEntries.HasValue())
     {
         return fstabEntries.Error();
     }
 
-    auto mtabEntries = ParseFstab(mtab);
+    auto mtabEntries = ParseFstab(params.test_mtab.Value());
     if (!mtabEntries.HasValue())
     {
         return mtabEntries.Error();
     }
 
     std::set<std::string> optionsSet, optionsNotSet;
-    if (args.find("optionsSet") != args.end())
+    if (params.optionsSet.HasValue())
     {
-        std::istringstream iss(args.at("optionsSet"));
-        std::string option;
-        while (std::getline(iss, option, ','))
-        {
-            optionsSet.insert(option);
-        }
+        std::copy(params.optionsSet->items.cbegin(), params.optionsSet->items.cend(), std::inserter(optionsSet, optionsSet.begin()));
     }
-    if (args.find("optionsNotSet") != args.end())
+    if (params.optionsNotSet.HasValue())
     {
-        std::istringstream iss(args.at("optionsNotSet"));
-        std::string option;
-        while (std::getline(iss, option, ','))
-        {
-            optionsNotSet.insert(option);
-        }
+        std::copy(params.optionsNotSet->items.cbegin(), params.optionsNotSet->items.cend(), std::inserter(optionsNotSet, optionsNotSet.begin()));
     }
 
-    if (fstabEntries->find(mountpoint) != fstabEntries->end())
+    if (fstabEntries->find(params.mountpoint) != fstabEntries->end())
     {
-        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
+        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            auto& entry = fstabEntries.Value()[mountpoint];
-            std::ifstream file(fstab);
-            std::ofstream tempFile(fstab + ".tmp");
+            auto& entry = fstabEntries.Value()[params.mountpoint];
+            std::ifstream file(params.test_fstab.Value());
+            std::ofstream tempFile(params.test_fstab.Value() + ".tmp");
             std::string line;
             int lineno = 0;
             while (std::getline(file, line))
@@ -257,7 +205,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                 if (lineno == entry.lineno)
                 {
                     std::ostringstream oss;
-                    oss << entry.device << " " << mountpoint << " " << entry.filesystem << " ";
+                    oss << entry.device << " " << params.mountpoint << " " << entry.filesystem << " ";
                     auto missingOptions = optionsSet;
                     for (const auto& option : entry.options)
                     {
@@ -281,7 +229,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                     oss.seekp(-1, std::ios_base::end);
                     oss << " " << entry.dump << " " << entry.pass << "\n";
                     tempFile << oss.str();
-                    indicators.Compliant("Updated fstab entry for " + mountpoint + " with options: " + oss.str());
+                    indicators.Compliant("Updated fstab entry for " + params.mountpoint + " with options: " + oss.str());
                 }
                 else
                 {
@@ -293,24 +241,24 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
             char timeString[PATH_MAX] = {0};
             auto tm = time(nullptr);
             strftime(timeString, 64, "%Y%m%d%H%M%S", gmtime(&tm));
-            if (0 != rename(fstab.c_str(), (fstab + ".bak." + timeString).c_str()))
+            if (0 != rename(params.test_fstab.Value().c_str(), (params.test_fstab.Value() + ".bak." + timeString).c_str()))
             {
-                return Error("Failed to backup " + fstab + " with error " + std::to_string(errno));
+                return Error("Failed to backup " + params.test_fstab.Value() + " with error " + std::to_string(errno));
             }
-            if (0 != rename((fstab + ".tmp").c_str(), fstab.c_str()))
+            if (0 != rename((params.test_fstab.Value() + ".tmp").c_str(), params.test_fstab.Value().c_str()))
             {
-                return Error("Failed to rename " + fstab + ".tmp with error " + std::to_string(errno));
+                return Error("Failed to rename " + params.test_fstab.Value() + ".tmp with error " + std::to_string(errno));
             }
         }
     }
 
-    if (mtabEntries->find(mountpoint) != mtabEntries->end())
+    if (mtabEntries->find(params.mountpoint) != mtabEntries->end())
     {
-        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
+        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            std::string command = mount + " -o remount " + mountpoint;
+            std::string command = params.test_mount.Value() + " -o remount " + params.mountpoint;
             system(command.c_str());
-            indicators.Compliant("Remounted " + mountpoint + " with options: " + command);
+            indicators.Compliant("Remounted " + params.mountpoint + " with options: " + command);
         }
     }
 

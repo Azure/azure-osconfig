@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
+#include <EnsureFilePermissions.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
-#include <errno.h>
 #include <fnmatch.h>
 #include <fts.h>
+#include <grp.h>
+#include <iomanip>
 #include <iostream>
 #include <pwd.h>
 #include <string.h>
@@ -15,28 +16,16 @@
 
 namespace ComplianceEngine
 {
+// Mask to display permissions
+const unsigned short displayMask = 0xFFF;
 
-Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string, std::string>& args, IndicatorsTree& indicators,
+Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators,
     ContextInterface& context, bool isRemediation)
 {
     auto log = context.GetLogHandle();
-    auto it = args.find("directory");
-    if (it == args.end())
-    {
-        OsConfigLogError(log, "No directory provided");
-        return Error("No directory provided", EINVAL);
-    }
-    auto directory = std::move(it->second);
-    it = args.find("ext");
-    if (it == args.end())
-    {
-        OsConfigLogError(log, "No file pattern provided");
-        return Error("No file pattern provided", EINVAL);
-    }
-    auto ext = std::move(it->second);
-
+    auto directory = params.directory;
     char* const paths[] = {&directory[0], nullptr};
-    FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+    FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, nullptr);
 
     if (!ftsp)
     {
@@ -51,13 +40,19 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string,
     {
         if (FTS_F == entry->fts_info)
         {
-            if (0 == fnmatch(ext.c_str(), entry->fts_name, 0))
+            if (0 == fnmatch(params.ext.c_str(), entry->fts_name, 0))
             {
                 hasFiles = true;
                 const char* fileName = entry->fts_path;
 
-                Result<Status> result = isRemediation ? RemediateEnsureFilePermissionsHelper(fileName, args, indicators, context) :
-                                                        AuditEnsureFilePermissionsHelper(fileName, args, indicators, context);
+                EnsureFilePermissionsParams subParams;
+                subParams.filename = fileName;
+                subParams.owner = params.owner;
+                subParams.group = params.group;
+                subParams.permissions = params.permissions;
+                subParams.mask = params.mask;
+                Result<Status> result = isRemediation ? RemediateEnsureFilePermissions(subParams, indicators, context) :
+                                                        AuditEnsureFilePermissions(subParams, indicators, context);
                 if (!result.HasValue())
                 {
                     OsConfigLogError(log, "Error processing permissions for '%s'", fileName);
@@ -85,49 +80,278 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string,
     }
 }
 
-AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file, single or | separated",
-    "group:Required group of the file, single or | separated", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
-    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
-    auto it = args.find("filename");
-    if (it == args.end())
+    struct stat statbuf;
+    if (0 != stat(params.filename.c_str(), &statbuf))
     {
-        OsConfigLogError(log, "No filename provided");
-        return Error("No filename provided", EINVAL);
+        const int status = errno;
+        if (ENOENT == status)
+        {
+            OsConfigLogDebug(log, "File '%s' does not exist", params.filename.c_str());
+            return indicators.Compliant("File '" + params.filename + "' does not exist");
+        }
+
+        OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
-    auto filename = std::move(it->second);
-    return AuditEnsureFilePermissionsHelper(filename, args, indicators, context);
+
+    if (params.owner.HasValue())
+    {
+        const passwd* pwd = getpwuid(statbuf.st_uid);
+        if (nullptr == pwd)
+        {
+            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_uid);
+            return indicators.NonCompliant("No user with uid " + std::to_string(statbuf.st_uid));
+        }
+        bool ownerOk = false;
+        for (const auto& owner : params.owner->items)
+        {
+            if (owner.GetPattern() == pwd->pw_name)
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", owner.GetPattern().c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
+            }
+        }
+        if (!ownerOk)
+        {
+            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", params.filename.c_str(), pwd->pw_name, params.owner->ToString().c_str());
+            return indicators.NonCompliant("Invalid owner on '" + params.filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" +
+                                           params.owner->ToString() + "'");
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Matched owner '%s' to '%s'", params.owner->ToString().c_str(), pwd->pw_name);
+        }
+
+        indicators.Compliant(params.filename + " owner matches expected value '" + params.owner->ToString() + "'");
+    }
+
+    if (params.group.HasValue())
+    {
+        group* grp = getgrgid(statbuf.st_gid);
+        if (nullptr == grp)
+        {
+            OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
+            return indicators.NonCompliant("No group with gid " + std::to_string(statbuf.st_gid));
+        }
+        bool groupOk = false;
+        for (const auto& group : params.group->items)
+        {
+            if (group.GetPattern() == grp->gr_name)
+            {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.GetPattern().c_str(), grp->gr_name);
+                groupOk = true;
+                break;
+            }
+        }
+        if (!groupOk)
+        {
+            OsConfigLogDebug(log, "Invalid group on '%s' - is '%s' should be '%s'", params.filename.c_str(), grp->gr_name, params.group->ToString().c_str());
+            return indicators.NonCompliant("Invalid group on '" + params.filename + "' - is '" + std::string(grp->gr_name) + "' should be '" +
+                                           params.group->ToString() + "'");
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Matched group '%s' to '%s'", params.group->ToString().c_str(), grp->gr_name);
+        }
+
+        indicators.Compliant(params.filename + " group matches expected value '" + params.group->ToString() + "'");
+    }
+
+    if ((params.permissions.HasValue() && params.mask.HasValue()) && (0 != (params.permissions.Value() & params.mask.Value())))
+    {
+        OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        return Error("Invalid permissions and mask - same bits set in both");
+    }
+    if (params.permissions.HasValue())
+    {
+        if (params.permissions.Value() != (statbuf.st_mode & params.permissions.Value()))
+        {
+            std::ostringstream oss;
+            oss << "Invalid permissions on '" << params.filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
+                << std::oct << params.permissions.Value();
+            return indicators.NonCompliant(oss.str());
+        }
+
+        OsConfigLogDebug(log, "%s permissions are correct", params.filename.c_str());
+        std::ostringstream oss;
+        oss << params.filename << " matches expected permissions " << std::oct << params.permissions.Value();
+        indicators.Compliant(oss.str());
+    }
+    if (params.mask.HasValue())
+    {
+        if (0 != (statbuf.st_mode & params.mask.Value()))
+        {
+            std::ostringstream oss;
+            oss << "Invalid permissions on '" << params.filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be set to "
+                << std::oct << std::setw(3) << std::setfill('0') << (statbuf.st_mode & ~params.mask.Value() & displayMask) << " or a more restrictive value";
+            return indicators.NonCompliant(oss.str());
+        }
+
+        OsConfigLogDebug(log, "%s mask is correct", params.filename.c_str());
+        std::ostringstream oss;
+        oss << params.filename << " mask matches expected mask " << std::oct << params.mask.Value();
+        indicators.Compliant(oss.str());
+    }
+
+    OsConfigLogDebug(log, "File '%s' has correct permissions", params.filename.c_str());
+    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership");
 }
 
-REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M",
-    "owner:Required owner of the file, single or | separated, first one is used for remediation",
-    "group:Required group of the file, single or | separated, first one is used for remediation",
-    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
-    auto it = args.find("filename");
-    if (it == args.end())
+    struct stat statbuf;
+    if (stat(params.filename.c_str(), &statbuf) < 0)
     {
-        OsConfigLogError(log, "No filename provided");
-        return Error("No filename provided", EINVAL);
+        const int status = errno;
+        if (ENOENT == status)
+        {
+            OsConfigLogDebug(log, "File '%s' does not exist", params.filename.c_str());
+            return indicators.NonCompliant("File '" + params.filename + "' does not exist");
+        }
+
+        OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
-    auto filename = std::move(it->second);
-    return RemediateEnsureFilePermissionsHelper(filename, args, indicators, context);
+
+    uid_t uid = statbuf.st_uid;
+    gid_t gid = statbuf.st_gid;
+    bool ownership_changed = false;
+    if (params.owner.HasValue())
+    {
+        if (params.owner->items.empty())
+        {
+            return Error("Empty list of owners provided", EINVAL);
+        }
+
+        bool ownerOk = false;
+        const struct passwd* pwd = getpwuid(statbuf.st_uid);
+        for (const auto& owner : params.owner->items)
+        {
+            if ((nullptr != pwd) && (owner.GetPattern() == pwd->pw_name))
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", params.owner->ToString().c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
+            }
+        }
+        if (!ownerOk)
+        {
+            const auto& firstOwner = params.owner->items.front();
+            pwd = getpwnam(firstOwner.GetPattern().c_str());
+            if (pwd == nullptr)
+            {
+                OsConfigLogDebug(log, "No user with name %s", firstOwner.GetPattern().c_str());
+                return indicators.NonCompliant("No user with name " + firstOwner.GetPattern());
+            }
+            uid = pwd->pw_uid;
+            if (uid != statbuf.st_uid)
+            {
+                ownership_changed = true;
+            }
+            else
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", params.owner->ToString().c_str(), pwd->pw_name);
+            }
+        }
+    }
+
+    if (params.group.HasValue())
+    {
+        if (params.group->items.empty())
+        {
+            return Error("Empty list of groups provided", EINVAL);
+        }
+
+        const struct group* grp = getgrgid(statbuf.st_gid);
+        bool groupOk = false;
+        for (const auto& group : params.group->items)
+        {
+            if ((nullptr != grp) && (group.GetPattern() == grp->gr_name))
+            {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.GetPattern().c_str(), grp->gr_name);
+                groupOk = true;
+                break;
+            }
+        }
+        if (!groupOk)
+        {
+            const auto& firstGroup = params.group->items.front();
+            grp = getgrnam(firstGroup.GetPattern().c_str());
+            if (grp == nullptr)
+            {
+                OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
+                return indicators.NonCompliant("No group with gid " + std::to_string(statbuf.st_gid));
+            }
+            gid = grp->gr_gid;
+            if (gid != statbuf.st_gid)
+            {
+                ownership_changed = true;
+            }
+            else
+            {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", params.group->ToString().c_str(), grp->gr_name);
+            }
+        }
+    }
+    if (ownership_changed)
+    {
+        OsConfigLogInfo(log, "Changing owner of '%s' from %d:%d to %d:%d", params.filename.c_str(), statbuf.st_uid, statbuf.st_gid, uid, gid);
+        if (0 != chown(params.filename.c_str(), uid, gid))
+        {
+            int status = errno;
+            OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
+            return Error(std::string("Chown error: ") + strerror(status), status);
+        }
+
+        indicators.Compliant(params.filename + " owner changed to " + std::to_string(uid) + ":" + std::to_string(gid));
+    }
+
+    unsigned short new_perms = statbuf.st_mode;
+    if (params.permissions.HasValue())
+    {
+        new_perms |= params.permissions.Value();
+    }
+
+    if (params.mask.HasValue())
+    {
+        new_perms &= ~params.mask.Value();
+    }
+    // Sanity check - we can't have bits set in the mask and permissions at the same time.
+    if ((params.permissions.HasValue() && params.mask.HasValue()) && (0 != (params.permissions.Value() & params.mask.Value())))
+    {
+        OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        return Error("Invalid permissions and mask - same bits set in both", EINVAL);
+    }
+    if (new_perms != statbuf.st_mode)
+    {
+        OsConfigLogInfo(log, "Changing permissions of '%s' from %o to %o", params.filename.c_str(), statbuf.st_mode, new_perms);
+        if (chmod(params.filename.c_str(), new_perms) < 0)
+        {
+            int status = errno;
+            OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
+            return Error(std::string("Chmod error: ") + strerror(status), status);
+        }
+
+        indicators.Compliant(params.filename + " permissions changed to " + std::to_string(new_perms));
+    }
+
+    OsConfigLogDebug(log, "File '%s' remediation succeeded", params.filename.c_str());
+    return Status::Compliant;
 }
 
-AUDIT_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext:File pattern:M", "owner:Required owner of the file",
-    "group:Required group of the file", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
-    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+Result<Status> AuditEnsureFilePermissionsCollection(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    return EnsureFilePermissionsCollectionHelper(args, indicators, context, false);
+    return EnsureFilePermissionsCollectionHelper(params, indicators, context, false);
 }
 
-REMEDIATE_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext:File pattern:M", "owner:Required owner of the file",
-    "group:Required group of the file", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
-    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+Result<Status> RemediateEnsureFilePermissionsCollection(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    return EnsureFilePermissionsCollectionHelper(args, indicators, context, true);
+    return EnsureFilePermissionsCollectionHelper(params, indicators, context, true);
 }
 
 } // namespace ComplianceEngine

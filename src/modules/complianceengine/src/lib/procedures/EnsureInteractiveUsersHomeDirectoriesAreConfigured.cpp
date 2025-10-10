@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
+#include <EnsureFilePermissions.h>
+#include <EnsureInteractiveUsersHomeDirectoriesAreConfigured.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
 #include <ListValidShells.h>
 #include <Result.h>
 #include <UsersIterator.h>
@@ -23,10 +24,8 @@ using std::ostringstream;
 using std::set;
 using std::string;
 
-AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
+Result<Status> AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -75,9 +74,25 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
-        map<string, string> arguments = {{"filename", pwd.pw_dir}, {"mask", "027"}, {"owner", pwd.pw_name}, {"group", group->gr_name}};
+        auto pwdPattern = Pattern::Make(pwd.pw_name);
+        if (!pwdPattern.HasValue())
+        {
+            return pwdPattern.Error();
+        }
+
+        auto groupPattern = Pattern::Make(group->gr_name);
+        if (!groupPattern.HasValue())
+        {
+            return groupPattern.Error();
+        }
+
+        EnsureFilePermissionsParams params;
+        params.filename = pwd.pw_dir;
+        params.mask = 027;
+        params.owner = {{std::move(pwdPattern.Value())}};
+        params.group = {{std::move(groupPattern.Value())}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = AuditEnsureFilePermissionsHelper(std::string(pwd.pw_dir), std::move(arguments), indicators, context);
+        auto subResult = AuditEnsureFilePermissions(params, indicators, context);
         if (!subResult.HasValue())
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name,
@@ -97,10 +112,8 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     return result;
 }
 
-REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
+Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -154,9 +167,25 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
-        map<string, string> arguments = {{"filename", pwd.pw_dir}, {"mask", "027"}, {"owner", pwd.pw_name}, {"group", group->gr_name}};
+        auto pwdPattern = Pattern::Make(pwd.pw_name);
+        if (!pwdPattern.HasValue())
+        {
+            return pwdPattern.Error();
+        }
+
+        auto groupPattern = Pattern::Make(group->gr_name);
+        if (!groupPattern.HasValue())
+        {
+            return groupPattern.Error();
+        }
+
+        EnsureFilePermissionsParams params;
+        params.filename = pwd.pw_dir;
+        params.mask = 027;
+        params.owner = {{std::move(pwdPattern.Value())}};
+        params.group = {{std::move(groupPattern.Value())}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = RemediateEnsureFilePermissionsHelper(pwd.pw_dir, std::move(arguments), indicators, context);
+        auto subResult = RemediateEnsureFilePermissions(params, indicators, context);
         if (!subResult.HasValue())
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd.pw_dir,

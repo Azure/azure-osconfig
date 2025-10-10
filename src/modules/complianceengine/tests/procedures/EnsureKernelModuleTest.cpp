@@ -4,17 +4,17 @@
 #include "CommonUtils.h"
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureKernelModule.h>
 #include <dirent.h>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <linux/limits.h>
 #include <string>
 #include <unistd.h>
 #include <vector>
 
 using ComplianceEngine::AuditEnsureKernelModuleUnavailable;
+using ComplianceEngine::EnsureKernelModuleUnavailableParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -56,15 +56,7 @@ protected:
     }
 };
 
-TEST_F(EnsureKernelModuleTest, AuditNoArgument)
-{
-    std::map<std::string, std::string> args;
-
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "No module name provided");
-}
-
+// TODO(kkanas) remove
 // Helper to create a fake /lib/modules tree
 static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::string>& files)
 {
@@ -101,17 +93,17 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 {
     CreateModulesTree(mContext, {"hator.ko", "nbd.ko"});
 
-    // Setup the expectation for the proc modules read to fail
+    // Set up the expectation for the proc modules read to fail
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath)))
         .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to read /proc/modules", -1))));
 
-    // Setup the expectation for the modprobe command
+    // Set up the expectation for the modprobe command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Failed to read /proc/modules");
 }
@@ -120,17 +112,17 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 {
     CreateModulesTree(mContext, {"hator.ko"});
 
-    // Setup the expectation for the /proc/modules read to succeed
+    // Set up the expectation for the /proc/modules read to succeed
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
-    // Setup the expectation for the modprobe command to fail
+    // Set up the expectation for the modprobe command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand)))
         .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to execute modprobe", -1))));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -139,16 +131,16 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFilesystem)
 {
     CreateModulesTree(mContext, {"usbserial.ko", "nbd.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
-    // Setup the expectation for the modprobe command
+    // Set up the expectation for the modprobe command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -157,16 +149,16 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 {
     CreateModulesTree(mContext, {"hator.ko"});
 
-    // Setup the expectation for the proc modules read showing the module is loaded
+    // Set up the expectation for the proc modules read showing the module is loaded
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
-    // Setup the expectation for the modprobe command
+    // Set up the expectation for the modprobe command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -175,16 +167,16 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
 {
     CreateModulesTree(mContext, {"hator.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
-    // Setup the expectation for the modprobe command with blacklist output
+    // Set up the expectation for the modprobe command with blacklist output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -193,16 +185,16 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
 {
     CreateModulesTree(mContext, {"hator.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
-    // Setup the expectation for the modprobe command with alias output
+    // Set up the expectation for the modprobe command with alias output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeAliasOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -211,16 +203,16 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 {
     CreateModulesTree(mContext, {"hator.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
-    // Setup the expectation for the modprobe command with blocked output
+    // Set up the expectation for the modprobe command with blocked output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -229,16 +221,16 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 {
     CreateModulesTree(mContext, {"hator_overlay.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
-    // Setup the expectation for the modprobe command with blocked output
+    // Set up the expectation for the modprobe command with blocked output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -247,16 +239,16 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
 {
     CreateModulesTree(mContext, {"hator_overlay.ko"});
 
-    // Setup the expectation for the proc modules read
+    // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
-    // Setup the expectation for the modprobe command with blocked overlay output
+    // Set up the expectation for the modprobe command with blocked overlay output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));
 
-    std::map<std::string, std::string> args;
-    args["moduleName"] = "hator";
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "hator";
 
-    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
