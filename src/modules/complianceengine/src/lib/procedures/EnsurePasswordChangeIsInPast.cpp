@@ -1,8 +1,8 @@
 #include <CommonUtils.h>
+#include <EnsurePasswordChangeIsInPast.h>
 #include <Evaluator.h>
 #include <PasswordEntriesIterator.h>
 #include <Regex.h>
-#include <ScopeGuard.h>
 #include <pwd.h>
 #include <shadow.h>
 #include <vector>
@@ -13,16 +13,10 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsurePasswordChangeIsInPast, "test_etcShadowPath:Path to the /etc/shadow file to test against::/etc/shadow")
+Result<Status> AuditEnsurePasswordChangeIsInPast(const EnsurePasswordChangeIsInPastParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto etcShadowPath = string("/etc/shadow");
-    auto it = args.find("test_etcShadowPath");
-    if (it != args.end())
-    {
-        etcShadowPath = std::move(it->second);
-    }
-
-    auto range = PasswordEntryRange::Make(etcShadowPath, context.GetLogHandle());
+    assert(params.test_etcShadowPath.HasValue());
+    auto range = PasswordEntryRange::Make(params.test_etcShadowPath.Value(), context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();

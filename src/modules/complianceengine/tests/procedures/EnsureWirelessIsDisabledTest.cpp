@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureWirelessIsDisabled.h>
 #include <algorithm>
 #include <dirent.h>
 #include <fstream>
@@ -18,6 +17,7 @@
 
 using ComplianceEngine::AuditEnsureWirelessIsDisabled;
 using ComplianceEngine::CompactListFormatter;
+using ComplianceEngine::EnsureWirelessIsDisabledParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -184,8 +184,8 @@ static const char modprobeBlockedOutput[] = "blacklist iwlwifi\ninstall iwlwifi 
 
 TEST_F(EnsureWirelessIsDisabledTest, HappyPathTest)
 {
-    std::map<std::string, std::string> args;
-    args["test_sysfs_class_net"] = sysDir;
+    EnsureWirelessIsDisabledParams params;
+    params.test_sysfs_class_net = sysDir;
     CreateWirelessDevice("wlp2s0", "iwlwifi");
     UNUSED(procModulesPositiveOutput);
     UNUSED(modprobeNothingOutput);
@@ -199,7 +199,7 @@ TEST_F(EnsureWirelessIsDisabledTest, HappyPathTest)
         EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
     }
 
-    auto result = AuditEnsureWirelessIsDisabled(args, mIndicators, mContext);
+    auto result = AuditEnsureWirelessIsDisabled(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -207,8 +207,8 @@ TEST_F(EnsureWirelessIsDisabledTest, HappyPathTest)
 
 TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleLoaded)
 {
-    std::map<std::string, std::string> args;
-    args["test_sysfs_class_net"] = sysDir;
+    EnsureWirelessIsDisabledParams params;
+    params.test_sysfs_class_net = sysDir;
     CreateWirelessDevice("wlp2s0", "iwlwifi");
 
     // Prime IsModuleBlocked
@@ -220,7 +220,7 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleLoaded)
         EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
     }
 
-    auto result = AuditEnsureWirelessIsDisabled(args, mIndicators, mContext);
+    auto result = AuditEnsureWirelessIsDisabled(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -228,8 +228,8 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleLoaded)
 
 TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlocked)
 {
-    std::map<std::string, std::string> args;
-    args["test_sysfs_class_net"] = sysDir;
+    EnsureWirelessIsDisabledParams params;
+    params.test_sysfs_class_net = sysDir;
     CreateWirelessDevice("wlp2s0", "iwlwifi");
 
     // Prime IsModuleBlocked
@@ -241,7 +241,7 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlocked)
         EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
     }
 
-    auto result = AuditEnsureWirelessIsDisabled(args, mIndicators, mContext);
+    auto result = AuditEnsureWirelessIsDisabled(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -249,8 +249,8 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlocked)
 
 TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlockedonlyBlacklisted)
 {
-    std::map<std::string, std::string> args;
-    args["test_sysfs_class_net"] = sysDir;
+    EnsureWirelessIsDisabledParams params;
+    params.test_sysfs_class_net = sysDir;
     CreateWirelessDevice("wlp2s0", "iwlwifi");
 
     // Prime IsModuleBlocked
@@ -262,7 +262,7 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlockedonlyBla
         EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
     }
 
-    auto result = AuditEnsureWirelessIsDisabled(args, mIndicators, mContext);
+    auto result = AuditEnsureWirelessIsDisabled(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -270,8 +270,8 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathModuleNotLoadedNotBlockedonlyBla
 
 TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathOnlyOneDriverIsBlocked)
 {
-    std::map<std::string, std::string> args;
-    args["test_sysfs_class_net"] = sysDir;
+    EnsureWirelessIsDisabledParams params;
+    params.test_sysfs_class_net = sysDir;
     CreateWirelessDevice("wlp2s0", "iwlwifi");
     CreateWirelessDevice("wlp3s1", "mwl8k");
 
@@ -285,7 +285,7 @@ TEST_F(EnsureWirelessIsDisabledTest, UnhappyPathOnlyOneDriverIsBlocked)
         EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
     }
 
-    auto result = AuditEnsureWirelessIsDisabled(args, mIndicators, mContext);
+    auto result = AuditEnsureWirelessIsDisabled(params, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

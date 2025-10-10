@@ -2,6 +2,7 @@
 // World-writable: (mode & 0002). Sticky bit required on dirs: (mode & S_ISVTX) when (S_IWOTH) is set.
 
 #include <CommonUtils.h>
+#include <EnsureNoWritables.h>
 #include <Evaluator.h>
 #include <FilesystemScanner.h>
 #include <sys/stat.h>
@@ -9,9 +10,8 @@
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureNoWritables)
+Result<Status> AuditEnsureNoWritables(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
 
     FilesystemScanner& scanner = context.GetFilesystemScanner();
     auto fsRes = scanner.GetFullFilesystem();

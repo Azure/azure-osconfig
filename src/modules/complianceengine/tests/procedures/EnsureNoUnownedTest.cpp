@@ -1,7 +1,8 @@
 // Test for EnsureNoUnowned procedure
+#include "EnsureNoUnowned.h"
+
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
 #include <fstream>
 #include <gtest/gtest.h>
@@ -41,7 +42,7 @@ TEST_F(EnsureNoUnownedTest, CompliantWhenAllOwned)
     }
     ASSERT_EQ(::chmod(filePath.c_str(), 0644), 0);
     (void)mContext.GetFilesystemScanner().GetFullFilesystem();
-    auto result = AuditEnsureNoUnowned({}, indicators, mContext);
+    auto result = AuditEnsureNoUnowned(indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -66,7 +67,7 @@ TEST_F(EnsureNoUnownedTest, NonCompliantOnUnknownUid)
 
     // Prime scanner after mutation
     (void)mContext.GetFilesystemScanner().GetFullFilesystem();
-    auto result = AuditEnsureNoUnowned({}, indicators, mContext);
+    auto result = AuditEnsureNoUnowned(indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }

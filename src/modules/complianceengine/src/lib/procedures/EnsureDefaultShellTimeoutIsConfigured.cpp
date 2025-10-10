@@ -106,9 +106,8 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
 }
 } // anonymous namespace
 
-AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
+Result<Status> AuditEnsureDefaultShellTimeoutIsConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     static const auto valuePattern = R"(^[ \\t]*([^#\n\r]+[ \\t]+)?TMOUT=([[:alnum:]]+)\b)";
     static const auto readonlyPattern = R"(^[ \\t]*([^#\n]+[ \\t]+)?readonly[ \\t]+TMOUT\b)";
     static const auto exportPattern = R"(^([ \\t]*|[ \\t]*[^#\n]+[ \\t]*;[ \\t]*)export[ \\t]+TMOUT\b)";
