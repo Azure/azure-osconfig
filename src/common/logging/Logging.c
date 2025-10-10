@@ -140,7 +140,7 @@ static int RestrictLogFileAccess(const char* fileName)
 
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName)
 {
-    OsConfigLog* newLog = (OsConfigLog*)xAlloc(sizeof(OsConfigLog));
+    OsConfigLog* newLog = (OsConfigLog*)malloc(sizeof(OsConfigLog));
     if (NULL == newLog)
     {
         return NULL;
