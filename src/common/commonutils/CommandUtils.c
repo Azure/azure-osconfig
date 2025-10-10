@@ -251,7 +251,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             {
                 OsConfigLogError(log, "Cannot allocate buffer for command '%s'", command);
                 status = ENOMEM;
-                FREE_MEMORY(*textResult);
+                xFree(*textResult);
                 break;
             }
             *textResult = tmp;
@@ -328,7 +328,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
         status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log);
         if (0 != status)
         {
-            FREE_MEMORY(hash);
+            xFree(hash);
         }
     }
     else
@@ -336,6 +336,6 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
         OsConfigLogError(log, "HashCommand: out of memory");
     }
 
-    FREE_MEMORY(command);
+    xFree(command);
     return (0 == status) ? hash : NULL;
 }

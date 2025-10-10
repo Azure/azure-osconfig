@@ -185,7 +185,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
         return 0;
     }
 
-    FREE_MEMORY(*reportedProperties);
+    xFree(*reportedProperties);
 
     if (NULL != jsonString)
     {
@@ -414,8 +414,8 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
         SetLoggingLevel(level);
     }
 
-    FREE_MEMORY(jsonConfiguration);
-    FREE_MEMORY(buffer);
+    xFree(jsonConfiguration);
+    xFree(buffer);
 
     return result;
 }

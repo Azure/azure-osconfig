@@ -51,7 +51,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
 
     if (NULL == found)
     {
-        FREE_MEMORY(buffer);
+        xFree(buffer);
     }
 
     return buffer;
@@ -79,7 +79,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
         return NULL;
     }
 
-    FREE_MEMORY(buffer);
+    xFree(buffer);
 
     for (i = 0; i < sizeof(bufferUri); i++)
     {
@@ -142,7 +142,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
         OsConfigLogDebug(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
     }
 
-    FREE_MEMORY(buffer);
+    xFree(buffer);
 
     return httpStatus;
 }
@@ -191,7 +191,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, OsConfigLogHandle log)
             }
         }
 
-        FREE_MEMORY(buffer);
+        xFree(buffer);
     }
 
     return httpContentLength;

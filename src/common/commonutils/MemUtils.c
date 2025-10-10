@@ -3,38 +3,34 @@
 
 #include "Internal.h"
 
-typedef struct PointerNode
+typedef struct TrackedPointerNode
 {
     void* pointer;
-    struct PointerNode* next;
-} PointerNode;
+    struct TrackedPointerNode* next;
+} TrackedPointerNode;
 
-static PointerNode* g_start = NULL;
+static TrackedPointerNode* g_start = NULL;
 
-void* SafeMalloc(size_t size, OsConfigLogHandle log)
+void* TrackedPointerAlloc(size_t size, OsConfigLogHandle log)
 {
-#ifndef TEST_CODE
-    UNUSED(log);
-    return malloc(size);
-#else
-    PointerNode* node = NULL;
+    TrackedPointerNode* node = NULL;
     void* pointer = NULL;
 
     if (0 == size)
     {
-        OsConfigLogError(log, "SafeMalloc: requested size is 0 bytes, nothing to allocate");
+        OsConfigLogError(log, "TrackedPointerAlloc: requested size is 0 bytes, nothing to allocate");
     }
     else if (size >= SIZE_MAX)
     {
-        OsConfigLogError(log, "SafeMalloc: requested size %zu exceeds maximum allocatable size", size);
+        OsConfigLogError(log, "TrackedPointerAlloc: requested size %zu exceeds maximum allocatable size", size);
     }
     else if (NULL == (pointer = malloc(size)))
     {
-        OsConfigLogError(log, "SafeMalloc: memory allocation of %zu bytes failed", size);
+        OsConfigLogError(log, "TrackedPointerAlloc: memory allocation of %zu bytes failed", size);
     }
     else
     {
-        if (NULL != (node = malloc(sizeof(PointerNode))))
+        if (NULL != (node = malloc(sizeof(TrackedPointerNode))))
         {
             node->pointer = pointer;
             node->next = g_start;
@@ -42,41 +38,35 @@ void* SafeMalloc(size_t size, OsConfigLogHandle log)
 
             memset(pointer, 0, size);
 
-            OsConfigLogInfo(log, "SafeMalloc: allocated pointer %p", pointer);
+            OsConfigLogInfo(log, "TrackedPointerAlloc: allocated pointer %p", pointer);
         }
         else
         {
-            OsConfigLogError(log, "SafeMalloc: failed to allocate tracking node");
+            OsConfigLogError(log, "TrackedPointerAlloc: failed to allocate tracking node");
             FREE_MEMORY(pointer);
         }
     }
 
     return pointer;
-#endif
 }
 
-bool SafeFree(void** p, OsConfigLogHandle log)
+bool TrackedPointerFree(void** p, OsConfigLogHandle log)
 {
-#ifndef TEST_CODE
-    UNUSED(log);
-    MEMORY_FREE(*p);
-    return true;
-#else
     if ((NULL == p) || (NULL == *p))
     {
-        OsConfigLogError(log, "SafeFree: called with a NULL pointer argument");
+        OsConfigLogError(log, "TrackedPointerFree: called with a NULL pointer argument");
         return false;
     }
 
     void* pointer = *p;
-    PointerNode* current = g_start;
-    PointerNode* previous = NULL;
+    TrackedPointerNode* current = g_start;
+    TrackedPointerNode* previous = NULL;
 
     while (NULL != current)
     {
         if (current->pointer == pointer)
         {
-            OsConfigLogInfo(log, "SafeFree: freeing pointer %p", pointer);
+            OsConfigLogInfo(log, "TrackedPointerFree: freeing pointer %p", pointer);
 
             if (NULL != previous)
             {
@@ -97,22 +87,18 @@ bool SafeFree(void** p, OsConfigLogHandle log)
         current = current->next;
     }
 
-    OsConfigLogError(log, "SafeFree: pointer %p not tracked or already freed", pointer);
+    OsConfigLogError(log, "TrackedPointerFree: pointer %p not tracked or already freed", pointer);
     return false;
-#endif
 }
 
-void SafeFreeAll(OsConfigLogHandle log)
+void TrackedPointersFreeAll(OsConfigLogHandle log)
 {
-#ifndef TEST_CODE
-    UNUSED(log);
-#else
-    PointerNode* current = g_start;
-    PointerNode* next = NULL;
+    TrackedPointerNode* current = g_start;
+    TrackedPointerNode* next = NULL;
 
     while (NULL != current)
     {
-        OsConfigLogInfo(log, "SafeFreeAll: freeing pointer %p", current);
+        OsConfigLogInfo(log, "TrackedPointersFreeAll: freeing pointer %p", current);
         next = current->next;
         FREE_MEMORY(current->pointer);
         FREE_MEMORY(current);
@@ -120,16 +106,12 @@ void SafeFreeAll(OsConfigLogHandle log)
     }
 
     g_start = NULL;
-#endif
 }
 
-size_t GetNumberOfUnfreedPointers(void)
+size_t GetNumberOfTrackedPointers(void)
 {
-#ifndef TEST_CODE
-    return 0;
-#else
     size_t count = 0;
-    PointerNode* current = g_start;
+    TrackedPointerNode* current = g_start;
 
     while (NULL != current)
     {
@@ -142,16 +124,12 @@ size_t GetNumberOfUnfreedPointers(void)
     }
 
     return count;
-#endif
 }
 
 static void DumpTrackedPointers(OsConfigLogHandle log)
 {
-#ifndef TEST_CODE
-    UNUSED(log);
-#else
-    PointerNode* current = g_start;
-    size_t leaks = GetNumberOfUnfreedPointers();
+    TrackedPointerNode* current = g_start;
+    size_t leaks = GetNumberOfTrackedPointers();
     size_t index = 0;
 
     if (0 == leaks)
@@ -169,20 +147,15 @@ static void DumpTrackedPointers(OsConfigLogHandle log)
         }
         current = current->next;
     }
-#endif
 }
 
-void MemoryCleanup(OsConfigLogHandle log)
+void TrackedPointersCleanup(OsConfigLogHandle log)
 {
-#ifndef TEST_CODE
-    UNUSED(log);
-#else
-    size_t leaks = GetNumberOfUnfreedPointers();
+    size_t leaks = GetNumberOfTrackedPointers();
     if (leaks > 0)
     {
-        OsConfigLogError(log, "Memory leak detected: %zu unfreed pointers", leaks);
+        OsConfigLogError(log, "Memory leak detected: %zu unfreed tracked pointers", leaks);
         DumpTrackedPointers(log);
-        SafeFreeAll(log);
+        TrackedPointersFreeAll(log);
     }
-#endif
 }

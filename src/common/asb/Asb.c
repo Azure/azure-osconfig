@@ -950,7 +950,7 @@ void AsbInitialize(OsConfigLogHandle log)
             SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
             SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
             SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
-            FREE_MEMORY(jsonConfiguration);
+            xFree(jsonConfiguration);
         }
 
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
@@ -1052,8 +1052,8 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    FREE_MEMORY(kernelVersion);
-    FREE_MEMORY(cpuModel);
+    xFree(kernelVersion);
+    xFree(cpuModel);
 
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
@@ -1065,41 +1065,41 @@ void AsbShutdown(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
-    FREE_MEMORY(g_desiredLoggingLevel);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsDeny);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcShadow);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcShadowDash);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGShadow);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGShadowDash);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcPasswd);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcPasswdDash);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGroup);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGroupDash);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcAnacronTab);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronD);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronDaily);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronHourly);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronMonthly);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronWeekly);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcMotd);
-    FREE_MEMORY(g_desiredEnsureRestrictedUserHomeDirectories);
-    FREE_MEMORY(g_desiredEnsurePasswordHashingAlgorithm);
-    FREE_MEMORY(g_desiredEnsureMinDaysBetweenPasswordChanges);
-    FREE_MEMORY(g_desiredEnsureInactivePasswordLockPeriod);
-    FREE_MEMORY(g_desiredEnsureMaxDaysBetweenPasswordChanges);
-    FREE_MEMORY(g_desiredEnsurePasswordExpiration);
-    FREE_MEMORY(g_desiredEnsurePasswordExpirationWarning);
-    FREE_MEMORY(g_desiredEnsureDefaultUmaskForAllUsers);
-    FREE_MEMORY(g_desiredEnsurePermissionsOnBootloaderConfig);
-    FREE_MEMORY(g_desiredEnsurePasswordReuseIsLimited);
-    FREE_MEMORY(g_desiredEnsurePasswordCreationRequirements);
-    FREE_MEMORY(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
-    FREE_MEMORY(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable);
-    FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
-    FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
+    xFree(g_desiredLoggingLevel);
+    xFree(g_desiredEnsurePermissionsOnEtcIssue);
+    xFree(g_desiredEnsurePermissionsOnEtcIssueNet);
+    xFree(g_desiredEnsurePermissionsOnEtcHostsAllow);
+    xFree(g_desiredEnsurePermissionsOnEtcHostsDeny);
+    xFree(g_desiredEnsurePermissionsOnEtcShadow);
+    xFree(g_desiredEnsurePermissionsOnEtcShadowDash);
+    xFree(g_desiredEnsurePermissionsOnEtcGShadow);
+    xFree(g_desiredEnsurePermissionsOnEtcGShadowDash);
+    xFree(g_desiredEnsurePermissionsOnEtcPasswd);
+    xFree(g_desiredEnsurePermissionsOnEtcPasswdDash);
+    xFree(g_desiredEnsurePermissionsOnEtcGroup);
+    xFree(g_desiredEnsurePermissionsOnEtcGroupDash);
+    xFree(g_desiredEnsurePermissionsOnEtcAnacronTab);
+    xFree(g_desiredEnsurePermissionsOnEtcCronD);
+    xFree(g_desiredEnsurePermissionsOnEtcCronDaily);
+    xFree(g_desiredEnsurePermissionsOnEtcCronHourly);
+    xFree(g_desiredEnsurePermissionsOnEtcCronMonthly);
+    xFree(g_desiredEnsurePermissionsOnEtcCronWeekly);
+    xFree(g_desiredEnsurePermissionsOnEtcMotd);
+    xFree(g_desiredEnsureRestrictedUserHomeDirectories);
+    xFree(g_desiredEnsurePasswordHashingAlgorithm);
+    xFree(g_desiredEnsureMinDaysBetweenPasswordChanges);
+    xFree(g_desiredEnsureInactivePasswordLockPeriod);
+    xFree(g_desiredEnsureMaxDaysBetweenPasswordChanges);
+    xFree(g_desiredEnsurePasswordExpiration);
+    xFree(g_desiredEnsurePasswordExpirationWarning);
+    xFree(g_desiredEnsureDefaultUmaskForAllUsers);
+    xFree(g_desiredEnsurePermissionsOnBootloaderConfig);
+    xFree(g_desiredEnsurePasswordReuseIsLimited);
+    xFree(g_desiredEnsurePasswordCreationRequirements);
+    xFree(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
+    xFree(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable);
+    xFree(g_desiredEnsureUnnecessaryAccountsAreRemoved);
+    xFree(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
     SshAuditCleanup(log);
 
@@ -1114,7 +1114,7 @@ void AsbShutdown(OsConfigLogHandle log)
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
 
-    FREE_MEMORY(g_prettyName);
+    xFree(g_prettyName);
 
     MemoryCleanup(log);
 
@@ -1316,7 +1316,7 @@ static char* AuditEnsureKernelSupportForCpuNx(OsConfigLogHandle log)
     char* reason = NULL;
     if (false == CheckCpuFlagSupported("nx", &reason, log))
     {
-        FREE_MEMORY(reason);
+        xFree(reason);
         reason = DuplicateString("A CPU that supports the NX (no-execute) bit technology is necessary. Automatic remediation is not possible");
     }
     return reason;
@@ -1532,7 +1532,7 @@ static char* AuditEnsureNoDuplicateUidsExist(OsConfigLogHandle log)
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
-            FREE_MEMORY(reason);
+            xFree(reason);
             reason = updatedReason;
         }
     }
@@ -1547,7 +1547,7 @@ static char* AuditEnsureNoDuplicateGidsExist(OsConfigLogHandle log)
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
-            FREE_MEMORY(reason);
+            xFree(reason);
             reason = updatedReason;
         }
     }
@@ -1562,7 +1562,7 @@ static char* AuditEnsureNoDuplicateUserNamesExist(OsConfigLogHandle log)
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
-            FREE_MEMORY(reason);
+            xFree(reason);
             reason = updatedReason;
         }
     }
@@ -1577,7 +1577,7 @@ static char* AuditEnsureNoDuplicateGroupsExist(OsConfigLogHandle log)
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
-            FREE_MEMORY(reason);
+            xFree(reason);
             reason = updatedReason;
         }
     }
@@ -1679,7 +1679,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(OsConfigLogHandle log)
             g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories);
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return reason;
 }
 
@@ -1794,7 +1794,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OsConfigLogHandle l
     }
     else if (IsCurrentOs(PRETTY_NAME_SLES_15, log))
     {
-        FREE_MEMORY(reason);
+        xFree(reason);
         reason = FormatAllocateString("%s'%s' does not exist in '%s'", g_pass, g_etcIssueNet, PRETTY_NAME_SLES_15);
     }
     return reason;
@@ -1818,7 +1818,7 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
 
     if (auditdActive && auomsActive)
     {
-        FREE_MEMORY(reason);
+        xFree(reason);
         reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
     }
 
@@ -1862,7 +1862,7 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
 
     if (0 != CheckDefaultDenyFirewallPolicy(&reason, log))
     {
-        FREE_MEMORY(reason);
+        xFree(reason);
         reason = FormatAllocateString("Ensure that all necessary communication channels have explicit "
             "ACCEPT firewall policies set and then manually set the default firewall policy for "
             "INPUT, FORWARD and OUTPUT to DROP%s", forceDrop ? "." : ". Automatic remediation is not possible");
@@ -2069,7 +2069,7 @@ static char* AuditEnsurePasswordCreationRequirements(OsConfigLogHandle log)
             g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
     }
 
-    FREE_MEMORY(values);
+    xFree(values);
     return reason;
 }
 
@@ -2088,7 +2088,7 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log));
-    FREE_MEMORY(reason);
+    xFree(reason);
     reason = DuplicateString("Neither pam_faillock.so, pam_tally2.so or pam_tally.so PAM modules exist for this distribution. "
         "Manually set lockout for failed password attempts following specific instructions for this distrubution. Automatic remediation is not possible");
     return reason;
@@ -2151,7 +2151,7 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogH
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2UserCfg, '#', password, &reason, log));
-    FREE_MEMORY(reason);
+    xFree(reason);
     reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
 }
@@ -2216,7 +2216,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle l
             g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return reason;
 }
 
@@ -2570,7 +2570,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle
             g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return reason;
 }
 
@@ -2724,7 +2724,7 @@ static int ReplaceString(char** target, char* source, const char* defaultValue)
         return EINVAL;
     }
 
-    FREE_MEMORY(*target);
+    xFree(*target);
     status = (NULL != (*target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
 
     return status;
@@ -3375,7 +3375,7 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLog
         status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log);
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return status;
 }
 
@@ -3725,7 +3725,7 @@ static int RemediateEnsurePasswordCreationRequirements(char* value, OsConfigLogH
             "in this order: retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit", g_desiredEnsurePasswordCreationRequirements);
     }
 
-    FREE_MEMORY(values);
+    xFree(values);
     return status;
 }
 
@@ -3841,7 +3841,7 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
             if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
             {
                 status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
-                FREE_MEMORY(formattedMode);
+                xFree(formattedMode);
             }
             else
             {
@@ -3857,7 +3857,7 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
         }
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return status;
 }
 
@@ -4073,7 +4073,7 @@ static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfi
 static int CheckAndFreeReason(char *reason)
 {
     int result = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
-    FREE_MEMORY(reason);
+    xFree(reason);
     return result;
 }
 
@@ -4201,7 +4201,7 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, Os
         status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
     }
 
-    FREE_MEMORY(modes);
+    xFree(modes);
     return status;
 }
 
@@ -4957,7 +4957,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         if ((NULL == result) || (NULL == (jsonValue = json_value_init_string(result))))
         {
             OsConfigLogError(log, "AsbMmiGet(%s, %s): audit failure without a valid reason", componentName, objectName);
-            FREE_MEMORY(result);
+            xFree(result);
             if (NULL == (result = DuplicateString(g_fail)))
             {
                 OsConfigLogError(log, "AsbMmiGet: DuplicateString failed");
@@ -5016,7 +5016,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         json_value_free(jsonValue);
     }
 
-    FREE_MEMORY(result);
+    xFree(result);
 
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
@@ -5999,7 +5999,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         json_value_free(jsonValue);
     }
 
-    FREE_MEMORY(payloadString);
+    xFree(payloadString);
 
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {

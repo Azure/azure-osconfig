@@ -118,7 +118,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         }
     }
 
-    FREE_MEMORY(data);
+    xFree(data);
 
     if (MPI_OK == status)
     {
@@ -224,23 +224,23 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     status = CallMpi(name, request, &response, &responseSize, log);
 
-    FREE_MEMORY(request);
+    xFree(request);
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
     if (NULL == mpiHandle)
     {
-        FREE_MEMORY(response);
+        xFree(response);
     }
     else if (NULL == (mpiHandleValue = ParseString(log, (char*)mpiHandle)))
     {
         OsConfigLogError(log, "CallMpiOpen: invalid MPI handle '%s'", (char*)mpiHandle);
-        FREE_MEMORY(response);
+        xFree(response);
         mpiHandle = NULL;
     }
 
     OsConfigLogInfo(log, "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, mpiHandleValue);
 
-    FREE_MEMORY(mpiHandleValue);
+    xFree(mpiHandleValue);
 
     // The MPI handle returned here is a JSON string already wrapped in ""
     return mpiHandle;
@@ -261,7 +261,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     if ((NULL == clientSession) || (0 == strlen((char*)clientSession)))
     {
         OsConfigLogError(log, "CallMpiClose(%p) called with invalid argument", clientSession);
-        FREE_MEMORY(clientSession);
+        xFree(clientSession);
         return;
     }
 
@@ -271,7 +271,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     if (NULL == request)
     {
         OsConfigLogError(log, "CallMpiClose(%p): failed to allocate memory for request", clientSession);
-        FREE_MEMORY(clientSession);
+        xFree(clientSession);
         return;
     }
 
@@ -279,11 +279,11 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
 
     CallMpi(name, request, &response, &responseSize, log);
 
-    FREE_MEMORY(request);
-    FREE_MEMORY(response);
+    xFree(request);
+    xFree(response);
 
     OsConfigLogInfo(log, "CallMpiClose(%p)", clientSession);
-    FREE_MEMORY(clientSession);
+    xFree(clientSession);
 }
 
 int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes, OsConfigLogHandle log)
@@ -326,13 +326,13 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     status = CallMpi(name, request, &response, &responseSize, log);
 
-    FREE_MEMORY(request);
+    xFree(request);
 
     if ((NULL != response) && (responseSize > 0))
     {
         statusFromResponse = ParseString(log, response);
         status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
-        FREE_MEMORY(statusFromResponse);
+        xFree(statusFromResponse);
     }
 
     if (IsDebugLoggingEnabled())
@@ -388,7 +388,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     status = CallMpi(name, request, payload, payloadSizeBytes, log);
 
-    FREE_MEMORY(request);
+    xFree(request);
 
     if (HTTP_INTERNAL_SERVER_ERROR == status)
     {
@@ -396,9 +396,9 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         {
             statusFromResponse = ParseString(log, *payload);
             status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
-            FREE_MEMORY(statusFromResponse);
+            xFree(statusFromResponse);
 
-            FREE_MEMORY(*payload);
+            xFree(*payload);
             *payloadSizeBytes = 0;
         }
         else
@@ -412,7 +412,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         status = EINVAL;
         OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);
 
-        FREE_MEMORY(*payload);
+        xFree(*payload);
         *payloadSizeBytes = 0;
     }
 
@@ -461,13 +461,13 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
 
     status = CallMpi(name, request, &response, &responseSize, log);
 
-    FREE_MEMORY(request);
+    xFree(request);
 
     if ((NULL != response) && (responseSize > 0))
     {
         statusFromResponse = ParseString(log, response);
         status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
-        FREE_MEMORY(statusFromResponse);
+        xFree(statusFromResponse);
     }
 
     if (IsDebugLoggingEnabled())
@@ -523,7 +523,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
 
     status = CallMpi(name, request, payload, payloadSizeBytes, log);
 
-    FREE_MEMORY(request);
+    xFree(request);
 
     if (HTTP_INTERNAL_SERVER_ERROR == status)
     {
@@ -531,7 +531,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
         {
             statusFromResponse = ParseString(log, *payload);
             status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
-            FREE_MEMORY(statusFromResponse);
+            xFree(statusFromResponse);
         }
         else
         {
@@ -539,7 +539,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
             status = EINVAL;
         }
 
-        FREE_MEMORY(*payload);
+        xFree(*payload);
         *payloadSizeBytes = 0;
     }
     else if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
@@ -548,7 +548,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
 
         status = EINVAL;
 
-        FREE_MEMORY(*payload);
+        xFree(*payload);
         *payloadSizeBytes = 0;
     }
 
@@ -559,5 +559,5 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
 
 void CallMpiFree(MPI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    xFree(payload);
 }

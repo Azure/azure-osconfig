@@ -45,7 +45,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
             }
             else
             {
-                FREE_MEMORY(result);
+                xFree(result);
             }
         }
         else
@@ -102,7 +102,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
             OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
         }
 
-        FREE_MEMORY(pamModule);
+        xFree(pamModule);
     }
 
     return status;
@@ -183,8 +183,8 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
         status = ENOMEM;
     }
 
-    FREE_MEMORY(newline);
-    FREE_MEMORY(pamModulePath);
+    xFree(newline);
+    xFree(pamModulePath);
 
     OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) returning %d", remember, status);
 
@@ -256,12 +256,12 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     auth, required, pamSo, deny, unlockTime, fileName);
 
                 status = 0;
-                FREE_MEMORY(authValue);
+                xFree(authValue);
                 break;
             }
             else
             {
-                FREE_MEMORY(authValue);
+                xFree(authValue);
                 status = ENOENT;
             }
 
@@ -298,7 +298,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
         fclose(fileHandle);
     }
 
-    FREE_MEMORY(line);
+    xFree(line);
 
     return status;
 }
@@ -356,28 +356,28 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
                 if (NULL != (line = FormatAllocateString(pamFailLockLineTemplate, pamModulePath)))
                 {
                     _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log);
-                    FREE_MEMORY(line);
+                    xFree(line);
                 }
                 else
                 {
                     _status = ENOMEM;
                 }
 
-                FREE_MEMORY(pamModulePath);
+                xFree(pamModulePath);
             }
             else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
             {
                 if (NULL != (line = FormatAllocateString(pamTally2LineTemplate, pamModulePath)))
                 {
                     _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log);
-                    FREE_MEMORY(line);
+                    xFree(line);
                 }
                 else
                 {
                     _status = ENOMEM;
                 }
 
-                FREE_MEMORY(pamModulePath);
+                xFree(pamModulePath);
             }
             else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) &&
                 (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
@@ -385,15 +385,15 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
                 if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
                 {
                     _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log);
-                    FREE_MEMORY(line);
+                    xFree(line);
                 }
                 else
                 {
                     _status = ENOMEM;
                 }
 
-                FREE_MEMORY(pamModulePath);
-                FREE_MEMORY(pamModulePath2);
+                xFree(pamModulePath);
+                xFree(pamModulePath2);
             }
 
             if (_status && (_status != status))
@@ -572,7 +572,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
         fclose(fileHandle);
     }
 
-    FREE_MEMORY(line);
+    xFree(line);
 
     if (false == found)
     {
@@ -713,7 +713,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
         fclose(fileHandle);
     }
 
-    FREE_MEMORY(line);
+    xFree(line);
 
     OsConfigLogInfo(log, "CheckRequirementsForPwQualityConf: returning %d (%s)", status, strerror(status));
 
@@ -816,7 +816,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
                 status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : (pamCrackLibSoExists ? pamCrackLibSo : g_pamUnixSo), line, '#', true, log);
-                FREE_MEMORY(line);
+                xFree(line);
             }
             else
             {
@@ -828,9 +828,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             status = ENOENT;
         }
 
-        FREE_MEMORY(pamModulePath);
-        FREE_MEMORY(pamModulePath2);
-        FREE_MEMORY(pamModulePath3);
+        xFree(pamModulePath);
+        xFree(pamModulePath2);
+        xFree(pamModulePath3);
     }
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
@@ -848,7 +848,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i].name, entries[i].value)))
             {
                 _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i].name, line, '#', true, log);
-                FREE_MEMORY(line);
+                xFree(line);
             }
             else
             {

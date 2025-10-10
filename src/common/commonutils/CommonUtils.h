@@ -45,16 +45,20 @@
 //#define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
 
+// Tracked pointers
+#define xAlloc(a) TrackedPointerAlloc(a, NULL)
+#define xFree(a) TrackedPointerFree(a ? &a : NULL, NULL)
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void* SafeMalloc(size_t size, OsConfigLogHandle log);
-bool SafeFree(void** p, OsConfigLogHandle log);
-void SafeFreeAll(OsConfigLogHandle log);
-size_t GetNumberOfUnfreedPointers(void);
-void MemoryCleanup(OsConfigLogHandle log);
+void* TrackedPointerAlloc(size_t size, OsConfigLogHandle log);
+bool TrackedPointerFree(void** p, OsConfigLogHandle log);
+void TrackedPointersFreeAll(OsConfigLogHandle log);
+size_t GetNumberOfTrackedPointers(void);
+void TrackedPointersCleanup(OsConfigLogHandle log);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);

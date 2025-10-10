@@ -18,9 +18,9 @@ static void ResetUserEntry(SimplifiedUser* target)
 {
     if (NULL != target)
     {
-        FREE_MEMORY(target->username);
-        FREE_MEMORY(target->home);
-        FREE_MEMORY(target->shell);
+        xFree(target->username);
+        xFree(target->home);
+        xFree(target->shell);
 
         target->userId = -1;
         target->groupId = -1;
@@ -51,7 +51,7 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle
             ResetUserEntry(&((*source)[i]));
         }
 
-        //FREE_MEMORY(*source);
+        //xFree(*source);
         SafeFree((void**)source, log);
     }
 }
@@ -240,7 +240,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetUserNonLogin: user %u is now set to be non-login", user->userId);
             }
 
-            FREE_MEMORY(command);
+            xFree(command);
 
             if ((0 == result) || (ENOMEM == result))
             {
@@ -444,10 +444,10 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHa
     {
         for (i = 0; i < size; i++)
         {
-            FREE_MEMORY(((*groupList)[i]).groupName);
+            xFree(((*groupList)[i]).groupName);
         }
 
-        //FREE_MEMORY(*groupList);
+        //xFree(*groupList);
         SafeFree((void**)groupList, log);
     }
 }
@@ -490,7 +490,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
         {
             OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
-            FREE_MEMORY(groupIds);
+            xFree(groupIds);
 
             if (0 < numberOfGroups)
             {
@@ -584,7 +584,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (0 == *size)
     {
-        //FREE_MEMORY(*groupList);
+        //xFree(*groupList);
         SafeFree((void**)groupList, log);
     }
 
@@ -593,7 +593,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         OsConfigCaptureReason(reason, "Failed to enumerate groups for users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
 
-    //FREE_MEMORY(groupIds);
+    //xFree(groupIds);
     SafeFree((void**)&groupIds, log);
 
     return status;
@@ -793,7 +793,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                                     userList[i].userId, userGroupList[j].groupId, _status, strerror(_status));
                             }
 
-                            FREE_MEMORY(command);
+                            xFree(command);
                         }
                         else
                         {
@@ -909,7 +909,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
             OsConfigLogInfo(log, "RemoveUser: cannot remove user %u, userdel failed with %d (%s)", user->userId, status, strerror(status));
         }
 
-        FREE_MEMORY(command);
+        xFree(command);
     }
     else
     {
@@ -1133,7 +1133,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                                 OsConfigLogInfo(log, "SetShadowGroupEmpty: gpasswd failed with %d (%s)", _status, strerror(_status));
                             }
 
-                            FREE_MEMORY(command);
+                            xFree(command);
                         }
                         else
                         {
@@ -1236,7 +1236,7 @@ int RepairRootGroup(OsConfigLogHandle log)
                 if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log)))
                 {
                     // Free the previously loaded content, we'll reload
-                    FREE_MEMORY(original);
+                    xFree(original);
 
                     // Load the fixed content of temporary file
                     if (NULL != (original = LoadStringFromFile(tempFileName, false, log)))
@@ -1283,7 +1283,7 @@ int RepairRootGroup(OsConfigLogHandle log)
                 status = EPERM;
             }
 
-            FREE_MEMORY(original);
+            xFree(original);
         }
         else
         {
@@ -1860,7 +1860,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfi
                 textResult, encryption, algorithm);
         }
 
-        FREE_MEMORY(textResult);
+        xFree(textResult);
     }
     else
     {
@@ -2008,7 +2008,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user %u minimum time between password changes is now set to %ld days", userList[i].userId, days);
                     }
 
-                    FREE_MEMORY(command);
+                    xFree(command);
 
                     if (_status && (0 == status))
                     {
@@ -2150,7 +2150,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user %u maximum time between password changes is now set to %ld days", userList[i].userId, days);
                     }
 
-                    FREE_MEMORY(command);
+                    xFree(command);
 
                     if (0 == status)
                     {
@@ -2221,7 +2221,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
                             userList[i].userId, currentDate);
                     }
 
-                    FREE_MEMORY(command);
+                    xFree(command);
 
                     if (0 == status)
                     {
@@ -2417,7 +2417,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
                         OsConfigLogInfo(log, "SetPasswordExpirationWarning: user %u password expiration warning time is now set to %ld days", userList[i].userId, days);
                     }
 
-                    FREE_MEMORY(command);
+                    xFree(command);
 
                     if (0 == status)
                     {
@@ -2578,7 +2578,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
                         OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user %u lockout time after inactivity is now set to %ld days", userList[i].userId, days);
                     }
 
-                    FREE_MEMORY(command);
+                    xFree(command);
 
                     if (0 == status)
                     {
@@ -2792,7 +2792,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
                     }
                 }
 
-                FREE_MEMORY(dotPath);
+                xFree(dotPath);
             }
         }
     }
@@ -2878,7 +2878,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                             }
                         }
 
-                        FREE_MEMORY(path);
+                        xFree(path);
                     }
                 }
 
@@ -2974,7 +2974,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                             }
                         }
 
-                        FREE_MEMORY(path);
+                        xFree(path);
                     }
                 }
 
@@ -3038,7 +3038,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
                 }
 
                 j += strlen(name);
-                FREE_MEMORY(name);
+                xFree(name);
             }
 
             i += 1;
@@ -3132,7 +3132,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
             }
 
             j += strlen(name);
-            FREE_MEMORY(name);
+            xFree(name);
         }
 
         i += 1;

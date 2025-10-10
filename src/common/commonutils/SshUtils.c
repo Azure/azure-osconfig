@@ -152,7 +152,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
         if (0 != (status = ExecuteCommand(NULL, sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
             OsConfigLogInfo(log, "GetSshServerState: '%s' failed with %d and '%s'", sshdDashTCommand, status, textResult);
-            FREE_MEMORY(textResult);
+            xFree(textResult);
         }
     }
     else
@@ -162,7 +162,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
                 OsConfigLogInfo(log, "GetSshServerState: '%s' failed with %d and '%s'", command, status, textResult);
-                FREE_MEMORY(textResult);
+                xFree(textResult);
             }
             else if ((NULL != textResult) && (NULL != strstr(textResult, name)))
             {
@@ -177,7 +177,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
             OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
         }
 
-        FREE_MEMORY(command);
+        xFree(command);
     }
 
     return textResult;
@@ -268,7 +268,7 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
         result = ENOENT;
     }
 
-    FREE_MEMORY(textResult);
+    xFree(textResult);
 
     return result;
 }
@@ -327,7 +327,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
                 }
 
                 i += strlen(value);
-                FREE_MEMORY(value);
+                xFree(value);
                 continue;
             }
         }
@@ -338,8 +338,8 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
         OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%s' (all approved MAC algorithms)", g_sshServerService, sshMacs, macsValue);
     }
 
-    FREE_MEMORY(macsValue);
-    FREE_MEMORY(sshMacs);
+    xFree(macsValue);
+    xFree(sshMacs);
 
     OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed returning %d", status);
 
@@ -401,7 +401,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
                 }
 
                 i += strlen(value);
-                FREE_MEMORY(value);
+                xFree(value);
                 continue;
             }
         }
@@ -429,7 +429,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
                 }
 
                 i += strlen(value);
-                FREE_MEMORY(value);
+                xFree(value);
                 continue;
             }
         }
@@ -440,8 +440,8 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
         OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%s' (only approved ciphers)", g_sshServerService, sshCiphers, ciphersValue);
     }
 
-    FREE_MEMORY(ciphersValue);
-    FREE_MEMORY(sshCiphers);
+    xFree(ciphersValue);
+    xFree(sshCiphers);
 
     OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh returning %d", status);
 
@@ -484,7 +484,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
             *actualValue = DuplicateString(value);
         }
 
-        FREE_MEMORY(value);
+        xFree(value);
     }
     else
     {
@@ -509,8 +509,8 @@ static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, 
         *actualValue = (NULL != actualValueString) ? atoi(actualValueString) : -1;
     }
 
-    FREE_MEMORY(actualValueString);
-    FREE_MEMORY(expectedValueString);
+    xFree(actualValueString);
+    xFree(expectedValueString);
 
     return status;
 }
@@ -540,7 +540,7 @@ static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(clientAliveInterval);
+    xFree(clientAliveInterval);
 
     OsConfigLogInfo(log, "CheckSshClientAliveInterval returning %d", status);
 
@@ -573,7 +573,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogH
         }
     }
 
-    FREE_MEMORY(loginGraceTime);
+    xFree(loginGraceTime);
 
     OsConfigLogInfo(log, "CheckSshLoginGraceTime returning %d", status);
 
@@ -606,7 +606,7 @@ static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHan
         }
     }
 
-    FREE_MEMORY(maxAuthTries);
+    xFree(maxAuthTries);
 
     OsConfigLogInfo(log, "CheckSshMaxAuthTries returning %d", status);
 
@@ -639,7 +639,7 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
             status = CheckFileExists(bannerPath, reason, log);
         }
 
-        FREE_MEMORY(bannerPath);
+        xFree(bannerPath);
     }
     else
     {
@@ -736,11 +736,11 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
                 status = ENOENT;
             }
 
-            FREE_MEMORY(inclusion);
+            xFree(inclusion);
         }
     }
 
-    FREE_MEMORY(protocol);
+    xFree(protocol);
 
     OsConfigLogInfo(log, "CheckSshProtocol returning %d", status);
 
@@ -795,19 +795,19 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
 
                 status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
 
-                FREE_MEMORY(textResult);
-                FREE_MEMORY(command);
+                xFree(textResult);
+                xFree(command);
             }
             else
             {
                 OsConfigLogError(log, "CheckAllowDenyUsersGroups: failed to allocate memory");
                 status = ENOMEM;
-                FREE_MEMORY(value);
+                xFree(value);
                 break;
             }
 
             i += strlen(value);
-            FREE_MEMORY(value);
+            xFree(value);
         }
     }
 
@@ -943,7 +943,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
     else if ((NULL == (inclusion = FormatInclusionForRemediation(log))) || (0 == (inclusionSize = strlen(inclusion))))
     {
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: failed preparing the inclusion statement, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
-        FREE_MEMORY(inclusion);
+        xFree(inclusion);
         return ENOMEM;
     }
 
@@ -980,7 +980,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
                         status = ENOENT;
                     }
 
-                    FREE_MEMORY(newConfiguration);
+                    xFree(newConfiguration);
                 }
                 else
                 {
@@ -994,7 +994,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
                 status = 0;
             }
 
-            FREE_MEMORY(originalConfiguration);
+            xFree(originalConfiguration);
         }
         else
         {
@@ -1005,7 +1005,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
 
     SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
 
-    FREE_MEMORY(inclusion);
+    xFree(inclusion);
 
     return status;
 }
@@ -1042,8 +1042,8 @@ static int SaveRemediationToConfFile(OsConfigLogHandle log)
 
     SetFileAccess(g_osconfigRemediationConf, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
 
-    FREE_MEMORY(newRemediation);
-    FREE_MEMORY(currentRemediation);
+    xFree(newRemediation);
+    xFree(currentRemediation);
 
     return status;
 }
@@ -1101,7 +1101,7 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
     }
     else
     {
-        FREE_MEMORY(originalConfiguration);
+        xFree(originalConfiguration);
 
         if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log)))
         {
@@ -1135,9 +1135,9 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(remediation);
-    FREE_MEMORY(originalConfiguration);
-    FREE_MEMORY(newConfiguration);
+    xFree(remediation);
+    xFree(originalConfiguration);
+    xFree(newConfiguration);
 
     SetFileAccess(g_sshServerConfigurationBackup, 0, 0, desiredAccess, log);
     SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
@@ -1207,26 +1207,26 @@ void SshAuditCleanup(OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
-    FREE_MEMORY(g_desiredSshPort);
-    FREE_MEMORY(g_desiredSshBestPracticeProtocol);
-    FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
-    FREE_MEMORY(g_desiredSshLogLevelIsSet);
-    FREE_MEMORY(g_desiredSshMaxAuthTriesIsSet);
-    FREE_MEMORY(g_desiredAllowUsersIsConfigured);
-    FREE_MEMORY(g_desiredDenyUsersIsConfigured);
-    FREE_MEMORY(g_desiredAllowGroupsIsConfigured);
-    FREE_MEMORY(g_desiredDenyGroupsConfigured);
-    FREE_MEMORY(g_desiredSshHostbasedAuthenticationIsDisabled);
-    FREE_MEMORY(g_desiredSshPermitRootLoginIsDisabled);
-    FREE_MEMORY(g_desiredSshPermitEmptyPasswordsIsDisabled);
-    FREE_MEMORY(g_desiredSshClientIntervalCountMaxIsConfigured);
-    FREE_MEMORY(g_desiredSshClientAliveIntervalIsConfigured);
-    FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
-    FREE_MEMORY(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
-    FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
-    FREE_MEMORY(g_desiredUsersCannotSetSshEnvironmentOptions);
-    FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
+    xFree(g_desiredPermissionsOnEtcSshSshdConfig);
+    xFree(g_desiredSshPort);
+    xFree(g_desiredSshBestPracticeProtocol);
+    xFree(g_desiredSshBestPracticeIgnoreRhosts);
+    xFree(g_desiredSshLogLevelIsSet);
+    xFree(g_desiredSshMaxAuthTriesIsSet);
+    xFree(g_desiredAllowUsersIsConfigured);
+    xFree(g_desiredDenyUsersIsConfigured);
+    xFree(g_desiredAllowGroupsIsConfigured);
+    xFree(g_desiredDenyGroupsConfigured);
+    xFree(g_desiredSshHostbasedAuthenticationIsDisabled);
+    xFree(g_desiredSshPermitRootLoginIsDisabled);
+    xFree(g_desiredSshPermitEmptyPasswordsIsDisabled);
+    xFree(g_desiredSshClientIntervalCountMaxIsConfigured);
+    xFree(g_desiredSshClientAliveIntervalIsConfigured);
+    xFree(g_desiredSshLoginGraceTimeIsSet);
+    xFree(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
+    xFree(g_desiredSshWarningBannerIsEnabled);
+    xFree(g_desiredUsersCannotSetSshEnvironmentOptions);
+    xFree(g_desiredAppropriateCiphersForSsh);
 
     g_auditOnlySession = true;
 }
@@ -1244,103 +1244,103 @@ int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log
 
     if ((0 == strcmp(name, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject)) || (0 == strcmp(name, g_initEnsurePermissionsOnEtcSshSshdConfigObject)))
     {
-        FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
+        xFree(g_desiredPermissionsOnEtcSshSshdConfig);
         status = (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(isValidValue ? value : g_sshDefaultSshSshdConfigAccess))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureSshPortIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredSshPort);
+        xFree(g_desiredSshPort);
         status = (NULL != (g_desiredSshPort = DuplicateString(isValidValue ? value : g_sshDefaultSshPort))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) || (0 == strcmp(name, g_initEnsureSshBestPracticeProtocolObject)))
     {
-        FREE_MEMORY(g_desiredSshBestPracticeProtocol);
+        xFree(g_desiredSshBestPracticeProtocol);
         status = (NULL != (g_desiredSshBestPracticeProtocol = DuplicateString(isValidValue ? value : g_sshDefaultSshProtocol))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject)) || (0 == strcmp(name, g_initEnsureSshBestPracticeIgnoreRhostsObject)))
     {
-        FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
+        xFree(g_desiredSshBestPracticeIgnoreRhosts);
         status = (NULL != (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(isValidValue ? value : g_sshDefaultSshYes))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject)) || (0 == strcmp(name, g_initEnsureSshLogLevelIsSetObject)))
     {
-        FREE_MEMORY(g_desiredSshLogLevelIsSet);
+        xFree(g_desiredSshLogLevelIsSet);
         status = (NULL != (g_desiredSshLogLevelIsSet = DuplicateString(isValidValue ? value : g_sshDefaultSshLogLevel))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshMaxAuthTriesIsSetObject)) || (0 == strcmp(name, g_initEnsureSshMaxAuthTriesIsSetObject)))
     {
-        FREE_MEMORY(g_desiredSshMaxAuthTriesIsSet);
+        xFree(g_desiredSshMaxAuthTriesIsSet);
         status = (NULL != (g_desiredSshMaxAuthTriesIsSet = DuplicateString(isValidValue ? value : g_sshDefaultSshMaxAuthTries))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureAllowUsersIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureAllowUsersIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredAllowUsersIsConfigured);
+        xFree(g_desiredAllowUsersIsConfigured);
         status = (NULL != (g_desiredAllowUsersIsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshAllowUsers))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureDenyUsersIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureDenyUsersIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredDenyUsersIsConfigured);
+        xFree(g_desiredDenyUsersIsConfigured);
         status = (NULL != (g_desiredDenyUsersIsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshDenyUsers))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureAllowGroupsIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureAllowGroupsIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredAllowGroupsIsConfigured);
+        xFree(g_desiredAllowGroupsIsConfigured);
         status = (NULL != (g_desiredAllowGroupsIsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshAllowGroups))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureDenyGroupsConfiguredObject)) || (0 == strcmp(name, g_initEnsureDenyGroupsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredDenyGroupsConfigured);
+        xFree(g_desiredDenyGroupsConfigured);
         status = (NULL != (g_desiredDenyGroupsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshDenyGroups))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject)) || (0 == strcmp(name, g_initEnsureSshHostbasedAuthenticationIsDisabledObject)))
     {
-        FREE_MEMORY(g_desiredSshHostbasedAuthenticationIsDisabled);
+        xFree(g_desiredSshHostbasedAuthenticationIsDisabled);
         status = (NULL != (g_desiredSshHostbasedAuthenticationIsDisabled = DuplicateString(isValidValue ? value : g_sshDefaultSshNo))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPermitRootLoginIsDisabledObject)) || (0 == strcmp(name, g_initEnsureSshPermitRootLoginIsDisabledObject)))
     {
-        FREE_MEMORY(g_desiredSshPermitRootLoginIsDisabled);
+        xFree(g_desiredSshPermitRootLoginIsDisabled);
         status = (NULL != (g_desiredSshPermitRootLoginIsDisabled = DuplicateString(isValidValue ? value : g_sshDefaultSshNo))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject)) || (0 == strcmp(name, g_initEnsureSshPermitEmptyPasswordsIsDisabledObject)))
     {
-        FREE_MEMORY(g_desiredSshPermitEmptyPasswordsIsDisabled);
+        xFree(g_desiredSshPermitEmptyPasswordsIsDisabled);
         status = (NULL != (g_desiredSshPermitEmptyPasswordsIsDisabled = DuplicateString(isValidValue ? value : g_sshDefaultSshNo))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureSshClientIntervalCountMaxIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredSshClientIntervalCountMaxIsConfigured);
+        xFree(g_desiredSshClientIntervalCountMaxIsConfigured);
         status = (NULL != (g_desiredSshClientIntervalCountMaxIsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshClientIntervalCountMax))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureSshClientAliveIntervalIsConfiguredObject)))
     {
-        FREE_MEMORY(g_desiredSshClientAliveIntervalIsConfigured);
+        xFree(g_desiredSshClientAliveIntervalIsConfigured);
         status = (NULL != (g_desiredSshClientAliveIntervalIsConfigured = DuplicateString(isValidValue ? value : g_sshDefaultSshClientAliveInterval))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshLoginGraceTimeIsSetObject)) || (0 == strcmp(name, g_initEnsureSshLoginGraceTimeIsSetObject)))
     {
-        FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
+        xFree(g_desiredSshLoginGraceTimeIsSet);
         status = (NULL != (g_desiredSshLoginGraceTimeIsSet = DuplicateString(isValidValue ? value : g_sshDefaultSshLoginGraceTime))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject)) || (0 == strcmp(name, g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject)))
     {
-        FREE_MEMORY(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
+        xFree(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
         status = (NULL != (g_desiredOnlyApprovedMacAlgorithmsAreUsed = DuplicateString(isValidValue ? value : g_sshDefaultSshMacs))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject)) || (0 == strcmp(name, g_initEnsureSshWarningBannerIsEnabledObject)))
     {
-        FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
+        xFree(g_desiredSshWarningBannerIsEnabled);
         status = (NULL != (g_desiredSshWarningBannerIsEnabled = (isValidValue && (NULL != strstr(value, "\\n"))) ?
             RepairBrokenEolCharactersIfAny(value) : DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject)) || (0 == strcmp(name, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject)))
     {
-        FREE_MEMORY(g_desiredUsersCannotSetSshEnvironmentOptions);
+        xFree(g_desiredUsersCannotSetSshEnvironmentOptions);
         status = (NULL != (g_desiredUsersCannotSetSshEnvironmentOptions = DuplicateString(isValidValue ? value : g_sshDefaultSshNo))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureAppropriateCiphersForSshObject)) || (0 == strcmp(name, g_initEnsureAppropriateCiphersForSshObject)))
     {
-        FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
+        xFree(g_desiredAppropriateCiphersForSsh);
         status = (NULL != (g_desiredAppropriateCiphersForSsh = DuplicateString(isValidValue ? value : g_sshDefaultSshCiphers))) ? 0 : ENOMEM;
     }
     else
@@ -1504,7 +1504,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
         status = 0;
     }
 
-    FREE_MEMORY(lowercase);
+    xFree(lowercase);
 
     if ((NULL != reason) && (NULL == *reason))
     {

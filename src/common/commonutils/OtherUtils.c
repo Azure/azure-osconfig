@@ -59,7 +59,7 @@ char* FormatAllocateString(const char* format, ...)
 
             if ((formatResult < 0) || (formatResult > sizeOfBuffer))
             {
-                FREE_MEMORY(stringToReturn);
+                xFree(stringToReturn);
             }
         }
     }
@@ -166,7 +166,7 @@ size_t HashString(const char* source)
 
 bool FreeAndReturnTrue(void* value)
 {
-    FREE_MEMORY(value);
+    xFree(value);
     return true;
 }
 
@@ -178,7 +178,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
 
     if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
     {
-        FREE_MEMORY(result);
+        xFree(result);
         return result;
     }
 
@@ -214,7 +214,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
         return EINVAL;
     }
 
-    FREE_MEMORY(*integers);
+    xFree(*integers);
     *numIntegers = 0;
 
     sourceLength = strlen(source);
@@ -260,13 +260,13 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
                 (*integers)[(*numIntegers) - 1] = strtol(value, NULL, base);
             }
 
-            FREE_MEMORY(value);
+            xFree(value);
         }
     }
 
     if (0 != status)
     {
-        FREE_MEMORY(*integers);
+        xFree(*integers);
         *numIntegers = 0;
     }
 
@@ -434,7 +434,7 @@ static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
 
                 token = strtok(NULL, " \n");
 
-                FREE_MEMORY(command);
+                xFree(command);
             }
         }
 
@@ -466,14 +466,14 @@ static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
 
                 token = strtok(NULL, " \n");
 
-                FREE_MEMORY(command);
+                xFree(command);
             }
         }
     }
 
     pclose(pipe);
 
-    FREE_MEMORY(command);
+    xFree(command);
 
     return status;
 }
@@ -668,7 +668,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                         OsConfigLogInfo(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
                     }
 
-                    FREE_MEMORY(setenv);
+                    xFree(setenv);
                 }
                 else
                 {
@@ -676,7 +676,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                     status = ENOMEM;
                 }
 
-                FREE_MEMORY(newPath);
+                xFree(newPath);
             }
             else
             {
@@ -684,7 +684,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                 status = EINVAL;
             }
 
-            FREE_MEMORY(currentPath);
+            xFree(currentPath);
         }
         else
         {
@@ -711,7 +711,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                             pathLocations[i].path, pathLocations[i].location, newPath);
                     }
 
-                    FREE_MEMORY(newPath);
+                    xFree(newPath);
                 }
                 else
                 {
@@ -720,7 +720,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                     _status = EINVAL;
                 }
 
-                FREE_MEMORY(currentPath);
+                xFree(currentPath);
             }
 
             if (_status && (0 == status))
@@ -769,8 +769,8 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
         status = ENOENT;
     }
 
-    FREE_MEMORY(fileContents);
-    FREE_MEMORY(newFileContents);
+    xFree(fileContents);
+    xFree(newFileContents);
 
     return status;
 }

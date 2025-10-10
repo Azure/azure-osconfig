@@ -49,7 +49,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle
                         }
                         else
                         {
-                            FREE_MEMORY(string);
+                            xFree(string);
                             break;
                         }
                     }
@@ -247,7 +247,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
                     result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
                 }
 
-                FREE_MEMORY(fileContents);
+                xFree(fileContents);
             }
             else
             {
@@ -283,8 +283,8 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         remove(tempFileName);
     }
 
-    FREE_MEMORY(tempFileName);
-    FREE_MEMORY(fileNameCopy);
+    xFree(tempFileName);
+    xFree(fileNameCopy);
 
     return result;
 }
@@ -338,8 +338,8 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
         OsConfigLogError(log, "MakeFileBackupCopy: invalid arguments ('%s', '%s')", fileName, backupName);
     }
 
-    FREE_MEMORY(fileContents);
-    FREE_MEMORY(newFileName);
+    xFree(fileContents);
+    xFree(newFileName);
 
     return result;
 }
@@ -366,7 +366,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
             result = AppendPayloadToFile(firstFileName, contents, strlen(contents), log);
         }
 
-        FREE_MEMORY(contents);
+        xFree(contents);
     }
 
     return result;
@@ -847,8 +847,8 @@ static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
         OsConfigLogInfo(log, "RestoreSelinuxContext: restorecon failed %d: %s", status, textResult);
     }
 
-    FREE_MEMORY(textResult);
-    FREE_MEMORY(restoreCommand);
+    xFree(textResult);
+    xFree(restoreCommand);
 
     return status;
 }
@@ -1072,7 +1072,7 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
         status = ENOMEM;
     }
 
-    FREE_MEMORY(line);
+    xFree(line);
 
     if ((0 == status) && (false == replacedLine) && (NULL != newline) && !prepend)
     {
@@ -1105,8 +1105,8 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
         remove(tempFileName);
     }
 
-    FREE_MEMORY(tempFileName);
-    FREE_MEMORY(fileNameCopy);
+    xFree(tempFileName);
+    xFree(fileNameCopy);
 
     OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') returning %d", fileName, marker, status);
 
@@ -1156,7 +1156,7 @@ int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log
             status = ENOENT;
         }
 
-        FREE_MEMORY(contents);
+        xFree(contents);
     }
 
     return status;
@@ -1283,8 +1283,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
             status = 0;
         }
 
-        FREE_MEMORY(results);
-        FREE_MEMORY(command);
+        xFree(results);
+        xFree(command);
     }
 
     return status;
@@ -1365,8 +1365,8 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
             OsConfigCaptureSuccessReason(reason, "Environment variable '%s' not found (%d)", variableName, status);
         }
 
-        FREE_MEMORY(command);
-        FREE_MEMORY(variableValue);
+        xFree(command);
+        xFree(variableValue);
     }
 
     return status;
@@ -1407,7 +1407,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
         }
     }
 
-    FREE_MEMORY(contents);
+    xFree(contents);
 
     return status;
 }
@@ -1448,7 +1448,7 @@ int FindTextInFolder(const char* directory, const char* text, const char* extens
 
                 status = FindTextInFile(path, text, log);
 
-                FREE_MEMORY(path);
+                xFree(path);
 
                 if (0 == status)
                 {
@@ -1563,7 +1563,7 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
 
             status = foundUncommented ? EEXIST : 0;
 
-            FREE_MEMORY(contents);
+            xFree(contents);
         }
     }
     else
@@ -1669,7 +1669,7 @@ static int FindTextInCommandOutput(const char* command, const char* text, OsConf
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
     }
 
-    FREE_MEMORY(results);
+    xFree(results);
     return status;
 }
 
@@ -1775,7 +1775,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         }
     }
 
-    FREE_MEMORY(temp);
+    xFree(temp);
     return result;
 }
 
@@ -1787,7 +1787,7 @@ int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char sepa
     if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, commentCharacter, log)))
     {
         value = strtol(stringValue, NULL, base);
-        FREE_MEMORY(stringValue);
+        xFree(stringValue);
     }
 
     return value;
@@ -1815,7 +1815,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
                 OsConfigLogInfo(log, "GetStringOptionFromFile: '%s' not found in '%s'", option, fileName);
             }
 
-            FREE_MEMORY(contents);
+            xFree(contents);
         }
     }
 
@@ -1851,7 +1851,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
                 OsConfigLogInfo(log, "GetIntegerOptionFromFile: '%s' not found in '%s'", option, fileName);
             }
 
-            FREE_MEMORY(contents);
+            xFree(contents);
         }
     }
 
@@ -1979,7 +1979,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, OsCon
         OsConfigLogInfo(log, "SetEtcConfValue: failed to set '%s' to '%s' in '%s' (%d)", name, value, file, status);
     }
 
-    FREE_MEMORY(newline);
+    xFree(newline);
 
     return status;
 }
