@@ -449,15 +449,6 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
     }
 }
 
-/*
-    - listSize starts as (MAX_GROUPS_USER_CAN_BE_IN * sizeof(gid_t))
-    - gid_t* groupIds is first allocated for this first listSize
-    - after a first call to getgrouplist the listSize is adjusted to actual number of groups
-    - .. and groupIds is resized to hold the same
-    - listSize is then reused to describe the number of SimplifiedGroup elements to be allocated for this account
-
-*/
-
 int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log)
 {
     gid_t* groupIds = NULL;
