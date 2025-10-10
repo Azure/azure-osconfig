@@ -42,6 +42,8 @@ static void ResetUserEntry(SimplifiedUser* target)
 
 void FreeUsersList(SimplifiedUser** source, unsigned int size, OsConfigLogHandle log)
 {
+    UNUSED(log);
+    
     unsigned int i = 0;
 
     if (NULL != source)
@@ -436,6 +438,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
 void FreeGroupList(SimplifiedGroup** groupList, unsigned int size, OsConfigLogHandle log)
 {
+    UNUSED(log);
+
     unsigned int i = 0;
 
     if (NULL != groupList)
