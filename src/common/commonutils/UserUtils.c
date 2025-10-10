@@ -490,6 +490,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             if (0 < numberOfGroups)
             {
+                listSize = numberOfGroups * sizeof(gid_t);
+
                 if (NULL != (groupIds = malloc(listSize)))
                 {
                     memset(groupIds, 0, listSize);
@@ -531,6 +533,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             for (i = 0; i < numberOfGroups; i++)
             {
+                errno = 0;
+
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
                     if (0 == errno)
@@ -3162,6 +3166,8 @@ bool GroupExists(gid_t groupId, OsConfigLogHandle log)
 {
     bool result = false;
 
+    errno = 0;
+
     if (NULL != getgrgid(groupId))
     {
         OsConfigLogInfo(log, "GroupExists: group %u exists", (unsigned int)groupId);
@@ -3183,6 +3189,8 @@ int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
 {
     struct group* groupEntry = NULL;
     int result = ENOENT;
+
+    errno = 0;
 
     if ((NULL != name) && (NULL != (groupEntry = getgrnam(name))))
     {
