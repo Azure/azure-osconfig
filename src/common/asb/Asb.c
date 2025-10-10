@@ -1116,7 +1116,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
     xFree(g_prettyName);
 
-    MemoryCleanup(log);
+    TrackedPointersCleanup(log);
 
     CloseLog(&g_perfLog);
 
