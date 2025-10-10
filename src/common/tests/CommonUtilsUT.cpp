@@ -3119,7 +3119,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     int i = 0;
 
     // Report any leaks from previous test cases
-    MemoryCleanup(nullptr);
+    TrackedPointersCleanup(nullptr);
 
     // Test the xFree macro
     EXPECT_NE(nullptr, p = (char*)xAlloc(10));
