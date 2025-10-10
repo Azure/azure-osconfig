@@ -139,14 +139,16 @@ namespace tests
 
         void TearDown() override
         {
-            FREE_MEMORY(payload);
+            free(payload);
+            payload=NULL;
             payloadSizeBytes = 0;
             firewall.reset();
         }
 
         void ClearPayload()
         {
-            FREE_MEMORY(payload);
+            free(payload);
+            payload=NULL;
             payloadSizeBytes = 0;
         }
     };
@@ -284,7 +286,8 @@ namespace tests
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), initialFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, initialFingerprint.length());
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
         payloadSizeBytes = 0;
 
         EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_desiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));

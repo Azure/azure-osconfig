@@ -33,7 +33,8 @@ int Pmc::RunCommand(const char* command, std::string* textResult, bool isLongRun
         }
     }
 
-    FREE_MEMORY(buffer);
+    free(buffer);
+    buffer=NULL;
 
     return status;
 }
@@ -42,7 +43,7 @@ std::string Pmc::GetPackagesFingerprint()
 {
     char* hash = HashCommand(g_commandGetInstalledPackages, PmcLog::Get());
     std::string hashString = hash ? hash : "(failed)";
-    FREE_MEMORY(hash)
+    free(hash);
     return hashString;
 }
 
@@ -60,7 +61,7 @@ std::string Pmc::GetSourcesFingerprint(const char* sourcesDirectory)
     }
 
     std::string hashString = hash ? hash : "(failed)";
-    FREE_MEMORY(hash)
+    free(hash);
     return hashString;
 }
 

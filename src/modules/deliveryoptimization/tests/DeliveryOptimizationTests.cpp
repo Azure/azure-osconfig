@@ -104,7 +104,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetValidConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "\"10.0.0.0:80,host.com:8080\"");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -116,7 +117,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetValidConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "1");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -128,7 +130,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetValidConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "2");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -140,7 +143,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetValidConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "3");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     DeliveryOptimizationMmiClose(handle);
@@ -165,7 +169,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetEmptyConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "\"\"");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -177,7 +182,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetEmptyConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "0");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -189,7 +195,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetEmptyConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "0");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -201,7 +208,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetEmptyConfigFile)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_STREQ(payloadString, "0");
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     DeliveryOptimizationMmiClose(handle);
@@ -226,7 +234,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -238,7 +247,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -250,7 +260,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     payload = nullptr;
@@ -262,7 +273,8 @@ TEST_F(DeliveryOptimizationTest, MmiGetTruncatedPayload)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
     EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeliveryOptimizationMmiFree(payload);
 
     DeliveryOptimizationMmiClose(handle);
@@ -337,7 +349,8 @@ TEST_F(DeliveryOptimizationTest, MmiSetAllSettings)
     EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
-    FREE_MEMORY(actualFileContent);
+    free(actualFileContent);
+    actualFileContent=NULL;
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 
     DeliveryOptimizationMmiClose(handle);
@@ -360,7 +373,8 @@ TEST_F(DeliveryOptimizationTest, MmiSetOneSetting)
     EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
-    FREE_MEMORY(actualFileContent);
+    free(actualFileContent);
+    actualFileContent=NULL;
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 
     DeliveryOptimizationMmiClose(handle);
@@ -404,7 +418,8 @@ TEST_F(DeliveryOptimizationTest, MmiSetInvalidSetting)
     EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
-    FREE_MEMORY(actualFileContent);
+    free(actualFileContent);
+    actualFileContent=NULL;
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 
     DeliveryOptimizationMmiClose(handle);
@@ -424,7 +439,8 @@ TEST_F(DeliveryOptimizationTest, MmiSetEmptyObject)
     EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
-    FREE_MEMORY(actualFileContent);
+    free(actualFileContent);
+    actualFileContent=NULL;
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 
     DeliveryOptimizationMmiClose(handle);

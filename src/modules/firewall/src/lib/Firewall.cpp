@@ -502,7 +502,8 @@ IpTables::State IpTables::Detect() const
         state = State::Disabled;
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return state;
 }
@@ -519,7 +520,8 @@ std::string IpTables::Fingerprint() const
         hash = textResult;
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return hash;
 }
@@ -579,7 +581,8 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
                 status = commandStatus;
             }
 
-            FREE_MEMORY(textResult);
+            free(textResult);
+            textResult=NULL;
         }
         else
         {
@@ -617,7 +620,8 @@ bool IpTables::Exists(const IpTables::Rule& rule) const
         exists = true;
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return exists;
 }
@@ -642,7 +646,8 @@ int IpTables::Add(const IpTables::Rule& rule, std::string& error)
         error = textResult;
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return status;
 }
@@ -667,7 +672,8 @@ int IpTables::Remove(const IpTables::Rule& rule, std::string& error)
         error = textResult;
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return status;
 }
@@ -839,7 +845,8 @@ std::vector<IpTablesPolicy> IpTables::GetDefaultPolicies() const
         }
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return policies;
 }

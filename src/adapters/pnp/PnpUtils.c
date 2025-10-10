@@ -306,7 +306,8 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
         json_value_free(rootValue);
     }
 
-    FREE_MEMORY(jsonString);
+    free(jsonString);
+    jsonString=NULL;
 
     UNUSED(propertyCallback);
 
@@ -329,7 +330,8 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
     }
 
     // Clear existing slot
-    FREE_MEMORY(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
+    free(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
+    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload=NULL;
     memset(&(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]), 0, sizeof(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]));
 
     // Allocate memory for new desired twin payload to queue
@@ -362,7 +364,8 @@ static void ClearDesiredTwinUpdates()
 
     for (i = 0; i < queueSize; i++)
     {
-        FREE_MEMORY(g_desiredTwinUpdates[i].payload);
+        free(g_desiredTwinUpdates[i].payload);
+        g_desiredTwinUpdates[i].payload=NULL;
     }
 
     memset(g_desiredTwinUpdates, 0, sizeof(g_desiredTwinUpdates));
@@ -613,7 +616,8 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
     CallMpiFree(valuePayload);
 
-    FREE_MEMORY(decoratedPayload);
+    free(decoratedPayload);
+    decoratedPayload=NULL;
 
     return result;
 }
@@ -712,7 +716,8 @@ IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const 
         OsConfigLogError(GetLog(), "%s: out of memory allocating %u bytes to acknowledge property %s", componentName, ackValueLength, propertyName);
     }
 
-    FREE_MEMORY(ackBuffer);
+    free(ackBuffer);
+    ackBuffer=NULL;
 
     return result;
 }

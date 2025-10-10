@@ -72,7 +72,8 @@ TEST_F(CommonUtilsTest, LoadStringFromFile)
     char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -81,7 +82,8 @@ TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
     char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -94,7 +96,8 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     EXPECT_EQ(1, strlen(contents));
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_EQ(0, CheckSmallFileContainsText(m_path, data, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -107,7 +110,8 @@ TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_EQ(0, strlen(contents));
     EXPECT_EQ(0, contents[0]);
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     close(fd);
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -131,8 +135,10 @@ TEST_F(CommonUtilsTest, LoadStringFromBigLengthFile)
     {
         EXPECT_EQ(contents[i], read[i]);
     }
-    FREE_MEMORY(contents);
-    FREE_MEMORY(read);
+    free(contents);
+    contents=NULL;
+    free(read);
+    read=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -141,7 +147,8 @@ TEST_F(CommonUtilsTest, SavePayloadToFile)
     char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -150,7 +157,8 @@ TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
     char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -173,17 +181,20 @@ TEST_F(CommonUtilsTest, SecureSaveToFile)
 
     EXPECT_TRUE(SecureSaveToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
     EXPECT_STREQ(m_dataWithEol, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -242,16 +253,19 @@ TEST_F(CommonUtilsTest, AppendToFile)
 
     EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
     EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(AppendToFile(m_path, added, strlen(added), nullptr));
     EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(AppendToFile(m_path, original, strlen(original), nullptr));
     EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 }
 
 TEST_F(CommonUtilsTest, AppendPayloadToFile)
@@ -264,16 +278,19 @@ TEST_F(CommonUtilsTest, AppendPayloadToFile)
 
     EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
     EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(AppendPayloadToFile(m_path, added, strlen(added), nullptr));
     EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(AppendPayloadToFile(m_path, original, strlen(original), nullptr));
     EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 }
 
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
@@ -283,12 +300,14 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, true, nullptr));
     EXPECT_TRUE(FileExists(fileCopyPath));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(fileCopyPath));
     EXPECT_TRUE(Cleanup(m_path));
@@ -312,7 +331,8 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
 
     EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, true, nullptr));
     EXPECT_STREQ(complete, contents = LoadStringFromFile(testPath1, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(testPath1));
     EXPECT_TRUE(Cleanup(testPath2));
@@ -347,7 +367,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
     {
         EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
         EXPECT_STREQ(textResult, options[i].expectedTextResult);
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 }
 
@@ -395,7 +416,8 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
             EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne));
         }
 
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 }
 
@@ -426,7 +448,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithSpecialCharactersInTextResult)
     EXPECT_EQ(0, ExecuteCommand(nullptr, command, true, true, strlen(command), 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ(expectedResult, textResult);
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithoutTextResult)
@@ -457,11 +480,13 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
     EXPECT_NE(nullptr, strstr(textResult, "not found"));
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
     EXPECT_NE(nullptr, strstr(textResult, "not found"));
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 void* TestTimeoutCommand(void*)
@@ -470,7 +495,8 @@ void* TestTimeoutCommand(void*)
 
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return nullptr;
 }
@@ -491,7 +517,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
 
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 static int numberOfTimes = 0;
@@ -529,7 +556,8 @@ void* TestCancelCommand(void*)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return nullptr;
 }
@@ -554,7 +582,8 @@ TEST_F(CommonUtilsTest, CancelCommand)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 void* TestCancelCommandWithContext(void*)
@@ -565,7 +594,8 @@ void* TestCancelCommandWithContext(void*)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 
     return nullptr;
 }
@@ -592,7 +622,8 @@ TEST_F(CommonUtilsTest, CancelCommandWithContext)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
@@ -602,7 +633,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo 'abc\"123'", true, false, 0, 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ("abc\"123 ", textResult);
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithMappedJsonCharacters)
@@ -612,7 +644,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithMappedJsonCharacters)
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo 'abc\"123'", true, true, 0, 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ("abc 123 ", textResult);
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, ExecuteLongCommand)
@@ -645,9 +678,12 @@ TEST_F(CommonUtilsTest, ExecuteLongCommand)
         EXPECT_STREQ(expectedResult, textResult);
     }
 
-    FREE_MEMORY(command);
-    FREE_MEMORY(expectedResult);
-    FREE_MEMORY(textResult);
+    free(command);
+    command=NULL;
+    free(expectedResult);
+    expectedResult=NULL;
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
@@ -676,7 +712,8 @@ TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
         free(command);
     }
 
-    FREE_MEMORY(textResult);
+    free(textResult);
+    textResult=NULL;
 }
 
 TEST_F(CommonUtilsTest, HashString)
@@ -780,9 +817,12 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
         EXPECT_STREQ(username, validOptions[i].username);
         EXPECT_STREQ(password, validOptions[i].password);
 
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
+        free(hostAddress);
+        hostAddress=NULL;
+        free(username);
+        username=NULL;
+        free(password);
+        password=NULL;
     }
 }
 
@@ -838,9 +878,12 @@ TEST_F(CommonUtilsTest, InvalidHttpProxyData)
     {
         EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
 
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
+        free(hostAddress);
+        hostAddress=NULL;
+        free(username);
+        username=NULL;
+        free(password);
+        password=NULL;
     }
 }
 
@@ -888,17 +931,28 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
     EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr, nullptr));
 
-    FREE_MEMORY(osPrettyName);
-    FREE_MEMORY(osName);
-    FREE_MEMORY(osVersion);
-    FREE_MEMORY(cpuType);
-    FREE_MEMORY(cpuVendor);
-    FREE_MEMORY(cpuModel);
-    FREE_MEMORY(cpuFlags);
-    FREE_MEMORY(kernelName);
-    FREE_MEMORY(kernelVersion);
-    FREE_MEMORY(kernelRelease);
-    FREE_MEMORY(umask);
+    free(osPrettyName);
+    osPrettyName=NULL;
+    free(osName);
+    osName=NULL;
+    free(osVersion);
+    osVersion=NULL;
+    free(cpuType);
+    cpuType=NULL;
+    free(cpuVendor);
+    cpuVendor=NULL;
+    free(cpuModel);
+    cpuModel=NULL;
+    free(cpuFlags);
+    cpuFlags=NULL;
+    free(kernelName);
+    kernelName=NULL;
+    free(kernelVersion);
+    kernelVersion=NULL;
+    free(kernelRelease);
+    kernelRelease=NULL;
+    free(umask);
+    umask=NULL;
 }
 
 char* AllocateAndCopyTestString(const char* source)
@@ -943,7 +997,8 @@ TEST_F(CommonUtilsTest, RemovePrefixBlanks)
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i]));
         RemovePrefixBlanks(testString);
         EXPECT_STREQ(testString, expected);
-        FREE_MEMORY(testString);
+        free(testString);
+        testString=NULL;
     }
 }
 
@@ -971,7 +1026,8 @@ TEST_F(CommonUtilsTest, RemoveTrailingBlanks)
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i]));
         RemoveTrailingBlanks(testString);
         EXPECT_STREQ(testString, expected);
-        FREE_MEMORY(testString);
+        free(testString);
+        testString=NULL;
     }
 }
 
@@ -1006,7 +1062,8 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
         RemovePrefixUpTo(testString, targets[i].marker);
         RemovePrefix(testString, targets[i].marker);
         EXPECT_STREQ(testString, expected);
-        FREE_MEMORY(testString);
+        free(testString);
+        testString=NULL;
     }
 }
 
@@ -1040,7 +1097,8 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
         RemovePrefixUpToString(testString, targets[i].marker);
         EXPECT_STREQ(testString, targets[i].expected);
-        FREE_MEMORY(testString);
+        free(testString);
+        testString=NULL;
     }
 }
 
@@ -1066,7 +1124,8 @@ TEST_F(CommonUtilsTest, TruncateAtFirst)
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
         TruncateAtFirst(testString, targets[i].marker);
         EXPECT_STREQ(testString, expected);
-        FREE_MEMORY(testString);
+        free(testString);
+        testString=NULL;
     }
 }
 
@@ -1106,11 +1165,13 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
     {
         EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
         EXPECT_STREQ(url, testUrls[i].encoded);
-        FREE_MEMORY(url);
+        free(url);
+        url=NULL;
 
         EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
         EXPECT_STREQ(url, testUrls[i].decoded);
-        FREE_MEMORY(url);
+        free(url);
+        url=NULL;
     }
 
     EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
@@ -1128,7 +1189,8 @@ TEST_F(CommonUtilsTest, LockUnlockFile)
     EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(UnlockFile(testFile, nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     fclose(testFile);
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -1139,10 +1201,12 @@ TEST_F(CommonUtilsTest, DuplicateString)
     EXPECT_EQ(nullptr, duplicate = DuplicateString(nullptr));
     EXPECT_NE(nullptr, duplicate = DuplicateString(""));
     EXPECT_STREQ("", duplicate);
-    FREE_MEMORY(duplicate);
+    free(duplicate);
+    duplicate=NULL;
     EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
     EXPECT_STREQ(m_data, duplicate);
-    FREE_MEMORY(duplicate);
+    free(duplicate);
+    duplicate=NULL;
 }
 
 TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
@@ -1151,7 +1215,8 @@ TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
     EXPECT_EQ(nullptr, duplicate = DuplicateStringToLowercase(nullptr));
     EXPECT_NE(nullptr, duplicate = DuplicateStringToLowercase(m_data));
     EXPECT_STREQ(m_dataLowercase, duplicate);
-    FREE_MEMORY(duplicate);
+    free(duplicate);
+    duplicate=NULL;
 }
 
 TEST_F(CommonUtilsTest, FormatAllocateString)
@@ -1161,19 +1226,25 @@ TEST_F(CommonUtilsTest, FormatAllocateString)
     char* formatted = nullptr;
     EXPECT_EQ(nullptr, formatted = FormatAllocateString(nullptr));
     EXPECT_STREQ(m_data, formatted = FormatAllocateString(m_data));
-    FREE_MEMORY(formatted);
+    free(formatted);
+    formatted=NULL;
     EXPECT_STREQ("Test ABC 123", formatted = FormatAllocateString("Test %s %d", "ABC", 123));
-    FREE_MEMORY(formatted);
+    free(formatted);
+    formatted=NULL;
     EXPECT_NE(nullptr, longString = (char*)malloc(longStringLength + 1));
     memset(longString, 'a', longStringLength);
     longString[4095] = 0;
     EXPECT_STREQ(longString, formatted = FormatAllocateString("%s", longString));
-    FREE_MEMORY(longString);
-    FREE_MEMORY(formatted);
+    free(longString);
+    longString=NULL;
+    free(formatted);
+    formatted=NULL;
     EXPECT_STREQ("", formatted = FormatAllocateString("%s", ""));
-    FREE_MEMORY(formatted);
+    free(formatted);
+    formatted=NULL;
     EXPECT_STREQ("", formatted = FormatAllocateString(""));
-    FREE_MEMORY(formatted);
+    free(formatted);
+    formatted=NULL;
 }
 
 TEST_F(CommonUtilsTest, DuplicateAndFormatAllocateString)
@@ -1185,11 +1256,14 @@ TEST_F(CommonUtilsTest, DuplicateAndFormatAllocateString)
     EXPECT_STREQ(reason, "'Test 123': 456");
     EXPECT_NE(nullptr, temp = DuplicateString(reason));
     EXPECT_STREQ(temp, reason);
-    FREE_MEMORY(reason);
+    free(reason);
+    reason=NULL;
     EXPECT_NE(nullptr, reason = FormatAllocateString("%s, and also '%s' is %d", temp, "Test B", 789));
-    FREE_MEMORY(temp);
+    free(temp);
+    temp=NULL;
     EXPECT_STREQ(reason, "'Test 123': 456, and also 'Test B' is 789");
-    FREE_MEMORY(reason);
+    free(reason);
+    reason=NULL;
 }
 
 TEST_F(CommonUtilsTest, HashCommand)
@@ -1210,9 +1284,12 @@ TEST_F(CommonUtilsTest, HashCommand)
     EXPECT_NE(hashOne, hashTwo);
     EXPECT_STREQ(hashOne, hashThree);
 
-    FREE_MEMORY(hashOne);
-    FREE_MEMORY(hashTwo);
-    FREE_MEMORY(hashThree);
+    free(hashOne);
+    hashOne=NULL;
+    free(hashTwo);
+    hashTwo=NULL;
+    free(hashThree);
+    hashThree=NULL;
 }
 
 struct TestHttpHeader
@@ -1251,7 +1328,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
         EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
-        FREE_MEMORY(contents);
+        free(contents);
+        contents=NULL;
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
@@ -1263,7 +1341,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
         EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
-        FREE_MEMORY(contents);
+        free(contents);
+        contents=NULL;
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         if (NULL == testHttpHeaders[i].expectedUri)
         {
@@ -1272,7 +1351,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
         else
         {
             EXPECT_STREQ(testHttpHeaders[i].expectedUri, uri = ReadUriFromSocket(fileDescriptor, nullptr));
-            FREE_MEMORY(uri);
+            free(uri);
+            uri=NULL;
         }
         EXPECT_EQ(0, close(fileDescriptor));
         EXPECT_TRUE(Cleanup(testPath));
@@ -1344,12 +1424,15 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
 
     EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ("foo/test", value = GetGitBranchFromJsonConfig(configuration, nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
-    FREE_MEMORY(reportedProperties);
+    free(reportedProperties);
+    reportedProperties=NULL;
 }
 
 TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
@@ -1361,7 +1444,8 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
     if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
     {
         original = GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
-        FREE_MEMORY(jsonConfiguration);
+        free(jsonConfiguration);
+        jsonConfiguration=NULL;
     }
 
     for (int level = (int)LoggingLevelEmergency; level <= (int)LoggingLevelDebug; level++)
@@ -1371,7 +1455,8 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
         EXPECT_TRUE(FileExists(configurationFile));
         EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
         EXPECT_EQ(level, GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
-        FREE_MEMORY(jsonConfiguration);
+        free(jsonConfiguration);
+        jsonConfiguration=NULL;
     }
 
     if (-1 != original)
@@ -1881,50 +1966,64 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', '#', 10, nullptr));
     EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', '#', 10, nullptr));
 
     EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', '#', 10, nullptr));
 
     EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', '#', 10, nullptr));
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', '#', 10, nullptr));
 
     EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', '#', 10, nullptr));
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("00644", value = GetStringOptionFromFile(m_path, "$FileCreateMode", ' ', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(00644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
     EXPECT_EQ(0644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
 
@@ -2027,19 +2126,24 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
     EXPECT_EQ(nullptr, RepairBrokenEolCharactersIfAny(""));
 
     EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\\nThis is a test\\n\\nHere is another line\\nAnd another\\n\\n\\nEnd\\n"));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n"));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\\nThis is a test\n\nHere is another line\nAnd another\\n\n\\nEnd\\n"));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\nThis is a test\\n\\nHere is another line\\nAnd another\\n\n\\nEnd\n"));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_STREQ("\n\\Test\\123\n", value = RepairBrokenEolCharactersIfAny("\n\\Test\\123\\n"));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 }
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
@@ -2154,11 +2258,13 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
 
     EXPECT_NE(nullptr, name = GetOsName(nullptr));
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
-    FREE_MEMORY(name);
+    free(name);
+    name=NULL;
 
     EXPECT_NE(nullptr, name = GetOsPrettyName(nullptr));
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
-    FREE_MEMORY(name);
+    free(name);
+    name=NULL;
 }
 
 TEST_F(CommonUtilsTest, ConcatenateStrings)
@@ -2166,31 +2272,40 @@ TEST_F(CommonUtilsTest, ConcatenateStrings)
     char* testString = nullptr;
 
     EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, "Test"));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_EQ(nullptr, testString = ConcatenateStrings("Test", nullptr));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, nullptr));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("", testString = ConcatenateStrings("", ""));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("Test", testString = ConcatenateStrings("", "Test"));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("Test", testString = ConcatenateStrings("Test", ""));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("Test123", testString = ConcatenateStrings("Test", "123"));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("123Test", testString = ConcatenateStrings("123", "Test"));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 
     EXPECT_STREQ("%s%s%s", testString = ConcatenateStrings("%s%s", "%s"));
-    FREE_MEMORY(testString);
+    free(testString);
+    testString=NULL;
 }
 
 TEST_F(CommonUtilsTest, ConvertStringToIntegers)
@@ -2208,7 +2323,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(2, numIntegers);
     EXPECT_EQ(123, integers[0]);
     EXPECT_EQ(456, integers[1]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
     numIntegers = 0;
 
     EXPECT_EQ(0, ConvertStringToIntegers("1,-2,-3", ',', &integers, &numIntegers, 10, nullptr));
@@ -2216,7 +2332,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(1, integers[0]);
     EXPECT_EQ(-2, integers[1]);
     EXPECT_EQ(-3, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
     numIntegers = 0;
 
     EXPECT_EQ(0, ConvertStringToIntegers("11, -222, -333, 444", ',', &integers, &numIntegers, 10, nullptr));
@@ -2225,7 +2342,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-222, integers[1]);
     EXPECT_EQ(-333, integers[2]);
     EXPECT_EQ(444, integers[3]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
     numIntegers = 0;
 
     EXPECT_EQ(0, ConvertStringToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, 10, nullptr));
@@ -2233,7 +2351,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-100, integers[0]);
     EXPECT_EQ(200, integers[1]);
     EXPECT_EQ(-300, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
     numIntegers = 0;
 
     EXPECT_EQ(0, ConvertStringToIntegers("  -101 # 202     #-303  ", '#', &integers, &numIntegers, 10, nullptr));
@@ -2241,7 +2360,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-101, integers[0]);
     EXPECT_EQ(202, integers[1]);
     EXPECT_EQ(-303, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
     numIntegers = 0;
 
     EXPECT_EQ(0, ConvertStringToIntegers("111 222 -333", ' ', &integers, &numIntegers, 10, nullptr));
@@ -2249,7 +2369,8 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(111, integers[0]);
     EXPECT_EQ(222, integers[1]);
     EXPECT_EQ(-333, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
 
     EXPECT_EQ(0, ConvertStringToIntegers("3,14,4,-1,-1,-1,-1", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(7, numIntegers);
@@ -2260,27 +2381,31 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-1, integers[4]);
     EXPECT_EQ(-1, integers[5]);
     EXPECT_EQ(-1, integers[6]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
 
     EXPECT_EQ(0, ConvertStringToIntegers("111 222 333", ' ', &integers, &numIntegers, 8, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(0111, integers[0]);
     EXPECT_EQ(0222, integers[1]);
     EXPECT_EQ(0333, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
 
     EXPECT_EQ(0, ConvertStringToIntegers("123 abc def", ' ', &integers, &numIntegers, 16, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(0x123, integers[0]);
     EXPECT_EQ(0xabc, integers[1]);
     EXPECT_EQ(0xdef, integers[2]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
 
     EXPECT_EQ(0, ConvertStringToIntegers("0600, 0640", ' ', &integers, &numIntegers, 8, nullptr));
     EXPECT_EQ(2, numIntegers);
     EXPECT_EQ(0600, integers[0]);
     EXPECT_EQ(0640, integers[1]);
-    FREE_MEMORY(integers);
+    free(integers);
+    integers=NULL;
 }
 
 TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
@@ -2364,42 +2489,48 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', true, nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, '#', true, nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, '#', true, nullptr));
     EXPECT_STREQ(outFile3, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', true, nullptr));
     EXPECT_STREQ(outFile4, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker5, newline5, '#', false, nullptr));
     EXPECT_STREQ(outFile5, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker6, newline6, '#', false, nullptr));
     EXPECT_STREQ(outFile6, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -2491,35 +2622,40 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFilePrepend)
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithoutNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFilePrependNoMatch, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     // Test 2: prepend=true with matching line already in the file
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFilePrependWithMatch, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     // Test 3: prepend=true with commented matching line in the file
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithCommentedNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFilePrependWithCommentedMatch, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     // Test 4: prepend=false with matching line already in the file
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFileReplaceInPlace, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     // Test 5: prepend=false with no matching line in the file
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithoutNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFileAppendAtEnd, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 
     // Test 6: File with multiple NOZEROCONF entries - non-commented ones should be removed
@@ -2547,7 +2683,8 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFilePrepend)
     EXPECT_TRUE(CreateTestFile(m_path, inFileWithMultipleNozeroconf));
     EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
     EXPECT_STREQ(outFilePrependMultipleMatches, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
+    free(contents);
+    contents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -2560,15 +2697,18 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
 
     EXPECT_NE(nullptr, value = RemoveCharacterFromString("This is a test", ' ', nullptr));
     EXPECT_STREQ(value, "Thisisatest");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = RemoveCharacterFromString("This is a test.", '.', nullptr));
     EXPECT_STREQ(value, "This is a test");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = RemoveCharacterFromString("This ...is. a . test..", '.', nullptr));
     EXPECT_STREQ(value, "This is a  test");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 }
 
 TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
@@ -2580,23 +2720,28 @@ TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\mis\\na\\mtest", "mn", 2, '!', nullptr));
     EXPECT_STREQ(value, "This!is!a!test");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This is a test\\x", "x", 1, '.', nullptr));
     EXPECT_STREQ(value, "This is a test.");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\s\\o\\zis\\za\\otest", "soz", 3, ' ', nullptr));
     EXPECT_STREQ(value, "This   is a test");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\xis\\xa\\ftest", "xf", 2, ' ', nullptr));
     EXPECT_STREQ(value, "This is a test");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\.is\\.a\\:test\\", ".:", 2, ' ', nullptr));
     EXPECT_STREQ(value, "This is a test\\");
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
 }
 
 TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
@@ -2631,7 +2776,8 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_NE(nullptr, cleanedContents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_STREQ(cleanedContents, targetContents);
 
-    FREE_MEMORY(cleanedContents);
+    free(cleanedContents);
+    cleanedContents=NULL;
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -2798,7 +2944,8 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
         EXPECT_TRUE(Cleanup(m_path));
     }
 
-    FREE_MEMORY(modes);
+    free(modes);
+    modes=NULL;
 }
 
 TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
@@ -2877,7 +3024,8 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_TRUE(Cleanup(m_path2));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 
-    FREE_MEMORY(values);
+    free(values);
+    values=NULL;
 }
 
 TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
@@ -3065,47 +3213,58 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     char* value = nullptr;
 
     EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer(nullptr, "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(-999, GetIntegerOptionFromBuffer(nullptr, "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(-999, GetIntegerOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', 10, nullptr));
 
     EXPECT_STREQ("TestValue", value = GetStringOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(0, GetIntegerOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("123", value = GetStringOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(123, GetIntegerOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("345", value = GetStringOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(345, GetIntegerOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(-999, GetIntegerOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("12", value = GetStringOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(12, GetIntegerOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("1", value = GetStringOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(1, GetIntegerOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("", value = GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(0, GetIntegerOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ(nullptr, value =  GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(-999, GetIntegerOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
 
     EXPECT_STREQ("88", value = GetStringOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
+    free(value);
+    value=NULL;
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 

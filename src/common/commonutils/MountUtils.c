@@ -190,7 +190,8 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsCon
             status = EEXIST;
         }
 
-        FREE_MEMORY(contents);
+        free(contents);
+        contents=NULL;
     }
 
     return status;
@@ -256,7 +257,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, mountStruct->mnt_opts);
 
                         // The option is found, copy this mount entry as-is
-                        FREE_MEMORY(newLine);
+                        free(newLine);
+                        newLine=NULL;
                         newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
                     }
@@ -266,7 +268,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, mountStruct->mnt_opts);
 
                         // The option is not found and is needed for this entry, add the needed option when copying this mount entry
-                        FREE_MEMORY(newLine);
+                        free(newLine);
+                        newLine=NULL;
                         newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
                     }
@@ -292,7 +295,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 else
                 {
                     // No match for this mount entry, copy the entire entry as-is
-                    FREE_MEMORY(newLine);
+                    free(newLine);
+                    newLine=NULL;
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
@@ -345,7 +349,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, mountStruct->mnt_opts);
 
                                     // Copy this mount entry as-is
-                                    FREE_MEMORY(newLine);
+                                    free(newLine);
+                                    newLine=NULL;
                                     newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
                                 }
@@ -355,7 +360,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, mountStruct->mnt_opts);
 
                                     // The option is not found and is needed for this entry, add it when copying this entry
-                                    FREE_MEMORY(newLine);
+                                    free(newLine);
+                                    newLine=NULL;
                                     newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                                         mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
                                 }
@@ -441,10 +447,14 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         remove(tempFileNameThree);
     }
 
-    FREE_MEMORY(newLine);
-    FREE_MEMORY(tempFileNameOne);
-    FREE_MEMORY(tempFileNameTwo);
-    FREE_MEMORY(tempFileNameThree);
+    free(newLine);
+    newLine=NULL;
+    free(tempFileNameOne);
+    tempFileNameOne=NULL;
+    free(tempFileNameTwo);
+    tempFileNameTwo=NULL;
+    free(tempFileNameThree);
+    tempFileNameThree=NULL;
 
     return status;
 }

@@ -34,7 +34,8 @@ char* UrlEncode(const char* target)
                 }
                 else
                 {
-                    FREE_MEMORY(encodedTarget);
+                    free(encodedTarget);
+                    encodedTarget=NULL;
                     break;
                 }
             }
@@ -47,7 +48,8 @@ char* UrlEncode(const char* target)
                 }
                 else
                 {
-                    FREE_MEMORY(encodedTarget);
+                    free(encodedTarget);
+                    encodedTarget=NULL;
                     break;
                 }
             }
@@ -98,13 +100,15 @@ char* UrlDecode(const char* target)
                 }
                 else
                 {
-                    FREE_MEMORY(decodedTarget);
+                    free(decodedTarget);
+                    decodedTarget=NULL;
                     break;
                 }
             }
             else
             {
-                FREE_MEMORY(decodedTarget);
+                free(decodedTarget);
+                decodedTarget=NULL;
                 break;
             }
         }

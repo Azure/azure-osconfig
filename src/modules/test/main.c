@@ -377,7 +377,8 @@ int RunCommand(const COMMAND_STEP* command)
             LOG_INFO("%s", textResult);
         }
 
-        FREE_MEMORY(textResult);
+        free(textResult);
+        textResult=NULL;
     }
 
     return status;
@@ -541,8 +542,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         json_value_free(expectedJsonValue);
         json_value_free(actualJsonValue);
-        FREE_MEMORY(payloadString);
-        FREE_MEMORY(payload);
+        free(payloadString);
+        payloadString=NULL;
+        free(payload);
+        payload=NULL;
     }
     else if (test->type == DESIRED)
     {
@@ -693,7 +696,8 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                                         failed++;
                                     }
 
-                                    FREE_MEMORY(modulePath);
+                                    free(modulePath);
+                                    modulePath=NULL;
                                 }
                             }
                             else
@@ -707,7 +711,8 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                             if (step->data.module.action == UNLOAD)
                             {
                                 UnloadModule(module);
-                                FREE_MEMORY(module);
+                                free(module);
+                                module=NULL;
                             }
                             else
                             {
@@ -735,7 +740,8 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             {
                 LOG_INFO("Warning: module is still loaded, unloading...");
                 UnloadModule(module);
-                FREE_MEMORY(module);
+                free(module);
+                module=NULL;
                 module = NULL;
             }
 
@@ -748,7 +754,8 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             for (int i = 0; i < failed; i++)
             {
                 LOG_TRACE("  %*d %s", (int)log10(total) + 1, failures[i].index + 1, failures[i].name);
-                FREE_MEMORY(failures[i].name);
+                free(failures[i].name);
+                failures[i].name=NULL;
             }
 
             LOG_TRACE(LINE_SEPARATOR_THICK);
@@ -770,8 +777,10 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
     {
         FreeStep(&steps[i]);
     }
-    FREE_MEMORY(failures);
-    FREE_MEMORY(steps);
+    free(failures);
+    failures=NULL;
+    free(steps);
+    steps=NULL;
 
     return status;
 }
@@ -905,7 +914,8 @@ int main(int argc, char const* argv[])
         }
     }
 
-    FREE_MEMORY(client);
+    free(client);
+    client=NULL;
 
     return result;
 }

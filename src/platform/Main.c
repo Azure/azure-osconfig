@@ -172,7 +172,8 @@ int main(int argc, char* argv[])
         SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
         SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog()));
         SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog()));
-        FREE_MEMORY(jsonConfiguration);
+        free(jsonConfiguration);
+        jsonConfiguration=NULL;
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);

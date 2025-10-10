@@ -41,7 +41,8 @@ static char* g_installedPackagesCache = NULL;
 
 void PackageUtilsCleanup(void)
 {
-    FREE_MEMORY(g_installedPackagesCache);
+    free(g_installedPackagesCache);
+    g_installedPackagesCache=NULL;
 }
 
 int IsPresent(const char* what, OsConfigLogHandle log)
@@ -69,7 +70,8 @@ int IsPresent(const char* what, OsConfigLogHandle log)
         status = ENOMEM;
     }
 
-    FREE_MEMORY(command);
+    free(command);
+    command=NULL;
 
     return status;
 }
@@ -110,7 +112,8 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d", packageManager, command, status);
 
-    FREE_MEMORY(command);
+    free(command);
+    command=NULL;
 
     // Refresh the cache holding the list of installed packages next time we check
     g_updateInstalledPackagesCache = 1;
@@ -140,7 +143,8 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
     OsConfigLogDebug(log, "%s", *results);
 
-    FREE_MEMORY(command);
+    free(command);
+    command=NULL;
 
     return status;
 }
@@ -187,7 +191,8 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     {
         if (NULL != (buffer = DuplicateString(results)))
         {
-            FREE_MEMORY(g_installedPackagesCache);
+            free(g_installedPackagesCache);
+            g_installedPackagesCache=NULL;
             g_installedPackagesCache = buffer;
         }
         else
@@ -204,7 +209,8 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
         OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d", status);
     }
 
-    FREE_MEMORY(results);
+    free(results);
+    results=NULL;
 
     return status;
 }
@@ -274,7 +280,8 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
             }
         }
 
-        FREE_MEMORY(searchTarget);
+        free(searchTarget);
+        searchTarget=NULL;
     }
 
     return status;

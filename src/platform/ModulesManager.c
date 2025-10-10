@@ -138,7 +138,8 @@ static void LoadModules(const char* directory, const char* configJson)
                     OsConfigLogError(GetPlatformLog(), "LoadModules: failed to load module '%s'", entry->d_name);
                 }
 
-                FREE_MEMORY(path);
+                free(path);
+                path=NULL;
             }
             closedir(dir);
         }
@@ -222,7 +223,8 @@ static void LoadModules(const char* directory, const char* configJson)
     {
         json_value_free(config);
     }
-    FREE_MEMORY(clientName);
+    free(clientName);
+    clientName=NULL;
 }
 
 void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
@@ -263,12 +265,16 @@ static void FreeSessions(SESSION* sessions)
             moduleSession = curr->modules;
             curr->modules = moduleSession->next;
             moduleSession->module->close(moduleSession->handle);
-            FREE_MEMORY(moduleSession);
+            free(moduleSession);
+            moduleSession=NULL;
         }
 
-        FREE_MEMORY(curr->uuid);
-        FREE_MEMORY(curr->client);
-        FREE_MEMORY(curr);
+        free(curr->uuid);
+        curr->uuid=NULL;
+        free(curr->client);
+        curr->client=NULL;
+        free(curr);
+        curr=NULL;
 
         curr = next;
     }
@@ -282,11 +288,14 @@ static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReporte
 
     for (i = 0; i < numReportedObjects; i++)
     {
-        FREE_MEMORY(reportedObjects[i].component);
-        FREE_MEMORY(reportedObjects[i].object);
+        free(reportedObjects[i].component);
+        reportedObjects[i].component=NULL;
+        free(reportedObjects[i].object);
+        reportedObjects[i].object=NULL;
     }
 
-    FREE_MEMORY(reportedObjects);
+    free(reportedObjects);
+    reportedObjects=NULL;
 }
 
 void UnloadModules(void)
@@ -400,14 +409,17 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
                 else
                 {
                     OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session '%s'", uuid);
-                    FREE_MEMORY(session->client);
-                    FREE_MEMORY(session);
+                    free(session->client);
+                    session->client=NULL;
+                    free(session);
+                    session=NULL;
                 }
             }
             else
             {
                 OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for client name");
-                FREE_MEMORY(session);
+                free(session);
+                session=NULL;
             }
         }
         else
@@ -456,7 +468,8 @@ void MpiClose(MPI_HANDLE handle)
             MODULE_SESSION* moduleSession = session->modules;
             session->modules = moduleSession->next;
             moduleSession->module->close(moduleSession->handle);
-            FREE_MEMORY(moduleSession);
+            free(moduleSession);
+            moduleSession=NULL;
         }
 
         // Remove the session from the linked list
@@ -474,9 +487,12 @@ void MpiClose(MPI_HANDLE handle)
             prev->next = session->next;
         }
 
-        FREE_MEMORY(session->uuid);
-        FREE_MEMORY(session->client);
-        FREE_MEMORY(session);
+        free(session->uuid);
+        session->uuid=NULL;
+        free(session->client);
+        session->client=NULL;
+        free(session);
+        session=NULL;
     }
 }
 
@@ -688,7 +704,8 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                                 OsConfigLogError(GetPlatformLog(), "MpiSetDesired: MmiSet(%p, %s, %s) failed with %d", moduleSession->handle, component, object, status);
                             }
 
-                            FREE_MEMORY(objectJson);
+                            free(objectJson);
+                            objectJson=NULL;
                         }
                     }
                 }
@@ -697,7 +714,8 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
             json_value_free(rootValue);
         }
 
-        FREE_MEMORY(json);
+        free(json);
+        json=NULL;
     }
 
     if (IsDebugLoggingEnabled())
@@ -812,7 +830,8 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
                         }
                     }
 
-                    FREE_MEMORY(payloadJson);
+                    free(payloadJson);
+                    payloadJson=NULL;
                 }
 
                 moduleSession->module->free(mmiPayload);

@@ -170,5 +170,6 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
 void SecurityBaselineMmiFree(MMI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
 }

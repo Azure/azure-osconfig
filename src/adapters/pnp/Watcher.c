@@ -94,7 +94,8 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
             }
         }
 
-        FREE_MEMORY(payload);
+        free(payload);
+        payload=NULL;
     }
 }
 
@@ -112,7 +113,8 @@ static int DeleteGitClone(const char* gitClonePath, OsConfigLogHandle log)
 
     cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
     result = ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
-    FREE_MEMORY(cleanUpCommand);
+    free(cleanUpCommand);
+    cleanUpCommand=NULL;
 
     return result;
 }
@@ -180,8 +182,10 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
         OsConfigLogError(log, "Watcher: failed initializing Git clone at %s (%d)", gitClonePath, error);
     }
 
-    FREE_MEMORY(cloneCommand);
-    FREE_MEMORY(configCommand);
+    free(cloneCommand);
+    cloneCommand=NULL;
+    free(configCommand);
+    configCommand=NULL;
 
     if (0 == error)
     {
@@ -236,9 +240,12 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
         OsConfigLogError(log, "Watcher: failed refreshing Git clone at %s (%d)", gitClonePath, error);
     }
 
-    FREE_MEMORY(checkoutBranchCommand);
-    FREE_MEMORY(checkoutFileCommand);
-    FREE_MEMORY(currentDirectory);
+    free(checkoutBranchCommand);
+    checkoutBranchCommand=NULL;
+    free(checkoutFileCommand);
+    checkoutFileCommand=NULL;
+    free(currentDirectory);
+    currentDirectory=NULL;
 
     if (0 == error)
     {
@@ -297,8 +304,10 @@ void WatcherCleanup(OsConfigLogHandle log)
 
     DeleteGitClone(GIT_DC_CLONE, log);
 
-    FREE_MEMORY(g_gitRepositoryUrl);
-    FREE_MEMORY(g_gitBranch);
+    free(g_gitRepositoryUrl);
+    g_gitRepositoryUrl=NULL;
+    free(g_gitBranch);
+    g_gitBranch=NULL;
 }
 
 bool IsWatcherActive(void)
