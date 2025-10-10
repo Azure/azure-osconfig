@@ -54,6 +54,7 @@ extern "C"
 {
 #endif
 
+void TrackedPointerInitialize(void);
 void* TrackedPointerAlloc(size_t size, OsConfigLogHandle log);
 bool TrackedPointerFree(void** p, OsConfigLogHandle log);
 void TrackedPointersFreeAll(OsConfigLogHandle log);

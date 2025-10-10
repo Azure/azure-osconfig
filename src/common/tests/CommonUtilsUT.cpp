@@ -64,6 +64,7 @@ class CommonUtilsTest : public ::testing::Test
 
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
+    TrackedPointerInitialize();
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
 }
 

@@ -966,7 +966,7 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogWarning(log, "AsbInitialize: debug logging is enabled and this may include private information such as unredacted usernames");
     }
 
-    TrackedPointersCleanup(log);
+    TrackedPointerInitialize();
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 

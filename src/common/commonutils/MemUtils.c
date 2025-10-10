@@ -11,6 +11,11 @@ typedef struct TrackedPointerNode
 
 static TrackedPointerNode* g_start = NULL;
 
+void TrackedPointerInitialize(void)
+{
+    g_start = NULL;
+}
+
 void* TrackedPointerAlloc(size_t size, OsConfigLogHandle log)
 {
     TrackedPointerNode* node = NULL;
