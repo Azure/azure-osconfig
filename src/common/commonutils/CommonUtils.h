@@ -47,7 +47,7 @@
 
 // Tracked pointers
 #define xAlloc(a) TrackedPointerAlloc(a, NULL)
-#define xFree(a) TrackedPointerFree(a ? &a : NULL, NULL)
+#define xFree(a) TrackedPointerFree((void*)(a) ? (void**)&(a) : NULL, NULL)
 
 #ifdef __cplusplus
 extern "C"
