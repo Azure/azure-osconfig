@@ -1,6 +1,8 @@
 # TODO: Add mcr.io retagged images
 FROM almalinux:9
 
+# kkanas Trigger rebuild of containers
+
 RUN dnf install -y \
     autoconf \
     gcc \
