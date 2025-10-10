@@ -118,7 +118,7 @@ TEST_F(CommonUtilsTest, LoadStringFromBigLengthFile)
     size_t i = 0;
     char* contents = NULL;
     char* read = NULL;
-    EXPECT_NE(nullptr, contents = (char*)malloc(size + 1));
+    EXPECT_NE(nullptr, contents = (char*)xAlloc(size + 1));
     memset(contents, 0, size + 1);
     for (i = 0; i < size; i++)
     {
@@ -620,11 +620,11 @@ TEST_F(CommonUtilsTest, ExecuteLongCommand)
     char* textResult = nullptr;
 
     size_t commandLength = 32000;
-    char* command = (char*)malloc(commandLength);
+    char* command = (char*)xAlloc(commandLength);
     EXPECT_NE(nullptr, command);
 
     size_t expectedResultLength = commandLength + 1;
-    char* expectedResult = (char*)malloc(expectedResultLength);
+    char* expectedResult = (char*)xAlloc(expectedResultLength);
     EXPECT_NE(nullptr, expectedResult);
 
     if ((nullptr != command) && (nullptr != expectedResult))
@@ -655,7 +655,7 @@ TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
     char* textResult = nullptr;
 
     size_t commandLength = (size_t)(sysconf(_SC_ARG_MAX) * 10);
-    char* command = (char*)malloc(commandLength);
+    char* command = (char*)xAlloc(commandLength);
     EXPECT_NE(nullptr, command);
     printf("SCARGMAX %lu\n", commandLength);
     if (nullptr != command)
@@ -908,7 +908,7 @@ char* AllocateAndCopyTestString(const char* source)
 
     EXPECT_NE(nullptr, source);
     EXPECT_NE(0, length = (int)strlen(source));
-    EXPECT_NE(nullptr, output = (char*)malloc(length + 1));
+    EXPECT_NE(nullptr, output = (char*)xAlloc(length + 1));
 
     if (nullptr != output)
     {
@@ -1164,7 +1164,7 @@ TEST_F(CommonUtilsTest, FormatAllocateString)
     xFree(formatted);
     EXPECT_STREQ("Test ABC 123", formatted = FormatAllocateString("Test %s %d", "ABC", 123));
     xFree(formatted);
-    EXPECT_NE(nullptr, longString = (char*)malloc(longStringLength + 1));
+    EXPECT_NE(nullptr, longString = (char*)xAlloc(longStringLength + 1));
     memset(longString, 'a', longStringLength);
     longString[4095] = 0;
     EXPECT_STREQ(longString, formatted = FormatAllocateString("%s", longString));
@@ -3122,7 +3122,7 @@ TEST_F(CommonUtilsTest, SafeMallocFree)
     MemoryCleanup(nullptr);
 
     // Test the xFree macro
-    EXPECT_NE(nullptr, p = (char*)malloc(10));
+    EXPECT_NE(nullptr, p = (char*)xAlloc(10));
     xFree(p);
     EXPECT_EQ(nullptr, p);
     xFree(p);

@@ -4989,7 +4989,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
                     *payloadSizeBytes = maxPayloadSizeBytes;
                 }
 
-                if (NULL != (*payload = (char*)malloc(*payloadSizeBytes + 1)))
+                if (NULL != (*payload = (char*)xAlloc(*payloadSizeBytes + 1)))
                 {
                     memset(*payload, 0, *payloadSizeBytes + 1);
                     memcpy(*payload, serializedValue, *payloadSizeBytes);
@@ -5056,7 +5056,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     if ((0 == status) && (NULL != payload) && (0 < payloadSizeBytes))
     {
-        if (NULL != (payloadString = malloc(payloadSizeBytes + 1)))
+        if (NULL != (payloadString = xAlloc(payloadSizeBytes + 1)))
         {
             memset(payloadString, 0, payloadSizeBytes + 1);
             memcpy(payloadString, payload, payloadSizeBytes);

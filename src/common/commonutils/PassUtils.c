@@ -213,7 +213,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
         // CheckFileExists logs
         return ENOENT;
     }
-    else if (NULL == (line = malloc(lineMax + 1)))
+    else if (NULL == (line = xAlloc(lineMax + 1)))
     {
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: out of memory");
         return ENOMEM;
@@ -437,7 +437,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
         OsConfigCaptureReason(reason, "%s' does not exist", g_etcPamdCommonPassword);
         return ENOENT;
     }
-    else if (NULL == (line = malloc(lineMax + 1)))
+    else if (NULL == (line = xAlloc(lineMax + 1)))
     {
         OsConfigLogError(log, "CheckRequirementsForCommonPassword: out of memory");
         return ENOMEM;
@@ -643,7 +643,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
         OsConfigCaptureReason(reason, "'%s' does not exist", g_etcSecurityPwQualityConf);
         return ENOENT;
     }
-    else if (NULL == (line = malloc(lineMax + 1)))
+    else if (NULL == (line = xAlloc(lineMax + 1)))
     {
         OsConfigLogError(log, "CheckRequirementsForPwQualityConf: out of memory");
         return ENOMEM;

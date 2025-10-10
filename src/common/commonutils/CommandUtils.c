@@ -29,7 +29,7 @@ static struct MockCommand* g_mockCommand;
 
 void AddMockCommand(const char* expectedCommand, bool matchPrefix, const char* output, int returnCode)
 {
-    struct MockCommand* mock = malloc(sizeof(struct MockCommand));
+    struct MockCommand* mock = xAlloc(sizeof(struct MockCommand));
     // Handling memory error in a brutal way as it's only for tests, not for production usage.
     if (NULL == mock)
     {
@@ -319,7 +319,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
     }
 
     length = (int)(strlen(source) + strlen(hashCommandTemplate));
-    command = (char*)malloc(length);
+    command = (char*)xAlloc(length);
     if (NULL != command)
     {
         memset(command, 0, length);

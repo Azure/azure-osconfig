@@ -219,7 +219,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 usernameLength = (int)(firstColumn - afterPrefix - 1);
                 if (usernameLength > 0)
                 {
-                    if (NULL != (username = (char*)malloc(usernameLength + 1)))
+                    if (NULL != (username = (char*)xAlloc(usernameLength + 1)))
                     {
                         memcpy(username, afterPrefix, usernameLength);
                         username[usernameLength] = 0;
@@ -236,7 +236,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 passwordLength = (int)(credentialsSeparator - firstColumn - 1);
                 if (passwordLength > 0)
                 {
-                    if (NULL != (password = (char*)malloc(passwordLength + 1)))
+                    if (NULL != (password = (char*)xAlloc(passwordLength + 1)))
                     {
                         memcpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
@@ -253,7 +253,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 hostAddressLength = (int)(lastColumn - credentialsSeparator - 1);
                 if (hostAddressLength > 0)
                 {
-                    if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                    if (NULL != (hostAddress = (char*)xAlloc(hostAddressLength + 1)))
                     {
                         memcpy(hostAddress, credentialsSeparator, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
@@ -267,7 +267,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 portLength = (int)strlen(lastColumn);
                 if (portLength > 0)
                 {
-                    if (NULL != (port = (char*)malloc(portLength + 1)))
+                    if (NULL != (port = (char*)xAlloc(portLength + 1)))
                     {
                         memcpy(port, lastColumn, portLength);
                         port[portLength] = 0;
@@ -285,7 +285,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 hostAddressLength = (int)(firstColumn - afterPrefix - 1);
                 if (hostAddressLength > 0)
                 {
-                    if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                    if (NULL != (hostAddress = (char*)xAlloc(hostAddressLength + 1)))
                     {
                         memcpy(hostAddress, afterPrefix, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
@@ -299,7 +299,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 portLength = (int)strlen(firstColumn);
                 if (portLength > 0)
                 {
-                    if (NULL != (port = (char*)malloc(portLength + 1)))
+                    if (NULL != (port = (char*)xAlloc(portLength + 1)))
                     {
                         memcpy(port, firstColumn, portLength);
                         port[portLength] = 0;

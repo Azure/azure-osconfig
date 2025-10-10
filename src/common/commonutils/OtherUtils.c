@@ -51,7 +51,7 @@ char* FormatAllocateString(const char* format, ...)
 
     if (sizeOfBuffer >= 0)
     {
-        if (NULL != (stringToReturn = malloc((size_t)sizeOfBuffer + 1)))
+        if (NULL != (stringToReturn = xAlloc((size_t)sizeOfBuffer + 1)))
         {
             va_start(arguments, format);
             formatResult = vsnprintf(stringToReturn, sizeOfBuffer + 1, format, arguments);
@@ -79,7 +79,7 @@ char* ConcatenateStrings(const char* first, const char* second)
 
     resultSize = strlen(first) + strlen(second) + 1;
 
-    if (NULL != (result = malloc(resultSize)))
+    if (NULL != (result = xAlloc(resultSize)))
     {
         memset(result, 0, resultSize);
         memcpy(result, first, strlen(first));
@@ -176,7 +176,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
     size_t length = 0;
     size_t i = 0, j = 0;
 
-    if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
+    if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = xAlloc(length + 1))))
     {
         xFree(result);
         return result;
@@ -239,7 +239,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
             if (0 == *numIntegers)
             {
-                *integers = (int*)malloc(sizeof(int));
+                *integers = (int*)xAlloc(sizeof(int));
                 *numIntegers = 1;
             }
             else

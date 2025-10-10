@@ -202,7 +202,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                     if (numReported > 0)
                     {
                         bufferSize = numReported * sizeof(ReportedProperty);
-                        *reportedProperties = (ReportedProperty*)malloc(bufferSize);
+                        *reportedProperties = (ReportedProperty*)xAlloc(bufferSize);
                         if (NULL != *reportedProperties)
                         {
                             memset(*reportedProperties, 0, bufferSize);
@@ -297,7 +297,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 else
                 {
                     valueLength = strlen(value);
-                    buffer = (char*)malloc(valueLength + 1);
+                    buffer = (char*)xAlloc(valueLength + 1);
                     if (NULL != buffer)
                     {
                         memcpy(buffer, value, valueLength);

@@ -22,7 +22,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle
     {
         if (LockFile(file, log))
         {
-            if (NULL != (string = (char*)malloc(initialSize)))
+            if (NULL != (string = (char*)xAlloc(initialSize)))
             {
                 currentSize = initialSize;
                 memset(&string[0], 0, currentSize);
@@ -968,7 +968,7 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
         return 0;
     }
-    else if (NULL == (line = malloc(lineMax + 1)))
+    else if (NULL == (line = xAlloc(lineMax + 1)))
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile: out of memory");
         return ENOMEM;
@@ -1307,7 +1307,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     }
 
     commandLength = strlen(commandTemplate) + strlen(variableName) + 1;
-    if (NULL == (command = malloc(commandLength)))
+    if (NULL == (command = xAlloc(commandLength)))
     {
         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: out of memory");
         status = ENOMEM;
@@ -1436,7 +1436,7 @@ int FindTextInFolder(const char* directory, const char* text, const char* extens
                 ((extension && strstr(entry->d_name, extension)) || (NULL == extension)))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
-                if (NULL == (path = malloc(length + 1)))
+                if (NULL == (path = xAlloc(length + 1)))
                 {
                     OsConfigLogError(log, "FindTextInFolder: out of memory");
                     status = ENOMEM;

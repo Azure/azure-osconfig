@@ -15,7 +15,7 @@ char* UrlEncode(const char* target)
 
     encodedLength = (3 * targetSize) + 1;
 
-    if (NULL != (encodedTarget = (char*)malloc(encodedLength)))
+    if (NULL != (encodedTarget = (char*)xAlloc(encodedLength)))
     {
         memset(encodedTarget, 0, encodedLength);
 
@@ -74,7 +74,7 @@ char* UrlDecode(const char* target)
         return NULL;
     }
 
-    if (NULL != (decodedTarget = (char*)malloc(targetSize + 1)))
+    if (NULL != (decodedTarget = (char*)xAlloc(targetSize + 1)))
     {
         memset(decodedTarget, 0, targetSize + 1);
 

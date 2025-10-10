@@ -660,7 +660,7 @@ static char* FormatInclusionForRemediation(OsConfigLogHandle log)
     size_t inclusionSize = 0;
 
     inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
-    if (NULL != (inclusion = malloc(inclusionSize)))
+    if (NULL != (inclusion = xAlloc(inclusionSize)))
     {
         memset(inclusion, 0, inclusionSize);
         snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
@@ -788,7 +788,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
             TruncateAtFirst(value, ' ');
 
             commandLength = strlen(commandTemplate) + strlen(g_sshServerService) + strlen(lowercase) + strlen(value) + 1;
-            if (NULL != (command = malloc(commandLength)))
+            if (NULL != (command = xAlloc(commandLength)))
             {
                 memset(command, 0, commandLength);
                 snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
@@ -891,7 +891,7 @@ static char* FormatRemediationValues(OsConfigLogHandle log)
         strlen(g_sshMacs) + strlen(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs) +
         strlen(g_sshCiphers) + strlen(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers) + 1;
 
-    if (NULL != (remediation = malloc(remediationSize)))
+    if (NULL != (remediation = xAlloc(remediationSize)))
     {
         memset(remediation, 0, remediationSize);
         snprintf(remediation, remediationSize, remediationTemplate, g_sshdConfigRemediationHeader,
@@ -964,7 +964,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
             {
                 newConfigurationSize = strlen(configurationTemplate) + inclusionSize + strlen(originalConfiguration) + 1;
 
-                if (NULL != (newConfiguration = malloc(newConfigurationSize)))
+                if (NULL != (newConfiguration = xAlloc(newConfigurationSize)))
                 {
                     memset(newConfiguration, 0, newConfigurationSize);
                     snprintf(newConfiguration, newConfigurationSize, configurationTemplate, inclusion, originalConfiguration);
@@ -1106,7 +1106,7 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
         if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log)))
         {
             newConfigurationSize = strlen(configurationTemplate) + remediationSize + strlen(originalConfiguration) + 1;
-            if (NULL != (newConfiguration = malloc(newConfigurationSize)))
+            if (NULL != (newConfiguration = xAlloc(newConfigurationSize)))
             {
                 memset(newConfiguration, 0, newConfigurationSize);
                 snprintf(newConfiguration, newConfigurationSize, configurationTemplate, remediation, originalConfiguration);

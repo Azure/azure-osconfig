@@ -59,7 +59,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
     estimatedDataSize = strlen(name) + strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 1;
 
-    data = (char*)malloc(estimatedDataSize);
+    data = (char*)xAlloc(estimatedDataSize);
     if (NULL == data)
     {
         status = ENOMEM;
@@ -126,7 +126,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         status = (200 == httpStatus) ? MPI_OK : httpStatus;
 
         *responseSize = ReadHttpContentLengthFromSocket(socketHandle, log);
-        *response = (char*)malloc(*responseSize + 1);
+        *response = (char*)xAlloc(*responseSize + 1);
         if (NULL != *response)
         {
             memset(*response, 0, *responseSize + 1);
@@ -213,7 +213,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     snprintf(maxPayloadSizeBytesString, sizeof(maxPayloadSizeBytesString), "%d", maxPayloadSizeBytes);
     requestSize = strlen(requestBodyFormat) + strlen(clientName) + strlen(maxPayloadSizeBytesString) + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         OsConfigLogError(log, "CallMpiOpen(%s, %u): failed to allocate memory for request", clientName, maxPayloadSizeBytes);
@@ -267,7 +267,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)clientSession) + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         OsConfigLogError(log, "CallMpiClose(%p): failed to allocate memory for request", clientSession);
@@ -314,7 +314,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName) + payloadSizeBytes + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         status = ENOMEM;
@@ -376,7 +376,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName) + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         status = ENOMEM;
@@ -449,7 +449,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + payloadSizeBytes + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         status = ENOMEM;
@@ -511,7 +511,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + 1;
 
-    request = (char*)malloc(requestSize);
+    request = (char*)xAlloc(requestSize);
     if (NULL == request)
     {
         status = ENOMEM;

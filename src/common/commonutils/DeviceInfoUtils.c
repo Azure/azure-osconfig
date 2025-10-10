@@ -433,7 +433,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
     {
         commandLength = strlen(commandTemplate) + strlen(name) + 1;
 
-        if (NULL == (command = malloc(commandLength)))
+        if (NULL == (command = xAlloc(commandLength)))
         {
             OsConfigLogError(log, "GetOsReleaseEntry: out of memory");
         }
@@ -667,7 +667,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log)
 
     commandLength = strlen(commandTemplate) + strlen(name) + 1;
 
-    if (NULL == (command = malloc(commandLength)))
+    if (NULL == (command = xAlloc(commandLength)))
     {
         OsConfigLogError(log, "GetPasswordDays: out of memory");
     }

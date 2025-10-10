@@ -17,7 +17,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
         return NULL;
     }
 
-    buffer = (char*)malloc(size + 1);
+    buffer = (char*)xAlloc(size + 1);
     if (NULL == buffer)
     {
         OsConfigLogError(log, "ReadUntilStringFound: out of memory allocating initial buffer");
@@ -98,7 +98,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
 
     uriLength = i;
 
-    returnUri = (char*)malloc(uriLength + 1);
+    returnUri = (char*)xAlloc(uriLength + 1);
     if (NULL != returnUri)
     {
         memset(returnUri, 0, uriLength + 1);
