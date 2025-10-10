@@ -966,6 +966,8 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogWarning(log, "AsbInitialize: debug logging is enabled and this may include private information such as unredacted usernames");
     }
 
+    TrackedPointersCleanup(log);
+
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))

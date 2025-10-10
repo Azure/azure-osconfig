@@ -156,6 +156,8 @@ void TrackedPointersCleanup(OsConfigLogHandle log)
     {
         OsConfigLogError(log, "Memory leak detected: %zu unfreed tracked pointers", leaks);
         DumpTrackedPointers(log);
-        //TrackedPointersFreeAll(log);
+        TrackedPointersFreeAll(log);
     }
+
+    g_start = NULL;
 }
