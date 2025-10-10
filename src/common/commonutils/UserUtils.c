@@ -490,6 +490,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             if (0 < numberOfGroups)
             {
+                listSize = numberOfGroups * sizeof(gid_t);
+
                 if (NULL != (groupIds = malloc(listSize)))
                 {
                     memset(groupIds, 0, listSize);
