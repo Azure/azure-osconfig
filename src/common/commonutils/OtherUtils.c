@@ -415,7 +415,7 @@ static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
         {
             zone += strlen(servicesColumn);
             token = strtok(zone, " \n");
-            
+
             while (NULL != token)
             {
                 if (NULL == (command = FormatAllocateString("firewall-cmd --zone=drop --add-service=%s", token)))
@@ -447,7 +447,7 @@ static int AllowCurrentTrafficInFirewalldDropZone(OsConfigLogHandle log)
         {
             ports += strlen(portsColumn);
             token = strtok(ports, " \n");
-            
+
             while (NULL != token)
             {
                 if (NULL == (command = FormatAllocateString("firewall-cmd --zone=drop --add-port=%s", token)))
