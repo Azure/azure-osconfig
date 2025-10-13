@@ -1525,11 +1525,6 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     FreeUsersList(&userList, userListSize);
     EXPECT_EQ(nullptr, userList);
 
-    SimplifiedUser testUser = {0};
-    testUser.username = DuplicateString("testuser")
-
-    EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr, nullptr));
-
     EXPECT_EQ(0, ExecuteCommand(nullptr, "userdel -r -f testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
 }
 
