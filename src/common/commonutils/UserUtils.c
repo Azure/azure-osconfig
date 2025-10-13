@@ -458,7 +458,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
     size_t listSize = numberOfGroups * sizeof(gid_t);
-    int i = 0;
+    int i = 0, j = 0;
     int getGroupListResult = 0;
     int status = 0;
 
@@ -533,44 +533,28 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             *size = numberOfGroups;
 
-            for (i = 0; i < numberOfGroups; i++)
+            for (i = 0, j = 0; i < numberOfGroups; i++)
             {
                 errno = 0;
 
-                if (NULL == (groupEntry = getgrgid(groupIds[i])))
+                if (NULL != (groupEntry = getgrgid(groupIds[i])))
                 {
-                    if (0 == errno)
-                    {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
-                        // Decrement the counter started at numberOfGroups to detect when none of the groups are found
-                        *size -= 1;
-                        continue;
-                    }
-                    else
-                    {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
-                        status = errno ? errno : ENOENT;
-                        break;
-                    }
-                }
-
-                // This group was found, copy it
-                if (NULL != groupEntry)
-                {
-                    (*groupList)[i].groupId = groupEntry->gr_gid;
-                    (*groupList)[i].groupName = NULL;
-                    (*groupList)[i].hasUsers = true;
+                    (*groupList)[j].groupId = groupEntry->gr_gid;
+                    (*groupList)[j].groupName = NULL;
+                    (*groupList)[j].hasUsers = true;
 
                     if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                     {
-                        if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                        if (NULL != ((*groupList)[j].groupName = malloc(groupNameLength + 1)))
                         {
-                            memset((*groupList)[i].groupName, 0, groupNameLength + 1);
-                            memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
+                            memset((*groupList)[j].groupName, 0, groupNameLength + 1);
+                            memcpy((*groupList)[j].groupName, groupEntry->gr_name, groupNameLength);
 
                             OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')",
                                 user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId,
-                                (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
+                                (*groupList)[j].groupId, IsSystemGroup(&(*groupList)[j]) ? (*groupList)[j].groupName : g_redacted);
+
+                            j += 1;
                         }
                         else
                         {
@@ -580,11 +564,25 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         }
                     }
                 }
+                else
+                {
+                    if (0 == errno)
+                    {
+                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
+                        *size -= 1;
+                    }
+                    else
+                    {
+                        OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
+                        status = errno ? errno : ENOENT;
+                        break;
+                    }
+                }
             }
         }
     }
 
-    // If none of the groups were found (getgrgid returned NULL and errno 0)
+    // If none of the groups were found
     if (0 == *size)
     {
         FREE_MEMORY(*groupList);
