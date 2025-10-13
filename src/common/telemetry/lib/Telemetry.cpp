@@ -9,7 +9,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <thread>
 
 using namespace MAT;
@@ -104,37 +106,24 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 
     OsConfigLogInfo(m_log, "Processing JSON file: %s", filePath.c_str());
 
-    FILE* file = fopen(filePath.c_str(), "r");
-    if (!file)
+    std::ifstream file(filePath);
+    if (!file.is_open())
     {
         OsConfigLogError(m_log, "Failed to open file: %s", filePath.c_str());
         return false;
     }
 
-    char* line = nullptr;
-    size_t lineSize = 0;
-    ssize_t lineLength;
     bool success = true;
-
     try
     {
-        // Read file line by line
-        while ((lineLength = getline(&line, &lineSize, file)) != -1)
+        std::string line;
+        while (std::getline(file, line))
         {
-            // Remove trailing newline if present
-            if (lineLength > 0 && line[lineLength - 1] == '\n')
-            {
-                line[lineLength - 1] = '\0';
-            }
-
-            // Skip empty lines
-            if (strlen(line) == 0)
+            if (line.empty())
             {
                 continue;
             }
-
-            // Process the JSON line
-            ProcessJsonLine(std::string(line));
+            ProcessJsonLine(line);
         }
     }
     catch (const std::exception& e)
@@ -144,12 +133,6 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
     }
 
     OsConfigLogInfo(m_log, "Completed processing JSON file: %s", filePath.c_str());
-
-    if (line)
-    {
-        free(line);
-    }
-    fclose(file);
 
     return success;
 }
