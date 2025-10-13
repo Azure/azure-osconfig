@@ -1491,7 +1491,9 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
 
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "useradd -G nonexistentgroup, root testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "groupadd testgroup", false, false, 0, 0, nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "useradd -G testgroup,root testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "groupdel testgroup", false, false, 0, 0, nullptr, nullptr, nullptr));
 
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
