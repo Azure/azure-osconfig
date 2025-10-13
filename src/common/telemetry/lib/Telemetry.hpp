@@ -24,42 +24,37 @@ namespace Telemetry
     {
     public:
         static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
+        static const char* INSTANCE_NAME = "OSConfigTelemetry";
+        static const char* TELEMETRY_VERSION = "1.0.0";
 
-        // Parse JSON file line by line and process events
-        static bool ProcessJsonFile(const std::string& filePath);
-
-        // Setup configuration
-        static void SetupConfiguration(bool enableDebug, int teardownTime);
-
-        // Shutdown telemetry system
-        static void Shutdown();
+        explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
 
         ~TelemetryManager() noexcept;
-
-    private:
-        // Private constructor to prevent instantiation
-        TelemetryManager() = delete;
 
         // Delete copy constructor and assignment operator
         TelemetryManager(const TelemetryManager&) = delete;
         TelemetryManager& operator=(const TelemetryManager&) = delete;
 
-        // Private static members and methods for internal implementation
-        static OsConfigLogHandle m_log;
-        static MAT::ILogger* m_logger;
-        static bool m_initialized;
+        // Delete move constructor and assignment operator
+        TelemetryManager(TelemetryManager&&) = delete;
+        TelemetryManager& operator=(TelemetryManager&&) = delete;
 
-        // Initialize telemetry system (private)
-        static bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
+        // Parse JSON file line by line and process events
+        bool ProcessJsonFile(const std::string& filePath);
+
+    private:
+        // Private instance members
+        OsConfigLogHandle m_log;
+        std::unique_ptr<ILogManager> m_logger;
 
         // Generic event logging (private)
-        static void EventWrite(Microsoft::Applications::Events::EventProperties event);
+        void EventWrite(Microsoft::Applications::Events::EventProperties event);
 
         // Validate JSON parameters against event parameter set
-        static bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
+        bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
 
         // Process a single JSON line (private)
-        static void ProcessJsonLine(const std::string& jsonLine);
+        void ProcessJsonLine(const std::string& jsonLine);
     };
 
 } // namespace Telemetry

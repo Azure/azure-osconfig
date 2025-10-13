@@ -14,97 +14,58 @@
 
 using namespace MAT;
 
-LOGMANAGER_INSTANCE
-
 namespace Telemetry
 {
 
-OsConfigLogHandle TelemetryManager::m_log = NULL;
-MAT::ILogger* TelemetryManager::m_logger = nullptr;
-bool TelemetryManager::m_initialized = false;
-
-TelemetryManager::~TelemetryManager() noexcept
+TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime)
+    : m_log(nullptr)
+    , m_logger(nullptr)
 {
-    Shutdown();
-}
-
-void TelemetryManager::SetupConfiguration(bool enableDebug, int teardownTime)
-{
-    auto& logConfig = LogManager::GetLogConfiguration();
-
-    logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
-    logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
-    logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
-
-    m_logger = LogManager::Initialize(API_KEY);
-}
-
-bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
-{
-    if (m_initialized)
-    {
-        return true;
-    }
-
     OsConfigLogInfo(m_log, "Initializing telemetry...");
 
     try
     {
-        if (NULL == m_log)
+        m_log = OpenLog("/var/log/osconfig_telemetry.log", NULL);
+
+        ILogConfiguration logConfig;
+        logConfig["name"] = INSTANCE_NAME;
+        logConfig["version"] = TELEMETRY_VERSION;
+        logConfig["config"]["host"] = INSTANCE_NAME;
+        logConfig["primaryToken"] = API_KEY;
+        logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
+        logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
+        logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
+        logConfig[CFG_STR_START_PROFILE_NAME] = TRANSMITPROFILE_REALTIME;
+
+        status_t status = STATUS_SUCCESS;
+        m_logger = LogManagerProvider::CreateLogManager(logConfig, status);
+        if (STATUS_SUCCESS != status)
         {
-            m_log = OpenLog("/var/log/osconfig_telemetry.log", NULL);
+            throw std::runtime_error("Failed to initialize MAT");
         }
 
-        SetupConfiguration(enableDebug, teardownTime);
-
-        if (!m_logger)
-        {
-            return false;
-        }
-
-        LogManager::SetTransmitProfile(TransmitProfile::TransmitProfile_RealTime);
-        m_initialized = true;
         OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
-        return true;
     }
     catch (const std::exception& e)
     {
         if (m_log)
         {
             OsConfigLogError(m_log, "Failed to initialize telemetry: %s", e.what());
+            CloseLog(&m_log);
         }
-        return false;
+        throw;
     }
 }
 
-void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
+TelemetryManager::~TelemetryManager() noexcept
 {
-    if ((!m_initialized) || (!m_logger))
-    {
-        OsConfigLogError(m_log, "Telemetry not initialized");
-        return;
-    }
-
-    m_logger->LogEvent(event);
-
-}
-
-void TelemetryManager::Shutdown()
-{
-    if (!m_initialized)
-    {
-        OsConfigLogError(m_log, "Telemetry not initialized");
-        return;
-    }
-
     OsConfigLogInfo(m_log, "Shutting down telemetry...");
 
     try
     {
-        LogManager::UploadNow();
+        m_logger->UploadNow();
         std::this_thread::sleep_for(std::chrono::microseconds(10)); // Without sleep, the upload may not complete
-        LogManager::FlushAndTeardown();
-        m_initialized = false;
+        m_logger->FlushAndTeardown();
         OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
         CloseLog(&m_log);
     }
@@ -113,19 +74,32 @@ void TelemetryManager::Shutdown()
         if (m_log)
         {
             OsConfigLogError(m_log, "Exception during shutdown: %s", e.what());
+            CloseLog(&m_log);
         }
     }
+    if (m_log)
+    {
+        CloseLog(&m_log);
+    }
+}
+
+void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
+{
+    if (!m_logger)
+    {
+        OsConfigLogError(m_log, "Telemetry not initialized");
+        return;
+    }
+
+    m_logger->LogEvent(event);
 }
 
 bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 {
-    if (!m_initialized)
+    if (!m_logger)
     {
-        if (!Initialize())
-        {
-            OsConfigLogError(m_log, "Failed to initialize TelemetryManager");
-            return false;
-        }
+        OsConfigLogError(m_log, "TelemetryManager not initialized");
+        return false;
     }
 
     OsConfigLogInfo(m_log, "Processing JSON file: %s", filePath.c_str());
@@ -171,7 +145,6 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 
     OsConfigLogInfo(m_log, "Completed processing JSON file: %s", filePath.c_str());
 
-    // Cleanup
     if (line)
     {
         free(line);

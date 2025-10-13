@@ -11,30 +11,21 @@
 
 #include <Telemetry.hpp>
 
-class LogHandle
+static OsConfigLogHandle g_log;
+static const char* g_logFile = "/var/log/osconfig_telemetry_exe.log";
+static const char* g_rolledLogFile = "/var/log/osconfig_telemetry_exe.bak";
+
+void __attribute__((constructor)) Init(void)
 {
-private:
-    OsConfigLogHandle m_log;
+    g_log = OpenLog(g_logFile, g_rolledLogFile);
+    assert(NULL != g_log);
+}
 
-public:
-    explicit LogHandle(const char* logPath, const char* rollingFile = nullptr)
-        : m_log(OpenLog(logPath, rollingFile))
-    {
-    }
-
-    ~LogHandle()
-    {
-        if (m_log != nullptr)
-        {
-            CloseLog(&m_log);
-        }
-    }
-
-    OsConfigLogHandle get() const
-    {
-        return m_log;
-    }
-};
+void __attribute__((destructor)) Destroy(void)
+{
+    OsConfigLogInfo(g_log, "Telemetry shutdown successfully!");
+    CloseLog(&g_log);
+}
 
 void print_usage(const char* program_name)
 {
@@ -136,53 +127,39 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
 
 int main(int argc, char* argv[])
 {
-    LogHandle log("/var/log/osconfig_telemetry_exe.log");
-
     CommandLineArgs args;
-    if (!parse_command_line_args(argc, argv, args, log.get()))
+    if (!parse_command_line_args(argc, argv, args, g_log))
     {
-        OsConfigLogError(log.get(), "Error: Failed to parse command line arguments.");
+        OsConfigLogError(g_log, "Error: Failed to parse command line arguments.");
         return 1;
     }
 
-    try
+    std::string init_message = "Initializing telemetry with verbose=" + std::string(args.verbose ? "true" : "false");
+    if (args.teardown_time >= 0)
     {
-        std::string init_message = "Initializing telemetry with verbose=" + std::string(args.verbose ? "true" : "false");
-        if (args.teardown_time >= 0)
-        {
-            init_message += " and teardown_time=" + std::to_string(args.teardown_time) + "s";
-        }
-        OsConfigLogInfo(log.get(), "%s", init_message.c_str());
+        init_message += " and teardown_time=" + std::to_string(args.teardown_time) + "s";
     }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(log.get(), "Error: Failed to create initialization message: %s", e.what());
-        return 1;
-    }
+    OsConfigLogInfo(g_log, "%s", init_message.c_str());
 
     try
     {
-        OsConfigLogInfo(log.get(), "Telemetry initialized successfully!");
-
-        Telemetry::TelemetryManager::SetupConfiguration(args.verbose, args.teardown_time);
-        Telemetry::TelemetryManager::ProcessJsonFile(args.filepath);
-        OsConfigLogInfo(log.get(), "Processed telemetry JSON file: %s", args.filepath.c_str());
-
-        auto start_time = std::chrono::high_resolution_clock::now();
-        Telemetry::TelemetryManager::Shutdown();
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-        std::string duration_str = std::to_string(duration.count());
-        OsConfigLogInfo(log.get(), "Telemetry shutdown successfully! [%s ms]", duration_str.c_str());
+        int teardownTime = (args.teardown_time >= 0) ? args.teardown_time : Telemetry::TelemetryManager::CONFIG_DEFAULT_TEARDOWN_TIME;
+        auto start_init = std::chrono::high_resolution_clock::now();
+        Telemetry::TelemetryManager telemetryManager(args.verbose, teardownTime);
+        auto end_init = std::chrono::high_resolution_clock::now();
+        auto init_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_init - start_init);
+        OsConfigLogInfo(g_log, "Telemetry initialized successfully! [%s ms]", std::to_string(init_duration.count()).c_str());
+        telemetryManager.ProcessJsonFile(args.filepath);
+        OsConfigLogInfo(g_log, "Processed telemetry JSON file: %s", args.filepath.c_str());
 
         if (std::remove(args.filepath.c_str()) != 0)
         {
-            OsConfigLogError(log.get(), "Warning: Failed to delete JSON file: %s", args.filepath.c_str());
+            OsConfigLogError(g_log, "Warning: Failed to delete JSON file: %s", args.filepath.c_str());
         }
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(log.get(), "Error: Telemetry operation failed: %s", e.what());
+        OsConfigLogError(g_log, "Error: Telemetry operation failed: %s", e.what());
         return 1;
     }
 
