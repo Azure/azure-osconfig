@@ -1491,6 +1491,8 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
 
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "useradd -G nonexistentgroup, root testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
+
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
@@ -1510,12 +1512,25 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
             EXPECT_NE(nullptr, groupList[j].groupName);
         }
 
+        if (0 == strcmp(userList[i].username, "testuser"))
+        {
+            EXPECT_EQ(1, groupListSize);
+            EXPECT_EQ("root", groupList[0].groupName);
+        }
+
         FreeGroupList(&groupList, groupListSize);
         EXPECT_EQ(nullptr, groupList);
     }
 
     FreeUsersList(&userList, userListSize);
     EXPECT_EQ(nullptr, userList);
+
+    SimplifiedUser testUser = {0};
+    testUser.username = DuplicateString("testuser")
+
+    EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr, nullptr));
+
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "userdel -r -f testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, EnumerateAllGroups)
