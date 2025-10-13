@@ -1523,6 +1523,9 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
 
+    FreeGroupList(&groupList, groupListSize);
+    EXPECT_EQ(nullptr, groupList);
+
     EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr, nullptr));
     EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group"));
     EXPECT_NE(nullptr, groupList);
