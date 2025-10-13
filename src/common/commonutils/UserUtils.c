@@ -442,9 +442,7 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
     {
         for (i = 0; i < size; i++)
         {
-            {
-                FREE_MEMORY(((*groupList)[i]).groupName);
-            }
+            FREE_MEMORY(((*groupList)[i]).groupName);
         }
 
         FREE_MEMORY(*groupList);
