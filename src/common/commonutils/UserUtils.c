@@ -542,6 +542,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     if (0 == errno)
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
+                        // Decrement the counter started at numberOfGroups to detect when none of the groups are found
                         *size -= 1;
                         continue;
                     }
@@ -553,6 +554,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     }
                 }
 
+                // This group was found, copy it
                 if (NULL != groupEntry)
                 {
                     (*groupList)[i].groupId = groupEntry->gr_gid;
@@ -582,6 +584,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         }
     }
 
+    // If none of the groups were found (getgrgid returned NULL and errno 0)
     if (0 == *size)
     {
         FREE_MEMORY(*groupList);
