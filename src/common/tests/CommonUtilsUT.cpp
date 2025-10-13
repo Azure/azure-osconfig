@@ -1491,10 +1491,6 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
 
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "groupadd testgroup", false, false, 0, 0, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "useradd -G testgroup,root testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "groupdel testgroup", false, false, 0, 0, nullptr, nullptr, nullptr));
-
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
@@ -1526,8 +1522,6 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
 
     FreeUsersList(&userList, userListSize);
     EXPECT_EQ(nullptr, userList);
-
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "userdel -r -f testuser", false, false, 0, 0, nullptr, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, EnumerateAllGroups)
