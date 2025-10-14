@@ -6,22 +6,29 @@
 #include <Logging.h>
 #include <Mof.hpp>
 #include <NestedListFormatter.hpp>
+#include <Optional.h>
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <getopt.h>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <version.h>
 
 using ComplianceEngine::Action;
 using ComplianceEngine::CommonContext;
-using ComplianceEngine::CompactListFormatter;
-using ComplianceEngine::DebugFormatter;
 using ComplianceEngine::Engine;
-using ComplianceEngine::JsonFormatter;
-using ComplianceEngine::NestedListFormatter;
+using ComplianceEngine::Error;
 using ComplianceEngine::Optional;
 using ComplianceEngine::PayloadFormatter;
+using ComplianceEngine::Result;
 using ComplianceEngine::Status;
+using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
+using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
+using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
+using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
+using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
 using ComplianceEngine::MOF::Resource;
 using std::ifstream;
 using std::istream;
@@ -32,9 +39,9 @@ namespace
 enum class Command
 {
     Help,
+    Version,
     Audit,
-    Remediate,
-    Undefined
+    Remediate
 };
 
 enum class Format
@@ -51,213 +58,190 @@ struct Options
     bool debug = false;
     Optional<string> logFile;
     Optional<Format> format;
-    Command command = Command::Undefined;
+    Command command = Command::Help;
     std::string input;
     Optional<string> section;
-    bool invalidArguments = false;
 };
 
-Options ParseArgs(int argc, char* argv[])
+void PrintHelp(const std::string& programName)
 {
-    assert(argc > 0);
+    std::cout << "Usage: " + programName + "\n\n";
+    std::cout << "Available optinos:\n";
+    std::cout << "\t-h, --help\tShow help and exit.\n";
+    std::cout << "\t-V, --version\tShow software version and exit.\n";
+    std::cout << "\t-v, --verbose\tRun in verbose mode.\n";
+    std::cout << "\t-d, --debug\tRun in debug mode.\n";
+    std::cout << "\t-l, --log-file\tSpecify a log file. Default: print log entries to standard output.\n";
+    std::cout << "\t-s, --section\tProcess only specific sections. Default: process all available rules.\n";
+    std::cout << "\n";
+    std::cout << "Positional arguments:\n";
+    std::cout << "\tcommand\t\tDetermine whether to run in audit or remediation mode. Allowed values: {audit|remediate}.\n";
+    std::cout << "\tfilename\tProcess the specified MOF file. Optional: if skipped or the value is -, the program reads standard input\n";
+}
 
-    Options options;
-    for (int i = 1; i < argc; ++i)
+// Command line parser using getopt_long
+Result<Options> ParseCommandLine(const int argc, char* argv[])
+{
+    const auto* short_opts = "hVvdlsf";
+    const option long_opts[] = {{"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'}, {"verbose", no_argument, nullptr, 'v'},
+        {"debug", no_argument, nullptr, 'd'}, {"log-file", required_argument, nullptr, 'l'}, {"section", required_argument, nullptr, 's'},
+        {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
+
+    auto result = Options{};
+    int opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
+    while (opt != -1)
     {
-        std::string arg = argv[i];
-        if (arg == "--help")
+        switch (opt)
         {
-            options.command = Command::Help;
-            continue;
-        }
-
-        if (arg == "--verbose")
-        {
-            options.verbose = true;
-            continue;
-        }
-
-        if (arg == "--debug")
-        {
-            options.debug = true;
-            continue;
-        }
-
-        if (arg == "--log-file")
-        {
-            if (i + 1 < argc)
-            {
-                options.logFile = argv[++i];
-            }
-            else
-            {
-                std::cerr << "Missing argument for --log-file\n";
-                options.command = Command::Help;
-                options.invalidArguments = true;
+            case 'h':
+                result.command = Command::Help;
+                return result;
+            case 'V':
+                result.command = Command::Version;
+                return result;
+            case 'v':
+                result.verbose = true;
                 break;
-            }
-
-            continue;
-        }
-
-        if (arg == "--section")
-        {
-            if (i + 1 < argc)
-            {
-                options.section = argv[++i];
-            }
-            else
-            {
-                std::cerr << "Missing argument for --section\n";
-                options.command = Command::Help;
-                options.invalidArguments = true;
+            case 'd':
+                result.debug = true;
                 break;
-            }
-
-            continue;
-        }
-
-        if (arg == "--format")
-        {
-            if (i + 1 < argc)
-            {
-                std::string formatArg = argv[++i];
+            case 'l':
+                result.logFile = std::string(optarg);
+                break;
+            case 's':
+                result.section = std::string(optarg);
+                break;
+            case 'f': {
+                auto formatArg = std::string(optarg);
                 std::transform(formatArg.begin(), formatArg.end(), formatArg.begin(), ::tolower);
                 if (formatArg == "nested-list")
                 {
-                    options.format = Format::NestedList;
+                    result.format = Format::NestedList;
                 }
                 else if (formatArg == "compact-list")
                 {
-                    options.format = Format::CompactList;
+                    result.format = Format::CompactList;
                 }
                 else if (formatArg == "json")
                 {
-                    options.format = Format::Json;
+                    result.format = Format::Json;
                 }
                 else if (formatArg == "debug")
                 {
-                    options.format = Format::Debug;
+                    result.format = Format::Debug;
                 }
                 else
                 {
-                    std::cerr << "Invalid format: " << formatArg << "\n";
-                    options.command = Command::Help;
-                    options.invalidArguments = true;
-                    break;
+                    return Error("Invalid format: " + formatArg);
                 }
-            }
-            else
-            {
-                std::cerr << "Missing argument for --format\n";
-                options.command = Command::Help;
-                options.invalidArguments = true;
                 break;
             }
-            continue;
+            default:
+                return Error("Unknown option.");
         }
 
+        opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
+    }
+
+    // After options, parse the positional arguments
+    if (optind < argc)
+    {
+        const std::string arg = argv[optind];
         if (arg == "audit")
         {
-            options.command = Command::Audit;
-            continue;
+            result.command = Command::Audit;
         }
-
-        if (arg == "remediate")
+        else if (arg == "remediate")
         {
-            options.command = Command::Remediate;
-            continue;
+            result.command = Command::Remediate;
         }
-
-        if (Command::Undefined == options.command)
+        else
         {
-            std::cerr << "Invalid command: " << arg << "\n";
-            options.command = Command::Help;
-            options.invalidArguments = true;
-            break;
+            return Error("Invalid command: '" + arg + "'. Must be 'audit' or 'remediate'.");
         }
-
-        if (options.input.empty())
-        {
-            options.input = arg;
-            continue;
-        }
-
-        std::cerr << "Unexpected argument: " << arg << "\n";
-        options.command = Command::Help;
-        options.invalidArguments = true;
-        break;
+        ++optind;
     }
-
-    if (Command::Undefined == options.command)
+    else
     {
-        std::cerr << "No command specified.\n";
-        options.command = Command::Help;
-        options.invalidArguments = true;
+        return Error("Missing required command: 'audit' or 'remediate'.");
     }
 
-    return options;
-}
+    // Input filename
+    if (optind < argc)
+    {
+        const std::string arg = argv[optind];
+        result.input = arg;
+        ++optind;
+    }
 
-void PrintHelp()
-{
-    std::cout << "Usage: assessor [--help] [--verbose] [--debug] {audit|remediate} [<input>]\n"
-              << "If <input> is absent, reads from stdin. The program reads a MOF file contents from the <input>.\n";
-}
+    // End of positional arguments
+    if (optind < argc)
+    {
+        return Error("Too many arguments provided.");
+    }
 
+    return result;
+}
 } // anonymous namespace
 
 int main(int argc, char* argv[])
 {
-    const auto options = ParseArgs(argc, argv);
-    assert(Command::Undefined != options.command);
+    const auto optionsResult = ParseCommandLine(argc, argv);
+    if (!optionsResult.HasValue())
+    {
+        std::cerr << "Error: " << optionsResult.Error().message << std::endl;
+        PrintHelp(argv[0]);
+        return 1;
+    }
+
+    const auto& options = optionsResult.Value();
     if (Command::Help == options.command)
     {
-        PrintHelp();
+        PrintHelp(argv[0]);
         return 0;
     }
 
-    std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter> benchmarkFormatter;
+    if (Command::Version == options.command)
+    {
+        std::cout << "Compliance Engine Assessor\nVersion: " << OSCONFIG_VERSION << "\n";
+        return 0;
+    }
+
+    std::cerr << "Compliance Engine Assessor\n";
+    std::unique_ptr<BenchmarkFormatter> benchmarkFormatter;
     std::unique_ptr<PayloadFormatter> payloadFormatter;
     if (options.format.HasValue())
     {
         switch (options.format.Value())
         {
             case Format::NestedList:
-                benchmarkFormatter =
-                    std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter>(new ComplianceEngine::BenchmarkFormatters::NestedListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new NestedListFormatter());
+                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new NestedListFormatter());
+                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::NestedListFormatter());
                 break;
             case Format::CompactList:
-                benchmarkFormatter =
-                    std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter>(new ComplianceEngine::BenchmarkFormatters::CompactListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new CompactListFormatter());
+                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new CompactListFormatter());
+                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::CompactListFormatter());
                 break;
             case Format::Json:
-                benchmarkFormatter =
-                    std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter>(new ComplianceEngine::BenchmarkFormatters::JsonFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new JsonFormatter());
+                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
+                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
                 break;
             case Format::Debug:
-                benchmarkFormatter =
-                    std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter>(new ComplianceEngine::BenchmarkFormatters::DebugFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new DebugFormatter());
+                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new DebugFormatter());
+                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::DebugFormatter());
                 break;
             default:
                 std::cerr << "Invalid format specified.\n";
                 return 1;
         }
     }
-
     if (!payloadFormatter)
     {
-        payloadFormatter = std::unique_ptr<PayloadFormatter>(new JsonFormatter());
+        payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
     }
     if (!benchmarkFormatter)
     {
-        // Default benchmark formatter
-        benchmarkFormatter =
-            std::unique_ptr<ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter>(new ComplianceEngine::BenchmarkFormatters::JsonFormatter());
+        benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
     }
 
     auto logHandle = options.logFile.HasValue() ? OpenLog(options.logFile->c_str(), nullptr) : nullptr;
