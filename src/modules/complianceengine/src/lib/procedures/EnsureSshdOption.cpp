@@ -51,8 +51,6 @@ Result<std::vector<std::string>> GetAllMatches(ContextInterface& context)
             std::string directive;
             lineStream >> directive;
 
-            std::transform(directive.begin(), directive.end(), directive.begin(), ::tolower);
-
             if (directive == "include")
             {
                 std::string includeFile;
@@ -169,7 +167,6 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             std::getline(lineStream, optionValue);
             optionValue.erase(0, optionValue.find_first_not_of(" \t"));
             std::transform(currentOption.begin(), currentOption.end(), currentOption.begin(), ::tolower);
-            std::transform(optionValue.begin(), optionValue.end(), optionValue.begin(), ::tolower);
             options[currentOption] = optionValue;
         }
     }
