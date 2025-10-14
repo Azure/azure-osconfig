@@ -144,7 +144,7 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
-        if (entry->d_type != DT_REG)
+        if (entry->d_type != DT_REG && entry->d_type != DT_LNK)
         {
             continue;
         }
