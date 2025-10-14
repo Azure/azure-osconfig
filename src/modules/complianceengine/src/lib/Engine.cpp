@@ -17,7 +17,6 @@
 #include <memory>
 #include <parson.h>
 #include <string>
-#include <sys/stat.h>
 #include <utility>
 
 namespace ComplianceEngine
@@ -54,52 +53,6 @@ OsConfigLogHandle Engine::Log() const noexcept
     return mContext->GetLogHandle();
 }
 
-Optional<Error> Engine::LoadDistributionInfo()
-{
-    struct stat st;
-    if (0 == stat(DistributionInfo::cDefaultOverrideFilePath, &st))
-    {
-        // Override file exists, use it as distribution info source
-        OsConfigLogDebug(Log(), "ComplianceEngineValidatePayload: Using %s for distribution info", DistributionInfo::cDefaultOverrideFilePath);
-        auto overrideInfo = DistributionInfo::ParseOverrideFile(DistributionInfo::cDefaultOverrideFilePath);
-        if (!overrideInfo.HasValue())
-        {
-            OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultOverrideFilePath,
-                overrideInfo.Error().message.c_str());
-            return overrideInfo.Error();
-        }
-
-        mDistributionInfo = std::move(overrideInfo).Value();
-    }
-    else if (ENOENT == errno)
-    {
-        // Override file does not exist, use /etc/os-release
-        OsConfigLogDebug(Log(), "ComplianceEngineValidatePayload: Using %s for distribution info", DistributionInfo::cDefaultEtcOsReleasePath);
-        auto osReleaseInfo = DistributionInfo::ParseEtcOsRelease(DistributionInfo::cDefaultEtcOsReleasePath);
-        if (!osReleaseInfo.HasValue())
-        {
-            OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultEtcOsReleasePath,
-                osReleaseInfo.Error().message.c_str());
-            return osReleaseInfo.Error();
-        }
-
-        mDistributionInfo = std::move(osReleaseInfo).Value();
-    }
-    else
-    {
-        int status = errno;
-        OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to access %s: %s", DistributionInfo::cDefaultOverrideFilePath, strerror(status));
-        return Error("Failed to access override file", status);
-    }
-
-    return Optional<Error>();
-}
-
-const Optional<DistributionInfo>& Engine::GetDistributionInfo() const noexcept
-{
-    return mDistributionInfo;
-}
-
 const char* Engine::GetModuleInfo() noexcept
 {
     return cModuleInfo;
@@ -112,7 +65,7 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
         return Error("Invalid argument", EINVAL);
     }
 
-    OsConfigLogDebug(Log(), "Engine::mmiGet(%s)", objectName);
+    OsConfigLogInfo(Log(), "Engine::mmiGet(%s)", objectName);
     auto ruleName = std::string(objectName);
     constexpr const char* auditPrefix = "audit";
     if (ruleName.find(auditPrefix) != 0)
@@ -311,7 +264,7 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
         return Error("Invalid argument", EINVAL);
     }
 
-    OsConfigLogDebug(Log(), "Engine::MmiSet(%s, %s)", objectName, payload.c_str());
+    OsConfigLogInfo(Log(), "Engine::MmiSet(%s, %s)", objectName, payload.c_str());
     constexpr const char* remediatePrefix = "remediate";
     constexpr const char* initPrefix = "init";
     constexpr const char* procedurePrefix = "procedure";

@@ -21,7 +21,7 @@ class EvaluatorTest : public ::testing::Test
 protected:
     std::map<std::string, std::string> mParameters;
     MockContext mContext;
-    ComplianceEngine::DebugFormatter mFormatter;
+    ComplianceEngine::MmiFormatter mFormatter;
 };
 
 TEST_F(EvaluatorTest, Contructor)
@@ -109,6 +109,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_1)
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().status, Status::Compliant);
+    EXPECT_TRUE(result.Value().payload.find("PASS") == 0);
 }
 
 TEST_F(EvaluatorTest, ExecuteAudit_2)
@@ -131,6 +132,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_3)
     auto result = evaluator1.ExecuteAudit(mFormatter);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().status, Status::Compliant);
+    EXPECT_TRUE(result.Value().payload.find("PASS") == 0);
 }
 
 TEST_F(EvaluatorTest, ExecuteAudit_4)

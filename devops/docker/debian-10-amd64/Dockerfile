@@ -1,12 +1,5 @@
 FROM mcr.microsoft.com/mirror/docker/library/debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
-
-RUN cat <<EOF >/etc/apt/sources.list
-deb http://archive.debian.org/debian/ buster main contrib non-free
-deb http://archive.debian.org/debian/ buster-proposed-updates main contrib non-free
-deb http://archive.debian.org/debian-security buster/updates main contrib non-free
-EOF
-
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     git \
@@ -22,10 +15,7 @@ RUN apt -y update && apt-get -y install \
     wget \
     gcovr \
     jq \
-    bc \
-    tar \
-    unzip \
-    zip
+    bc
 
 WORKDIR /git
 

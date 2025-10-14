@@ -210,7 +210,6 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     auto dirCloser = std::unique_ptr<DIR, int (*)(DIR*)>(dir, closedir);
 
     int matchCount = 0;
-    int mismatchCount = 0;
     int fileCount = 0;
     int errorCount = 0;
     struct dirent* entry = nullptr;
@@ -238,10 +237,6 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         {
             matchCount++;
         }
-        else
-        {
-            mismatchCount++;
-        }
     }
 
     if (nullptr == entry && errno != 0)
@@ -254,31 +249,21 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     // This is a direct mapping mapping of OVAL ExistenceEnumerator
     // see https://oval.mitre.org/language/version5.9/ovalsc/documentation/oval-common-schema.html#ExistenceEnumeration for details
 
-    OsConfigLogInfo(context.GetLogHandle(), "Validating pattern matching results, behavior: %s, matched: %d, mismatched: %d, errors: %d",
-        behavior.c_str(), matchCount, mismatchCount, errorCount);
-    if (matchCount + mismatchCount + errorCount != fileCount)
-    {
-        return Error("Counters mismatch");
-    }
-
     if ("all_exist" == behavior)
     {
-        if (mismatchCount > 0)
-        {
-            return indicators.NonCompliant("At least one file did not match the pattern");
-        }
-
         if (errorCount > 0)
         {
-            return Error("Error occurred during pattern matching", EINVAL);
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
         }
-
-        if (matchCount > 0)
+        if ((matchCount == fileCount) && (fileCount > 0))
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
             return indicators.Compliant("All " + std::to_string(fileCount) + " files matched the pattern");
         }
         else
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches out of %d files", matchCount, fileCount);
             return indicators.NonCompliant("Expected all files to match, but only " + std::to_string(matchCount) + " out of " +
                                            std::to_string(fileCount) + " matched");
         }
@@ -287,7 +272,8 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         if ((matchCount == 0) && (errorCount > 0))
         {
-            return Error("Error occurred during pattern matching", EINVAL);
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
         }
         return indicators.Compliant("Found " + std::to_string(matchCount) + " matches");
     }
@@ -295,11 +281,13 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         if (matchCount > 0)
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
             return indicators.Compliant("At least one file matched, found " + std::to_string(matchCount) + " matches");
         }
         if (errorCount > 0)
         {
-            return Error("Error occurred during pattern matching", EINVAL);
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
         }
         return indicators.NonCompliant("Expected at least one file to match, but none did");
     }
@@ -307,32 +295,35 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         if (matchCount > 0)
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
             return indicators.NonCompliant("Expected no files to match, but " + std::to_string(matchCount) + " matched");
         }
 
         if (errorCount > 0)
         {
-            return Error("Error occurred during pattern matching", EINVAL);
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
         }
+        OsConfigLogInfo(context.GetLogHandle(), "Validator finished with no matches");
         return indicators.Compliant("No files matched the pattern");
     }
     else if ("only_one_exists" == behavior)
     {
         if (matchCount == 1 && errorCount == 0)
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
             return indicators.Compliant("Exactly one file matched the pattern");
         }
-
-        if (matchCount > 1)
+        else if (matchCount > 1)
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
             return indicators.NonCompliant("Expected only one file to match, but " + std::to_string(matchCount) + " matched");
         }
-
-        if (errorCount > 0)
+        else if (errorCount > 0)
         {
-            return Error("Error occurred during pattern matching", EINVAL);
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
         }
-
         return indicators.NonCompliant("Expected exactly one file to match, but none did");
     }
     else

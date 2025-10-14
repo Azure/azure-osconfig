@@ -5,7 +5,6 @@
 
 #include "JsonWrapper.h"
 #include "Logging.h"
-#include "LuaEvaluator.h"
 #include "Reasons.h"
 #include "Result.h"
 
@@ -26,13 +25,10 @@ using std::string;
 Evaluator::Evaluator(std::string ruleName, const struct json_object_t* json, const ParameterMap& parameters, ContextInterface& context)
     : mJson(json),
       mParameters(parameters),
-      mContext(context),
-      mLuaEvaluator(std::unique_ptr<LuaEvaluator>(new LuaEvaluator()))
+      mContext(context)
 {
     mIndicators.Push(std::move(ruleName));
 }
-
-Evaluator::~Evaluator() = default;
 
 Result<AuditResult> Evaluator::ExecuteAudit(const PayloadFormatter& formatter)
 {
@@ -103,20 +99,6 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     {
         mIndicators.Push("not");
         const auto result = EvaluateNot(value, action);
-        if (!result.HasValue())
-        {
-            OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            return result;
-        }
-        mIndicators.Back().status = result.Value();
-        mIndicators.Pop();
-        return result.Value();
-    }
-
-    if (!strcmp(name, "Lua"))
-    {
-        mIndicators.Push("Lua");
-        const auto result = EvaluateLua(value, action);
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
@@ -224,49 +206,6 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
     return Status::Compliant;
 }
 
-Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action action)
-{
-    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating Lua operator");
-
-    if (nullptr == value)
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        return Error("invalid argument", EINVAL);
-    }
-
-    if (json_value_get_type(value) != JSONObject)
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "Lua value is not an object");
-        return Error("Lua value is not an object", EINVAL);
-    }
-
-    // Lua can be used for both audit and remediation
-    // Get the arguments from the JSON object
-    auto arguments = GetBuiltinProcedureArguments(value);
-    if (!arguments.HasValue())
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "Failed to get Lua arguments: %s", arguments.Error().message.c_str());
-        return arguments.Error();
-    }
-
-    // Call the lua evaluation function using our LuaEvaluator instance
-    auto scriptIt = arguments.Value().find("script");
-    if (scriptIt == arguments.Value().end())
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "No script content provided");
-        return Error("No script content provided", EINVAL);
-    }
-
-    auto result = mLuaEvaluator->Evaluate(scriptIt->second, mIndicators, mContext, action);
-    if (!result.HasValue())
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "Lua evaluation failed: %s", result.Error().message.c_str());
-        return result.Error();
-    }
-
-    return result.Value();
-}
-
 Result<map<string, string>> Evaluator::GetBuiltinProcedureArguments(const json_value_t* value) const
 {
     map<string, string> result;
@@ -367,47 +306,40 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     return result.Value();
 }
 
-static constexpr std::size_t cMaxNodeIndicators = 5;
 void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth) const
 {
-    for (std::size_t i = 0; i < node.children.size(); i++)
+    for (const auto& child : node.children)
     {
-        const auto& child = node.children[i];
-        if ((i >= cMaxNodeIndicators) && (Status::Compliant == child->status))
+        for (int i = 0; i < depth; ++i)
         {
-            continue;
+            result << "  ";
         }
-
-        for (int j = 0; j < depth; ++j)
-        {
-            result << "\t";
-        }
-        result << (child->status == Status::Compliant ? "✅ " : "❌ ") << child->procedureName << "\n";
+        result << "[Begin] " << child->procedureName << "\n";
         assert(child);
         FormatNode(*child.get(), result, depth + 1);
     }
 
-    for (size_t i = 0; i < node.indicators.size(); i++)
+    for (const auto& indicator : node.indicators)
     {
-        const auto& indicator = node.indicators[i];
-        if ((i >= cMaxNodeIndicators) && (Status::Compliant == indicator.status))
+        for (int i = 0; i < depth; ++i)
         {
-            continue;
-        }
-
-        for (int j = 0; j < depth; ++j)
-        {
-            result << "\t";
+            result << "  ";
         }
         if (indicator.status == Status::Compliant)
         {
-            result << "✅ " << indicator.message << "\n";
+            result << "[Compliant] " << indicator.message << "\n";
         }
         else
         {
-            result << "❌ " << indicator.message << "\n";
+            result << "[NonCompliant] " << indicator.message << "\n";
         }
     }
+
+    for (int i = 0; i < depth - 1; ++i)
+    {
+        result << "  ";
+    }
+    result << (node.status == Status::Compliant ? "[Compliant] " : "[NonCompliant] ") << node.procedureName << "\n";
 }
 
 Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators) const
@@ -415,7 +347,7 @@ Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
     assert(nullptr != node);
-    result << (node->status == Status::Compliant ? "✅ " : "❌ ") << node->procedureName << "\n";
+    result << "[Begin] " << node->procedureName << "\n";
     FormatNode(*node, result, 1);
     return result.str();
 }
@@ -566,7 +498,7 @@ Result<std::string> JsonFormatter::Format(const IndicatorsTree& indicators) cons
     return result;
 }
 
-void DebugFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
+void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
 {
     if (node.procedureName == "anyOf" || node.procedureName == "allOf")
     {
@@ -582,12 +514,28 @@ void DebugFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringst
             first = false;
         }
         result << "]} == ";
+        if (node.status == Status::Compliant)
+        {
+            result << "TRUE";
+        }
+        else
+        {
+            result << "FALSE";
+        }
     }
     else if (node.procedureName == "not")
     {
         result << "{ " << node.procedureName << ": ";
         FormatNode(*node.children[0].get(), result);
         result << "} == ";
+        if (node.status == Status::Compliant)
+        {
+            result << "FALSE";
+        }
+        else
+        {
+            result << "TRUE";
+        }
     }
     else
     {
@@ -604,19 +552,18 @@ void DebugFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringst
             first = false;
         }
         result << " } == ";
-    }
-
-    if (node.status == Status::Compliant)
-    {
-        result << "TRUE";
-    }
-    else
-    {
-        result << "FALSE";
+        if (node.status == Status::Compliant)
+        {
+            result << "TRUE";
+        }
+        else
+        {
+            result << "FALSE";
+        }
     }
 }
 
-Result<std::string> DebugFormatter::Format(const IndicatorsTree& indicators) const
+Result<std::string> MmiFormatter::Format(const IndicatorsTree& indicators) const
 {
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
@@ -628,39 +575,7 @@ Result<std::string> DebugFormatter::Format(const IndicatorsTree& indicators) con
     node = node->children[0].get();
     assert(nullptr != node);
     FormatNode(*node, result);
-    return result.str();
-}
-
-void LastIncomplianceFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
-{
-    if (!node.children.empty())
-    {
-        const auto* child = node.children.back().get();
-        assert(child);
-        return FormatNode(*child, result);
-    }
-
-    if (node.indicators.empty())
-    {
-        result << "No indicators found for " << node.procedureName;
-        return;
-    }
-
-    const auto& indicator = node.indicators.back();
-    result << indicator.message;
-}
-
-Result<std::string> LastIncomplianceFormatter::Format(const IndicatorsTree& indicators) const
-{
-    std::ostringstream result;
-    const auto* node = indicators.GetRootNode();
-    assert(nullptr != node);
-    FormatNode(*node, result);
-    if (node->status == Status::Compliant)
-    {
-        return std::string("Audit passed");
-    }
-    return result.str();
+    return (indicators.GetRootNode()->status == Status::Compliant ? SECURITY_AUDIT_PASS : "") + result.str();
 }
 
 } // namespace ComplianceEngine

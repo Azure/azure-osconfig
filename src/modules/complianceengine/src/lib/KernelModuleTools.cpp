@@ -2,11 +2,8 @@
 #include <Evaluator.h>
 #include <KernelModuleTools.h>
 #include <Regex.h>
-#include <dirent.h>
-#include <fts.h>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
 
 namespace ComplianceEngine
 {
@@ -27,67 +24,42 @@ static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
 // Searches /lib/modules for moduleName, including overlay.ko modules and returns true if found
 Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInterface& context)
 {
-    std::string modulesDirPath = context.GetSpecialFilePath("/lib/modules");
-    DIR* modulesDir = opendir(modulesDirPath.c_str());
-    if (!modulesDir)
+    // For all of the Kernel versions in /lib/modules find all the files in the kernel (modules) directory.
+    // TODO(wpk) replace this with std::filesystem when we can use C++17.
+    std::string findCmd = "find /lib/modules/ -maxdepth 1 -mindepth 1 -type d | while read i; do find \"$i\"/kernel/ -type f; done";
+    Result<std::string> findOutput = context.ExecuteCommand(findCmd);
+    if (!findOutput.HasValue())
     {
-        return Error("Failed to open /lib/modules directory");
+        return Error("Failed to execute find command");
     }
-    auto modulesDirDeleter = std::unique_ptr<DIR, int (*)(DIR*)>(modulesDir, closedir);
-
-    std::vector<std::string> kernelModuleFileBasenames; // Collected file basenames (no directory prefix)
+    std::istringstream findStream(findOutput.Value());
+    std::string line;
     bool moduleFound = false;
-
-    struct dirent* entry = nullptr;
-    while ((entry = readdir(modulesDir)) != nullptr && !moduleFound)
+    while (std::getline(findStream, line))
     {
-        if (entry->d_type != DT_DIR)
+        auto pos = line.find_last_of("/");
+        if (pos != std::string::npos)
         {
-            continue;
+            line = line.substr(pos + 1);
         }
-
-        std::string modulesVersionDir = modulesDirPath + "/" + entry->d_name + "/kernel";
-        struct stat st;
-        if (stat(modulesVersionDir.c_str(), &st) != 0 || !S_ISDIR(st.st_mode))
+        // We use find because modules can have postfixes like .ko.gz.
+        if (line.find(moduleName + ".ko") == 0)
         {
-            continue;
+            moduleFound = true;
+            break;
         }
-
-        char* paths[] = {const_cast<char*>(modulesVersionDir.c_str()), nullptr};
-        // Use FTS_PHYSICAL to avoid following symlinks; omit FTS_NOCHDIR for portability.
-        FTS* fts = fts_open(paths, FTS_PHYSICAL, nullptr);
-        if (!fts)
+        if (line.find(moduleName + "_overlay.ko") == 0)
         {
-            OsConfigLogError(context.GetLogHandle(), "Failed to open %s - errno %d", modulesVersionDir.c_str(), errno);
-            continue;
-        }
-        auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(fts, fts_close);
-
-        FTSENT* node = nullptr;
-        while (!moduleFound && (node = fts_read(fts)) != nullptr)
-        {
-            if (node->fts_info == FTS_F)
-            {
-                std::string baseName = node->fts_name;
-
-                std::string target = moduleName + ".ko";
-                std::string overlayTarget = moduleName + "_overlay.ko";
-
-                if (baseName.find(target) == 0)
-                {
-                    moduleFound = true;
-                    break;
-                }
-                if (baseName.find(overlayTarget) == 0)
-                {
-                    moduleFound = true;
-                    moduleName += "_overlay"; // preserve original behavior of tracking overlay variant
-                    break;
-                }
-            }
+            moduleFound = true;
+            moduleName = moduleName + "_overlay";
+            break;
         }
     }
-    return moduleFound;
+    if (!moduleFound)
+    {
+        return false;
+    }
+    return true;
 }
 
 Result<bool> IsKernelModuleLoaded(std::string moduleName, ContextInterface& context)

@@ -31,7 +31,6 @@ runs:
         esrp_tool = 'EsrpClient'
 
         aad_id = os.environ['AAD_ID'].strip()
-        esrp_id = os.environ['ESRP_ID'].strip()
         workspace = os.environ['GITHUB_WORKSPACE'].strip()
         keycode = os.environ['LINUX_KEY_CODE'].strip()
         opcode = os.environ['LINUX_OP_CODE'].strip()
@@ -44,22 +43,21 @@ runs:
         pprint.pp(files)
 
         auth_json = {
-          "Version": "1.0.0",
-          "AuthenticationType": "AAD_CERT",
-          "EsrpClientId": f"{esrp_id}",
-          "TenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
-          "ClientId": f"{aad_id}",
-          "AuthCert": {
-            "SubjectName": f"CN={aad_id}.microsoft.com",
-            "StoreLocation": "LocalMachine",
-            "StoreName": "My",
-            "SendX5c": "true",
-          },
-          "RequestSigningCert": {
-            "SubjectName": f"CN={esrp_id}",
-            "StoreLocation": "LocalMachine",
-            "StoreName": "My"
-          }
+            "Version": "1.0.0",
+            "AuthenticationType": "AAD_CERT",
+            "TenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+            "ClientId": f"{aad_id}",
+            "AuthCert": {
+                    "SubjectName": f"CN={aad_id}.microsoft.com",
+                    "StoreLocation": "LocalMachine",
+                    "StoreName": "My",
+                    "SendX5c" :  "true"
+            },
+            "RequestSigningCert": {
+                    "SubjectName": f"CN={aad_id}",
+                    "StoreLocation": "LocalMachine",
+                    "StoreName": "My"
+            }
         }
 
         input_json = {
@@ -86,20 +84,6 @@ runs:
           ]
         }
 
-        config_json = {
-          "Version": "1.0.0",
-          "EsrpApiBaseUri": "https://api.esrp.microsoft.com/api/v2/",
-          "AppDataFolder": os.environ['TEMP'],
-          "EsrpSessionTimeoutInSec": 3600,
-          "MinThreadPoolThreads": -1,
-          "MaxDegreeOfParallelism": -1,
-          "ExponentialFirstFastRetry": True,
-          "ExponentialRetryCount": 5,
-          "ExponentialRetryMinBackOff": "00:00:03",
-          "ExponentialRetryMaxBackOff": "00:01:00",
-          "ExponentialRetryDeltaBackOff": "00:00:05",
-        }
-
         # add files to sign
         for f in files:
           name = os.path.basename(f)
@@ -120,7 +104,6 @@ runs:
           ("auth.json", auth_json),
           ("input.json", input_json),
           ("policy.json", policy_json),
-          ("config.json", config_json),
         ]
 
         for filename, data in configs:
@@ -133,7 +116,6 @@ runs:
           [esrp_tool, "sign",
           "-a", "auth.json",
           "-i", "input.json",
-          "-c", "config.json",
           "-p", "policy.json",
           "-o", esrp_out,
           "-l", "Verbose"],

@@ -23,11 +23,11 @@
                 },
                 "owner": {
                   "type": "string",
-                  "description": "Required owner of the file, single or | separated"
+                  "description": "Required owner of the file"
                 },
                 "group": {
                   "type": "string",
-                  "description": "Required group of the file, single or | separated"
+                  "description": "Required group of the file"
                 },
                 "permissions": {
                   "type": "string",
@@ -112,11 +112,11 @@
                 },
                 "owner": {
                   "type": "string",
-                  "description": "Required owner of the file, single or | separated, first one is used for remediation"
+                  "description": "Required owner of the file"
                 },
                 "group": {
                   "type": "string",
-                  "description": "Required group of the file, single or | separated, first one is used for remediation"
+                  "description": "Required group of the file"
                 },
                 "permissions": {
                   "type": "string",

@@ -12,7 +12,6 @@
 #include <linux/limits.h>
 #include <string>
 #include <unistd.h>
-#include <vector>
 
 using ComplianceEngine::AuditEnsureKernelModuleUnavailable;
 using ComplianceEngine::Error;
@@ -20,8 +19,19 @@ using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
-// Test module directory layouts now created in a temporary directory using MockContext::SetSpecialFilePath
-// find* outputs removed due to refactor away from executing find command.
+static const char findCommand[] = "find";
+static const char findPositiveOutput[] =
+    "/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/block/nbd.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/usb/"
+    "serial/hator.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_CT.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/"
+    "kernel/net/netfilter/xt_u32.ko\n";
+static const char findNegativeOutput[] =
+    "/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/block/nbd.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/usb/"
+    "serial/usbserial.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_CT.ko\n/lib/modules/"
+    "5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_u32.ko\n";
+static const char findOverlayedOutput[] =
+    "/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/block/nbd.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/drivers/usb/"
+    "serial/hator_overlay.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_CT.ko\n/lib/modules/"
+    "5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_u32.ko\n";
 
 static const char procModulesPath[] = "/proc/modules";
 static const char procModulesPositiveOutput[] =
@@ -65,41 +75,30 @@ TEST_F(EnsureKernelModuleTest, AuditNoArgument)
     ASSERT_EQ(result.Error().message, "No module name provided");
 }
 
-// Helper to create a fake /lib/modules tree
-static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::string>& files)
+TEST_F(EnsureKernelModuleTest, FailedFindExecution)
 {
-    std::string root = ctx.GetTempdirPath() + "/modulesRoot";
-    if (::mkdir(root.c_str(), 0755) != 0)
-    {
-        ADD_FAILURE() << "Failed to create root dir: " << strerror(errno);
-        return "";
-    }
-    std::string versionDir = root + "/5.15.test";
-    if (::mkdir(versionDir.c_str(), 0755) != 0)
-    {
-        ADD_FAILURE() << "Failed to create version dir: " << strerror(errno);
-        return "";
-    }
-    std::string kernelDir = versionDir + "/kernel";
-    if (::mkdir(kernelDir.c_str(), 0755) != 0)
-    {
-        ADD_FAILURE() << "Failed to create kernel dir: " << strerror(errno);
-        return "";
-    }
-    for (const auto& f : files)
-    {
-        std::string full = kernelDir + "/" + f;
-        std::ofstream ofs(full);
-        ofs << "placeholder";
-        ofs.close();
-    }
-    ctx.SetSpecialFilePath("/lib/modules", root);
-    return root;
+    // Setup the expectation for the find command to fail
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand)))
+        .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to execute find command", -1))));
+
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+
+    // Setup the expectation for the modprobe command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    std::map<std::string, std::string> args;
+    args["moduleName"] = "hator";
+
+    auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Failed to execute find command");
 }
 
 TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 {
-    CreateModulesTree(mContext, {"hator.ko", "nbd.ko"});
+    // Setup the expectation for the find command to succeed
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read to fail
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath)))
@@ -118,7 +117,8 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 
 TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    // Setup the expectation for the find command to succeed
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the /proc/modules read to succeed
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -135,9 +135,10 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFilesystem)
+TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
 {
-    CreateModulesTree(mContext, {"usbserial.ko", "nbd.ko"});
+    // Setup the expectation for the find command to return negative results
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findNegativeOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
@@ -155,7 +156,8 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFilesystem)
 
 TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read showing the module is loaded
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
@@ -173,7 +175,8 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 
 TEST_F(EnsureKernelModuleTest, NoAlias)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
@@ -191,7 +194,8 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
 
 TEST_F(EnsureKernelModuleTest, NoBlacklist)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -209,7 +213,8 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
 
 TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -227,7 +232,8 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 {
-    CreateModulesTree(mContext, {"hator_overlay.ko"});
+    // Setup the expectation for the find command with overlayed output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -245,7 +251,8 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
 {
-    CreateModulesTree(mContext, {"hator_overlay.ko"});
+    // Setup the expectation for the find command with overlayed output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
     // Setup the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));

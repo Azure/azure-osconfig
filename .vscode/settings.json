@@ -85,7 +85,6 @@
         "semaphore": "cpp",
         "charconv": "cpp",
         "format": "cpp",
-        "span": "cpp",
-        "unordered_set": "cpp"
+        "span": "cpp"
     }
 }

@@ -9,9 +9,6 @@
     "RunCommand": "sudo useradd testuser_noshadow && echo 'testuser_noshadow:DummyPass123!' | sudo chpasswd && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
   },
   {
-    "RunCommand": "echo 'remember=5' > /tmp/~test.test"
-  },
-  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -186,13 +183,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcSshSshdConfig",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
@@ -234,13 +231,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshMaxAuthTriesIsSet",
-    "Payload": "4"
+    "Payload": "6"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSshMaxAuthTriesIsSet",
-    "Payload": "4"
+    "Payload": "6"
   },
   {
     "ObjectType": "Desired",
@@ -481,37 +478,37 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcMotd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcMotd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcIssue",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcIssue",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcIssueNet",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcIssueNet",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -537,25 +534,25 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcHostsAllow",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcHostsDeny",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcHostsDeny",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -615,13 +612,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureUsersDotFilesArentGroupOrWorldWritable",
-    "Payload": "00600,00644,00664,00700,00744"
+    "Payload": "600,644,664,700,744"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureUsersDotFilesArentGroupOrWorldWritable",
-    "Payload": "00600,00644,00664,00700,00744"
+    "Payload": "600,644,664,700,744"
   },
   {
     "ObjectType": "Desired",
@@ -740,49 +737,49 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcPasswd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcPasswd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcGroup",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcGroup",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcGroupDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcGroupDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -823,25 +820,25 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureRestrictedUserHomeDirectories",
-    "Payload": "00700,00750"
+    "Payload": "700,750"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureRestrictedUserHomeDirectories",
-    "Payload": "00700,00750"
+    "Payload": "700,750"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureDefaultUmaskForAllUsers",
-    "Payload": "0077"
+    "Payload": "077"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureDefaultUmaskForAllUsers",
-    "Payload": "0077"
+    "Payload": "077"
   },
   {
     "ObjectType": "Desired",
@@ -969,13 +966,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureFilePermissionsForAllRsyslogLogFiles",
-    "Payload": "00600,00640"
+    "Payload": "600,640"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureFilePermissionsForAllRsyslogLogFiles",
-    "Payload": "00600,00640"
+    "Payload": "600,640"
   },
   {
     "ObjectType": "Desired",
@@ -1086,73 +1083,73 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcAnacronTab",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronD",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronD",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronDaily",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronDaily",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronHourly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronHourly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronMonthly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronMonthly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronWeekly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
@@ -1408,7 +1405,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Reported",
@@ -1699,7 +1696,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcMotd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1710,7 +1707,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcIssue",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1721,7 +1718,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcIssueNet",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1752,7 +1749,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcHostsAllow",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1763,7 +1760,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcHostsDeny",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1826,7 +1823,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureUsersDotFilesArentGroupOrWorldWritable",
-    "Payload": "00600,00644,00664,00700,00744"
+    "Payload": "600,644,664,700,744"
   },
   {
     "ObjectType": "Reported",
@@ -1946,7 +1943,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcPasswd",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1957,7 +1954,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcGroup",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1968,7 +1965,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -1979,7 +1976,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcGroupDash",
-    "Payload": "00644"
+    "Payload": "644"
   },
   {
     "ObjectType": "Reported",
@@ -2025,7 +2022,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureRestrictedUserHomeDirectories",
-    "Payload": "00700,00750"
+    "Payload": "700,750"
   },
   {
     "ObjectType": "Reported",
@@ -2036,7 +2033,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureDefaultUmaskForAllUsers",
-    "Payload": "0077"
+    "Payload": "077"
   },
   {
     "ObjectType": "Reported",
@@ -2168,7 +2165,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureFilePermissionsForAllRsyslogLogFiles",
-    "Payload": "00600,00640"
+    "Payload": "600,640"
   },
   {
     "ObjectType": "Reported",
@@ -2284,7 +2281,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
-    "Payload": "00600"
+    "Payload": "600"
   },
   {
     "ObjectType": "Reported",
@@ -2295,7 +2292,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronD",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Reported",
@@ -2306,7 +2303,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronDaily",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Reported",
@@ -2317,7 +2314,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronHourly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Reported",
@@ -2328,7 +2325,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronMonthly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Reported",
@@ -2339,7 +2336,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcCronWeekly",
-    "Payload": "00700"
+    "Payload": "700"
   },
   {
     "ObjectType": "Reported",
@@ -2687,8 +2684,5 @@
   },
   {
     "RunCommand": "groupdel testuser_noshadow || true"
-  },
-  {
-    "RunCommand": "rm /tmp/~test.test"
   }
 ]

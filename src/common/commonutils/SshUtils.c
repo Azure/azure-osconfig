@@ -580,43 +580,9 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogH
     return status;
 }
 
-static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHandle log)
-{
-    char* maxAuthTries = DuplicateStringToLowercase(g_sshMaxAuthTries);
-    int targetValue = atoi(value ? value : g_sshDefaultSshMaxAuthTries);
-    int actualValue = 0;
-    int status = 0;
-
-    if (0 == IsSshServerActive(log))
-    {
-        if (0 == (status = CheckSshOptionIsSetToInteger(maxAuthTries, NULL, &actualValue, reason, log)))
-        {
-            OsConfigResetReason(reason);
-
-            if (actualValue <= targetValue)
-            {
-                OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%d' (that is %d or less)", g_sshMaxAuthTries, maxAuthTries, targetValue, actualValue);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "CheckSshMaxAuthTries: 'maxauthtries' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-                OsConfigCaptureReason(reason, "'maxauthtries' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-                status = ENOENT;
-            }
-        }
-    }
-
-    FREE_MEMORY(maxAuthTries);
-
-    OsConfigLogInfo(log, "CheckSshMaxAuthTries returning %d", status);
-
-    return status;
-}
-
 static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 {
     const char* banner = "banner";
-    const char* none = "none";
     char* bannerPath = NULL;
     int status = 0;
 
@@ -627,18 +593,8 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 
     if (NULL != (bannerPath = GetSshServerState(banner, log)))
     {
-        if (0 == strcmp(bannerPath, none))
-        {
-            OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s', which means no banner is set", banner, bannerPath);
-            OsConfigCaptureReason(reason, "'%s' is set to '%' in SSH Server response, which means no banner is set", banner, bannerPath);
-            status = ENOENT;
-        }
-        else
-        {
-            OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
-            status = CheckFileExists(bannerPath, reason, log);
-        }
-
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
+        status = CheckFileExists(bannerPath, reason, log);
         FREE_MEMORY(bannerPath);
     }
     else
@@ -1394,7 +1350,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
     else if (0 == strcmp(name, g_auditEnsureSshMaxAuthTriesIsSetObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshMaxAuthTries);
-        CheckSshMaxAuthTries(g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, NULL, reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureAllowUsersIsConfiguredObject))
     {

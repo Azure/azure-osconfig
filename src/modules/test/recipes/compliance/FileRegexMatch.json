@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: At least one file did not match the pattern } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
   {
@@ -144,7 +144,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: At least one file did not match the pattern } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
 
@@ -186,7 +186,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: At least one file did not match the pattern } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
   {

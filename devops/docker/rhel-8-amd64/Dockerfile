@@ -3,7 +3,6 @@ FROM registry.access.redhat.com/ubi8/ubi
 
 RUN yum install -y --disableplugin=subscription-manager \
     autoconf \
-    curl \
     gcc \
     gcc-c++ \
     git \
@@ -14,10 +13,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     ninja-build \
     openssl-devel \
     openssl-devel \
-    rpm-build \
-    tar \
-    unzip \
-    zip
+    rpm-build
 
 WORKDIR /git
 

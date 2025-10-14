@@ -454,7 +454,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_3)
     CompactListFormatter formatter;
     auto payload = formatter.Format(mIndicators);
     ASSERT_TRUE(payload.HasValue());
-    EXPECT_NE(payload.Value().find("[NonCompliant] At least one file did not match the pattern"), std::string::npos);
+    EXPECT_NE(payload.Value().find("[NonCompliant] Expected all files to match, but only 1 out of 3 matched"), std::string::npos);
 }
 
 TEST_F(FileRegexMatchTest, Audit_FilenamePattern_4)
