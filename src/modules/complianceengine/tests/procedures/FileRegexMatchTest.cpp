@@ -567,3 +567,24 @@ TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_2)
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
+
+TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_Directory)
+{
+    const auto targetDirectory = std::string(mTempdir) + "/Audit_SymlinkFollow_Directory";
+    const auto linkFilename = targetDirectory + ".link";
+
+    AuditFileRegexMatchParams params;
+    params.path = mTempdir;
+    params.filenamePattern = regex(".*\\.link");
+    params.matchOperation = Operation::Match;
+    params.matchPattern = R"(.*)";
+    params.behavior = Behavior::NoneExist;
+
+    ASSERT_EQ(0, mkdir(targetDirectory.c_str(), 0755));
+    EXPECT_EQ(0, symlink(targetDirectory.c_str(), linkFilename.c_str()));
+    auto result = AuditFileRegexMatch(params, mIndicators, mContext);
+    EXPECT_EQ(0, unlink(linkFilename.c_str()));
+    EXPECT_EQ(0, rmdir(targetDirectory.c_str()));
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
