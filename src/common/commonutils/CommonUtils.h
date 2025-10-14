@@ -9,33 +9,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <time.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define UNUSED(a) (void)(a)
 
-#if defined(__x86_64__)
-#define VALID_MAX_ADDR 0x00007FFFFFFFFFFF
-#elif defined(__aarch64__)
-#define VALID_MAX_ADDR 0x0000FFFFFFFFFFFF
-#else
-#define VALID_MAX_ADDR UINTPTR_MAX
-#endif
-
-// Checks for null, misalignment, low addresses, and out-of-range values
-#define VALID(a) ((0 != (uintptr_t)(a)) &&\
-    (0 != sizeof(void*)) &&\
-    (0 == ((uintptr_t)(a) % sizeof(void*))) &&\
-    ((uintptr_t)(a) >= 0x1000) &&\
-    ((uintptr_t)(a) <= ((UINTPTR_MAX == 0xFFFFFFFF) ? 0xC0000000 : VALID_MAX_ADDR)))
-
 #define FREE_MEMORY(a) {\
-    void* b = (a);\
-    (a) = NULL;\
-    if (VALID(b)) {\
-        free(b);\
+    if (NULL != a) {\
+        free(a);\
+        a = NULL;\
     }\
 }\
 
@@ -65,8 +48,6 @@
 extern "C"
 {
 #endif
-
-int IsValidPointer(void* pointer);
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
@@ -129,14 +110,14 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, OsConfigLogHandle log);
 int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, OsConfigLogHandle log);
 int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);
-int FindTextInFolder(const char* directory, const char* text, const char* extension, OsConfigLogHandle log);
-int CheckTextNotFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log);
-int CheckTextFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log);
+int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle log);
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log);
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
-char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log);
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
 int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log);
 int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log);
@@ -149,10 +130,10 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log);
 int EnableVirtualMemoryRandomization(OsConfigLogHandle log);
 int RemoveDotsFromPath(OsConfigLogHandle log);
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, char commentCharacter, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, char commentCharacter, int value, char** reason, int base, OsConfigLogHandle log);
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log);
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OsConfigLogHandle log);
 
 char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);

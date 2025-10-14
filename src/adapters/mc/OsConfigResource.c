@@ -725,13 +725,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog()))
-    {
-        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
-        miResult = MI_RESULT_NOT_SUPPORTED;
-        goto Exit;
-    }
-
     // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", g_componentName, context)))
     {
@@ -1200,13 +1193,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         FREE_MEMORY(g_procedureObjectName);
     }
 
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog()))
-    {
-        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
-        miResult = MI_RESULT_NOT_SUPPORTED;
-        goto Exit;
-    }
-
     // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", g_componentName, context)))
     {
@@ -1441,13 +1427,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
         FREE_MEMORY(g_procedureObjectName);
-    }
-
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog()))
-    {
-        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
-        miResult = MI_RESULT_NOT_SUPPORTED;
-        goto Exit;
     }
 
     SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_desiredObjectName, g_desiredObjectValue, context);

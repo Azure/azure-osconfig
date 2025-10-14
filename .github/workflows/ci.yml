@@ -105,7 +105,6 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           cmd: |
-            (cd external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh)
             mkdir build && cd build
             cmake ../src -DCMAKE_C_COMPILER="/usr/bin/gcc" -DCMAKE_CXX_COMPILER="/usr/bin/g++" -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
 
@@ -121,7 +120,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: set -o pipefail && ctest --verbose | tee ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
+          cmd: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml

@@ -5,6 +5,7 @@
 #include "ComplianceEngineInterface.h"
 
 static MMI_HANDLE gComplianceEngine = NULL;
+
 static const char gComponentName[] = "ComplianceEngine";
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
@@ -16,19 +17,12 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
     return 0;
 }
 
-int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log)
-{
-    return ComplianceEngineCheckApplicability(gComplianceEngine, payloadKey, log);
-}
-
-// This function is called in library constructor in OsConfigResource.c
 void BaselineInitialize(OsConfigLogHandle log)
 {
     ComplianceEngineInitialize(log);
     gComplianceEngine = ComplianceEngineMmiOpen(gComponentName, -1);
 }
 
-// This function is called in library destructor in OsConfigResource.c
 void BaselineShutdown(OsConfigLogHandle log)
 {
     UNUSED(log);

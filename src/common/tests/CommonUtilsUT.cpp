@@ -22,9 +22,6 @@ class CommonUtilsTest : public ::testing::Test
 {
     protected:
         const char* m_path = "/tmp/~test.test";
-        const char* m_path2 = "/tmp/~test.test2";
-        const char* m_path3 = "/tmp/~test.test3";
-        const char* m_path4 = "/tmp/~test.test4";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
         const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
@@ -1491,15 +1488,15 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
 
+    struct SimplifiedGroup* groupList = NULL;
+    unsigned int groupListSize = 0;
+
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
 
     for (unsigned int i = 0; i < userListSize; i++)
     {
-        struct SimplifiedGroup* groupList = NULL;
-        unsigned int groupListSize = 0;
-
         EXPECT_NE(nullptr, userList[i].username);
 
         EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr, nullptr));
@@ -1765,6 +1762,28 @@ TEST_F(CommonUtilsTest, OtherOptionalTests)
     CheckOsAndKernelMatchDistro(nullptr, nullptr);
 }
 
+TEST_F(CommonUtilsTest, FindTextInFolder)
+{
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
+
+    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
+    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
+    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr);
+}
+
 TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 {
     const char* testFile =
@@ -1861,72 +1880,66 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         " Test1=abc foo=123  \n"
         "FooEntry2  =     234\n"
         "FooEntry3 :     2 3 4\n"
-        "abc Test4 0456 # rt 4 $\n"
+        "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
-        "$FileCreateMode 00644";
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
     char* value = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', '#', nullptr));
-    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, nullptr, ':', '#', 10, nullptr));
-    EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', '#', nullptr));
-    EXPECT_EQ(-999, GetIntegerOptionFromFile(m_path, nullptr, ':', '#', 10, nullptr));
-    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', '#', nullptr));
-    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', '#', 8, nullptr));
-    EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', '#', nullptr));
-    EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', '#', 10, nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
 
-    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', '#', nullptr));
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
-    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', '#', nullptr));
-    FREE_MEMORY(value);
-
-    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', '#', nullptr));
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', '#', nullptr));
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', '#', 10, nullptr));
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', nullptr));
+    FREE_MEMORY(value);
 
-    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', '#', nullptr));
+    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', '#', 10, nullptr));
-    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', '#', 10, nullptr));
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', nullptr));
 
-    EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', '#', nullptr));
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', '#', 10, nullptr));
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', nullptr));
 
-    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', '#', nullptr));
+    EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', nullptr));
     FREE_MEMORY(value);
-    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', '#', 10, nullptr));
-    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', '#', 10, nullptr));
+    EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', nullptr));
 
-    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', '#', nullptr));
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
     FREE_MEMORY(value);
-    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', '#', nullptr));
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', '#', 10, nullptr));
-    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', '#', 10, nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', nullptr));
 
-    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', '#', nullptr));
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', '#', 10, nullptr));
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', nullptr));
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', nullptr));
 
-    EXPECT_STREQ("00644", value = GetStringOptionFromFile(m_path, "$FileCreateMode", ' ', '#', nullptr));
+    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(00644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
-    EXPECT_EQ(0644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -2274,12 +2287,6 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(0x123, integers[0]);
     EXPECT_EQ(0xabc, integers[1]);
     EXPECT_EQ(0xdef, integers[2]);
-    FREE_MEMORY(integers);
-
-    EXPECT_EQ(0, ConvertStringToIntegers("0600, 0640", ' ', &integers, &numIntegers, 8, nullptr));
-    EXPECT_EQ(2, numIntegers);
-    EXPECT_EQ(0600, integers[0]);
-    EXPECT_EQ(0640, integers[1]);
     FREE_MEMORY(integers);
 }
 
@@ -2743,396 +2750,6 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     clock.stop.tv_sec = 54218;
     clock.stop.tv_nsec = 18649;
     EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
-}
-
-TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
-{
-    const char* testFile =
-        "### BEGIN /etc/grub.d/01_users ###\n"
-        "# Test of protection for GRUB2\n"
-        "    if[-f ${ prefix } / user.cfg]; then\n"
-        "        source ${ prefix } / user.cfg\n"
-        "    if[-n \"${GRUB2_PASSWORD}\"]; then\n"
-        "        set superusers = \"root\"\n"
-        "        export superusers\n"
-        "        password_pbkdf2 root ${ GRUB2_PASSWORD }\n"
-        "    fi\n"
-        "        fi\n"
-        " ### END /etc/grub.d/01_users ###\n";
-
-    EXPECT_TRUE(CreateTestFile(m_path, testFile));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "password", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "superusers", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "password_pbkdf2", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "GRUB2_PASSWORD", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "protection", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Test of a", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "BEGIN", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "END", nullptr, nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
-TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
-{
-    const char* testFiles[] = {
-        "$FileCreateMode 00640",
-        "$FileCreateMode  00640\n",
-        "# This is a test for\n   $FileCreateMode 0640\n",
-        "$FileCreateMode 0600\n"
-        "$FileCreateMode 600",
-        "$FileCreateMode     600"
-    };
-    const char* list = "00600,00640";
-    int testFilesSize = ARRAY_SIZE(testFiles);
-
-    int* modes = NULL;
-    int numberOfModes = 0;
-
-    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &modes, &numberOfModes, 8, nullptr));
-    EXPECT_EQ(2, numberOfModes);
-
-    for (int i = 0; i < testFilesSize; i++)
-    {
-        EXPECT_TRUE(CreateTestFile(m_path, testFiles[i]));
-        EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', '#', modes, numberOfModes, nullptr, 8, nullptr));
-        EXPECT_TRUE(Cleanup(m_path));
-    }
-
-    FREE_MEMORY(modes);
-}
-
-TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
-{
-    const char* testCommonPassword =
-        "#\n"
-        "# /etc/pam.d/common-password - password-related modules common to all services\n"
-        "#\n"
-        "# This file is included from other service - specific PAM config files,\n"
-        "# and should contain a list of modules that define the services to be\n"
-        "# used to change user passwords.The default is pam_unix.\n"
-        "\n"
-        "# here are the per - package modules(the \"Primary\" block)\n"
-        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry = 1 minlen = 14 lcredit = -1 ucredit = -1 ocredit = -1 dcredit = -1\n"
-        "password[success = 1 default = ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
-        "# here's the fallback if no module succeeds\n"
-        "password        requisite                       pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already;\n"
-        "# this avoids us returning an error just because nothing sets a success code\n"
-        "# since the modules above will each just jump around\n"
-        "password        required                        pam_permit.so\n"
-        "# and here are more per - package modules(the \"Additional\" block)\n"
-        "password        optional        pam_gnome_keyring.so\n"
-        "# end of pam - auth - update config\n"
-        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember = 5 retry = 3";
-
-    const char* testPwQualityConf =
-        "# Configuration for systemwide password quality limits\n"
-        "# Skip testing the password quality for users that are not present in the\n"
-        "# /etc/passwd file.\n"
-        "# Enabled if the option is present.\n"
-        "# local_users_only\n"
-        "retry = 1\n"
-        "minlen = 14\n"
-        "   minclass = 4\n"
-        "dcredit =    -1\n"
-        "ucredit = -1\n"
-        "ocredit   = -1\n"
-        "lcredit = -1";
-
-    const char* list = "1,14,4,-1,-1,-1,-1";
-
-    int* values = NULL;
-    int numberOfValues = 0;
-
-    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
-    EXPECT_EQ(7, numberOfValues);
-
-    EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
-    EXPECT_TRUE(CreateTestFile(m_path2, testPwQualityConf));
-
-    // Here the common-password audit route is validated:
-    EXPECT_NE(0, CheckPasswordCreationRequirements(123, values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], 123, values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], 123, values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], 123, values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], 123, values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], 456, 789, values[5], values[6], nullptr, nullptr));
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-
-    // Force pwquality route to be validated by removing the test file for common-password:
-    EXPECT_TRUE(Cleanup(m_path));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(123, values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], 123, values[3], values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], 123, values[4], values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], 123, values[5], values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], 123, values[6], nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], 456, 789, values[5], values[6], nullptr, nullptr));
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-
-    // When neither common-password or pwquality are not present the audit fails:
-    EXPECT_TRUE(Cleanup(m_path2));
-    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-
-    FREE_MEMORY(values);
-}
-
-TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
-{
-    const char* testCommonPassword =
-        "# here are the per-package modules (the \"Primary\" block)\n"
-        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry=1 minlen=14 lcredit=-1 ucredit=-1 ocredit=-1 dcredit=-1\n"
-        "password        [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
-        "# here's the fallback if no module succeeds\n"
-        "password        requisite                       pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already;\n"
-        "# this avoids us returning an error just because nothing sets a success code\n"
-        "# since the modules above will each just jump around\n"
-        "password        required                        pam_permit.so\n"
-        "# and here are more per-package modules (the \"Additional\" block)\n"
-        "password        optional        pam_gnome_keyring.so\n"
-        "# end of pam-auth-update config\n"
-        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=2 retry=3";
-    const char* testSystemAuth =
-        "# here are the per-package modules (the \"Primary\" block)\n"
-        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry=3 minlen=12 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
-        "password [success=1 default=ignore] pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
-        "# here's the fallback if no module succeeds\n"
-        "password requisite pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already\n"
-        "password required pam_permit.so\n"
-        "# and here are more per-package modules (the \"Additional\" block)\n"
-        "password optional pam_gnome_keyring.so\n"
-        "# end of pam-auth-update config\n"
-        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=4 retry=3";
-    const char* testSystemPassword =
-        "password    requisite     pam_pwquality.so retry=3 minlen=14 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
-        "password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=6\n"
-        "password    required      pam_deny.so";
-
-    EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
-    EXPECT_TRUE(CreateTestFile(m_path3, testSystemAuth));
-    EXPECT_TRUE(CreateTestFile(m_path4, testSystemPassword));
-
-    // Here the common-password audit route is validated:
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
-
-    // Force system-auth route to be validated by removing the test file for common-password:
-    EXPECT_TRUE(Cleanup(m_path));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
-
-    // Force system-password route to be validated by also removing the test file for system-auth:
-    EXPECT_TRUE(Cleanup(m_path3));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
-
-    // When neither is present, the audit fails:
-    EXPECT_TRUE(Cleanup(m_path4));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
-}
-
-TEST_F(CommonUtilsTest, GroupExists)
-{
-    EXPECT_TRUE(GroupExists(0, nullptr));
-    EXPECT_FALSE(GroupExists(999999, nullptr));
-    EXPECT_FALSE(GroupExists(-1, nullptr));
-    EXPECT_FALSE(GroupExists(0xDEADBEEF, nullptr));
-    EXPECT_FALSE(GroupExists(0xFFFFFFFF, nullptr));
-}
-
-TEST_F(CommonUtilsTest, CheckGroupExists)
-{
-    EXPECT_EQ(0, CheckGroupExists("root", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists("root ", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists("my root", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists("-root", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists("", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists(" ", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckGroupExists("abracadabra", nullptr, nullptr));
-}
-
-TEST_F(CommonUtilsTest, CheckUserExists)
-{
-    EXPECT_EQ(0, CheckUserExists("root", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists(nullptr, nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("0", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("abracadabra", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("nulluser", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("ghostaccount", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("testcaseonly", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("xyzzy", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("nobodyhere", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("fakeuser123", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("__void__", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("root ", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("  ", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckUserExists("1234567890123456789012345678901234567890123456789012345678901234567890", nullptr, nullptr));
-}
-
-TEST_F(CommonUtilsTest, FindTextInFolder)
-{
-    const char* path = "/tmp/~test.conf";
-    const char* noConfPath = "/tmp/~test";
-    const char* text = "Test = 123";
-
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, ".conf", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
-
-    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
-    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr, nullptr);
-    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr, nullptr);
-
-    EXPECT_TRUE(CreateTestFile(path, text));
-
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", ".conf", nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", ".conf", nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", text, ".conf", nullptr));
-
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", ".conf", nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", ".conf", nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, ".conf", nullptr, nullptr));
-
-    EXPECT_EQ(0, CheckTextNotFoundInFolder("/tmp", "ghost", ".conf", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckTextFoundInFolder("/tmp", "ghost", ".conf", nullptr, nullptr));
-
-    EXPECT_TRUE(Cleanup(path));
-
-    EXPECT_TRUE(CreateTestFile(noConfPath, text));
-
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", text, nullptr, nullptr));
-
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
-
-    EXPECT_EQ(0, CheckTextNotFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckTextFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
-
-    EXPECT_TRUE(Cleanup(noConfPath));
-}
-
-TEST_F(CommonUtilsTest, AddIfMissingAdmGroupAndSyslogUser)
-{
-    EXPECT_EQ(0, AddIfMissingAdmSystemGroup(nullptr));
-    EXPECT_EQ(0, AddIfMissingSyslogSystemUser(nullptr));
-}
-
-TEST_F(CommonUtilsTest, GetOptionFromBuffer)
-{
-    char* value = nullptr;
-
-    EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer(nullptr, "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(-999, GetIntegerOptionFromBuffer(nullptr, "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(-999, GetIntegerOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("TestValue", value = GetStringOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(0, GetIntegerOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("123", value = GetStringOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(123, GetIntegerOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("345", value = GetStringOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(345, GetIntegerOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_EQ(nullptr, value = GetStringOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(-999, GetIntegerOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("12", value = GetStringOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(12, GetIntegerOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("1", value = GetStringOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(1, GetIntegerOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("", value = GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(0, GetIntegerOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ(nullptr, value =  GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(-999, GetIntegerOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
-
-    EXPECT_STREQ("88", value = GetStringOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', nullptr));
-    FREE_MEMORY(value);
-    EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
-}
-
-TEST_F(CommonUtilsTest, IsValidPointer)
-{
-    char* p = NULL;
-
-    EXPECT_EQ(0, IsValidPointer(0));
-    EXPECT_EQ(0, IsValidPointer(nullptr));
-
-    EXPECT_NE(nullptr, p = (char*)malloc(1));
-    EXPECT_EQ(1, IsValidPointer(p));
-
-    FREE_MEMORY(p);
-    EXPECT_EQ(0, IsValidPointer(p));
-
-    p = (char*)(0x1000 - 1);
-    EXPECT_EQ(0, IsValidPointer(p));
-
-    p = (char*)0x1;
-    EXPECT_EQ(0, IsValidPointer(p));
-
-    p = (char*)(0x00007FFFFFFFFFFF + 1);
-    EXPECT_EQ(0, IsValidPointer(p));
-
-    p = (char*)0xFFFFFFFFFFFFFFFF;
-    EXPECT_EQ(0, IsValidPointer(p));
-
-    for (int i = 0; i < 100; i++)
-    {
-        p = (char*)(uintptr_t)(rand() % ((i > 0) ? i : 3));
-        EXPECT_EQ(0, IsValidPointer(p));
-
-        p = (char*)(uintptr_t)(rand() + 0x00007FFFFFFFFFFF);
-        EXPECT_EQ(0, IsValidPointer(p));
-    }
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)

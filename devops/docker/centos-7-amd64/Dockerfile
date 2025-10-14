@@ -6,7 +6,6 @@ COPY centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum install -y \
     autoconf \
-    curl \
     gcc \
     gcc-c++ \
     git \
@@ -15,10 +14,7 @@ RUN yum install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build \
-    tar \
-    unzip \
-    zip
+    rpm-build
 
 WORKDIR /git
 

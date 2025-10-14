@@ -12,7 +12,6 @@ RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|
 
 RUN yum update -y && yum install -y \
     autoconf \
-    curl \
     gcc \
     gcc-c++ \
     git \
@@ -21,10 +20,7 @@ RUN yum update -y && yum install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build \
-    tar \
-    unzip \
-    zip
+    rpm-build
 
 WORKDIR /git
 

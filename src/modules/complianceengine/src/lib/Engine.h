@@ -5,7 +5,6 @@
 #define COMPLIANCEENGINE_ENGINE_H
 
 #include "ContextInterface.h"
-#include "DistributionInfo.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
@@ -30,7 +29,6 @@ private:
     std::map<std::string, Procedure> mDatabase;
     std::unique_ptr<ContextInterface> mContext;
     std::unique_ptr<PayloadFormatter> mFormatter;
-    Optional<DistributionInfo> mDistributionInfo;
 
     Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
     Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
@@ -39,7 +37,7 @@ private:
 
 public:
     explicit Engine(std::unique_ptr<ContextInterface> context,
-        std::unique_ptr<PayloadFormatter> payloadFormatter = std::unique_ptr<PayloadFormatter>(new DebugFormatter())) noexcept;
+        std::unique_ptr<PayloadFormatter> payloadFormatter = std::unique_ptr<PayloadFormatter>(new MmiFormatter())) noexcept;
     ~Engine() = default;
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
@@ -49,9 +47,6 @@ public:
     void SetMaxPayloadSize(unsigned int value) noexcept;
     unsigned int GetMaxPayloadSize() const noexcept;
     OsConfigLogHandle Log() const noexcept;
-
-    Optional<Error> LoadDistributionInfo();
-    const Optional<DistributionInfo>& GetDistributionInfo() const noexcept;
 
     static const char* GetModuleInfo() noexcept;
 

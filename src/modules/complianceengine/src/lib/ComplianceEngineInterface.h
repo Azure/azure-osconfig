@@ -23,8 +23,6 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes);
 void ComplianceEngineMmiFree(char* payload);
 
-int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* payloadKey, OsConfigLogHandle log);
-
 #ifdef __cplusplus
 }
 #endif

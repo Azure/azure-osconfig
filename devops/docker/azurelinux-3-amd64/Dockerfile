@@ -6,7 +6,6 @@ RUN tdnf install -y \
     build-essential \
     ca-certificates \
     cmake \
-    curl \
     curl-devel \
     file \
     gcovr \
@@ -16,7 +15,6 @@ RUN tdnf install -y \
     openssl-devel \
     rapidjson-devel \
     rpm-build \
-    shadow-utils \
     tar \
     tmux \
     tree \

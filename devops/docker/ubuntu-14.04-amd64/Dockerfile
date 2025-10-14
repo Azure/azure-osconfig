@@ -6,11 +6,7 @@ RUN apt-get -y update && apt-get -y install \
     gcc \
     git \
     build-essential \
-    file \
-    curl \
-    tar \
-    unzip \
-    zip
+    file
 
 WORKDIR /git
 

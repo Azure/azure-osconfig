@@ -3,20 +3,15 @@
     "Action": "LoadModule",
     "Module": "complianceengine.so"
   },
-
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "Lua": {
-          "script": "return true, 'Audit OK'"
-        }
-      },
-      "remediate": {
-        "Lua": {
-          "script": "return true, 'Remediation OK'"
+        "ExecuteCommandGrep": {
+          "command": "uname",
+          "regex": "Linux"
         }
       }
     }
@@ -25,27 +20,17 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ Lua: Audit OK } == TRUE"
+    "Payload": "PASS{ ExecuteCommandGrep: Output of command 'uname' matches regex 'Linux' } == TRUE"
   },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateTest"
-  },
-
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "Lua": {
-          "script": "return false, 'Audit FAIL'"
-        }
-      },
-      "remediate": {
-        "Lua": {
-          "script": "return false, 'Remediation FAIL'"
+        "ExecuteCommandGrep": {
+          "command": "uname",
+          "regex": "SunOS"
         }
       }
     }
@@ -54,13 +39,27 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ Lua: Audit FAIL } == FALSE"
+    "Payload": "{ ExecuteCommandGrep: No match found } == FALSE"
   },
 
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateTest"
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ExecuteCommandGrep": {
+          "command": "useradd evilhacker",
+          "regex": "dontcare"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "Command useradd evilhacker is not allowed"
   },
 
   {

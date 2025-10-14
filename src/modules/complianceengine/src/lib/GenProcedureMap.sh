@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 <directory>" >&2
+    echo "Usage: $0 <directory>"
     exit 1
 fi
 
@@ -28,10 +28,6 @@ for filepath in "$directory"/*.cpp; do
         done
         if [[ $buffer =~ AUDIT_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
-            if [[ -n "${audit_loc_map[$procedure_name]}" ]]; then
-                echo "Error: AUDIT_FN already defined for procedure $procedure_name at ${audit_loc_map[$procedure_name]}" >&2
-                exit 1
-            fi
             audit_loc_map[$procedure_name]="$filename:$lineno"
             audit_map[$procedure_name]="Audit$procedure_name"
             if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
@@ -39,10 +35,6 @@ for filepath in "$directory"/*.cpp; do
             fi
         elif [[ $buffer =~ REMEDIATE_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
-            if [[ -n "${remediate_loc_map[$procedure_name]}" ]]; then
-                echo "Error: REMEDIATE_FN already defined for procedure $procedure_name at ${remediate_loc_map[$procedure_name]}" >&2
-                exit 1
-            fi
             remediate_loc_map[$procedure_name]="$filename:$lineno"
             remediate_map[$procedure_name]="Remediate$procedure_name"
             if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then

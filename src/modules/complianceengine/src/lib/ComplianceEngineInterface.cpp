@@ -3,28 +3,20 @@
 
 #include "ComplianceEngineInterface.h"
 
-#include "BenchmarkInfo.h"
 #include "CommonContext.h"
 #include "CommonUtils.h"
-#include "DistributionInfo.h"
 #include "Engine.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
-#include "Result.h"
 
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <exception>
-#include <fstream>
 #include <parson.h>
 #include <set>
-#include <sstream>
-#include <sys/stat.h>
 
-using ComplianceEngine::CISBenchmarkInfo;
-using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
 using ComplianceEngine::JSONFromString;
 using ComplianceEngine::ParseJson;
@@ -32,39 +24,16 @@ using ComplianceEngine::Status;
 
 namespace
 {
-static constexpr const char* cModuleTestClientName = "ModuleTestClient";
-static constexpr const char* cNRPClientName = "ComplianceEngine";
 OsConfigLogHandle g_log = nullptr;
 static const std::set<int> g_criticalErrors = {ENOMEM};
-static constexpr const char* g_configurationFile = "/etc/osconfig/osconfig.json";
 } // namespace
 
-// This function is called in library constructor by BaselineInitialize
 void ComplianceEngineInitialize(OsConfigLogHandle log)
 {
     UNUSED(log);
     g_log = log;
-
-    std::ifstream configStream(g_configurationFile);
-    if (configStream)
-    {
-        std::ostringstream buffer;
-        buffer << configStream.rdbuf();
-        auto jsonConfiguration = buffer.str();
-
-        if (!jsonConfiguration.empty())
-        {
-            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration.c_str(), log));
-            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration.c_str(), log));
-            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration.c_str(), log));
-            OsConfigLogInfo(g_log, "Configuration file loaded successfully: %s", g_configurationFile);
-        }
-    }
-
-    RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
 }
 
-// This function is called in library destructor by BaselineInitialize
 void ComplianceEngineShutdown(void)
 {
 }
@@ -77,33 +46,7 @@ MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int ma
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);
         return nullptr;
     }
-    std::unique_ptr<ComplianceEngine::PayloadFormatter> formatter;
-    if (!strcmp(clientName, cModuleTestClientName))
-    {
-        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using DebugFormatter", clientName);
-        formatter.reset(new ComplianceEngine::DebugFormatter());
-    }
-    else if (!strcmp(clientName, cNRPClientName))
-    {
-        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using NestedListFormatter", clientName);
-        formatter.reset(new ComplianceEngine::NestedListFormatter());
-    }
-    else
-    {
-        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using JsonFormatter", clientName);
-        formatter.reset(new ComplianceEngine::JsonFormatter());
-    }
-
-    auto* engine = new Engine(std::move(context), std::move(formatter));
-    auto error = engine->LoadDistributionInfo();
-    if (error)
-    {
-        OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to load distribution info: %s", clientName, maxPayloadSizeBytes, error->message.c_str());
-        delete engine;
-        return nullptr;
-    }
-
-    auto* result = reinterpret_cast<void*>(engine);
+    auto* result = reinterpret_cast<void*>(new Engine(std::move(context)));
     OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s, %u) returning %p", clientName, maxPayloadSizeBytes, result);
     return result;
 }
@@ -171,17 +114,11 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed with a non-critical error: %s (errno: %d)",
                     result.Error().message.c_str(), result.Error().code);
-                result = ComplianceEngine::AuditResult(Status::NonCompliant, "Audit failed with a non-critical error: " + result.Error().message);
+                result = ComplianceEngine::AuditResult(Status::NonCompliant, result.Error().message);
             }
         }
 
-        auto payloadString = result.Value().payload;
-        if (result.Value().status == Status::Compliant)
-        {
-            payloadString = "PASS" + payloadString;
-        }
-
-        auto json = JSONFromString(payloadString.c_str());
+        auto json = JSONFromString(result.Value().payload.c_str());
         if (NULL == json)
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to create JSON object from string");
@@ -193,7 +130,7 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             return ENOMEM;
         }
         *payloadSizeBytes = static_cast<int>(strlen(*payload));
-        OsConfigLogDebug(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
+        OsConfigLogInfo(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
     catch (const std::exception& e)
@@ -262,7 +199,7 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
 
-        OsConfigLogDebug(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
+        OsConfigLogInfo(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
             payloadSizeBytes, result.Value() == Status::Compliant ? "compliant" : "non-compliant");
         return MMI_OK;
     }
@@ -277,45 +214,4 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 void ComplianceEngineMmiFree(char* payload)
 {
     FREE_MEMORY(payload);
-}
-
-int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* payloadKey, OsConfigLogHandle log)
-{
-    // parse the /etc/os-release and check whether the payloadKey defines the same distribution as the one in the file
-    // the payloadKey is formatted as a path: /<benchmark>/<benchmark_specific_format>
-    // In case the payloadKey starts with /cis, it becomes: /cis/<distribution>/<version>/<benchmark_version>/<section1>/<section2>/...
-    if ((nullptr == clientSession) || (nullptr == payloadKey))
-    {
-        OsConfigLogError(log, "ComplianceEngineValidatePayload called with invalid arguments");
-        return EINVAL;
-    }
-
-    const auto& engine = *reinterpret_cast<Engine*>(clientSession);
-    const auto& distributionInfo = engine.GetDistributionInfo();
-    if (!distributionInfo.HasValue())
-    {
-        OsConfigLogError(log, "ComplianceEngineValidatePayload: Distribution info is not available");
-        return EINVAL;
-    }
-
-    auto benchmark = CISBenchmarkInfo::Parse(payloadKey);
-    if (!benchmark.HasValue())
-    {
-        OsConfigLogError(log, "ComplianceEngineValidatePayload failed to parse benchmark: %s", benchmark.Error().message.c_str());
-        return EINVAL;
-    }
-
-    if (!benchmark->Match(distributionInfo.Value()))
-    {
-        OsConfigLogInfo(log, "This benchmark is not applicable for the current distribution");
-        OsConfigLogInfo(log, "Current system identification: %s", std::to_string(distributionInfo.Value()).c_str());
-        auto overridden = distributionInfo.Value();
-        overridden.distribution = benchmark->distribution;
-        overridden.version = benchmark->SanitizedVersion();
-        OsConfigLogInfo(log, "To override this detection, place the following line inside the '%s' file: %s",
-            DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
-        return EINVAL;
-    }
-
-    return 0;
 }
