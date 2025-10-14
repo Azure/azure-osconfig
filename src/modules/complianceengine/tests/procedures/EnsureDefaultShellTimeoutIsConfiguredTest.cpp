@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureDefaultShellTimeoutIsConfigured.h>
 #include <Optional.h>
 #include <fstream>
 
@@ -42,7 +41,7 @@ protected:
 
 TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoSpecialFiles)
 {
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -57,7 +56,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, IncorrectValue)
 {
     auto path = mContext.MakeTempfile("TMOUT=901"); // Acceptance threshold is 900
     mContext.SetSpecialFilePath("/etc/bashrc", path);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -72,7 +71,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoReadonly)
 {
     auto path = mContext.MakeTempfile("TMOUT=900\n");
     mContext.SetSpecialFilePath("/etc/bashrc", path);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -87,7 +86,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoExport)
 {
     auto path = mContext.MakeTempfile("TMOUT=900\nreadonly TMOUT\n");
     mContext.SetSpecialFilePath("/etc/bashrc", path);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -102,7 +101,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, ProperlyConfigured)
 {
     auto path = mContext.MakeTempfile("TMOUT=900\nreadonly TMOUT\nexport TMOUT\n");
     mContext.SetSpecialFilePath("/etc/bashrc", path);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
@@ -117,7 +116,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, MultipleEntries)
 {
     auto path = mContext.MakeTempfile("TMOUT=100\nTMOUT=200\n");
     mContext.SetSpecialFilePath("/etc/bashrc", path);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 
@@ -134,7 +133,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, MultipleEntriesInDifferentFile
     mContext.SetSpecialFilePath("/etc/bashrc", path1);
     auto path2 = mContext.MakeTempfile("TMOUT=900\nreadonly TMOUT\nexport TMOUT\n");
     mContext.SetSpecialFilePath("/etc/profile", path2);
-    auto result = AuditEnsureDefaultShellTimeoutIsConfigured({}, mIndicators, mContext);
+    auto result = AuditEnsureDefaultShellTimeoutIsConfigured(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 

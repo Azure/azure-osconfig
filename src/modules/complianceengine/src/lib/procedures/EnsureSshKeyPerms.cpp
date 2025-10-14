@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
+#include <EnsureFilePermissions.h>
+#include <EnsureSshKeyPerms.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
 #include <sstream>
 
@@ -81,20 +82,31 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
             return Status::Compliant;
         }
 
-        std::map<std::string, std::string> args;
-        args["owner"] = "root";
-        args["group"] = "root|ssh_keys";
+        EnsureFilePermissionsParams params;
+        params.filename = fullPath;
+        static const auto rootPattern = Pattern::Make("root");
+        if (!rootPattern.HasValue())
+        {
+            return rootPattern.Error();
+        }
+        static const auto sshKeysPattern = Pattern::Make("ssh_keys");
+        if (!sshKeysPattern.HasValue())
+        {
+            return sshKeysPattern.Error();
+        }
+        params.owner = {{rootPattern.Value()}};
+        params.group = {{rootPattern.Value(), sshKeysPattern.Value()}};
         if (isPublic)
         {
-            args["mask"] = "0133"; // forbidden bits
+            params.mask = 0133; // forbidden bits
         }
         else
         {
-            args["mask"] = "0137"; // private key stricter forbidden bits
+            params.mask = 0137; // private key stricter forbidden bits
         }
 
-        Result<Status> result = isRemediation ? RemediateEnsureFilePermissionsHelper(fullPath, args, indicators, context) :
-                                                AuditEnsureFilePermissionsHelper(fullPath, args, indicators, context);
+        Result<Status> result =
+            isRemediation ? RemediateEnsureFilePermissions(params, indicators, context) : AuditEnsureFilePermissions(params, indicators, context);
         if (!result.HasValue())
         {
             return result.Error();
@@ -111,25 +123,15 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
 }
 } // anonymous namespace
 
-AUDIT_FN(EnsureSshKeyPerms, "type:Key type - public or private:M:^(public|private)$")
+Result<Status> AuditEnsureSshKeyPerms(const EnsureSshKeyPermsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("type");
-    if (it == args.end())
-    {
-        return Error("Missing required parameter 'type'", EINVAL);
-    }
-    bool isPublic = (it->second == "public");
+    bool isPublic = (params.type == SshKeyType::Public);
     return EnsureSshKeyPermsHelper(isPublic, false, indicators, context);
 }
 
-REMEDIATE_FN(EnsureSshKeyPerms, "type:Key type - public or private:M:^(public|private)$")
+Result<Status> RemediateEnsureSshKeyPerms(const EnsureSshKeyPermsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("type");
-    if (it == args.end())
-    {
-        return Error("Missing required parameter 'type'", EINVAL);
-    }
-    bool isPublic = (it->second == "public");
+    bool isPublic = (params.type == SshKeyType::Public);
     return EnsureSshKeyPermsHelper(isPublic, true, indicators, context);
 }
 

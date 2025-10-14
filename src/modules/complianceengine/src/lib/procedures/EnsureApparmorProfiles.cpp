@@ -1,20 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../Evaluator.h"
-
-#include <CommonUtils.h>
-#include <iostream>
+#include <EnsureApparmorProfiles.h>
 #include <string>
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(EnsureApparmorProfiles, "enforce:Set for enforce (L2) mode, complain (L1) mode by default")
+Result<Status> AuditEnsureApparmorProfiles(const AuditEnsureApparmorProfilesParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    std::string apparmorStatusCommand = "apparmor_status";
-
-    bool enforce = (args.find("enforce") != args.end());
+    static const std::string apparmorStatusCommand = "apparmor_status";
+    assert(params.enforce.HasValue());
+    const auto enforce = params.enforce.Value();
 
     Result<std::string> commandOutput = context.ExecuteCommand(apparmorStatusCommand);
     if (!commandOutput.HasValue())

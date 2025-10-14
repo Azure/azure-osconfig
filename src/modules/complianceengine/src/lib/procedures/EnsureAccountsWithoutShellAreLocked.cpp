@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <EnsureAccountsWithoutShellAreLocked.h>
 #include <ListValidShells.h>
 #include <PasswordEntriesIterator.h>
 #include <Result.h>
@@ -14,10 +15,8 @@ namespace ComplianceEngine
 using std::set;
 using std::string;
 
-AUDIT_FN(EnsureAccountsWithoutShellAreLocked)
+Result<Status> AuditEnsureAccountsWithoutShellAreLocked(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {

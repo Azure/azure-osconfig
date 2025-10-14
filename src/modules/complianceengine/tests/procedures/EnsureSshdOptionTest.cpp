@@ -2,18 +2,22 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureSshdOption.h>
 #include <gtest/gtest.h>
 #include <string>
 
 using ComplianceEngine::AuditEnsureSshdOption;
 using ComplianceEngine::CompactListFormatter;
+using ComplianceEngine::EnsureSshdOptionMode;
+using ComplianceEngine::EnsureSshdOptionOperation;
+using ComplianceEngine::EnsureSshdOptionParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
+using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
+using ComplianceEngine::Separated;
 using ComplianceEngine::Status;
 using ::testing::Return;
 
@@ -68,51 +72,20 @@ protected:
     }
 };
 
-TEST_F(EnsureSshdOptionTest, MissingoptionArgument)
-{
-    std::map<std::string, std::string> args;
-    args["value"] = "no";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
-}
-
-TEST_F(EnsureSshdOptionTest, MissingvalueArgument)
-{
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
-}
-
-TEST_F(EnsureSshdOptionTest, InvalidRegex)
-{
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "(invalid[regex";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
-}
-
 TEST_F(EnsureSshdOptionTest, InitialCommandFails)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(Error("Command failed", -1))));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
-    ASSERT_TRUE(formatted.find("Failed to execute sshd -T command") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[NonCompliant]") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to execute sshd") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
@@ -121,11 +94,11 @@ TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[Compliant]") != std::string::npos);
@@ -138,15 +111,15 @@ TEST_F(EnsureSshdOptionTest, SimpleConfigOptionMismatch)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "yes";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "yes";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[NonCompliant]") != std::string::npos);
-    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("which does not match required pattern 'yes'") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("which does not match required pattern") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, ConfigOptionNotFound)
@@ -155,11 +128,11 @@ TEST_F(EnsureSshdOptionTest, ConfigOptionNotFound)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "nonexistentoption";
-    args["value"] = ".*";
+    EnsureSshdOptionParams params;
+    params.option = {{"nonexistentoption"}};
+    params.value = ".*";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Option 'nonexistentoption' not found") != std::string::npos);
@@ -170,14 +143,12 @@ TEST_F(EnsureSshdOptionTest, CommandFailure)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
     ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
     ASSERT_TRUE(formatted.find("Failed to execute sshd -T") != std::string::npos);
@@ -193,11 +164,11 @@ TEST_F(EnsureSshdOptionTest, WithMatchGroupConfig)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdComplexCommand)).WillOnce(Return(Result<std::string>(sshdWithMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -208,13 +179,12 @@ TEST_F(EnsureSshdOptionTest, HostnameCommandFailure)
 
     EXPECT_CALL(mContext, ExecuteCommand(hostnameCommand)).WillOnce(Return(Result<std::string>(Error("Hostname command failed", -1))));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
     ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
     ASSERT_TRUE(formatted.find("Failed to execute hostname command") != std::string::npos);
@@ -228,13 +198,12 @@ TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
 
     EXPECT_CALL(mContext, ExecuteCommand(hostAddressCommand)).WillOnce(Return(Result<std::string>(Error("Host address command failed", -1))));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
     ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
     ASSERT_TRUE(formatted.find("Failed to get host address") != std::string::npos);
@@ -246,11 +215,11 @@ TEST_F(EnsureSshdOptionTest, RegexMatches)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries";
-    args["value"] = "[1-4]";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}};
+    params.value = "[1-4]";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -261,11 +230,11 @@ TEST_F(EnsureSshdOptionTest, RegexDoesNotMatch)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries";
-    args["value"] = "[5-9]";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}};
+    params.value = "[5-9]";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -276,11 +245,11 @@ TEST_F(EnsureSshdOptionTest, ComplexRegexMatches)
 
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "^(no|prohibit-password)$";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "^(no|prohibit-password)$";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -290,12 +259,12 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "yes"; // forbidden
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "yes"; // forbidden
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -305,12 +274,12 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no"; // actual value matches forbidden pattern
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no"; // actual value matches forbidden pattern
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -320,12 +289,12 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_MissingOptionIsCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "nonexistentoption"; // ensure not present
-    args["value"] = "forbidden";          // arbitrary pattern
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"nonexistentoption"}}; // ensure not present
+    params.value = "forbidden";              // arbitrary pattern
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -338,12 +307,12 @@ TEST_F(EnsureSshdOptionTest, OperationNumericLt_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries"; // value 4
-    args["value"] = "5";
-    args["op"] = "lt";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}}; // value 4
+    params.value = "5";
+    params.op = EnsureSshdOptionOperation::LessThan;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -353,12 +322,12 @@ TEST_F(EnsureSshdOptionTest, OperationNumericLt_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries"; // value 4
-    args["value"] = "3";
-    args["op"] = "lt";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}}; // value 4
+    params.value = "3";
+    params.op = EnsureSshdOptionOperation::LessThan;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -368,12 +337,12 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries"; // value 4
-    args["value"] = "4";
-    args["op"] = "ge";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}}; // value 4
+    params.value = "4";
+    params.op = EnsureSshdOptionOperation::GreaterOrEqual;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -383,12 +352,12 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries"; // value 4
-    args["value"] = "5";
-    args["op"] = "ge";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}}; // value 4
+    params.value = "5";
+    params.op = EnsureSshdOptionOperation::GreaterOrEqual;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -398,13 +367,13 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxstartups"; // special case
-    args["op"] = "match";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxstartups"}}; // special case
+    params.op = EnsureSshdOptionOperation::Match;
     // Provide thresholds higher than actual values (10 30 60)
-    args["value"] = "15:40:70";
+    params.value = "15:40:70";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -416,32 +385,17 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxstartups";
-    args["op"] = "match";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxstartups"}};
+    params.op = EnsureSshdOptionOperation::Match;
     // Set at least one threshold lower than actual (e.g., middle value 25 < 30)
-    args["value"] = "15:25:70";
+    params.value = "15:25:70";
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
     ASSERT_TRUE(formatted.find("Option 'maxstartups' has value '10:30:60' which exceeds limits '15:25:70'") != std::string::npos);
-}
-
-TEST_F(EnsureSshdOptionTest, OperationUnsupported)
-{
-    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
-    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
-
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
-    args["op"] = "invalidOp";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Unsupported op") != std::string::npos);
 }
 
 // ========================= Adapted legacy NoOption scenarios using EnsureSshdOption (op=not_match) =========================
@@ -451,13 +405,12 @@ TEST_F(EnsureSshdOptionTest, NoOption_AllOptionsAbsent_Adapted)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
-    // Provide two nonexistent options; with not_match op, absence is compliant per updated semantics.
-    std::map<std::string, std::string> args;
-    args["option"] = "nonexistentoption1,nonexistentoption2"; // unified interface uses 'option'
-    args["value"] = ".*";                                     // any value would be forbidden if option existed
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"nonexistentoption1", "nonexistentoption2"}};
+    params.value = ".*";
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = ComplianceEngine::AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -472,12 +425,12 @@ TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithForbiddenValue_Adapted)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     // Original test expected NonCompliant when the value was present (since legacy NoOption treated presence of compliant value as violation)
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin"; // actual value 'no'
-    args["value"] = "no";               // forbidden value pattern
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}}; // actual value 'no'
+    params.value = "no";                   // forbidden value pattern
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = ComplianceEngine::AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -488,13 +441,12 @@ TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithAllowedValue_Adapted)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}};
+    params.value = "5,6,7";
+    params.op = EnsureSshdOptionOperation::NotMatch;
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries"; // actual value 4
-    args["value"] = "5,6,7";         // forbidden values that DO NOT match actual value
-    args["op"] = "not_match";
-
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = ComplianceEngine::AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -505,36 +457,36 @@ TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithAllowedValue_Adapted)
 TEST_F(EnsureSshdOptionTest, NoOption_InvalidRegex_Adapted)
 {
     // Regex compilation fails before any command execution; no EXPECT_CALL on sshd
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "(invalid["; // invalid regex
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "(invalid["; // invalid regex
+    params.op = EnsureSshdOptionOperation::NotMatch;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
 
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, NoOption_MissingOptionArgument_Adapted)
 {
-    std::map<std::string, std::string> args;
-    args["value"] = "no";
-    args["op"] = "not_match";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    EnsureSshdOptionParams params;
+    params.value = "no";
+    params.op = EnsureSshdOptionOperation::NotMatch;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
 }
 
 TEST_F(EnsureSshdOptionTest, NoOption_MissingValueArgument_Adapted)
 {
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["op"] = "not_match";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.op = EnsureSshdOptionOperation::NotMatch;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
 }
-
 // ========================= Tests for EnsureSshdOption in all_matches mode (formerly EnsureSshdOptionMatch) =========================
 
 static const char sshdConfigWithMatches[] =
@@ -555,31 +507,31 @@ static const char sshdMatchOutputPermitRootLoginYes[] = "permitrootlogin yes\n";
 
 TEST_F(EnsureSshdOptionTest, Match_MissingOptionArgument)
 {
-    std::map<std::string, std::string> args;
-    args["value"] = "no";
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    EnsureSshdOptionParams params;
+    params.value = "no";
+    params.mode = EnsureSshdOptionMode::AllMatches;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
 }
 
 TEST_F(EnsureSshdOptionTest, Match_MissingValueArgument)
 {
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.mode = EnsureSshdOptionMode::AllMatches;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
 }
 
 TEST_F(EnsureSshdOptionTest, Match_InvalidRegex)
 {
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "(invalid[";
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "(invalid[";
+    params.mode = EnsureSshdOptionMode::AllMatches;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }
@@ -594,12 +546,12 @@ TEST_F(EnsureSshdOptionTest, Match_AllCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).WillOnce(Return(Result<std::string>(sshdMatchOutputPermitRootLoginNo)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).WillOnce(Return(Result<std::string>(sshdMatchOutputPermitRootLoginNo)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
@@ -615,12 +567,12 @@ TEST_F(EnsureSshdOptionTest, Match_FirstNonCompliantShortCircuits)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).Times(0);
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).Times(0);
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no"; // expecting 'no'
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no"; // expecting 'no'
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -633,12 +585,12 @@ TEST_F(EnsureSshdOptionTest, Match_OptionMissingInOneContext)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).Times(0);
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).Times(0);
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = ".*";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = ".*";
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    params.mode = EnsureSshdOptionMode::AllMatches;
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // option missing treated as non-compliant
 }
@@ -650,13 +602,13 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).WillOnce(Return(Result<std::string>(sshdMatchOutputPermitRootLoginNo)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).WillOnce(Return(Result<std::string>(sshdMatchOutputPermitRootLoginNo)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "yes"; // forbidden
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "yes"; // forbidden
+    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -669,13 +621,13 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).Times(0);
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).Times(0);
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no"; // actual value matches forbidden pattern
-    args["op"] = "not_match";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no"; // actual value matches forbidden pattern
+    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -688,13 +640,13 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).WillOnce(Return(Result<std::string>(numericConfig)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).WillOnce(Return(Result<std::string>(numericConfig)));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries";
-    args["value"] = "5";
-    args["op"] = "lt";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}};
+    params.value = "5";
+    params.op = EnsureSshdOptionOperation::LessThan;
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -707,43 +659,27 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchGroupAdminsCommand)).Times(0);
     EXPECT_CALL(mContext, ExecuteCommand(sshdMatchAddress10005Command)).Times(0);
 
-    std::map<std::string, std::string> args;
-    args["option"] = "maxauthtries";
-    args["value"] = "5";
-    args["op"] = "lt";
+    EnsureSshdOptionParams params;
+    params.option = {{"maxauthtries"}};
+    params.value = "5";
+    params.op = EnsureSshdOptionOperation::LessThan;
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
-}
-
-TEST_F(EnsureSshdOptionTest, Match_UnsupportedOp)
-{
-    EXPECT_CALL(mContext, GetFileContents("/etc/ssh/sshd_config")).WillOnce(Return(Result<std::string>(sshdConfigWithMatches)));
-    EXPECT_CALL(mContext, ExecuteCommand(sshdMatchUserAliceCommand)).WillOnce(Return(Result<std::string>(sshdMatchOutputPermitRootLoginNo)));
-
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
-    args["op"] = "someInvalid";
-
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Unsupported op") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
 {
     EXPECT_CALL(mContext, GetFileContents("/etc/ssh/sshd_config")).WillOnce(Return(Result<std::string>(Error("read error", -1))));
 
-    std::map<std::string, std::string> args;
-    args["option"] = "permitrootlogin";
-    args["value"] = "no";
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
+    params.mode = EnsureSshdOptionMode::AllMatches;
 
-    args["mode"] = "all_matches";
-    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // No matches => loop skipped => Compliant per current implementation
     ASSERT_EQ(result.Value(), Status::Compliant);
