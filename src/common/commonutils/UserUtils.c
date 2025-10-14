@@ -572,7 +572,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     else
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
-                        status = errno ? errno : ENOENT;
+                        status = errno;
                         break;
                     }
                 }
