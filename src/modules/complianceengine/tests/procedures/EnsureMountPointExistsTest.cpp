@@ -1,12 +1,13 @@
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureMountPointExists.h>
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
 
 using ComplianceEngine::AuditEnsureMountPointExists;
+using ComplianceEngine::EnsureMountPointExistsParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -50,23 +51,14 @@ protected:
     }
 };
 
-TEST_F(EnsureMountPointExistsTest, AuditNoArgument)
-{
-    std::map<std::string, std::string> args;
-
-    auto result = AuditEnsureMountPointExists(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "No mount point provided");
-}
-
 TEST_F(EnsureMountPointExistsTest, AuditMountPointExists)
 {
     EXPECT_CALL(mContext, ExecuteCommand("findmnt -knl")).WillOnce(Return(Result<std::string>(findmntOutput)));
 
-    std::map<std::string, std::string> args;
-    args["mountPoint"] = "/dev/shm";
+    EnsureMountPointExistsParams params;
+    params.mountPoint = "/dev/shm";
 
-    auto result = AuditEnsureMountPointExists(args, indicators, mContext);
+    auto result = AuditEnsureMountPointExists(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -75,10 +67,10 @@ TEST_F(EnsureMountPointExistsTest, AuditMountPointDoesNotExist)
 {
     EXPECT_CALL(mContext, ExecuteCommand("findmnt -knl")).WillOnce(Return(Result<std::string>(findmntOutput)));
 
-    std::map<std::string, std::string> args;
-    args["mountPoint"] = "/tmp";
+    EnsureMountPointExistsParams params;
+    params.mountPoint = "/tmp";
 
-    auto result = AuditEnsureMountPointExists(args, indicators, mContext);
+    auto result = AuditEnsureMountPointExists(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -87,10 +79,10 @@ TEST_F(EnsureMountPointExistsTest, AuditFindmntCommandFails)
 {
     EXPECT_CALL(mContext, ExecuteCommand("findmnt -knl")).WillOnce(Return(Result<std::string>(Error("Failed to execute findmnt command", -1))));
 
-    std::map<std::string, std::string> args;
-    args["mountPoint"] = "/mnt/data";
+    EnsureMountPointExistsParams params;
+    params.mountPoint = "/mnt/data";
 
-    auto result = AuditEnsureMountPointExists(args, indicators, mContext);
+    auto result = AuditEnsureMountPointExists(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_NE(result.Error().message.find("Failed to execute findmnt command"), std::string::npos);
 }

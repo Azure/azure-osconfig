@@ -3,9 +3,8 @@
 
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "NetworkTools.h"
-#include "ProcedureMap.h"
 
+#include <EnsureFirewallOpenPorts.h>
 #include <arpa/inet.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -48,8 +47,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_GetOpenPortsFails_ReturnsE
 {
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Error("Command failed", 1)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 1);
@@ -62,8 +60,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_IptablesCommandFails_Retur
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Error("iptables: command not found", 127)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 127);
@@ -77,8 +74,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_NoOpenPorts_ReturnsComplia
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(iptablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -93,8 +89,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_OnlyLocalPorts_ReturnsComp
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(iptablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -112,8 +107,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_AllPortsInIptables_Returns
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(iptablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -130,8 +124,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_PortNotInIptables_ReturnsN
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(iptablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -148,8 +141,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_IgnoresIPv6Ports_ReturnsCo
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("iptables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(iptablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIptablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -161,8 +153,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_GetOpenPortsFails_Returns
 {
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Error("Command failed", 1)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIp6tablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 1);
@@ -175,8 +166,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_Ip6tablesCommandFails_Ret
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ip6tables -L INPUT -v -n")).WillOnce(Return(Error("ip6tables: command not found", 127)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIp6tablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 127);
@@ -194,8 +184,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_AllIPv6PortsInIp6tables_R
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ip6tables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(ip6tablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIp6tablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -212,8 +201,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_IPv6PortNotInIp6tables_Re
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ip6tables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(ip6tablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIp6tablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -230,8 +218,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_IgnoresIPv4Ports_ReturnsC
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ip6tables -L INPUT -v -n")).WillOnce(Return(Result<std::string>(ip6tablesOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureIp6tablesOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -243,8 +230,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_GetOpenPortsFails_ReturnsError)
 {
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Error("Command failed", 1)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 1);
@@ -257,8 +243,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UfwCommandFails_ReturnsError)
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Error("ufw: command not found", 127)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 127);
@@ -276,8 +261,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoSeparatorInOutput_ReturnsErro
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_TRUE(result.Error().message.find("Invalid") != std::string::npos);
@@ -297,8 +281,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoOpenPorts_ReturnsCompliant)
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -321,8 +304,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_AllPortsInUfw_ReturnsCompliant)
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -344,8 +326,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_IPv4PortNotInUfw_ReturnsNonComp
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -368,8 +349,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_IPv6PortsHandledCorrectly_Retur
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -391,8 +371,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_IPv6PortNotInUfw_ReturnsNonComp
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -413,8 +392,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_PortWithoutProtocol_ParsedCorre
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -435,8 +413,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_DestinationPortFormat_ParsedCor
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -457,8 +434,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_OnlyLocalPorts_ReturnsCompliant
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -481,8 +457,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_MalformedUfwLines_SkippedGracef
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -496,8 +471,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_Inactive)
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -511,7 +485,6 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_InvalidStatus)
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
     ASSERT_FALSE(result.HasValue());
 }

@@ -48,16 +48,16 @@ repos:
             )
   - repo: local
     hooks:
-      - id: compliance-engine-json-schema
-        name: Check compliance engine JSON schema changes
+      - id: compliance-engine-interface
+        name: Generate symbolic compliance engine interface
         types_or: [c++, json]
-        entry: src/modules/complianceengine/src/lib/GenJSONSchemas.py
+        entry: src/modules/complianceengine/src/lib/GenInterface.py
         language: python
         require_serial: true
         files: |
           (?x)(
           ^src/modules/complianceengine/src/lib/payload.schema.json$|
-          ^src/modules/complianceengine/src/lib/procedures/.*\.cpp$|
+          ^src/modules/complianceengine/src/lib/procedures/.*\.h$|
           ^src/modules/complianceengine/src/lib/procedures/.*\.schema.json$
             )
   - repo: https://github.com/pre-commit/mirrors-clang-format
@@ -69,3 +69,8 @@ repos:
           ^src/modules/complianceengine/.*\.h$|
           ^src/modules/complianceengine/.*\.cpp$
             )
+      exclude: |
+        (?x)(
+        ^src/modules/complianceengine/src/lib/ProcedureMap.h$|
+        ^src/modules/complianceengine/src/lib/ProcedureMap.cpp$
+        )

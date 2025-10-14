@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
-#include <Evaluator.h>
 #include <Regex.h>
+#include <SystemdUnitState.h>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -20,59 +20,49 @@ namespace ComplianceEngine
 // man systemd.timer /Unit=
 // https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html
 // Unit=  # The unit to activate when this timer elapses.
-AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:value of systemd ActiveState of unitName to match",
-    "LoadState:value of systemd LoadState of unitName to match", "UnitFileState:value of systemd UnitFileState of unitName to match",
-    "Unit:value of systemd property Unit, used in systemd.timer, name of unit to run when timer elapses ")
+Result<Status> AuditSystemdUnitState(const SystemdUnitStateParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     struct systemdQueryParams
     {
         std::string argName;
-        std::string value;
-        Optional<regex> valueRegex;
-        systemdQueryParams(std::string name)
+        Optional<Pattern> pattern;
+        systemdQueryParams(const char* name)
             : argName(name),
-              value("")
+              pattern(Optional<Pattern>())
         {
         }
     };
-    systemdQueryParams params[] = {
-        systemdQueryParams("ActiveState"), systemdQueryParams("LoadState"), systemdQueryParams("UnitFileState"), systemdQueryParams("Unit")};
+    systemdQueryParams queryParams[] = {"ActiveState", "LoadState", "UnitFileState", "Unit"};
     bool argFound = false;
     auto log = context.GetLogHandle();
     std::string systemCtlCmd = "systemctl show ";
 
-    auto it = args.find("unitName");
-    if (it == args.end())
-    {
-        OsConfigLogError(log, "Error: EnsureSystemdUnit: missing 'unitName' parameter ");
-        return Error("Missing 'unitName' parameter");
-    }
-    auto unitName = std::move(it->second);
-
-    for (auto& param : params)
-    {
-        it = args.find(param.argName);
-        if (it == args.end())
-        {
-            continue;
-        }
+    auto setParamValue = [&](systemdQueryParams& param, Pattern pattern) {
         argFound = true;
-        param.value = it->second;
-        OsConfigLogDebug(log, "SystemdUnitState check unit name '%s' arg '%s' value '%s'", unitName.c_str(), param.argName.c_str(), param.value.c_str());
-        try
-        {
-            param.valueRegex = regex(param.value);
-            systemCtlCmd += "-p " + param.argName + " ";
-        }
-        catch (const std::exception& e)
-        {
-            OsConfigLogError(log, "Regex error: %s", e.what());
-            return Error("Failed to compile regex '" + param.value + "' error: " + e.what());
-        }
-    }
-    systemCtlCmd += unitName;
+        OsConfigLogDebug(log, "SystemdUnitState check unit name '%s' arg '%s'", params.unitName.c_str(), param.argName.c_str());
+        param.pattern = std::move(pattern);
+        systemCtlCmd += "-p " + param.argName + " ";
+    };
 
-    if (argFound == false)
+    if (params.ActiveState.HasValue())
+    {
+        setParamValue(queryParams[0], params.ActiveState.Value());
+    }
+    if (params.LoadState.HasValue())
+    {
+        setParamValue(queryParams[1], params.LoadState.Value());
+    }
+    if (params.UnitFileState.HasValue())
+    {
+        setParamValue(queryParams[2], params.UnitFileState.Value());
+    }
+    if (params.Unit.HasValue())
+    {
+        setParamValue(queryParams[3], params.Unit.Value());
+    }
+    systemCtlCmd += params.unitName;
+
+    if (!argFound)
     {
         OsConfigLogError(log, "Error: EnsureSystemdUnit: none of 'activeState loadState UnitFileState' parameters are present");
         return Error("None of 'activeState loadState UnitFileState' parameters are present");
@@ -99,34 +89,36 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         auto name = line.substr(0, eqSign);
         auto value = line.substr(eqSign + 1);
         bool matched = false;
-        for (auto& param : params)
+        for (auto& param : queryParams)
         {
-            if (!param.valueRegex.HasValue() || (name != param.argName))
+            if (!param.pattern.HasValue() || (name != param.argName))
             {
                 continue;
             }
-            if (!regex_match(value, param.valueRegex.Value()))
+            if (!regex_match(value, param.pattern->GetRegex()))
             {
-                OsConfigLogDebug(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ", unitName.c_str(),
-                    name.c_str(), param.value.c_str(), value.c_str());
-                return indicators.NonCompliant("Failed to match systemctl unit name '" + unitName + "' field '" + name + "' value '" + value +
-                                               "' with pattern '" + param.value + "'");
+                // OsConfigLogDebug(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ",
+                // params.unitName.c_str(), name.c_str(), param.value.c_str(), value.c_str());
+                OsConfigLogDebug(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'", params.unitName.c_str(), name.c_str(),
+                    value.c_str());
+                return indicators.NonCompliant("Failed to match systemctl unit name '" + params.unitName + "' field '" + name + "' value '" + value +
+                                               "' with pattern '" + param.pattern->GetPattern() + "'");
             }
             else
             {
-                indicators.Compliant("Successfully matched systemctl unit name '" + unitName + "' field '" + name + "' value '" + value +
-                                     "' with pattern '" + param.value + "'");
+                indicators.Compliant("Successfully matched systemctl unit name '" + params.unitName + "' field '" + name + "' value '" + value +
+                                     "' with pattern '" + param.pattern->GetPattern() + "'");
             }
             matched = true;
         }
         if (matched == false)
         {
-            OsConfigLogError(log, "Error match systemctl unit name '%s' state '%s' not matched any arguments", unitName.c_str(), name.c_str());
+            OsConfigLogError(log, "Error match systemctl unit name '%s' state '%s' not matched any arguments", params.unitName.c_str(), name.c_str());
             return Status::NonCompliant;
         }
     }
 
-    OsConfigLogDebug(log, "Success to match systemctl unit name '%s' for name all params ", unitName.c_str());
+    OsConfigLogDebug(log, "Success to match systemctl unit name '%s' for name all params ", params.unitName.c_str());
     return Status::Compliant;
 }
 
