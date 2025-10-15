@@ -9,8 +9,8 @@
 #include <string>
 
 static OsConfigLogHandle g_log;
-static const char* g_logFile = "/var/log/osconfig_telemetry_exe.log";
-static const char* g_rolledLogFile = "/var/log/osconfig_telemetry_exe.bak";
+static const char* g_logFile = "/var/log/osconfig_telemetry.log";
+static const char* g_rolledLogFile = "/var/log/osconfig_telemetry.bak";
 
 void __attribute__((constructor)) Init(void)
 {
@@ -44,8 +44,9 @@ int main(int argc, char* argv[])
 
     try
     {
-        Telemetry::TelemetryManager telemetryManager(args.verbose, args.teardown_time);
-        OsConfigLogInfo(g_log, "Telemetry initialized successfully!");
+        OsConfigLogInfo(g_log, "Telemetry initializing...");
+        Telemetry::TelemetryManager telemetryManager(args.verbose, args.teardown_time, g_log);
+
         telemetryManager.ProcessJsonFile(args.filepath);
         OsConfigLogInfo(g_log, "Processed telemetry JSON file: %s", args.filepath.c_str());
 
@@ -59,8 +60,6 @@ int main(int argc, char* argv[])
         OsConfigLogError(g_log, "Error: Telemetry operation failed: %s", e.what());
         return 1;
     }
-
-    OsConfigLogInfo(g_log, "Telemetry shutdown successfully!");
 
     return 0;
 }

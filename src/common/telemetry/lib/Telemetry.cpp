@@ -8,12 +8,12 @@ LOGMANAGER_INSTANCE
 
 #include <algorithm>
 #include <chrono>
-#include <ScopeGuard.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <thread>
 
@@ -22,8 +22,8 @@ using namespace MAT;
 namespace Telemetry
 {
 
-TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime)
-    : m_log(OpenLog("/var/log/osconfig_telemetry.log", NULL))
+TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigLogHandle logHandle)
+    : m_log(logHandle)
     , m_logger(nullptr)
 {
 #if defined(DEBUG) || defined(_DEBUG) || !defined(NDEBUG)
@@ -48,15 +48,9 @@ TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime)
 
 TelemetryManager::~TelemetryManager() noexcept
 {
-    ScopeGuard sg{[&]()
-    {
-        CloseLog(&m_log);
-    }};
-
-    OsConfigLogInfo(m_log, "Shutting down telemetry...");
+    OsConfigLogInfo(m_log, "Telemetry shutting down...");
     m_logger->UploadNow();
-    std::this_thread::sleep_for(std::chrono::microseconds(10)); // Without sleep, the upload may not complete
-    m_logger->FlushAndTeardown();
+    OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
 }
 
 void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
@@ -128,7 +122,6 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
     return true;
 }
 
-// TODO: Breakout functions
 void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
 {
     OsConfigLogDebug(m_log, "Processing JSON line: %s", jsonLine.c_str());

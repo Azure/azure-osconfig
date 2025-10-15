@@ -5,7 +5,6 @@
 #define TELEMETRY_HPP
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -26,7 +25,7 @@ namespace Telemetry
         static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
         static constexpr const char* TELEMETRY_VERSION = "1.0.0";
 
-        explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
+        explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
 
         ~TelemetryManager() noexcept;
 

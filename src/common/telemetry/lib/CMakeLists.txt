@@ -85,17 +85,13 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
-# commonutils provides public telemetry targets not available since we are built
-# externally. Create an alias for telemetry
-add_library(telemetry ALIAS telemetrylib)
-
 target_link_libraries(telemetrylib
     PUBLIC
-        commonutils
-        nlohmann_json::nlohmann_json
+        logging
     PRIVATE
         ${MAT_SDK_LIB}/libmat.a
         unofficial::sqlite3::sqlite3
+        nlohmann_json::nlohmann_json
         CURL::libcurl
         OpenSSL::SSL
         dl
