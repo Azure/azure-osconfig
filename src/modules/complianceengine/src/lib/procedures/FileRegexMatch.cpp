@@ -144,9 +144,26 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
-        if (entry->d_type != DT_REG)
+        if (entry->d_type != DT_REG && entry->d_type != DT_LNK)
         {
             continue;
+        }
+
+        if (entry->d_type == DT_LNK)
+        {
+            struct stat st;
+            if (0 != stat((params.path + "/" + entry->d_name).c_str(), &st))
+            {
+                const int status = errno;
+                OsConfigLogInfo(context.GetLogHandle(), "Failed to stat file '%s/%s': %s", params.path.c_str(), entry->d_name, strerror(status));
+                errorCount++;
+                continue;
+            }
+
+            if (!S_ISREG(st.st_mode))
+            {
+                continue;
+            }
         }
 
         if (!regex_match(entry->d_name, params.filenamePattern))
