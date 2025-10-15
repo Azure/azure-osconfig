@@ -173,7 +173,6 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     }
 
     // Create event with the event name
-    OsConfigLogDebug(m_log, "Processing event: %s", eventName.c_str());
     EventProperties event(eventName);
 
     // Iterate over all key/value pairs in the JSON object
@@ -187,8 +186,6 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
         }
 
         const auto& value = it.value();
-
-        OsConfigLogDebug(m_log, "Processing key: %s", key.c_str());
 
         // Handle different JSON value types
         switch (value.type())

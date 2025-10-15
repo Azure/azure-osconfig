@@ -85,6 +85,10 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
+# commonutils provides public telemetry targets not available since we are built
+# externally. Create an alias for telemetry
+add_library(telemetry ALIAS telemetrylib)
+
 target_link_libraries(telemetrylib
     PUBLIC
         commonutils
