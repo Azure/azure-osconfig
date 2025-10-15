@@ -22,24 +22,24 @@ jobs:
         run: |
           matrix="$(cat <<'EOL'
           [
-            { "name": "almalinux-9", "arch": "amd64", "tag": "latest" },
-            { "name": "amazonlinux-2", "arch": "amd64", "tag": "latest" },
-            { "name": "azurelinux-3", "arch": "amd64", "tag": "latest" },
-            { "name": "centos-7", "arch": "amd64", "tag": "latest" },
-            { "name": "centos-8", "arch": "amd64", "tag": "latest" },
-            { "name": "debian-10", "arch": "amd64", "tag": "latest" },
-            { "name": "debian-11", "arch": "amd64", "tag": "latest" },
-            { "name": "debian-12", "arch": "amd64", "tag": "latest" },
-            { "name": "mariner-2", "arch": "amd64", "tag": "latest" },
-            { "name": "oraclelinux-7", "arch": "amd64", "tag": "latest" },
-            { "name": "oraclelinux-8", "arch": "amd64", "tag": "latest" },
-            { "name": "rhel-7", "arch": "amd64", "tag": "latest" },
-            { "name": "rhel-8", "arch": "amd64", "tag": "latest" },
-            { "name": "rhel-9", "arch": "amd64", "tag": "latest" },
-            { "name": "sles-15", "arch": "amd64", "tag": "latest" },
-            { "name": "ubuntu-20.04", "arch": "amd64", "tag": "latest" },
-            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" },
-            { "name": "ubuntu-24.04", "arch": "amd64", "tag": "latest" }
+            { "name": "almalinux-9", "arch": "amd64", "tag": "sha-d2c6bd9" },
+            { "name": "amazonlinux-2", "arch": "amd64", "tag": "sha-651fcca" },
+            { "name": "azurelinux-3", "arch": "amd64", "tag": "sha-029c909" },
+            { "name": "centos-7", "arch": "amd64", "tag": "sha-fca7046" },
+            { "name": "centos-8", "arch": "amd64", "tag": "sha-3ed4e39" },
+            { "name": "debian-10", "arch": "amd64", "tag": "sha-f35850f" },
+            { "name": "debian-11", "arch": "amd64", "tag": "sha-97c5185" },
+            { "name": "debian-12", "arch": "amd64", "tag": "sha-05a41d7" },
+            { "name": "mariner-2", "arch": "amd64", "tag": "sha-7ac04b9" },
+            { "name": "oraclelinux-7", "arch": "amd64", "tag": "sha-77b4c99" },
+            { "name": "oraclelinux-8", "arch": "amd64", "tag": "sha-2c05af2" },
+            { "name": "rhel-7", "arch": "amd64", "tag": "sha-35fc1d2" },
+            { "name": "rhel-8", "arch": "amd64", "tag": "sha-36aa8a9" },
+            { "name": "rhel-9", "arch": "amd64", "tag": "sha-b4b0dec" },
+            { "name": "sles-15", "arch": "amd64", "tag": "sha-5dda8a7" },
+            { "name": "ubuntu-20.04", "arch": "amd64", "tag": "sha-d880441" },
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "sha-1398461" },
+            { "name": "ubuntu-24.04", "arch": "amd64", "tag": "sha-ecf8fcb" }
           ]
           EOL
           )"
