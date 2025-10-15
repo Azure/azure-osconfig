@@ -48,7 +48,7 @@ int OSConfigTelemetryIsInitialized(void);
 }
 #endif
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG) || !defined(NDEBUG)
 #define VERBOSE_FLAG_IF_DEBUG "-v"
 #else
 #define VERBOSE_FLAG_IF_DEBUG ""
