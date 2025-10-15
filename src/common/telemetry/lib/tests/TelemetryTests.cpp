@@ -11,12 +11,25 @@
 class TelemetryTest : public ::testing::Test
 {
 protected:
+    std::string m_testDir;
+    std::string m_testJsonFile;
+
+    void SetUp() override
+    {
+        // Create a temporary directory for test files
+        char tmpDir[] = "/tmp/telemetry_test_XXXXXX";
+        ASSERT_NE(nullptr, mkdtemp(tmpDir));
+        m_testDir = std::string(tmpDir);
+        m_testJsonFile = m_testDir + "/test_telemetry.json";
+    }
+
     void TearDown() override
     {
-        // Clean up any test files
-        if (std::remove(m_testJsonFile.c_str()) == 0)
+        // Clean up test directory
+        if (!m_testDir.empty())
         {
-            // File was successfully removed
+            std::string cmd = "rm -rf " + m_testDir;
+            system(cmd.c_str());
         }
     }
 
@@ -32,8 +45,6 @@ protected:
         file.close();
         return true;
     }
-
-    const std::string m_testJsonFile = "/tmp/test_telemetry.json";
 };
 
 // Test processing a non-existent file
@@ -66,7 +77,7 @@ TEST_F(TelemetryTest, ProcessInvalidJsonFile)
 {
     ASSERT_TRUE(CreateTestJsonFile("invalid json content"));
     Telemetry::TelemetryManager telemetryManager(false, 1);
-    EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile)); // Method should return true even if individual lines fail
+    EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
 }
 
 // Test processing a file with mixed valid and invalid JSON lines

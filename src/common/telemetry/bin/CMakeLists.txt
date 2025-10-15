@@ -5,6 +5,10 @@ project(telemetrybin)
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
-add_executable(telemetrybin main.cpp)
+add_executable(telemetrybin main.cpp args.cpp)
 
 target_link_libraries(telemetrybin PRIVATE telemetrylib)
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

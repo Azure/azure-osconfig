@@ -24,8 +24,7 @@ namespace Telemetry
     {
     public:
         static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
-        static const char* INSTANCE_NAME = "OSConfigTelemetry";
-        static const char* TELEMETRY_VERSION = "1.0.0";
+        static constexpr const char* TELEMETRY_VERSION = "1.0.0";
 
         explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
 
@@ -43,17 +42,11 @@ namespace Telemetry
         bool ProcessJsonFile(const std::string& filePath);
 
     private:
-        // Private instance members
         OsConfigLogHandle m_log;
-        std::unique_ptr<ILogManager> m_logger;
+        std::unique_ptr<MAT::ILogManager> m_logger;
 
-        // Generic event logging (private)
         void EventWrite(Microsoft::Applications::Events::EventProperties event);
-
-        // Validate JSON parameters against event parameter set
         bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
-
-        // Process a single JSON line (private)
         void ProcessJsonLine(const std::string& jsonLine);
     };
 

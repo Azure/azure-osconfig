@@ -171,6 +171,7 @@ endif()
 if (BUILD_TELEMETRY)
     ExternalProject_Get_Property(telemetry-external BINARY_DIR)
     set(TELEMETRY_TESTS_DIR ${BINARY_DIR}/lib/tests)
+    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
         ${CMAKE_BINARY_DIR}/ExternalTests.cmake

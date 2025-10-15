@@ -17,6 +17,7 @@ if (BUILD_TELEMETRY)
     ExternalProject_Add(
         telemetry-external
         INSTALL_COMMAND ""  # No install target on telemetry target
+        BUILD_ALWAYS TRUE
         SOURCE_DIR
             ${COMMON_SRC_DIR}/telemetry
         CMAKE_ARGS

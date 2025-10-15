@@ -65,7 +65,10 @@ find_package(Threads REQUIRED)  # Threads can still use system
 find_package(unofficial-sqlite3 REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 find_package(nlohmann_json REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 
+include_directories(../../telemetry)
+add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)
 add_subdirectory(../../logging ${CMAKE_CURRENT_BINARY_DIR}/logging)
+add_subdirectory(../../commonutils ${CMAKE_CURRENT_BINARY_DIR}/commonutils)
 
 # Add telemetry ingestion key (if defined)
 if(DEFINED ENV{OsConfigTelemetryApiKey} AND NOT "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
@@ -84,7 +87,7 @@ add_dependencies(telemetrylib 1dscpplib)
 
 target_link_libraries(telemetrylib
     PUBLIC
-        logging
+        commonutils
         nlohmann_json::nlohmann_json
     PRIVATE
         ${MAT_SDK_LIB}/libmat.a
@@ -97,10 +100,10 @@ target_link_libraries(telemetrylib
 
 target_include_directories(telemetrylib
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}../inc
+        ${CMAKE_CURRENT_SOURCE_DIR}../
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${MAT_SDK_INCLUDE}
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 if(BUILD_TESTS)
