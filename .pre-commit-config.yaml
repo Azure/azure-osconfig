@@ -44,7 +44,10 @@ repos:
         files: |
           (?x)(
           ^src/modules/complianceengine/src/.*\.h$|
-          ^src/modules/complianceengine/src/.*\.cpp$
+          ^src/modules/complianceengine/src/.*\.cpp$|
+          ^src/common/telemetry/.*\.h$|
+          ^src/common/telemetry/.*\.hpp$|
+          ^src/common/telemetry/.*\.c$
             )
   - repo: local
     hooks:
@@ -67,5 +70,8 @@ repos:
       files: |
          (?x)(
           ^src/modules/complianceengine/.*\.h$|
-          ^src/modules/complianceengine/.*\.cpp$
+          ^src/modules/complianceengine/.*\.cpp$|
+          ^src/common/telemetry/.*\.h$|
+          ^src/common/telemetry/.*\.hpp$|
+          ^src/common/telemetry/.*\.c$
             )
