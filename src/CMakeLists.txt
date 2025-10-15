@@ -121,6 +121,7 @@ endif()
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
+add_compile_options(-D_GNU_SOURCE)
 if (BUILD_TESTS)
     message(STATUS "Google Unit Test: Enabled")
     enable_testing()
