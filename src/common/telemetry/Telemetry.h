@@ -93,8 +93,8 @@ static inline int64_t TsToUs(struct timespec ts)
         const char* telemetryModuleDirectoryMacro = OSConfigTelemetryGetModuleDirectory();                                                             \
         if (telemetryFileMacro && telemetryFileNameMacro && telemetryModuleDirectoryMacro)                                                             \
         {                                                                                                                                              \
-            char* command = FormatAllocateString("%s/%s %s %s %d", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, VERBOSE_FLAG_IF_DEBUG,        \
-                telemetryFileNameMacro, TELEMETRY_TIMEOUT_SECONDS);                                                                                    \
+            char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, telemetryFileNameMacro, \
+                TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
             OSConfigTelemetryCleanup();                                                                                                                \
             if (NULL != command)                                                                                                                       \
             {                                                                                                                                          \
