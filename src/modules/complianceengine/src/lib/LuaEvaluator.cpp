@@ -317,6 +317,8 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
 
     std::map<std::string, std::string> args;
 
+    OsConfigLogInfo(log, "Processing lua procedure %s", procedureName.c_str());
+
     if ((lua_gettop(L) >= 1) && (lua_istable(L, 1)))
     {
         lua_pushnil(L); // First key
@@ -331,7 +333,10 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
             }
             else
             {
-                lua_pushstring(L, "Invalid key-value pair");
+                const char* k = lua_tostring(L, -2);
+                const char* v = lua_tostring(L, -1);
+                std::string errormsg = std::string("Invalid key-value pair '") + (k ? k : "NIL") + "':'" + (v ? v : "NIL") + "'";
+                lua_pushstring(L, errormsg.c_str());
                 lua_error(L);
                 return 0;
             }
