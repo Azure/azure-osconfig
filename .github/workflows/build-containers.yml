@@ -115,7 +115,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
-          # Always push the new image so that new-test-matrix.txt can be used
+          # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
