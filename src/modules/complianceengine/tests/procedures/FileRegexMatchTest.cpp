@@ -527,3 +527,64 @@ TEST_F(FileRegexMatchTest, Audit_TestPattern)
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_1)
+{
+    MakeTempfile("test");
+    const auto targetFilename = mTempfiles.back();
+    const auto linkFilename = targetFilename + ".link";
+
+    AuditFileRegexMatchParams params;
+    params.path = mTempdir;
+    params.filenamePattern = regex(".*\\.link");
+    params.matchOperation = Operation::Match;
+    params.matchPattern = R"(^test$)";
+    params.behavior = Behavior::AtLeastOneExists;
+
+    ASSERT_EQ(0, symlink(targetFilename.c_str(), linkFilename.c_str()));
+    auto result = AuditFileRegexMatch(params, mIndicators, mContext);
+    EXPECT_EQ(0, unlink(linkFilename.c_str()));
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_2)
+{
+    MakeTempfile("test");
+    const auto targetFilename = mTempfiles.back();
+    const auto linkFilename = targetFilename + ".link";
+
+    AuditFileRegexMatchParams params;
+    params.path = mTempdir;
+    params.filenamePattern = regex(".*\\.link");
+    params.matchOperation = Operation::Match;
+    params.matchPattern = R"(^foo$)"; // pattern mismatch against 'test'
+    params.behavior = Behavior::AtLeastOneExists;
+
+    ASSERT_EQ(0, symlink(targetFilename.c_str(), linkFilename.c_str()));
+    auto result = AuditFileRegexMatch(params, mIndicators, mContext);
+    EXPECT_EQ(0, unlink(linkFilename.c_str()));
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_Directory)
+{
+    const auto targetDirectory = std::string(mTempdir) + "/Audit_SymlinkFollow_Directory";
+    const auto linkFilename = targetDirectory + ".link";
+
+    AuditFileRegexMatchParams params;
+    params.path = mTempdir;
+    params.filenamePattern = regex(".*\\.link");
+    params.matchOperation = Operation::Match;
+    params.matchPattern = R"(.*)";
+    params.behavior = Behavior::NoneExist;
+
+    ASSERT_EQ(0, mkdir(targetDirectory.c_str(), 0755));
+    EXPECT_EQ(0, symlink(targetDirectory.c_str(), linkFilename.c_str()));
+    auto result = AuditFileRegexMatch(params, mIndicators, mContext);
+    EXPECT_EQ(0, unlink(linkFilename.c_str()));
+    EXPECT_EQ(0, rmdir(targetDirectory.c_str()));
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
