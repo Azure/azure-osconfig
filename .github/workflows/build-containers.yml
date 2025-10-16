@@ -54,6 +54,7 @@ jobs:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup image
         id: image
         run: |
@@ -67,7 +68,6 @@ jobs:
           echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
           echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
           echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
-          echo "image=$image" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -88,27 +88,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           tags: |
-            type=sha,enable=true,priority=900,prefix=sha256-,suffix=,format=long
-            type=schedule,enable=true,priority=10,prefix=date-,suffix=,pattern=nightly
-            type=raw,value=git-${{ github.sha }}
-            type=raw,value=run-${{ github.run_number }}
-
-      - name: Save digest
-        run: |
-          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json}}' | jq -r '.tags [] |select (contains(":sha256-"))')
-          DIGEST_SHA=$(echo ${DIGEST_SHA} | sed -e 's#.*:sha256-\(.*\)#@sha256:\1#')
-          jq --null-input \
-          --arg distibution ${{ steps.image.outputs.distro }} \
-          --arg digest_sha ${DIGEST_SHA} \
-          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha }' > digest-${{ steps.image.outputs.distro }}.txt
-          cat digest-${{ steps.image.outputs.distro }}.txt
-
-      - name: Upload digest
-        uses: actions/upload-artifact@v4
-        with:
-          overwrite: true
-          name: digest-${{ steps.image.outputs.distro }}
-          path: digest-*.txt
+            type=raw,value=latest
+            type=raw,value=${{ github.run_number }}
+            type=sha
 
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -118,20 +100,3 @@ jobs:
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  post-build:
-    name: Post-Build Digest Collector
-    needs: [modified-containers, docker-build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all digests artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: all-digests
-          pattern: digest-*
-          merge-multiple: true
-
-      - name:  Print results
-        run: |
-          find  all-digests
-          find  all-digests -name 'digest-*.txt' -exec cat {} \;
