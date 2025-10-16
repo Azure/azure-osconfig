@@ -2787,7 +2787,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
         "$FileCreateMode 00640",
         "$FileCreateMode  00640\n",
         "# This is a test for\n   $FileCreateMode 0640\n",
-        "$FileCreateMode 0600\n"
+        "$FileCreateMode 0600\n",
         "$FileCreateMode 600",
         "$FileCreateMode     600"
     };
