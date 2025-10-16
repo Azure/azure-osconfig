@@ -135,9 +135,8 @@ jobs:
       - name:  Combine all digest artifacts
         run: |
           rm new-test-matrix.txt || true
-          # find  all-digests -name 'digest-*.txt' -exec cat {} \;
           function concatenate_digest() {
-            FILES=( $(find all-digests -name 'digest-*.txt') )
+            FILES=( $(find all-digests -name 'digest-*.txt') | sort )
             echo "["
             last=$((${#FILES[@]}-1))
             for((i = 0; i < ${#FILES[@]}; i++)); do
