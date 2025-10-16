@@ -112,6 +112,13 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
             error += lua_tostring(L, -1);
         }
         OsConfigLogError(log, "%s", error.c_str());
+        luaL_traceback(L, L, NULL, 1);
+        const char* traceback = lua_tostring(L, -1);
+        if (traceback)
+        {
+            OsConfigLogError(log, "Lua Traceback: %s", traceback);
+        }
+        lua_pop(L, 1);
         lua_settop(L, 0);
         return Error(error);
     }
