@@ -50,14 +50,6 @@ RUN wget https://github.com/git/git/archive/refs/tags/v${GIT_VERSION}.tar.gz \
     && rm -rf git-${GIT_VERSION}* \
     && hash -r
 
-# Install vcpkg
-RUN git clone https://github.com/microsoft/vcpkg.git --branch ${VCPKG_REF} --single-branch /vcpkg
-COPY ./src/vcpkg.json /vcpkg/
-COPY ./src/vcpkg-configuration.json /vcpkg/
-WORKDIR /vcpkg
-RUN ./bootstrap-vcpkg.sh && ./vcpkg install && ./vcpkg integrate install
-ENV VCPKG_ROOT=/vcpkg
-
 # Set GCC 4.8 as default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
 
