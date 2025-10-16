@@ -57,7 +57,8 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
     }
 
     result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
-    FREE_MEMORY(formattedCommand);
+    free(formattedCommand);
+    formattedCommand=NULL;
     return result;
 }
 

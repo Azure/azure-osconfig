@@ -95,7 +95,8 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
 
-        FREE_MEMORY(g_gitBranch);
+        free(g_gitBranch);
+        g_gitBranch=NULL;
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
@@ -117,7 +118,8 @@ void ConfigurationInitialize(const char* configurationFile)
     strncpy(g_configurationFile, configurationFile ? configurationFile : g_osConfigConfigurationFile, nameLength);
 
     configuration = LoadConfigurationFromFile(g_configurationFile);
-    FREE_MEMORY(configuration);
+    free(configuration);
+    configuration=NULL;
 
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized for target configuration file: %s", g_configurationModuleName, g_configurationFile);
 }
@@ -126,7 +128,8 @@ void ConfigurationShutdown(void)
 {
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
 
-    FREE_MEMORY(g_gitBranch);
+    free(g_gitBranch);
+    g_gitBranch=NULL;
 
     CloseLog(&g_log);
 }
@@ -247,7 +250,8 @@ static int UpdateConfigurationFile(void)
 
             if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
             {
-                FREE_MEMORY(g_gitBranch);
+                free(g_gitBranch);
+                g_gitBranch=NULL;
                 g_gitBranch = DuplicateString(gitBranch);
             }
             else
@@ -293,8 +297,10 @@ static int UpdateConfigurationFile(void)
         json_free_serialized_string(newConfiguration);
     }
 
-    FREE_MEMORY(gitBranch);
-    FREE_MEMORY(existingConfiguration);
+    free(gitBranch);
+    gitBranch=NULL;
+    free(existingConfiguration);
+    existingConfiguration=NULL;
 
     return status;
 }
@@ -581,7 +587,8 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                     {
                         if (jsonString)
                         {
-                            FREE_MEMORY(g_gitBranch);
+                            free(g_gitBranch);
+                            g_gitBranch=NULL;
                             g_gitBranch = DuplicateString(jsonString);
                         }
                         else
@@ -625,7 +632,8 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         json_value_free(jsonValue);
     }
 
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
 
     if (IsDebugLoggingEnabled())
     {
@@ -641,5 +649,6 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
 void ConfigurationMmiFree(MMI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
 }

@@ -113,7 +113,8 @@ TEST_F(ConfigurationTest, MmiGetInfo)
     EXPECT_STREQ(m_expectedMmiInfo, payloadString);
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     ConfigurationMmiFree(payload);
 }
 
@@ -146,7 +147,8 @@ TEST_F(ConfigurationTest, MmiGet)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        FREE_MEMORY(payloadString);
+        free(payloadString);
+        payloadString=NULL;
         ConfigurationMmiFree(payload);
     }
 
@@ -183,7 +185,8 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-        FREE_MEMORY(payloadString);
+        free(payloadString);
+        payloadString=NULL;
         ConfigurationMmiFree(payload);
     }
 
@@ -292,8 +295,10 @@ TEST_F(ConfigurationTest, MmiSet)
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
             EXPECT_STREQ(payloadString, testCombinations[i].reportedValue);
-            FREE_MEMORY(payload);
-            FREE_MEMORY(payloadString);
+            free(payload);
+            payload=NULL;
+            free(payloadString);
+            payloadString=NULL;
             payloadSizeBytes = 0;
         }
     }

@@ -191,19 +191,23 @@ static void RefreshConnection()
 {
     char* connectionString = NULL;
 
-    FREE_MEMORY(g_x509Certificate);
-    FREE_MEMORY(g_x509PrivateKeyHandle);
+    free(g_x509Certificate);
+    g_x509Certificate=NULL;
+    free(g_x509PrivateKeyHandle);
+    g_x509PrivateKeyHandle=NULL;
 
     if (g_isIotHubEnabled)
     {
         // If initialized with AIS, try to get a new connection string same way:
         if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
         {
-            FREE_MEMORY(g_iotHubConnectionString);
+            free(g_iotHubConnectionString);
+            g_iotHubConnectionString=NULL;
             if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
             {
                 OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
-                FREE_MEMORY(connectionString);
+                free(connectionString);
+                connectionString=NULL;
             }
         }
         else
@@ -224,7 +228,8 @@ static void RefreshConnection()
             {
                 if (FromAis == g_connectionStringSource)
                 {
-                    FREE_MEMORY(g_iotHubConnectionString);
+                    free(g_iotHubConnectionString);
+                    g_iotHubConnectionString=NULL;
                 }
                 else if (!IsWatcherActive())
                 {
@@ -377,7 +382,8 @@ static bool InitializeAgent(void)
                 if (FromAis == g_connectionStringSource)
                 {
                     // We will try to get a new connnection string from AIS and try to connect with that
-                    FREE_MEMORY(g_iotHubConnectionString);
+                    free(g_iotHubConnectionString);
+                    g_iotHubConnectionString=NULL;
                 }
                 else if (false == IsWatcherActive())
                 {
@@ -409,7 +415,8 @@ void CloseAgent(void)
         g_mpiHandle = NULL;
     }
 
-    FREE_MEMORY(g_reportedProperties);
+    free(g_reportedProperties);
+    g_reportedProperties=NULL;
 
     OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
@@ -450,7 +457,8 @@ static void AgentDoWork(void)
                 {
                     if (NULL == (g_moduleHandle = CallIotHubInitialize()))
                     {
-                        FREE_MEMORY(g_iotHubConnectionString);
+                        free(g_iotHubConnectionString);
+                        g_iotHubConnectionString=NULL;
                     }
                 }
                 else
@@ -518,7 +526,8 @@ int main(int argc, char *argv[])
         SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
         SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog()));
         SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog()));
-        FREE_MEMORY(jsonConfiguration);
+        free(jsonConfiguration);
+        jsonConfiguration=NULL;
     }
 
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
@@ -591,17 +600,28 @@ int main(int argc, char *argv[])
 
     OsConfigLogDebug(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
 
-    FREE_MEMORY(osName);
-    FREE_MEMORY(osVersion);
-    FREE_MEMORY(cpuType);
-    FREE_MEMORY(cpuVendor);
-    FREE_MEMORY(cpuModel);
-    FREE_MEMORY(kernelName);
-    FREE_MEMORY(kernelRelease);
-    FREE_MEMORY(kernelVersion);
-    FREE_MEMORY(productName);
-    FREE_MEMORY(productVendor);
-    FREE_MEMORY(encodedProductInfo);
+    free(osName);
+    osName=NULL;
+    free(osVersion);
+    osVersion=NULL;
+    free(cpuType);
+    cpuType=NULL;
+    free(cpuVendor);
+    cpuVendor=NULL;
+    free(cpuModel);
+    cpuModel=NULL;
+    free(kernelName);
+    kernelName=NULL;
+    free(kernelRelease);
+    kernelRelease=NULL;
+    free(kernelVersion);
+    kernelVersion=NULL;
+    free(productName);
+    productName=NULL;
+    free(productVendor);
+    productVendor=NULL;
+    free(encodedProductInfo);
+    encodedProductInfo=NULL;
 
     if (g_isIotHubEnabled)
     {
@@ -620,7 +640,8 @@ int main(int argc, char *argv[])
                     g_proxyOptions.username = proxyUsername;
                     g_proxyOptions.password = proxyPassword;
 
-                    FREE_MEMORY(proxyData);
+                    free(proxyData);
+                    proxyData=NULL;
                 }
             }
         }
@@ -693,7 +714,8 @@ int main(int argc, char *argv[])
 
     // Call the Watcher to initialize itself
     InitializeWatcher(jsonConfiguration, GetLog());
-    FREE_MEMORY(jsonConfiguration);
+    free(jsonConfiguration);
+    jsonConfiguration=NULL;
 
     while (0 == g_stopSignal)
     {
@@ -711,11 +733,16 @@ int main(int argc, char *argv[])
 done:
     OsConfigLogInfo(GetLog(), "OSConfig Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
-    FREE_MEMORY(jsonConfiguration);
-    FREE_MEMORY(g_x509Certificate);
-    FREE_MEMORY(g_x509PrivateKeyHandle);
-    FREE_MEMORY(connectionString);
-    FREE_MEMORY(g_iotHubConnectionString);
+    free(jsonConfiguration);
+    jsonConfiguration=NULL;
+    free(g_x509Certificate);
+    g_x509Certificate=NULL;
+    free(g_x509PrivateKeyHandle);
+    g_x509PrivateKeyHandle=NULL;
+    free(connectionString);
+    connectionString=NULL;
+    free(g_iotHubConnectionString);
+    g_iotHubConnectionString=NULL;
 
     WatcherCleanup(GetLog());
 

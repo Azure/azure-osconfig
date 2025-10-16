@@ -419,12 +419,14 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
 
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
 
-    FREE_MEMORY(buffer);
+    free(buffer);
+    buffer=NULL;
 
     return status;
 }
 
 void DeliveryOptimizationMmiFree(MMI_JSON_STRING payload)
 {
-    FREE_MEMORY(payload);
+    free(payload);
+    payload=NULL;
 }

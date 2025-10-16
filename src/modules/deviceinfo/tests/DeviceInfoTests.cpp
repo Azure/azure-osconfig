@@ -95,7 +95,8 @@ TEST_F(DeviceInfoTest, MmiGetInfo)
     EXPECT_STREQ(m_expectedMmiInfo, payloadString);
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 
-    FREE_MEMORY(payloadString);
+    free(payloadString);
+    payloadString=NULL;
     DeviceInfoMmiFree(payload);
 }
 
@@ -151,7 +152,8 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         {
             EXPECT_STREQ(payloadString, OSCONFIG_VERSION_PAYLOAD);
         }
-        FREE_MEMORY(payloadString);
+        free(payloadString);
+        payloadString=NULL;
         DeviceInfoMmiFree(payload);
     }
 
@@ -191,7 +193,8 @@ TEST_F(DeviceInfoTest, MmiGetTruncatedPayload)
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-        FREE_MEMORY(payloadString);
+        free(payloadString);
+        payloadString=NULL;
         DeviceInfoMmiFree(payload);
     }
 
@@ -230,7 +233,8 @@ TEST_F(DeviceInfoTest, MmiGetOptionalObjects)
             EXPECT_NE(0, payloadSizeBytes);
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            FREE_MEMORY(payloadString);
+            free(payloadString);
+            payloadString=NULL;
             DeviceInfoMmiFree(payload);
         }
     }
