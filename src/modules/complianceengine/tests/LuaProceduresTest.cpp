@@ -87,25 +87,16 @@ protected:
     // Helpers for permission-based iterator tests
     static std::string MakePermsScript(const std::string& hasExpr, const std::string& noExpr)
     {
-        // Build Lua snippet invoking ce.GetFilesystemEntriesWithPerms(has,no) and collecting results
         std::string script;
         script += "local t={} ";
-        script += "for p in ce.GetFilesystemEntriesWithPerms(";
-        script += hasExpr.empty() ? std::string("nil") : hasExpr;
-        script += ",";
-        script += noExpr.empty() ? std::string("nil") : noExpr;
-        script += ") do t[#t+1]=p end table.sort(t) return true, table.concat(t,';')";
+        script += "for p in ce.GetFilesystemEntriesWithPerms(\"" + hasExpr + "\", \"" + noExpr + "\") do ";
+        script += "t[#t+1]=p end table.sort(t) return true, table.concat(t,';')";
         return script;
     }
 };
 
 TEST_F(LuaProceduresTest, GetFilesystemEntriesWithPermsBasic)
 {
-    // Strategy (no production scanner modification):
-    // 1. MockContext supplies an isolated empty root for FilesystemScanner with modest timeouts (30s soft / 60s hard / 5s wait).
-    // 2. We create a tiny file set inside that root BEFORE first call so initial background scan is fast (few entries only).
-    // 3. We call GetFullFilesystem through the Lua procedure; if cache not yet built (error returned), we poll briefly
-    //    (bounded by a short overall test wait ~2s) until cache appears. This avoids adding synchronous scan code to scanner.
     std::string scanRoot = mContext.GetFilesystemScannerRoot();
     std::string execPath = scanRoot + "/perm_exec.sh";
     std::string readPath = scanRoot + "/perm_read.txt";
@@ -123,9 +114,9 @@ TEST_F(LuaProceduresTest, GetFilesystemEntriesWithPermsBasic)
     };
 
     // First script: require owner execute, exclude group write
-    runScript(MakePermsScript(std::to_string(S_IXUSR), std::to_string(S_IWGRP)));
+    runScript(MakePermsScript("0o0001", "0o0020"));
     // Second script: exclude owner execute (select non-exec file)
-    runScript(MakePermsScript("0", std::to_string(S_IXUSR)));
+    runScript(MakePermsScript("0o0000", "0o0001"));
 }
 
 TEST_F(LuaProceduresTest, ListDirectory_NonRecursiveAllFiles)
@@ -190,5 +181,3 @@ TEST_F(LuaProceduresTest, ListDirectory_DirectoriesNotReturned)
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
-
-// Future tests for additional Lua procedures can follow the same pattern using MakeScript helper.
