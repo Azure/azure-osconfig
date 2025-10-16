@@ -24,7 +24,7 @@ jobs:
       - name: Get matrix
         id: get-matrix
         run: |
-          matrix="$(cat .github/test-matrix.txt)"
+          matrix="$(cat .github/test-matrix.json)"
           echo Distros to perform CI on: $matrix
           echo matrix=$matrix >> $GITHUB_OUTPUT
 

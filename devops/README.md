@@ -276,6 +276,6 @@ This folder contains the artifacts and scripts used by our engineering systems (
 
 ## Updating Build contaienrs used for CI builds
 The `docker/<os>-<arch>` - Build containers are used by ci [ci.yml](.github/workflows/ci.yml)
-Their version(digest's) are stored inside [test-matrix.txt](.github/test-matrix.txt)
+Their version(digest's) are stored inside [test-matrix.json](.github/test-matrix.json)
 The [build-containers.yml](.github/workflows/build-contains.yml) is ran whenever any Build Containers dockerfile is changed.
-The [build-containers.yml](.github/workflows/build-contains.yml) produces new-test-matrix.txt that can be copted to [test-matrix.txt](.github/test-matrix.txt) and commited. Then next [ci.yml](.github/workflows/ci.yml) will use updated containers to run builds & tests.
+The [build-containers.yml](.github/workflows/build-contains.yml) produces new-test-matrix.json that can be copted to [test-matrix.json](.github/test-matrix.json) and commited. Then next [ci.yml](.github/workflows/ci.yml) will use updated containers to run builds & tests.

@@ -100,15 +100,15 @@ jobs:
           jq --null-input \
           --arg distibution ${{ steps.image.outputs.distro }} \
           --arg digest_sha ${DIGEST_SHA} \
-          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha }' > digest-${{ steps.image.outputs.distro }}.txt
-          cat digest-${{ steps.image.outputs.distro }}.txt
+          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha }' > digest-${{ steps.image.outputs.distro }}.json
+          cat digest-${{ steps.image.outputs.distro }}.json
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
           overwrite: true
           name: digest-${{ steps.image.outputs.distro }}
-          path: digest-*.txt
+          path: digest-*.json
           retention-days: 1
 
       - name: Build and push
@@ -134,9 +134,9 @@ jobs:
 
       - name:  Combine all digest artifacts
         run: |
-          rm new-test-matrix.txt || true
+          rm new-test-matrix.json || true
           function concatenate_digest() {
-            FILES=( $(find all-digests -name 'digest-*.txt' | sort) )
+            FILES=( $(find all-digests -name 'digest-*.json' | sort) )
             echo "["
             last=$((${#FILES[@]}-1))
             for((i = 0; i < ${#FILES[@]}; i++)); do
@@ -151,11 +151,11 @@ jobs:
             done
             echo "]"
             }
-            concatenate_digest > new-test-matrix.txt
-            cat new-test-matrix.txt
+            concatenate_digest > new-test-matrix.json
+            cat new-test-matrix.json
 
       - name: Upload New Test Matrix
         uses: actions/upload-artifact@v4
         with:
-          name: new-test-matrix.txt
-          path: new-test-matrix.txt
+          name: new-test-matrix.json
+          path: new-test-matrix.json
