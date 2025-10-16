@@ -387,8 +387,14 @@ static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) 
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto buffer = std::string(data, size);
-    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr));
+    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
     return 0;
 }
 
@@ -406,8 +412,14 @@ static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size)
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto buffer = std::string(data, size);
-    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
     return 0;
 }
 
@@ -505,8 +517,14 @@ static int GetStringOptionFromFile_target(const char* data, std::size_t size) no
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto filename = g_context.MakeTemporaryFile(data, size);
-    free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr));
+    free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
     g_context.Remove(filename);
     return 0;
 }
@@ -525,8 +543,14 @@ static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) n
         return c_skip_input;
     }
 
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
     auto filename = g_context.MakeTemporaryFile(data, size);
-    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
     g_context.Remove(filename);
     return 0;
 }
@@ -541,6 +565,12 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
     auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
     {
         return c_skip_input;
     }
@@ -568,7 +598,7 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), values, count, &reason, nullptr);
+    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), values, count, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     delete[] values;
@@ -585,6 +615,12 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
     {
         return c_skip_input;
     }
@@ -607,7 +643,7 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), value, &reason, nullptr);
+    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), value, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     return 0;

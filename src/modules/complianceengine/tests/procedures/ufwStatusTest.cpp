@@ -1,20 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "UfwStatus.h"
+
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
 #include <dirent.h>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <linux/limits.h>
 #include <regex>
 #include <string>
 #include <unistd.h>
 
 using ComplianceEngine::AuditUfwStatus;
+using ComplianceEngine::AuditUfwStatusParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
@@ -55,24 +55,13 @@ protected:
     }
 };
 
-TEST_F(UfwStatusTest, MissingRegexParameter)
-{
-    std::map<std::string, std::string> args;
-    // No statusRegex parameter provided
-
-    auto result = AuditUfwStatus(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'statusRegex' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
 TEST_F(UfwStatusTest, UfwActiveStatusMatches)
 {
     // Setup the expectation for the ufw status command to return active status
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "Status:\\s*active";
+    AuditUfwStatusParams args;
+    args.statusRegex = regex("Status:\\s*active");
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -88,8 +77,8 @@ TEST_F(UfwStatusTest, UfwNotActiveStatusMismatch)
     // Setup the expectation for the ufw status command to return inactive status
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwInactiveOutput)));
 
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "Status:\\s*active";
+    AuditUfwStatusParams args;
+    args.statusRegex = regex("Status:\\s*active");
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -105,8 +94,8 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMatches)
     // Setup the expectation for the ufw status command to return output with firewall rules
     EXPECT_CALL(mContext, ExecuteCommand((ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "22/tcp\\s+ALLOW IN\\s+Anywhere";
+    AuditUfwStatusParams args;
+    args.statusRegex = regex("22/tcp\\s+ALLOW IN\\s+Anywhere");
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -119,11 +108,11 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMatches)
 
 TEST_F(UfwStatusTest, UfwFirewallRuleMissing)
 {
-    // Setup the expectation for the ufw status command to return output with firewall rules
+    // Set up the expectation for the ufw status command to return output with firewall rules
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "8080/tcp\\s+ALLOW IN\\s+Anywhere"; // Rule not present in output
+    AuditUfwStatusParams args;
+    args.statusRegex = regex("8080/tcp\\s+ALLOW IN\\s+Anywhere"); // Rule not present in output
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -136,11 +125,11 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMissing)
 
 TEST_F(UfwStatusTest, UfwNotFound)
 {
-    // Setup the expectation for the ufw status command to fail
+    // Set up the expectation for the ufw status command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(Error("Command not found", 127))));
 
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "Status:\\s*active";
+    AuditUfwStatusParams args;
+    args.statusRegex = regex("Status:\\s*active");
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -150,14 +139,4 @@ TEST_F(UfwStatusTest, UfwNotFound)
     auto formattedResult = mFormatter.Format(mIndicators);
     ASSERT_TRUE(formattedResult.HasValue());
     ASSERT_TRUE(formattedResult.Value().find("ufw not found") != std::string::npos);
-}
-
-TEST_F(UfwStatusTest, InvalidRegex)
-{
-    std::map<std::string, std::string> args;
-    args["statusRegex"] = "Status:*["; // Invalid regex
-
-    auto result = AuditUfwStatus(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }

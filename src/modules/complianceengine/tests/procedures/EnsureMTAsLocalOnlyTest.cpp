@@ -4,8 +4,8 @@
 #include "Evaluator.h"
 #include "MockContext.h"
 #include "NetworkTools.h"
-#include "ProcedureMap.h"
 
+#include <EnsureMTAsLocalOnly.h>
 #include <arpa/inet.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -54,8 +54,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, GetOpenPortsFails_ReturnsError)
 {
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Error("Command failed", 1)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().code, 1);
@@ -67,8 +66,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, NoOpenPorts_ReturnsCompliant)
     std::string output = "Netid  State   Recv-Q Send-Q  Local Address:Port  Peer Address:Port  Process\n";
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -84,8 +82,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, OnlyNonMTAPorts_ReturnsCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -101,8 +98,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, MTAPortsOnLoopback_ReturnsCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -118,8 +114,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, MTAPortsOnIPv6Loopback_ReturnsCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -133,8 +128,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, SMTPPort25OnPublicInterface_ReturnsNonCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -148,8 +142,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, SMTPPort587OnPublicInterface_ReturnsNonCompliant
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -163,8 +156,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, SMTPSPort465OnPublicInterface_ReturnsNonComplian
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -178,8 +170,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, MTAPortsOnIPv6PublicInterface_ReturnsNonComplian
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -195,8 +186,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, MixedLocalAndPublicPorts_ReturnsNonCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -210,8 +200,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, UDPMTAPortOnPublicInterface_ReturnsNonCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -225,8 +214,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, SpecificPrivateIPAddress_ReturnsNonCompliant)
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -242,8 +230,7 @@ TEST_F(EnsureMTAsLocalOnlyTest, MultipleNonCompliantPorts_ReturnsNonCompliantFor
 
     EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(output)));
 
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureMTAsLocalOnly(args, indicators, mockContext);
+    auto result = AuditEnsureMTAsLocalOnly(indicators, mockContext);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);

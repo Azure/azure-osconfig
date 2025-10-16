@@ -20,38 +20,22 @@
               "properties": {
                 "option": {
                   "type": "string",
-                  "description": "Name of the SSH daemon option"
+                  "description": "Name of the SSH daemon option, might be a comma-separated list",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([a-z0-9]+(,[a-z0-9]+)*)$|(^[a-z0-9]+(,[a-z0-9]+)*$))"
                 },
                 "value": {
                   "type": "string",
-                  "description": "Regex that the option value has to match"
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "EnsureSshdNoOption"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "EnsureSshdNoOption": {
-              "type": "object",
-              "required": [
-                "options",
-                "values"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "options": {
-                  "type": "string",
-                  "description": "Name of the SSH daemon options, comma separated"
+                  "description": "One of Regex, list of regexes, string or integer threshold the option value is evaluated against"
                 },
-                "values": {
+                "op": {
                   "type": "string",
-                  "description": "Comma separated list of regexes"
+                  "description": "(regex|match|not_match|lt|le|gt|ge) optional, defaults to 'regex'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regex|match|not_match|lt|le|gt|ge))$|(^(regex|match|not_match|lt|le|gt|ge)$))"
+                },
+                "mode": {
+                  "type": "string",
+                  "description": "Mode, one of (regular|all_matches). Optional, defaults to 'regular'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regular|all_matches))$|(^(regular|all_matches)$))"
                 }
               }
             }

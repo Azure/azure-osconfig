@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <CommonUtils.h>
+#include <EnsureMountPointExists.h>
 #include <Evaluator.h>
 #include <Regex.h>
 #include <iostream>
@@ -10,15 +10,8 @@
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureMountPointExists, "mountPoint:Mount point to check:M")
+Result<Status> AuditEnsureMountPointExists(const EnsureMountPointExistsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("mountPoint");
-    if (it == args.end())
-    {
-        return Error("No mount point provided");
-    }
-    auto mountPoint = std::move(it->second);
-
     Result<std::string> findMntOutput = context.ExecuteCommand("findmnt -knl");
     if (!findMntOutput.HasValue())
     {
@@ -30,13 +23,13 @@ AUDIT_FN(EnsureMountPointExists, "mountPoint:Mount point to check:M")
     while (std::getline(findMntStream, line))
     {
         std::string reportedMountPoint = line.substr(0, line.find(" "));
-        if (reportedMountPoint == mountPoint)
+        if (reportedMountPoint == params.mountPoint)
         {
-            return indicators.Compliant("Mount point " + mountPoint + " is mounted");
+            return indicators.Compliant("Mount point " + params.mountPoint + " is mounted");
         }
     }
 
-    return indicators.NonCompliant("Mount point " + mountPoint + " is not mounted");
+    return indicators.NonCompliant("Mount point " + params.mountPoint + " is not mounted");
 }
 
 } // namespace ComplianceEngine

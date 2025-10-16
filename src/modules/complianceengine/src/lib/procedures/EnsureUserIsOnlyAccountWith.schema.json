@@ -12,12 +12,14 @@
           "properties": {
             "EnsureUserIsOnlyAccountWith": {
               "type": "object",
-              "required": [],
+              "required": [
+                "username"
+              ],
               "additionalProperties": false,
               "properties": {
                 "username": {
                   "type": "string",
-                  "description": "A pattern or value to match usernames against"
+                  "description": "A value to match usernames against"
                 },
                 "uid": {
                   "type": "string",

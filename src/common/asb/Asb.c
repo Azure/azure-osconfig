@@ -438,26 +438,26 @@ static const char* g_initEnsureDefaultDenyFirewallPolicyIsSetObject = "initEnsur
 
 // Default values for checks that support configuration (and initialization)
 static const char* g_defaultLoggingLevel = "Informational";
-static const char* g_defaultEnsurePermissionsOnEtcIssue = "644";
-static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "644";
-static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "644";
-static const char* g_defaultEnsurePermissionsOnEtcHostsDeny = "644";
-static const char* g_defaultEnsurePermissionsOnEtcShadow = "400";
-static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "400";
-static const char* g_defaultEnsurePermissionsOnEtcGShadow = "400";
-static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "400";
-static const char* g_defaultEnsurePermissionsOnEtcPasswd = "644";
-static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "644";
-static const char* g_defaultEnsurePermissionsOnEtcGroup = "644";
-static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "644";
-static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "600";
-static const char* g_defaultEnsurePermissionsOnEtcCronD = "700";
-static const char* g_defaultEnsurePermissionsOnEtcCronDaily = "700";
-static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "700";
-static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "700";
-static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "700";
-static const char* g_defaultEnsurePermissionsOnEtcMotd = "644";
-static const char* g_defaultEnsureRestrictedUserHomeDirectories = "700,750";
+static const char* g_defaultEnsurePermissionsOnEtcIssue = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcHostsDeny = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcShadow = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcGShadow = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcPasswd = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcGroup = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "00600";
+static const char* g_defaultEnsurePermissionsOnEtcCronD = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronDaily = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcMotd = "00644";
+static const char* g_defaultEnsureRestrictedUserHomeDirectories = "00700,00750";
 static const char* g_defaultEnsurePasswordHashingAlgorithm = "6";
 static const char* g_defaultEnsureMinDaysBetweenPasswordChanges = "7";
 static const char* g_defaultEnsureInactivePasswordLockPeriod = "30";
@@ -465,11 +465,11 @@ static const char* g_defaultEnsureMaxDaysBetweenPasswordChanges = "365";
 static const char* g_defaultEnsurePasswordExpiration = "365";
 static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "077";
-static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "400";
+static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "00400";
 static const char* g_defaultEnsurePasswordReuseIsLimited = "5";
 static const char* g_defaultEnsurePasswordCreationRequirements = "1,14,4,-1,-1,-1,-1";
-static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
-static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
+static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "00600,00640";
+static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "00600,00644,00664,00700,00744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
 static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "0"; //zero: audit-only, non-zero: add forced remediation
 
@@ -582,6 +582,7 @@ static const char* g_systemdJournald = "systemd-journald";
 static const char* g_allTelnetd = "*telnetd*";
 static const char* g_samba = "samba";
 static const char* g_smbd = "smbd";
+static const char* g_smb = "smb";
 static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
@@ -604,6 +605,7 @@ static const char* g_bootGrubUserCfg = "/boot/grub/user.cfg";
 static const char* g_bootGrub2UserCfg = "/boot/grub2/user.cfg";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
+static const char* g_conf = ".conf";
 
 static const char* g_remediationIsNotPossible = "automatic remediation is not possible";
 
@@ -1193,7 +1195,7 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
+    CheckFileAccess(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
         g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
     return reason;
 }
@@ -1201,7 +1203,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
+    CheckFileAccess(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
         g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1209,7 +1211,7 @@ static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
+    CheckFileAccess(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
         g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
     return reason;
 }
@@ -1217,7 +1219,7 @@ static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
+    CheckFileAccess(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
         g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1855,14 +1857,11 @@ static char* AuditEnsureKernelCompiledFromApprovedSources(OsConfigLogHandle log)
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
 {
-    const char* readIpTables = "iptables -S";
     char* reason = NULL;
     int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ?
         g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 
-    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    if (0 != CheckDefaultDenyFirewallPolicy(&reason, log))
     {
         FREE_MEMORY(reason);
         reason = FormatAllocateString("Ensure that all necessary communication channels have explicit "
@@ -1975,28 +1974,28 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(OsConfigLogHandle log)
 static char* AuditEnsureDccpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", g_conf, &reason, log);
     return reason;
 }
 
@@ -2042,7 +2041,7 @@ static char* AuditEnsurePasswordReuseIsLimited(OsConfigLogHandle log)
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", g_conf, &reason, log);
     return reason;
 }
 
@@ -2099,35 +2098,35 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", g_conf, &reason, log);
     return reason;
 }
 
@@ -2210,7 +2209,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle l
     if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles :
         g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes > 0))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log);
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', '#', modes, numberOfModes, &reason, 8, log);
     }
     else
     {
@@ -2235,7 +2234,8 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OsConfigLogHandle l
     const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroup, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log));
+    CheckGroupExists("adm", &reason, log);
     return reason;
 }
 
@@ -2244,7 +2244,8 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OsConfigLogHandle
     const char* fileOwner = "$FileOwner syslog";
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwner, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log));
+    CheckUserExists("syslog", &reason, log);
     return reason;
 }
 
@@ -2539,7 +2540,7 @@ static char* AuditEnsureRshClientNotInstalled(OsConfigLogHandle log)
 static char* AuditEnsureSmbWithSambaIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log) || IsDaemonActive(g_smb, log))
     {
         RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSambaConf, '#', g_minSambaProtocol, &reason, log));
         CheckLineFoundNotCommentedOut(g_etcSambaConf, ';', g_minSambaProtocol, &reason, log);
@@ -2944,25 +2945,25 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLog
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
+    return SetFileAccess(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
+    return SetFileAccess(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
+    return SetFileAccess(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
+    return SetFileAccess(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OsConfigLogHandle log)
@@ -3826,7 +3827,7 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, OsConfigLogHandl
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsConfigLogHandle log)
 {
-    const char* formatTemplate = "0%03d";
+    const char* formatTemplate = "0%04o";
     int* modes = NULL;
     int numberOfModes = 0;
     char* formattedMode = NULL;
@@ -3871,12 +3872,14 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsC
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
+    AddIfMissingAdmSystemGroup(log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
+    AddIfMissingSyslogSystemUser(log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 
@@ -4166,7 +4169,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 
     UNUSED(value);
 
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log) || IsDaemonActive(g_smb, log))
     {
         if (0 == (status = ReplaceMarkedLinesInFile(g_etcSambaConf, smb1, NULL, '#', true, log)))
         {

@@ -30,6 +30,8 @@ set(PROCEDURES
     procedures/EnsureMTAsLocalOnly.cpp
     procedures/EnsureNoDuplicateEntriesExist.cpp
     procedures/EnsureNoUserHasPrimaryShadowGroup.cpp
+    procedures/EnsureNoUnowned.cpp
+    procedures/EnsureNoWritables.cpp
     procedures/EnsurePasswordChangeIsInPast.cpp
     procedures/EnsureRootPath.cpp
     procedures/EnsureSshdOption.cpp
@@ -47,6 +49,7 @@ set(PROCEDURES
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
     procedures/EnsureShadowContains.cpp
+    procedures/EnsureSshKeyPerms.cpp
 )
 set(SCHEMAS
     procedures/EnsureAccountsWithoutShellAreLocked.schema.json
@@ -69,6 +72,8 @@ set(SCHEMAS
     procedures/EnsureMTAsLocalOnly.schema.json
     procedures/EnsureNoDuplicateEntriesExist.schema.json
     procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json
+    procedures/EnsureNoUnowned.schema.json
+    procedures/EnsureNoWritables.schema.json
     procedures/EnsurePasswordChangeIsInPast.schema.json
     procedures/EnsureRootPath.schema.json
     procedures/EnsureSshdOption.schema.json
@@ -86,6 +91,7 @@ set(SCHEMAS
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json
     procedures/EnsureShadowContains.schema.json
+    procedures/EnsureSshKeyPerms.schema.json
 )
 
 # Check that all globbed procedures are in the PROCEDURES list
@@ -123,14 +129,15 @@ set_property(TARGET complianceengineschema PROPERTY OUTPUT ComplianceEngineSchem
 add_library(complianceenginelib STATIC
     Base64.cpp
     BenchmarkInfo.cpp
+    BindingParsers.cpp
     CommonContext.cpp
     ComplianceEngineInterface.cpp
     ContextInterface.cpp
     DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
-    FilePermissionsHelpers.cpp
     FileTreeWalk.cpp
+    FilesystemScanner.cpp
     GroupsIterator.cpp
     Indicators.cpp
     JsonWrapper.cpp
@@ -139,6 +146,7 @@ add_library(complianceenginelib STATIC
     LuaEvaluator.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
+    Pattern.cpp
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
@@ -148,15 +156,6 @@ add_library(complianceenginelib STATIC
     )
 
 set_property(TARGET complianceenginelib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
-add_custom_target(ProcedureMap
-    DEPENDS ProcedureMap.cpp ProcedureMap.h
-)
-add_custom_command(
-    OUTPUT ProcedureMap.cpp ProcedureMap.h
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/GenProcedureMap.sh ${CMAKE_CURRENT_SOURCE_DIR}/procedures/
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GenProcedureMap.sh ${PROCEDURES}
-    VERBATIM)
 
 target_link_libraries(complianceenginelib PRIVATE
     logging
@@ -169,4 +168,5 @@ target_include_directories(complianceenginelib PUBLIC
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LUA_INCLUDE_DIR}
-    )
+    ${CMAKE_CURRENT_SOURCE_DIR}/procedures
+)

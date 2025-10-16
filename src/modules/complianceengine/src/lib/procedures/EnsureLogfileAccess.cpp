@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <Bindings.h>
 #include <CommonUtils.h>
+#include <EnsureFilePermissions.h>
+#include <EnsureLogfileAccess.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
 #include <Result.h>
-#include <errno.h>
 #include <fnmatch.h>
 #include <map>
 #include <string>
@@ -48,16 +49,28 @@ const std::map<std::string, std::map<std::string, std::string>> g_logfilePattern
 // TODO(wpk) add the magic related to daemon-owned files.
 const std::map<std::string, std::string> g_defaultLogfileArgs = {{"owner", "root|syslog"}, {"group", "root|adm"}, {"mask", "0137"}};
 
-std::map<std::string, std::string> GetFilePermissionArgs(const std::string& filename)
+EnsureFilePermissionsParams GetFilePermissionsParams(const std::string& filename, std::map<std::string, std::string> args)
+{
+    args["filename"] = filename;
+    auto result = BindingsImpl::ParseArguments<EnsureFilePermissionsParams>(args);
+    if (!result.HasValue())
+    {
+        throw std::logic_error("invalid static permissions map");
+    }
+    return result.Value();
+}
+
+EnsureFilePermissionsParams GetFilePermissionArgs(const std::string& filename, const std::string& fullPath)
 {
     for (const auto& pattern : g_logfilePatterns)
     {
         if (fnmatch(pattern.first.c_str(), filename.c_str(), FNM_CASEFOLD) == 0)
         {
-            return pattern.second;
+            return GetFilePermissionsParams(fullPath, pattern.second);
         }
     }
-    return g_defaultLogfileArgs;
+
+    return GetFilePermissionsParams(fullPath, g_defaultLogfileArgs);
 }
 
 Result<Status> ProcessLogfile(const std::string& path, const std::string& filename, const struct stat& statInfo, IndicatorsTree& indicators,
@@ -80,14 +93,13 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
     }
 
     const std::string fullPath = path + "/" + filename;
-    const auto args = GetFilePermissionArgs(filename);
+    const auto params = GetFilePermissionArgs(filename, fullPath);
 
     OsConfigLogDebug(context.GetLogHandle(), "Processing logfile: %s with pattern-matched permissions", fullPath.c_str());
 
     indicators.Push("FilePermissionsCheck for " + fullPath);
 
-    Result<Status> result = remediate ? RemediateEnsureFilePermissionsHelper(fullPath, args, indicators, context) :
-                                        AuditEnsureFilePermissionsHelper(fullPath, args, indicators, context);
+    Result<Status> result = remediate ? RemediateEnsureFilePermissions(params, indicators, context) : AuditEnsureFilePermissions(params, indicators, context);
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to %s permissions for logfile '%s': %s", remediate ? "remediate" : "audit", fullPath.c_str(),
@@ -108,61 +120,57 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
 
 } // anonymous namespace
 
-AUDIT_FN(EnsureLogfileAccess, "path:Path to log directory to check, default /var/log")
+Result<Status> AuditEnsureLogfileAccess(const EnsureLogfileAccessParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto pathIt = args.find("path");
-    std::string logPath = (pathIt != args.end()) ? pathIt->second : "/var/log";
-
-    OsConfigLogInfo(context.GetLogHandle(), "Auditing logfile access permissions in directory: %s", logPath.c_str());
+    assert(params.path.HasValue());
+    OsConfigLogInfo(context.GetLogHandle(), "Auditing logfile access permissions in directory: %s", params.path->c_str());
 
     auto callback = [&indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
         return ProcessLogfile(dirPath, filename, statInfo, indicators, context, false);
     };
 
-    auto result = FileTreeWalk(logPath, callback, BreakOnNonCompliant::False, context);
+    auto result = FileTreeWalk(params.path.Value(), callback, BreakOnNonCompliant::False, context);
 
     if (!result.HasValue())
     {
-        OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
+        OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", params.path->c_str(), result.Error().message.c_str());
         return result.Error();
     }
 
     if (result.Value() == Status::Compliant)
     {
-        return indicators.Compliant("All logfiles in " + logPath + " have correct access permissions");
+        return indicators.Compliant("All logfiles in " + params.path.Value() + " have correct access permissions");
     }
     else
     {
-        return indicators.NonCompliant("One or more logfiles in " + logPath + " have incorrect access permissions");
+        return indicators.NonCompliant("One or more logfiles in " + params.path.Value() + " have incorrect access permissions");
     }
 }
 
-REMEDIATE_FN(EnsureLogfileAccess, "path:Path to log directory to remediate, default /var/log")
+Result<Status> RemediateEnsureLogfileAccess(const EnsureLogfileAccessParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto pathIt = args.find("path");
-    std::string logPath = (pathIt != args.end()) ? pathIt->second : "/var/log";
-
-    OsConfigLogInfo(context.GetLogHandle(), "Remediating logfile access permissions in directory: %s", logPath.c_str());
+    assert(params.path.HasValue());
+    OsConfigLogInfo(context.GetLogHandle(), "Remediating logfile access permissions in directory: %s", params.path->c_str());
 
     auto callback = [&indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
         return ProcessLogfile(dirPath, filename, statInfo, indicators, context, true);
     };
 
-    auto result = FileTreeWalk(logPath, callback, BreakOnNonCompliant::False, context);
+    auto result = FileTreeWalk(params.path.Value(), callback, BreakOnNonCompliant::False, context);
 
     if (!result.HasValue())
     {
-        OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
+        OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", params.path->c_str(), result.Error().message.c_str());
         return result.Error();
     }
 
     if (result.Value() == Status::Compliant)
     {
-        return indicators.Compliant("Successfully set correct access permissions for all logfiles in " + logPath);
+        return indicators.Compliant("Successfully set correct access permissions for all logfiles in " + params.path.Value());
     }
     else
     {
-        return indicators.NonCompliant("Failed to set correct access permissions for one or more logfiles in " + logPath);
+        return indicators.NonCompliant("Failed to set correct access permissions for one or more logfiles in " + params.path.Value());
     }
 }
 
