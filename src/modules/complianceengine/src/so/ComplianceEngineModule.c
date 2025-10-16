@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 #include "ComplianceEngineInterface.h"
+#include "Logging.h"
 
 #include <Mmi.h>
 #include <assert.h>
 #include <stddef.h>
 
 static OsConfigLogHandle gLog = NULL;
+static const char* gComplianceEngineModuleName = "OSConfig ComplianceEngine module";
 static const char* gLogFile = "/var/log/osconfig_complianceengine.log";
 static const char* gRolledLogFile = "/var/log/osconfig_complianceengine.bak";
 
@@ -16,6 +18,7 @@ void __attribute__((constructor)) InitModule(void)
     gLog = OpenLog(gLogFile, gRolledLogFile);
     assert(NULL != gLog);
     ComplianceEngineInitialize(gLog);
+    OsConfigLogInfo(gLog, "%s initialized", gComplianceEngineModuleName);
 }
 
 void __attribute__((destructor)) DestroyModule(void)

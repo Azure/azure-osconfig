@@ -92,10 +92,8 @@ Result<uid_t> LoadMinUID(ContextInterface& context)
 }
 } // anonymous namespace
 
-AUDIT_FN(EnsureSystemAccountsDoNotHaveValidShell)
+Result<Status> AuditEnsureSystemAccountsDoNotHaveValidShell(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto& whitelistedAccounts = GetWhitelistedAccounts();
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())

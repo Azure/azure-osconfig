@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <AuditdRulesCheck.h>
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Optional.h>
@@ -9,7 +10,6 @@
 #include <fstream>
 #include <fts.h>
 #include <iostream>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -228,23 +228,14 @@ Status CheckRuleInList(const std::vector<std::string>& rules, const std::string&
 }
 } // namespace
 
-AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Option the checked rule line cannot include",
-    "requiredOptions:Options that should be included on the rule line, colon separated:M")
+Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("searchItem");
-    if (it == args.end())
-    {
-        return Error("No searchItem provided", EINVAL);
-    }
-    auto searchItem = std::move(it->second);
-
-    it = args.find("excludeOption");
     Optional<regex> excludeOption;
-    if (it != args.end())
+    if (params.excludeOption.HasValue())
     {
         try
         {
-            excludeOption = regex(it->second, std::regex_constants::icase | std::regex_constants::extended);
+            excludeOption = regex(params.excludeOption.Value(), std::regex_constants::icase | std::regex_constants::extended);
         }
         catch (const regex_error& e)
         {
@@ -252,19 +243,9 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
         }
     }
 
-    it = args.find("requiredOptions");
-    if (it == args.end())
-    {
-        return Error("No requiredOptions provided", EINVAL);
-    }
-    auto requiredOptionsStr = std::move(it->second);
-    std::vector<std::string> options;
-    std::stringstream optionsStream(requiredOptionsStr);
-    std::string option;
-
     auto uidMin = GetUidMin(context);
     std::vector<regex> requiredOptions;
-    while (std::getline(optionsStream, option, ':'))
+    for (auto option : params.requiredOptions.items)
     {
         option = TrimWhiteSpaces(option);
         if (!option.empty())
@@ -284,7 +265,7 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
     auto runningRulesResult = GetRulesFromRunningConfig(context);
     if (!runningRulesResult.HasValue())
     {
-        return Error("Failed to get running audit rules: " + runningRulesResult.Error().message, runningRulesResult.Error().code);
+        return indicators.NonCompliant("auditctl missing: " + runningRulesResult.Error().message);
     }
     auto runningRules = runningRulesResult.Value();
 
@@ -294,14 +275,14 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
     auto filesRulesResult = GetRulesFromFilesAtPath(context, rulesDirectory);
     if (!filesRulesResult.HasValue())
     {
-        return Error("Failed to get audit rules from files: " + filesRulesResult.Error().message, filesRulesResult.Error().code);
+        return indicators.NonCompliant("audit files missing: " + filesRulesResult.Error().message);
     }
     auto filesRules = filesRulesResult.Value();
 
-    if (searchItem.find("-S ") == 0)
+    if (params.searchItem.find("-S ") == 0)
     {
         std::vector<std::string> syscalls;
-        std::stringstream ss(searchItem.substr(3));
+        std::stringstream ss(params.searchItem.substr(3));
         std::string syscall;
         while (std::getline(ss, syscall, ','))
         {
@@ -318,7 +299,7 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
         }
         return indicators.Compliant("All syscall rules found and properly configured");
     }
-    else if (searchItem.find("SUDOLOGFILE") == 0)
+    else if (params.searchItem.find("SUDOLOGFILE") == 0)
     {
         auto logfileResult = FindSudoLogfile(context);
         if (!logfileResult.HasValue())
@@ -338,23 +319,23 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
         }
         return indicators.Compliant("Sudo logfile rule found and properly configured");
     }
-    else if (searchItem.find("-e 2") == 0)
+    else if (params.searchItem.find("-e 2") == 0)
     {
         return CheckRuleInList(filesRules, "-e 2", excludeOption, requiredOptions, indicators);
     }
     else
     {
-        auto runningResult = CheckRuleInList(runningRules, searchItem, excludeOption, requiredOptions, indicators);
+        auto runningResult = CheckRuleInList(runningRules, params.searchItem, excludeOption, requiredOptions, indicators);
         if (runningResult != Status::Compliant)
         {
             return runningResult;
         }
-        auto fileResult = CheckRuleInList(filesRules, searchItem, excludeOption, requiredOptions, indicators);
+        auto fileResult = CheckRuleInList(filesRules, params.searchItem, excludeOption, requiredOptions, indicators);
         if (fileResult != Status::Compliant)
         {
             return fileResult;
         }
-        return indicators.Compliant("Rule found: " + searchItem + " and is properly configured");
+        return indicators.Compliant("Rule found: " + params.searchItem + " and is properly configured");
     }
 }
 

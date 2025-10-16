@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <FileRegexMatch.h>
 #include <Optional.h>
+#include <ProcedureMap.h>
 #include <Regex.h>
 #include <Result.h>
 #include <dirent.h>
@@ -26,6 +28,8 @@ using MatchStateSyntaxOptions = std::pair<syntax_option_type, syntax_option_type
 Result<bool> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
     MatchStateSyntaxOptions syntaxOptions, ContextInterface& context)
 {
+    // We still need to manually consume the patterns as strings as the case sensitivity is handled
+    // dynamically depending on the ignoreCase field value.
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
 
@@ -81,131 +85,55 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
 }
 } // anonymous namespace
 
-AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "filenamePattern:A pattern to match file names in the provided path:M",
-    "matchOperation:Operation to perform on the file contents::^pattern match$", "matchPattern:The pattern to match against the file contents:M",
-    "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
-    "statePattern:The pattern to match against each line that matches the 'statePattern'",
-    "ignoreCase:Determine whether the a match or state should be ignore case sensitivity  'matchPattern' and 'statePattern' or none when empty'::"
-    "^(matchPattern\\sstatePattern|matchPattern|statePattern)",
-    "behavior:Determine the function behavior::^(all_exist|any_exist|at_least_one_exists|none_exist)$")
+Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(context);
-    auto it = args.find("path");
-    if (it == args.end())
-    {
-        return Error("Missing 'path' parameter", EINVAL);
-    }
-    auto path = std::move(it->second);
+    // These optional fields are guaranteed to have default values
+    assert(params.matchOperation.HasValue());
+    const auto matchOperation = params.matchOperation.Value();
+    assert(params.stateOperation.HasValue());
+    const auto stateOperation = params.stateOperation.Value();
+    assert(params.behavior.HasValue());
+    const auto behavior = params.behavior.Value();
 
-    it = args.find("filenamePattern");
-    if (it == args.end())
-    {
-        return Error("Missing 'filenamePattern' parameter", EINVAL);
-    }
-    auto filenamePattern = std::move(it->second);
-
-    Optional<regex> filenameRegex;
-    try
-    {
-        filenameRegex = regex(filenamePattern, std::regex_constants::ECMAScript);
-    }
-    catch (const regex_error& e)
-    {
-        return Error("Invalid filename pattern: " + string(e.what()), EINVAL);
-    }
-
-    it = args.find("matchPattern");
-    if (it == args.end())
-    {
-        return Error("Missing 'matchPattern' parameter", EINVAL);
-    }
-    auto matchPattern = std::move(it->second);
-
-    it = args.find("matchOperation");
-    string matchOperation;
-    if (it != args.end())
-    {
-        matchOperation = std::move(it->second);
-    }
-    else
-    {
-        matchOperation = "pattern match";
-    }
-
-    it = args.find("stateOperation");
-    string stateOperation;
-    if (it != args.end())
-    {
-        stateOperation = std::move(it->second);
-    }
-    else
-    {
-        stateOperation = "pattern match";
-    }
-
-    it = args.find("statePattern");
-    Optional<string> statePattern;
-    if (it != args.end())
-    {
-        statePattern = std::move(it->second);
-    }
-
-    it = args.find("ignoreCase");
     MatchStateSyntaxOptions syntaxOptions = std::make_pair(std::regex_constants::ECMAScript, std::regex_constants::ECMAScript);
-    if (it != args.end())
+    if (params.ignoreCase.HasValue())
     {
-        std::istringstream arg(it->second);
-        std::string caseSensitive;
-        while (getline(arg, caseSensitive, ' '))
+        switch (params.ignoreCase.Value())
         {
-            if (caseSensitive == "matchPattern")
-            {
-                syntaxOptions.first |= std::regex_constants::icase;
-            }
-            else if (caseSensitive != "statePattern")
-            {
-                syntaxOptions.second |= std::regex_constants::icase;
-            }
-            else if (caseSensitive != "matchPattern statePattern")
-            {
+            case IgnoreCase::Both:
                 syntaxOptions.first |= std::regex_constants::icase;
                 syntaxOptions.second |= std::regex_constants::icase;
-            }
-            else
-            {
-                return Error("caseSensitive must be 'matchPattern' or 'statePattern', or both or ''", EINVAL);
-            }
+                break;
+            case IgnoreCase::MatchPattern:
+                syntaxOptions.first |= std::regex_constants::icase;
+                break;
+            case IgnoreCase::StatePattern:
+                syntaxOptions.second |= std::regex_constants::icase;
+                break;
         }
-    }
-
-    std::string behavior = "all_exist";
-    it = args.find("behavior");
-    if (it != args.end())
-    {
-        behavior = it->second;
     }
 
     // Currently only "pattern match" is supported for both match and state operations.
     // Depending on use cases, we may want to support other operations in the future.
-    if (matchOperation != "pattern match")
+    if (matchOperation != Operation::Match)
     {
-        return Error(string("Unsupported operation '") + matchOperation + string("'"), EINVAL);
+        return Error(string("Unsupported operation '") + std::to_string(matchOperation) + string("'"), EINVAL);
     }
-    if (stateOperation != "pattern match")
+    if (stateOperation != Operation::Match)
     {
-        return Error(string("Unsupported operation '") + stateOperation + string("'"), EINVAL);
+        return Error(string("Unsupported operation '") + std::to_string(stateOperation) + string("'"), EINVAL);
     }
 
-    auto* dir = opendir(path.c_str());
+    auto* dir = opendir(params.path.c_str());
     if (dir == nullptr)
     {
         int status = errno;
-        OsConfigLogInfo(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
-        if (behavior == "none_exist")
+        OsConfigLogInfo(context.GetLogHandle(), "Failed to open directory '%s': %s", params.path.c_str(), strerror(status));
+        if (Behavior::NoneExist == behavior)
         {
             return Status::Compliant;
         }
-        return indicators.NonCompliant("Failed to open directory '" + path + "': " + strerror(status));
+        return indicators.NonCompliant("Failed to open directory '" + params.path + "': " + strerror(status));
     }
     auto dirCloser = std::unique_ptr<DIR, int (*)(DIR*)>(dir, closedir);
 
@@ -216,19 +144,36 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
-        if (entry->d_type != DT_REG)
+        if (entry->d_type != DT_REG && entry->d_type != DT_LNK)
         {
             continue;
         }
 
-        if (!regex_match(entry->d_name, filenameRegex.Value()))
+        if (entry->d_type == DT_LNK)
         {
-            OsConfigLogDebug(context.GetLogHandle(), "Ignoring file '%s' in directory '%s'", entry->d_name, path.c_str());
+            struct stat st;
+            if (0 != stat((params.path + "/" + entry->d_name).c_str(), &st))
+            {
+                const int status = errno;
+                OsConfigLogInfo(context.GetLogHandle(), "Failed to stat file '%s/%s': %s", params.path.c_str(), entry->d_name, strerror(status));
+                errorCount++;
+                continue;
+            }
+
+            if (!S_ISREG(st.st_mode))
+            {
+                continue;
+            }
+        }
+
+        if (!regex_match(entry->d_name, params.filenamePattern))
+        {
+            OsConfigLogDebug(context.GetLogHandle(), "Ignoring file '%s' in directory '%s'", entry->d_name, params.path.c_str());
             continue;
         }
         fileCount++;
-        auto filename = path + "/" + entry->d_name;
-        auto matchResult = MultilineMatch(filename, matchPattern, statePattern, syntaxOptions, context);
+        auto filename = params.path + "/" + entry->d_name;
+        auto matchResult = MultilineMatch(filename, params.matchPattern, params.statePattern, syntaxOptions, context);
         if (!matchResult.HasValue())
         {
             OsConfigLogInfo(context.GetLogHandle(), "Failed to match file '%s': %s", filename.c_str(), matchResult.Error().message.c_str());
@@ -247,21 +192,20 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     if (nullptr == entry && errno != 0)
     {
         int status = errno;
-        OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", path.c_str(), strerror(status));
-        return Error("Failed to read directory '" + path + "': " + strerror(status), status);
+        OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", params.path.c_str(), strerror(status));
+        return Error("Failed to read directory '" + params.path + "': " + strerror(status), status);
     }
 
-    // This is a direct mapping mapping of OVAL ExistenceEnumerator
+    // This is a direct mapping of OVAL ExistenceEnumerator
     // see https://oval.mitre.org/language/version5.9/ovalsc/documentation/oval-common-schema.html#ExistenceEnumeration for details
-
-    OsConfigLogInfo(context.GetLogHandle(), "Validating pattern matching results, behavior: %s, matched: %d, mismatched: %d, errors: %d",
-        behavior.c_str(), matchCount, mismatchCount, errorCount);
+    OsConfigLogInfo(context.GetLogHandle(), "Validating pattern matching results, behavior: '%s', matched: %d, mismatched: %d, errors: %d",
+        std::to_string(behavior).c_str(), matchCount, mismatchCount, errorCount);
     if (matchCount + mismatchCount + errorCount != fileCount)
     {
         return Error("Counters mismatch");
     }
 
-    if ("all_exist" == behavior)
+    if (Behavior::AllExist == behavior)
     {
         if (mismatchCount > 0)
         {
@@ -283,7 +227,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
                                            std::to_string(fileCount) + " matched");
         }
     }
-    else if ("any_exist" == behavior)
+    else if (Behavior::AnyExist == behavior)
     {
         if ((matchCount == 0) && (errorCount > 0))
         {
@@ -291,7 +235,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
         return indicators.Compliant("Found " + std::to_string(matchCount) + " matches");
     }
-    else if ("at_least_one_exists" == behavior)
+    else if (Behavior::AtLeastOneExists == behavior)
     {
         if (matchCount > 0)
         {
@@ -303,7 +247,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
         return indicators.NonCompliant("Expected at least one file to match, but none did");
     }
-    else if ("none_exist" == behavior)
+    else if (Behavior::NoneExist == behavior)
     {
         if (matchCount > 0)
         {
@@ -316,28 +260,25 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
         return indicators.Compliant("No files matched the pattern");
     }
-    else if ("only_one_exists" == behavior)
+    else if (Behavior::OnlyOneExists == behavior)
     {
         if (matchCount == 1 && errorCount == 0)
         {
             return indicators.Compliant("Exactly one file matched the pattern");
         }
-
         if (matchCount > 1)
         {
             return indicators.NonCompliant("Expected only one file to match, but " + std::to_string(matchCount) + " matched");
         }
-
         if (errorCount > 0)
         {
             return Error("Error occurred during pattern matching", EINVAL);
         }
-
         return indicators.NonCompliant("Expected exactly one file to match, but none did");
     }
     else
     {
-        return Error("Unknown behavior: " + behavior, EINVAL);
+        return Error("Unknown behavior: " + std::to_string(params.behavior), EINVAL);
     }
 }
 } // namespace ComplianceEngine
