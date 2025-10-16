@@ -140,7 +140,6 @@ jobs:
             echo "["
             last=$((${#FILES[@]}-1))
             for((i = 0; i < ${#FILES[@]}; i++)); do
-                # echo -n "${FILES[$i]}" ;
                 # ORS sets the output separator to noting, and than just print file
                 awk 'BEGIN{ORS=""} {print}' "${FILES[$i]}" ;
                 # add newline or comman
