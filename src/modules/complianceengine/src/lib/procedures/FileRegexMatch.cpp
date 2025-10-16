@@ -189,7 +189,7 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
         }
     }
 
-    if (nullptr == entry && errno != 0)
+    if (errno != 0)
     {
         int status = errno;
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", params.path.c_str(), strerror(status));
