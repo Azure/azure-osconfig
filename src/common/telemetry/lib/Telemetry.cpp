@@ -88,12 +88,17 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
     OsConfigLogInfo(m_log, "Processing JSON file: %s", filePath.c_str());
 
     std::string line;
+    bool allSucceeded = true;
+
     while (std::getline(file, line) && !line.empty())
     {
-        ProcessJsonLine(line);
+        if (!ProcessJsonLine(line))
+        {
+            allSucceeded = false;
+        }
     }
 
-    return true;
+    return allSucceeded;
 }
 
 bool TelemetryManager::ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys)
@@ -134,7 +139,7 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
     return true;
 }
 
-void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
+bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
 {
     OsConfigLogDebug(m_log, "Processing JSON line: %s", jsonLine.c_str());
 
@@ -146,20 +151,20 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     catch(const nlohmann::json::parse_error& e)
     {
         // Ignore invalid JSON lines
-        return;
+        return false;
     }
 
     if (!jsonObject.is_object())
     {
         OsConfigLogError(m_log, "JSON line is not an object: %s", jsonLine.c_str());
-        return;
+        return false;
     }
 
     // Extract event name - required field
     if (!jsonObject.contains("EventName") || !jsonObject["EventName"].is_string())
     {
         OsConfigLogError(m_log, "JSON object missing 'EventName' field: %s", jsonLine.c_str());
-        return;
+        return false;
     }
     std::string eventName = jsonObject["EventName"].get<std::string>();
 
@@ -174,7 +179,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     if (!ValidateEventParameters(eventName, jsonKeys))
     {
         OsConfigLogError(m_log, "Parameter validation failed for event '%s': %s", eventName.c_str(), jsonLine.c_str());
-        return;
+        return false;
     }
 
     // Create event with the event name
@@ -232,6 +237,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     // Log the event with all properties
     m_logger->LogEvent(event);
     OsConfigLogDebug(m_log, "Successfully logged event to MAT");
+    return true;
 }
 
 } // namespace Telemetry

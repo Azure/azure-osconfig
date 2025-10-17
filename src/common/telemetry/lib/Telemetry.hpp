@@ -45,7 +45,7 @@ private:
 
     void EventWrite(Microsoft::Applications::Events::EventProperties event);
     bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
-    void ProcessJsonLine(const std::string& jsonLine);
+    bool ProcessJsonLine(const std::string& jsonLine);
 };
 
 } // namespace Telemetry

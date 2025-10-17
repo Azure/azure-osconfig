@@ -29,22 +29,22 @@ void __attribute__((destructor)) Destroy(void)
 
 int main(int argc, char* argv[])
 {
-    CommandLineArgs args;
-    if (!ParseCommandLineArgs(argc, argv, args, g_log))
-    {
-        OsConfigLogError(g_log, "Error: Failed to parse command line arguments.");
-        return 1;
-    }
-
-    std::string init_message = "Initializing telemetry with verbose=" + std::string(args.verbose ? "true" : "false");
-    if (args.teardown_time != TELEMETRY_TIMEOUT_SECONDS) // Default teardown time
-    {
-        init_message += " and teardown_time=" + std::to_string(args.teardown_time) + "s";
-    }
-    OsConfigLogInfo(g_log, "%s", init_message.c_str());
-
     try
     {
+        CommandLineArgs args;
+        if (!ParseCommandLineArgs(argc, argv, args, g_log))
+        {
+            OsConfigLogError(g_log, "Error: Failed to parse command line arguments.");
+            return 1;
+        }
+
+        std::string init_message = "Initializing telemetry with verbose=" + std::string(args.verbose ? "true" : "false");
+        if (args.teardown_time != TELEMETRY_TIMEOUT_SECONDS) // Default teardown time
+        {
+            init_message += " and teardown_time=" + std::to_string(args.teardown_time) + "s";
+        }
+        OsConfigLogInfo(g_log, "%s", init_message.c_str());
+
         OsConfigLogInfo(g_log, "Telemetry initializing...");
         Telemetry::TelemetryManager telemetryManager(args.verbose, args.teardown_time, g_log);
 
@@ -59,6 +59,11 @@ int main(int argc, char* argv[])
     catch (const std::exception& e)
     {
         OsConfigLogError(g_log, "Error: Telemetry operation failed: %s", e.what());
+        return 1;
+    }
+    catch (...)
+    {
+        OsConfigLogError(g_log, "Error: Telemetry operation failed with unknown exception");
         return 1;
     }
 
