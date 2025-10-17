@@ -62,6 +62,7 @@ add_executable(complianceenginetests
     EngineTest.cpp
     EvaluatorTest.cpp
     LuaEvaluatorTest.cpp
+    LuaProceduresTest.cpp
     NetworkToolsTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
