@@ -4,8 +4,6 @@
 #include "Telemetry.hpp"
 #include "ParameterSets.hpp"
 
-LOGMANAGER_INSTANCE
-
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -24,44 +22,50 @@ namespace Telemetry
 
 TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigLogHandle logHandle)
     : m_log(logHandle)
+    , m_logManager(nullptr)
     , m_logger(nullptr)
 {
 #if defined(DEBUG) || defined(_DEBUG) || !defined(NDEBUG)
     SetLoggingLevel(LoggingLevelDebug);
 #endif
 
-    ILogConfiguration& logConfig = LogManager::GetLogConfiguration();
-    logConfig["name"] = "TelemetryModule";
-    logConfig["version"] = TELEMETRY_VERSION;
-    logConfig["config"] = { { "host", "*" } };
-    logConfig["primaryToken"] = API_KEY;
-    logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
-    logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
-    logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
-    logConfig[CFG_STR_START_PROFILE_NAME] = TRANSMITPROFILE_REALTIME;
+    m_logConfig["name"] = "TelemetryModule";
+    m_logConfig["version"] = TELEMETRY_VERSION;
+    m_logConfig["config"]["host"] = "*";
+    m_logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
+    m_logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
+    m_logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
 
-    LogManager::Initialize(API_KEY);
-    m_logger.reset(LogManager::GetInstance());
+    status_t status = STATUS_SUCCESS;
+    m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
 
-    OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
+    if (STATUS_SUCCESS == status)
+    {
+        OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
+
+        m_logger = m_logManager->GetLogger(API_KEY, "logger_direct");
+        if (!m_logger)
+        {
+            OsConfigLogError(m_log, "Failed to get logger instance");
+        }
+    }
+    else
+    {
+        OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
+    }
 }
 
 TelemetryManager::~TelemetryManager() noexcept
 {
     OsConfigLogInfo(m_log, "Telemetry shutting down...");
-    m_logger->UploadNow();
+    m_logManager->UploadNow();
+    m_logManager.reset();
     OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
 }
 
 void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
 {
-    ILogger* logger = LogManager::GetLogger();
-    if (!logger)
-    {
-        OsConfigLogError(m_log, "Failed to get logger instance");
-        return;
-    }
-    logger->LogEvent(event);
+    m_logger->LogEvent(event);
 }
 
 bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
@@ -218,13 +222,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     }
 
     // Log the event with all properties
-    ILogger* logger = LogManager::GetLogger();
-    if (!logger)
-    {
-        OsConfigLogError(m_log, "Failed to get logger instance");
-        return;
-    }
-    logger->LogEvent(event);
+    m_logger->LogEvent(event);
     OsConfigLogDebug(m_log, "Successfully logged event to MAT");
 }
 

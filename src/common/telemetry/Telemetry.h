@@ -95,12 +95,12 @@ static inline int64_t TsToUs(struct timespec ts)
         {                                                                                                                                              \
             char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, telemetryFileNameMacro, \
                 TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
-            OSConfigTelemetryCleanup();                                                                                                                \
             if (NULL != command)                                                                                                                       \
             {                                                                                                                                          \
                 ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);                                           \
             }                                                                                                                                          \
             FREE_MEMORY(command);                                                                                                                      \
+            OSConfigTelemetryCleanup();                                                                                                                \
         }                                                                                                                                              \
     }
 

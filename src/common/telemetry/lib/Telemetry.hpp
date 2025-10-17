@@ -4,50 +4,51 @@
 #ifndef TELEMETRY_HPP
 #define TELEMETRY_HPP
 
+#include "ParameterSets.hpp"
+
+#include <Keys.h>
+#include <LogManager.hpp>
+#include <Logging.h>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include <Keys.h>
-#include <LogManager.hpp>
-#include <Logging.h>
-
-#include "ParameterSets.hpp"
-
 namespace Telemetry
 {
 
-    class TelemetryManager
-    {
-    public:
-        static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
-        static constexpr const char* TELEMETRY_VERSION = "1.0.0";
+class TelemetryManager
+{
+public:
+    static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
+    static constexpr const char* TELEMETRY_VERSION = "1.0.0";
 
-        explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
+    explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
 
-        ~TelemetryManager() noexcept;
+    ~TelemetryManager() noexcept;
 
-        // Delete copy constructor and assignment operator
-        TelemetryManager(const TelemetryManager&) = delete;
-        TelemetryManager& operator=(const TelemetryManager&) = delete;
+    // Delete copy constructor and assignment operator
+    TelemetryManager(const TelemetryManager&) = delete;
+    TelemetryManager& operator=(const TelemetryManager&) = delete;
 
-        // Delete move constructor and assignment operator
-        TelemetryManager(TelemetryManager&&) = delete;
-        TelemetryManager& operator=(TelemetryManager&&) = delete;
+    // Delete move constructor and assignment operator
+    TelemetryManager(TelemetryManager&&) = delete;
+    TelemetryManager& operator=(TelemetryManager&&) = delete;
 
-        // Parse JSON file line by line and process events
-        bool ProcessJsonFile(const std::string& filePath);
+    // Parse JSON file line by line and process events
+    bool ProcessJsonFile(const std::string& filePath);
 
-    private:
-        OsConfigLogHandle m_log;
-        std::unique_ptr<MAT::ILogManager> m_logger;
+private:
+    OsConfigLogHandle m_log;
+    MAT::ILogConfiguration m_logConfig;
+    std::unique_ptr<MAT::ILogManager> m_logManager;
+    MAT::ILogger* m_logger;
 
-        void EventWrite(Microsoft::Applications::Events::EventProperties event);
-        bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
-        void ProcessJsonLine(const std::string& jsonLine);
-    };
+    void EventWrite(Microsoft::Applications::Events::EventProperties event);
+    bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
+    void ProcessJsonLine(const std::string& jsonLine);
+};
 
 } // namespace Telemetry
 
