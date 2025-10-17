@@ -90,7 +90,7 @@ jobs:
           tags: |
             type=sha,enable=true,priority=900,prefix=sha256-,suffix=,format=long
             type=schedule,enable=true,priority=10,prefix=date-,suffix=,pattern=nightly
-            type=raw,value=git-${{ github.sha }}
+            type=raw,value=git-${{ github.event.pull_request.head.sha }}
             type=raw,value=run-${{ github.run_number }}
 
       - name: Build and push
