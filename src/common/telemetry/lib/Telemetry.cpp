@@ -62,11 +62,12 @@ TelemetryManager::~TelemetryManager() noexcept
     {
         OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
     }};
-    status_t status = m_logManager->UploadNow();
+    status_t status = m_logManager->GetLogController()->UploadNow();
     if (STATUS_SUCCESS != status)
     {
         OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
     }
+    std::this_thread::sleep_for(std::chrono::microseconds(10)); // Minimal sleep required
     m_logManager.reset();
 }
 
