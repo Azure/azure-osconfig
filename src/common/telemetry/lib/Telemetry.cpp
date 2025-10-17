@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <ScopeGuard.h>
 #include <sstream>
 #include <thread>
 
@@ -39,28 +40,34 @@ TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigL
     status_t status = STATUS_SUCCESS;
     m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
 
-    if (STATUS_SUCCESS == status)
-    {
-        OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
-
-        m_logger = m_logManager->GetLogger(API_KEY, "logger_direct");
-        if (!m_logger)
-        {
-            OsConfigLogError(m_log, "Failed to get logger instance");
-        }
-    }
-    else
+    if (STATUS_SUCCESS != status)
     {
         OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
+        throw std::runtime_error("Telemetry initialization failed");
     }
+
+    m_logger = m_logManager->GetLogger(API_KEY, "logger_direct");
+    if (!m_logger)
+    {
+        OsConfigLogError(m_log, "Failed to get logger instance");
+        throw std::runtime_error("Failed to get logger instance");
+    }
+
+    OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
 }
 
 TelemetryManager::~TelemetryManager() noexcept
 {
-    OsConfigLogInfo(m_log, "Telemetry shutting down...");
-    m_logManager->UploadNow();
+    ScopeGuard g = {[&]()
+    {
+        OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
+    }};
+    status_t status = m_logManager->UploadNow();
+    if (STATUS_SUCCESS != status)
+    {
+        OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
+    }
     m_logManager.reset();
-    OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
 }
 
 void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)

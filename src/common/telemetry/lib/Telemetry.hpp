@@ -28,11 +28,9 @@ public:
 
     ~TelemetryManager() noexcept;
 
-    // Delete copy constructor and assignment operator
+    TelemetryManager() = delete;
     TelemetryManager(const TelemetryManager&) = delete;
     TelemetryManager& operator=(const TelemetryManager&) = delete;
-
-    // Delete move constructor and assignment operator
     TelemetryManager(TelemetryManager&&) = delete;
     TelemetryManager& operator=(TelemetryManager&&) = delete;
 

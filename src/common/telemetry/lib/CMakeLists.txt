@@ -85,10 +85,14 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
+# commonutils is used which uses telemetry, create an alias to avoid name conflict
+add_library(telemetry ALIAS telemetrylib)
+
 target_link_libraries(telemetrylib
     PUBLIC
         logging
     PRIVATE
+        commonutils
         ${MAT_SDK_LIB}/libmat.a
         unofficial::sqlite3::sqlite3
         nlohmann_json::nlohmann_json
