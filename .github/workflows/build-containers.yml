@@ -114,7 +114,7 @@ jobs:
           --arg distibution ${{ steps.image.outputs.distro }} \
           --arg digest_sha ${DIGEST_SHA} \
           --arg git_label ${GIT_LABEL} \
-        '{"name": $distibution, "arch": "amd64", "tag": $digest_sha "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
+          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
           cat digest-${{ steps.image.outputs.distro }}.json
 
       - name: Upload digest
