@@ -2,6 +2,9 @@ name: Build Azure OSConfig Package
 
 on:
   workflow_call:
+    secrets:
+      onedstenant:
+        required: false
     inputs:
       artifact:
         description: The artifact name containing the packages from this workflow.
@@ -78,6 +81,7 @@ jobs:
           container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
+          args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}
 
       - name: Set tweak
         id: version
@@ -103,7 +107,7 @@ jobs:
           cmd: |
             (cd ../external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh)
             if [ "${{ inputs.machine-config }}" = "true" ]; then
-              cmake ../src -DCMAKE_BUILD_TYPE='${{ env.BUILD_TYPE }}' -DBUILD_TESTS=OFF
+              cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DVCPKG_OVERLAY_TRIPLETS=../src/triplets -DVCPKG_TARGET_TRIPLET=x64-linux-gcc5
             elif [ "${{ inputs.build-fuzzers }}" = "true" ]; then
               cmake ../src -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=OFF -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON -DBUILD_FUZZER=ON
             else

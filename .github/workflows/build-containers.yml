@@ -95,7 +95,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ${{ steps.image.outputs.path }}
+          context: .
+          file: ${{ matrix.container }}
           # Only push the image when a pull request is merged to dev
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
           tags: ${{ steps.meta.outputs.tags }}
