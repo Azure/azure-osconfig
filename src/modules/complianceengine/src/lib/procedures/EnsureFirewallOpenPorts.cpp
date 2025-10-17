@@ -20,7 +20,7 @@ Result<Status> AuditEnsureIptablesOpenPorts(IndicatorsTree& indicators, ContextI
     auto iptResult = context.ExecuteCommand("iptables -L INPUT -v -n");
     if (!iptResult.HasValue())
     {
-        return Error("Failed to execute iptables command: " + iptResult.Error().message, iptResult.Error().code);
+        return indicators.NonCompliant("Failed to execute iptables command: " + iptResult.Error().message);
     }
     const auto& iptResultR = iptResult.Value();
     for (const auto& port : openPorts)
@@ -44,7 +44,7 @@ Result<Status> AuditEnsureIp6tablesOpenPorts(IndicatorsTree& indicators, Context
     auto iptResult = context.ExecuteCommand("ip6tables -L INPUT -v -n");
     if (!iptResult.HasValue())
     {
-        return Error("Failed to execute ip6tables command: " + iptResult.Error().message, iptResult.Error().code);
+        return indicators.NonCompliant("Failed to execute ip6tables command: " + iptResult.Error().message);
     }
     const auto& iptResultR = iptResult.Value();
     for (const auto& port : openPorts)
@@ -68,7 +68,7 @@ Result<Status> AuditEnsureUfwOpenPorts(IndicatorsTree& indicators, ContextInterf
     auto ufwResult = context.ExecuteCommand("ufw status verbose");
     if (!ufwResult.HasValue())
     {
-        return Error("Failed to execute ufw command: " + ufwResult.Error().message, ufwResult.Error().code);
+        return indicators.NonCompliant("Failed to execute ufw command: " + ufwResult.Error().message);
     }
     std::istringstream ufwStream(ufwResult.Value());
     std::string line;
@@ -89,7 +89,7 @@ Result<Status> AuditEnsureUfwOpenPorts(IndicatorsTree& indicators, ContextInterf
             }
             else
             {
-                return Error("Invalid output from ufw command, unrecognized status section '" + line + "'", EINVAL);
+                return indicators.NonCompliant("Invalid output from ufw command, unrecognized status section '" + line + "'");
             }
             continue;
         }
@@ -103,7 +103,7 @@ Result<Status> AuditEnsureUfwOpenPorts(IndicatorsTree& indicators, ContextInterf
 
     if (!isActive.HasValue())
     {
-        return Error("Invalid output from ufw command, missing status section", EINVAL);
+        return indicators.NonCompliant("Invalid output from ufw command, missing status section");
     }
 
     if (!isActive.Value())
@@ -113,7 +113,7 @@ Result<Status> AuditEnsureUfwOpenPorts(IndicatorsTree& indicators, ContextInterf
 
     if (!foundSeparator)
     {
-        return Error("Invalid output from ufw command, expected separator '--' not found");
+        return indicators.NonCompliant("Invalid output from ufw command, expected separator '--' not found");
     }
     std::set<short> v4ports;
     std::set<short> v6ports;
