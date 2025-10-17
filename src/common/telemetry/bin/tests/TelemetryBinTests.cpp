@@ -82,7 +82,7 @@ TEST_F(TelemetryBinTest, NoArgumentsReturnsFalse)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
     EXPECT_TRUE(args.filepath.empty());
@@ -96,7 +96,7 @@ TEST_F(TelemetryBinTest, InvalidOptionReturnsFalse)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
 
@@ -110,7 +110,7 @@ TEST_F(TelemetryBinTest, PositionalArgumentAcceptsFilePath)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_EQ(jsonFile, args.filepath);
@@ -127,7 +127,7 @@ TEST_F(TelemetryBinTest, FileOptionAcceptsFilePath)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_EQ(jsonFile, args.filepath);
@@ -142,7 +142,7 @@ TEST_F(TelemetryBinTest, LongFormFileOptionWorks)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_EQ(jsonFile, args.filepath);
@@ -157,7 +157,7 @@ TEST_F(TelemetryBinTest, VerboseFlagWorks)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
@@ -173,7 +173,7 @@ TEST_F(TelemetryBinTest, LongFormVerboseWorks)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
@@ -188,7 +188,7 @@ TEST_F(TelemetryBinTest, TeardownOptionWithValue)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_EQ(10, args.teardown_time);
@@ -203,7 +203,7 @@ TEST_F(TelemetryBinTest, LongFormTeardownWithValue)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_EQ(15, args.teardown_time);
@@ -218,7 +218,7 @@ TEST_F(TelemetryBinTest, NegativeTeardownValueFails)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
 
@@ -232,7 +232,7 @@ TEST_F(TelemetryBinTest, InvalidTeardownValueFails)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
 
@@ -246,7 +246,7 @@ TEST_F(TelemetryBinTest, CombinedOptionsWork)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
@@ -263,7 +263,7 @@ TEST_F(TelemetryBinTest, MixedLongAndShortOptionsWork)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
@@ -280,7 +280,7 @@ TEST_F(TelemetryBinTest, TooManyArgumentsFails)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
 
@@ -295,7 +295,7 @@ TEST_F(TelemetryBinTest, FileAndPositionalArgumentCannotBothBeUsed)
     char** argv = CreateArgv(argList);
 
     CommandLineArgs args;
-    bool result = parse_command_line_args(argList.size(), argv, args, nullptr);
+    bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_FALSE(result);
 

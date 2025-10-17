@@ -30,7 +30,7 @@ void __attribute__((destructor)) Destroy(void)
 int main(int argc, char* argv[])
 {
     CommandLineArgs args;
-    if (!parse_command_line_args(argc, argv, args, g_log))
+    if (!ParseCommandLineArgs(argc, argv, args, g_log))
     {
         OsConfigLogError(g_log, "Error: Failed to parse command line arguments.");
         return 1;

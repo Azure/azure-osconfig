@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <string>
 #include <Logging.h>
+#include <string>
 
 struct CommandLineArgs
 {
@@ -13,5 +13,5 @@ struct CommandLineArgs
     int teardown_time;
 };
 
-void print_usage(const char* program_name);
-bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsConfigLogHandle log);
+void PrintUsage(const char* program_name);
+bool ParseCommandLineArgs(int argc, char* argv[], CommandLineArgs& args, OsConfigLogHandle log);
