@@ -111,10 +111,10 @@ jobs:
           DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
           GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
           jq --null-input \
-          --arg distibution ${{ steps.image.outputs.distro }} \
-          --arg digest_sha ${DIGEST_SHA} \
-          --arg git_label ${GIT_LABEL} \
-          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
+          --arg distibution "${{ steps.image.outputs.distro }}" \
+          --arg digest_sha "${DIGEST_SHA}" \
+          --arg git_label "${GIT_LABEL}" \
+          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha, "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
           cat digest-${{ steps.image.outputs.distro }}.json
 
       - name: Upload digest
