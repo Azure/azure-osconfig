@@ -11,6 +11,7 @@
 #include <Evaluator.h>
 #include <FilesystemScanner.h>
 #include <UsersIterator.h>
+#include <fnmatch.h>
 #include <set>
 #include <sys/stat.h>
 
@@ -19,6 +20,7 @@ namespace ComplianceEngine
 
 Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface& context)
 {
+    const std::vector<std::string> ommited_paths = {"/run/*", "/proc/*", "*/containerd/*", "*/kubelet/*", "/sys/fs/cgroup/memory/*", "/var/*/private/*"};
     // Build set of known user IDs
     std::set<uid_t> knownUids;
     auto usersRange = UsersRange::Make(context.GetSpecialFilePath("/etc/passwd"), context.GetLogHandle());
@@ -50,6 +52,20 @@ Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface
         }
         const auto& path = kv.first;
         const auto& st = kv.second.st;
+        bool omit = false;
+        for (const auto& pattern : ommited_paths)
+        {
+            if (fnmatch(pattern.c_str(), path.c_str(), 0) == 0)
+            {
+                OsConfigLogDebug(context.GetLogHandle(), "Skipping path %s matching omit pattern %s", path.c_str(), pattern.c_str());
+                omit = true;
+                break;
+            }
+        }
+        if (omit)
+        {
+            continue;
+        }
         if (knownUids.find(st.st_uid) == knownUids.end())
         {
             unowned.push_back("uid=" + std::to_string(static_cast<long long>(st.st_uid)) + " path=" + path);
