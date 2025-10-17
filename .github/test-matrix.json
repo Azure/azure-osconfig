@@ -1,0 +1,20 @@
+[
+    { "name": "almalinux-9", "arch": "amd64", "tag": "@sha256:d2c6bd9f0eda3151c38f5c678b25124af1d34622de5757e690fe518ab613aec3" },
+    { "name": "amazonlinux-2", "arch": "amd64", "tag": "@sha256:651fcca7123d696d883d5e755723ae018dadb35284fd5d3ab29008b21e858bf6" },
+    { "name": "azurelinux-3", "arch": "amd64", "tag": "@sha256:029c9096b62a553eee7a6621eee36d77002effe3a2d7b8c9b7e8d59c49697cd3" },
+    { "name": "centos-7", "arch": "amd64", "tag": "@sha256:fca7046aa164e1cd5e8521bbd40dcf1f714fd8ee8a73e2d2d401ef459e3d6100" },
+    { "name": "centos-8", "arch": "amd64", "tag": "@sha256:3ed4e39b0524bc41b327c0aa4c3899f55febfc638d66668e4a6b5c175df892ee" },
+    { "name": "debian-10", "arch": "amd64", "tag": "@sha256:f35850f7627c3404c6a3a11443505ce6b80b9b6b437cd19ca67452ab4b77a2d4" },
+    { "name": "debian-11", "arch": "amd64", "tag": "@sha256:97c518527c76ad997bab15559d3640e7d2bf27eeab5eedc501546364e1dec311" },
+    { "name": "debian-12", "arch": "amd64", "tag": "@sha256:05a41d7ae8b496fa956965e93ad5217633604db00851e8dfabfe7981513c2c7d" },
+    { "name": "mariner-2", "arch": "amd64", "tag": "@sha256:7ac04b9368533f71127b977439f4b3a1576a1be3ec1fe444acf1216032c4ae2b" },
+    { "name": "oraclelinux-7", "arch": "amd64", "tag": "@sha256:77b4c9913d01397c540dd831e80aebf57fd4cdc48d5a6fcd652128db94718f0b" },
+    { "name": "oraclelinux-8", "arch": "amd64", "tag": "@sha256:2c05af2c8bea2b85108e85f0489f65d21df489f7addcb56ced1fc75bb4ce0897" },
+    { "name": "rhel-7", "arch": "amd64", "tag": "@sha256:35fc1d2dd889c6225acc000dde3d819417b68fec80e3f66a0768c0dbaf1ab490" },
+    { "name": "rhel-8", "arch": "amd64", "tag": "@sha256:36aa8a92ceea75f3408515b464d659ee129a30185a2abbbb2b52b1d7323ef422" },
+    { "name": "rhel-9", "arch": "amd64", "tag": "@sha256:b4b0dec958fb4e5eab499fd1cc5310bf8eb3b5ca316e0ff563bffd119ae136a5" },
+    { "name": "sles-15", "arch": "amd64", "tag": "@sha256:5dda8a77136f34be84cca6735872bf0ef5b2f34d41df8bb9317ec08317bcc559" },
+    { "name": "ubuntu-20.04", "arch": "amd64", "tag": "@sha256:d880441d800f0b5d9acece95c2a87ae0cbb9f2f35983024fd82d7e476840c33f" },
+    { "name": "ubuntu-22.04", "arch": "amd64", "tag": "@sha256:1398461e6a1f38940f10bf153ea0ea51e2a77d03de3d10e47aa9a1bb985b795f" },
+    { "name": "ubuntu-24.04", "arch": "amd64", "tag": "@sha256:ecf8fcb26175d413716d0a40b043e5d9685b9b2b895de590313ef6da7318bb6b" }
+]
