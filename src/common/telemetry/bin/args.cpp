@@ -7,7 +7,7 @@
 #include <iostream>
 #include <Logging.h>
 
-void print_usage(const char* program_name)
+void PrintUsage(const char* program_name)
 {
     std::cout << "Usage: " << program_name << " [OPTIONS] <json_file_path>" << std::endl;
     std::cout << std::endl;
@@ -26,7 +26,7 @@ void print_usage(const char* program_name)
     std::cout << std::endl;
 }
 
-bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsConfigLogHandle log)
+bool ParseCommandLineArgs(int argc, char* argv[], CommandLineArgs& args, OsConfigLogHandle log)
 {
     args.verbose = false;
     args.teardown_time = 5; // CONFIG_DEFAULT_TEARDOWN_TIME
@@ -66,24 +66,24 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
                         if (args.teardown_time < 0)
                         {
                             OsConfigLogError(log, "Error: Teardown time must be a non-negative integer.");
-                            print_usage(argv[0]);
+                            PrintUsage(argv[0]);
                             return false;
                         }
                     }
                     catch (const std::exception& e)
                     {
                         OsConfigLogError(log, "Error: Invalid teardown time value.");
-                        print_usage(argv[0]);
+                        PrintUsage(argv[0]);
                         return false;
                     }
                 }
                 break;
             case '?':
                 OsConfigLogError(log, "Error: Unknown option or missing argument.");
-                print_usage(argv[0]);
+                PrintUsage(argv[0]);
                 return false;
             default:
-                print_usage(argv[0]);
+                PrintUsage(argv[0]);
                 return false;
         }
     }
@@ -102,7 +102,7 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
     if (args.filepath.empty())
     {
         OsConfigLogError(log, "Error: JSON file path is required. Provide as argument or use -f option.");
-        print_usage(argv[0]);
+        PrintUsage(argv[0]);
         return false;
     }
 
@@ -110,7 +110,7 @@ bool parse_command_line_args(int argc, char* argv[], CommandLineArgs& args, OsCo
     if (optind < argc)
     {
         OsConfigLogError(log, "Error: Too many arguments provided.");
-        print_usage(argv[0]);
+        PrintUsage(argv[0]);
         return false;
     }
 
