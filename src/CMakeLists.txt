@@ -139,9 +139,12 @@ set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
 if (BUILD_TESTS)
+    message(STATUS "Google Unit Test: Enabled")
     enable_testing()
     add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
+else()
+    message(STATUS "Google Unit Test: Disabled")
 endif()
 
 if (BUILD_FUZZER)

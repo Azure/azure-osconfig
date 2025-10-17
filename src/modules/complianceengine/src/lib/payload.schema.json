@@ -210,7 +210,13 @@
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureNoWritables.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/audit"
@@ -220,6 +226,9 @@
         },
         {
           "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/audit"
@@ -325,7 +334,13 @@
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureNoWritables.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/remediation"
@@ -335,6 +350,9 @@
         },
         {
           "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/remediation"

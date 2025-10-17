@@ -1,12 +1,13 @@
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureApparmorProfiles.h>
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
 
 using ComplianceEngine::AuditEnsureApparmorProfiles;
+using ComplianceEngine::AuditEnsureApparmorProfilesParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
@@ -29,9 +30,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditApparmorStatusCommandFails)
 {
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -47,9 +48,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditNoProfilesLoaded)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -65,9 +66,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditUnconfinedProcessesWithProfileDefined)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -83,9 +84,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditComplainModeAllProfilesInComplainOrEnfor
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -101,9 +102,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditComplainModeNotAllProfilesInComplainOrEn
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -119,10 +120,10 @@ TEST_F(EnsureApparmorProfilesTest, AuditEnforceModeAllProfilesInEnforce)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
-    args["enforce"] = "";
+    AuditEnsureApparmorProfilesParams params;
+    params.enforce = true;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -138,10 +139,10 @@ TEST_F(EnsureApparmorProfilesTest, AuditEnforceModeNotAllProfilesInEnforce)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
-    args["enforce"] = "";
+    AuditEnsureApparmorProfilesParams params;
+    params.enforce = true;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -157,10 +158,10 @@ TEST_F(EnsureApparmorProfilesTest, AuditEnforceModeWithComplainProfilesStillComp
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
-    args["enforce"] = "";
+    AuditEnsureApparmorProfilesParams params;
+    params.enforce = true;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -179,9 +180,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditMixedOutputParsing)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -197,9 +198,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditMinimalCompliantOutput)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -215,9 +216,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditLargeNumbersInOutput)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -228,9 +229,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditEmptyApparmorOutput)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -243,9 +244,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditOutputWithOnlyModuleInfo)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -260,9 +261,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditOutputWithPartialInformation)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -279,9 +280,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditRealisticSampleOutput)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // 16+5=21 < 35 loaded profiles
 }
@@ -298,10 +299,10 @@ TEST_F(EnsureApparmorProfilesTest, AuditEnforceModeWithRealisticSample)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
-    args["enforce"] = "";
+    AuditEnsureApparmorProfilesParams params;
+    params.enforce = true;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // Only 16 out of 35 profiles in enforce mode
 }
@@ -317,9 +318,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditProfilesLoadedButNoModeSet)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // 0+0=0 < 25 loaded profiles
 }
@@ -335,9 +336,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditEdgeCaseZeroLoadedProfilesAllowed)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // No profiles loaded should be non-compliant
 }
@@ -353,11 +354,10 @@ TEST_F(EnsureApparmorProfilesTest, AuditArgumentHandling)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
-    args["enforce"] = "true";       // Any value triggers enforce mode
-    args["otherParam"] = "ignored"; // Other parameters should be ignored
+    AuditEnsureApparmorProfilesParams params;
+    params.enforce = true;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -373,9 +373,9 @@ TEST_F(EnsureApparmorProfilesTest, AuditDifferentLineOrderings)
 
     EXPECT_CALL(mContext, ExecuteCommand("apparmor_status")).WillOnce(Return(Result<std::string>(apparmorOutput)));
 
-    std::map<std::string, std::string> args;
+    AuditEnsureApparmorProfilesParams params;
 
-    auto result = AuditEnsureApparmorProfiles(args, indicators, mContext);
+    auto result = AuditEnsureApparmorProfiles(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant); // 16+19=35 equals loaded profiles
 }

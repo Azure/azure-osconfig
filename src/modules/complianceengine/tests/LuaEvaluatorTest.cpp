@@ -280,18 +280,39 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_AuditFunction)
 {
     LuaEvaluator evaluator;
 
-    // Test calling AuditSuccess (should be available and return success)
+    // Test calling AuditSuccess (should be available under ce namespace and return success)
     std::string script = R"(
-        if AuditAuditSuccess then
-            local compliant, message = AuditAuditSuccess({message = "test message"})
+        if ce and ce.AuditAuditSuccess then
+            local compliant, message = ce.AuditAuditSuccess({message = "test message"})
             if compliant then
-                return true, "AuditAuditSuccess returned compliant: " .. message
+                return true, "ce.AuditAuditSuccess returned compliant: " .. message
             else
-                return false, "AuditAuditSuccess returned non-compliant: " .. message
+                return false, "ce.AuditAuditSuccess returned non-compliant: " .. message
             end
         else
-            return false, "AuditAuditSuccess function not available"
+            return false, "ce.AuditAuditSuccess function not available"
         end
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that procedure functions are NOT available in the global namespace (must use ce.*)
+TEST_F(LuaEvaluatorTest, ProcedureWrapper_GlobalNamespaceBlocked)
+{
+    LuaEvaluator evaluator;
+
+    // Attempt to call a procedure without ce prefix should fail / be nil
+    std::string script = R"(
+        if AuditAuditSuccess ~= nil then
+            return false, "Global procedure unexpectedly available"
+        end
+        if RemediateRemediationSuccess ~= nil then
+            return false, "Global remediation procedure unexpectedly available"
+        end
+        return true, "Global namespace clean"
     )";
 
     auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
@@ -306,20 +327,11 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ReturnValueFormat)
 
     // Test that procedures return exactly two values: boolean and string
     std::string script = R"(
-        local results = {AuditAuditSuccess({message = "test"})}
-        local count = #results
-
-        if count == 2 then
-            local compliant = results[1]
-            local message = results[2]
-
-            if type(compliant) == "boolean" and type(message) == "string" then
-                return true, "Procedure returned correct format: boolean and string"
-            else
-                return false, "Procedure returned wrong types: " .. type(compliant) .. ", " .. type(message)
-            end
+        local compliant, message = ce.AuditAuditSuccess({message = "test"})
+        if type(compliant) == "boolean" and type(message) == "string" then
+            return compliant, "Procedure returned correct format: boolean and string"
         else
-            return false, "Procedure returned " .. count .. " values, expected 2"
+            return false, "Procedure returned wrong types: " .. type(compliant) .. ", " .. type(message)
         end
     )";
 
@@ -336,12 +348,12 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_AuditModeRestriction)
     // Test that remediation functions are not available in audit mode
     std::string script = R"(
         -- Check if the remediation function exists
-        if RemediationSuccess == nil then
+        if ce.RemediationSuccess == nil then
             return true, "Remediation function correctly not available in audit mode"
         else
             -- If it exists, it should throw an error when called
             local success, message = pcall(function()
-                return RemediationSuccess({message = "test"})
+                return ce.RemediationSuccess({message = "test"})
             end)
 
             if success then
@@ -364,8 +376,8 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_RemediationMode)
 
     // Test that both audit and remediation functions are available in remediation mode
     std::string script = R"(
-        local audit_available = (AuditAuditSuccess ~= nil)
-        local remediate_available = (RemediateRemediationSuccess ~= nil)
+        local audit_available = (ce.AuditAuditSuccess ~= nil)
+        local remediate_available = (ce.RemediateRemediationSuccess ~= nil)
 
         if audit_available and remediate_available then
             return true, "Both audit and remediation functions available"
@@ -454,10 +466,10 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ErrorHandling)
 
     // Test calling AuditFailure (should return non-compliant)
     std::string script = R"(
-        if AuditFailure then
-            return AuditFailure({})
+        if ce.AuditFailure then
+            return ce.AuditFailure({})
         else
-            return false, "AuditFailure function not available"
+            return false, "ce.AuditFailure function not available"
         end
     )";
 
@@ -474,7 +486,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnProcedureFailure)
     // Test calling RemediationParametrized with invalid parameter (should throw Lua error)
     std::string script = R"(
         local success, message = pcall(function()
-            return RemediateRemediationParametrized({result = "invalid"})
+            return ce.RemediateRemediationParametrized({result = "invalid"})
         end)
 
         if success then
@@ -502,13 +514,13 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnMissingParameter)
     // Test calling RemediationParametrized without required parameter
     std::string script = R"(
         local success, message = pcall(function()
-            return RemediateRemediationParametrized({})
+            return ce.RemediateRemediationParametrized({})
         end)
 
         if success then
             return false, "Expected procedure to throw error for missing parameter"
         else
-            if string.find(message, "Missing 'result' parameter") then
+            if string.find(message, "Missing required 'result' parameter") then
                 return true, "Procedure correctly threw error for missing parameter"
             else
                 return false, "Unexpected error message: " .. message
@@ -529,13 +541,13 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnRemediationRestriction)
     // Test calling remediation function in audit mode (should not be available or throw error)
     std::string script = R"(
         -- Check if the function exists at all in audit mode
-        if RemediationSuccess == nil then
+        if ce.RemediationSuccess == nil then
             return true, "RemediationSuccess function correctly not available in audit mode"
         end
 
         -- If it exists, it should throw an error when called
         local success, message = pcall(function()
-            return RemediationSuccess({message = "test"})
+            return ce.RemediationSuccess({message = "test"})
         end)
 
         if success then

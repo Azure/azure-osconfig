@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <Bindings.h>
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <PackageInstalled.h>
+#include <ProcedureMap.h>
 #include <Result.h>
 #include <cstdio>
 #include <fstream>
 #include <functional>
 #include <linux/limits.h>
-#include <set>
 #include <string>
 #include <unistd.h>
 
@@ -17,18 +18,18 @@ namespace
 
 using ComplianceEngine::ContextInterface;
 using ComplianceEngine::Error;
+using ComplianceEngine::PackageManagerType;
 using ComplianceEngine::Result;
 
-typedef struct
+struct PackageCache
 {
     time_t lastUpdateTime;
-    std::string packageManager;
+    PackageManagerType packageManager = PackageManagerType::Autodetect;
     std::map<std::string, std::string> packages;
-} PackageCache;
+};
 
 static constexpr long PACKAGELIST_TTL = 3000L;        // just shy of an hours
 static constexpr long PACKAGELIST_STALE_TTL = 12600L; // 3.5 hours
-static constexpr char PACKAGE_CACHE_PATH[] = "/var/lib/GuestConfig/ComplianceEnginePackageCache";
 
 class ScopeGuard
 {
@@ -53,25 +54,26 @@ private:
     bool active{true};
 };
 
-std::string DetectPackageManager(ContextInterface& context)
+Result<PackageManagerType> DetectPackageManager(ContextInterface& context)
 {
     auto output = context.ExecuteCommand("dpkg -l dpkg");
     if (output.HasValue())
     {
-        return "dpkg";
+        return PackageManagerType::DPKG;
     }
     output = context.ExecuteCommand("rpm -qa rpm");
     if (output.HasValue())
     {
-        return "rpm";
+        return PackageManagerType::RPM;
     }
     // For SLES 15
     output = context.ExecuteCommand("rpm -qa rpm-ndb");
     if (output.HasValue())
     {
-        return "rpm";
+        return PackageManagerType::RPM;
     }
-    return "";
+
+    return Error("No package manager found", ENOENT);
 }
 
 Result<PackageCache> LoadPackageCache(const std::string& path)
@@ -79,7 +81,7 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
     PackageCache cache;
     const std::string pkgCacheHeader = "# PackageCache "; // "# PackageCache <packageManager>@<timestamp>\n"
     cache.lastUpdateTime = 0;
-    cache.packageManager = "";
+    cache.packageManager = PackageManagerType::Autodetect;
     cache.packages.clear();
     std::ifstream cacheFile(path);
     if (!cacheFile.is_open())
@@ -99,7 +101,13 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
         return Error("Invalid cache file header format");
     }
 
-    cache.packageManager = header.substr(pkgCacheHeader.length(), separatorPos - pkgCacheHeader.length());
+    const auto packageMangerStr = header.substr(pkgCacheHeader.length(), separatorPos - pkgCacheHeader.length());
+    if (packageMangerStr == "dpkg")
+        cache.packageManager = PackageManagerType::DPKG;
+    else if (packageMangerStr == "rpm")
+        cache.packageManager = PackageManagerType::RPM;
+    else
+        return Error("Invalid package manager type");
     try
     {
         cache.lastUpdateTime = std::stol(header.substr(separatorPos + 1));
@@ -153,7 +161,7 @@ Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
         return Error("Failed to open temporary file for writing: " + tempPath);
     }
 
-    const std::string pkgCacheHeader = "# PackageCache " + cache.packageManager + "@" + std::to_string(cache.lastUpdateTime) + "\n";
+    const std::string pkgCacheHeader = "# PackageCache " + std::to_string(cache.packageManager) + "@" + std::to_string(cache.lastUpdateTime) + "\n";
     tempFile << pkgCacheHeader;
 
     if (!tempFile)
@@ -186,7 +194,7 @@ Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
 Result<PackageCache> GetInstalledPackagesRpm(ContextInterface& context)
 {
     PackageCache cache;
-    cache.packageManager = "rpm";
+    cache.packageManager = PackageManagerType::RPM;
     cache.lastUpdateTime = time(NULL);
 
     const std::string cmd = "rpm -qa --qf='%{NAME} %{EVR}\n'";
@@ -220,7 +228,7 @@ Result<PackageCache> GetInstalledPackagesRpm(ContextInterface& context)
 Result<PackageCache> GetInstalledPackagesDpkg(ContextInterface& context)
 {
     PackageCache cache;
-    cache.packageManager = "dpkg";
+    cache.packageManager = PackageManagerType::DPKG;
     cache.lastUpdateTime = time(NULL);
 
     const std::string cmd = "dpkg -l";
@@ -422,66 +430,52 @@ int VersionCompare(const std::string& v1, const std::string& v2)
     return 0;
 }
 
-Result<PackageCache> GetInstalledPackages(const std::string& packageManager, ContextInterface& context)
+Result<PackageCache> GetInstalledPackages(PackageManagerType packageManager, ContextInterface& context)
 {
-    if (packageManager == "rpm")
+    if (packageManager == PackageManagerType::RPM)
     {
         return GetInstalledPackagesRpm(context);
     }
-    else if (packageManager == "dpkg")
+    else if (packageManager == PackageManagerType::DPKG)
     {
         return GetInstalledPackagesDpkg(context);
     }
-    return Error("Unsupported package manager: " + packageManager);
+    return Error("Unsupported package manager: " + std::to_string(packageManager));
 }
 
 } // namespace
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Minimum package version to check against (optional)",
-    "packageManager:Package manager, autodetected by default::^(rpm|dpkg)$", "test_cachePath:Cache path")
+Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.packageManager.HasValue());
+    assert(params.test_cachePath.HasValue());
     auto log = context.GetLogHandle();
-
-    auto packageNameIt = args.find("packageName");
-    if (packageNameIt == args.end())
+    auto packageManager = params.packageManager.Value();
+    if (packageManager == PackageManagerType::Autodetect)
     {
-        return Error("No package name provided");
+        auto result = DetectPackageManager(context);
+        if (!result.HasValue())
+        {
+            return result.Error();
+        }
+
+        packageManager = result.Value();
     }
-    auto packageName = std::move(packageNameIt->second);
 
-    std::string packageManager;
-    auto packageManagerIt = args.find("packageManager");
-    if (packageManagerIt != args.end())
+    if (params.minPackageVersion.HasValue())
     {
-        packageManager = std::move(packageManagerIt->second);
+        OsConfigLogInfo(log, "Checking if package %s is installed with minimum version %s using package manager %s", params.packageName.c_str(),
+            params.minPackageVersion->c_str(), std::to_string(packageManager).c_str());
     }
     else
     {
-        packageManager = DetectPackageManager(context);
-        if (packageManager.empty())
-        {
-            return Error("No package manager found");
-        }
+        OsConfigLogInfo(log, "Checking if package %s is installed using package manager %s", params.packageName.c_str(), std::to_string(packageManager).c_str());
     }
-
-    auto cachePathIt = args.find("test_cachePath");
-    std::string cachePath = cachePathIt != args.end() ? std::move(cachePathIt->second) : PACKAGE_CACHE_PATH;
-
-    auto minPackageVersionIt = args.find("minPackageVersion");
-    std::string minPackageVersion;
-    if (minPackageVersionIt != args.end())
-    {
-        minPackageVersion = std::move(minPackageVersionIt->second);
-    }
-
-    OsConfigLogInfo(log, "Checking if package %s is installed with minimum version %s using package manager %s", packageName.c_str(),
-        minPackageVersion.c_str(), packageManager.c_str());
 
     PackageCache cache;
-    auto cacheResult = LoadPackageCache(cachePath);
+    auto cacheResult = LoadPackageCache(params.test_cachePath.Value());
     bool cacheValid = true;
     bool cacheStale = false;
     if (cacheResult.HasValue())
@@ -496,7 +490,8 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
     if (cacheValid && (cache.packageManager != packageManager))
     {
         cacheValid = false;
-        OsConfigLogInfo(log, "Package manager mismatch: expected %s, found %s", cache.packageManager.c_str(), packageManager.c_str());
+        OsConfigLogInfo(log, "Package manager mismatch: expected %s, found %s", std::to_string(cache.packageManager).c_str(),
+            std::to_string(packageManager).c_str());
     }
 
     if (cacheValid)
@@ -520,10 +515,10 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
         if (cacheResult.HasValue())
         {
             cache = cacheResult.Value();
-            auto saveResult = SavePackageCache(cache, cachePath);
+            auto saveResult = SavePackageCache(cache, params.test_cachePath.Value());
             if (saveResult.HasValue())
             {
-                OsConfigLogInfo(log, "Saved package cache to %s", cachePath.c_str());
+                OsConfigLogInfo(log, "Saved package cache to %s", params.test_cachePath->c_str());
             }
             else
             {
@@ -544,30 +539,30 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
         }
     }
 
-    auto packageIt = cache.packages.find(packageName);
+    auto packageIt = cache.packages.find(params.packageName);
     if (packageIt == cache.packages.end())
     {
-        OsConfigLogInfo(log, "Package %s is not installed", packageName.c_str());
-        return indicators.NonCompliant("Package " + packageName + " is not installed");
+        OsConfigLogInfo(log, "Package %s is not installed", params.packageName.c_str());
+        return indicators.NonCompliant("Package " + params.packageName + " is not installed");
     }
-    if (!minPackageVersion.empty())
+    if (params.minPackageVersion.HasValue())
     {
         auto installedVersion = packageIt->second;
-        if (VersionCompare(installedVersion, minPackageVersion) < 0)
+        if (VersionCompare(installedVersion, params.minPackageVersion.Value()) < 0)
         {
-            OsConfigLogInfo(log, "Package %s is installed but version %s is less than minimum required version %s", packageName.c_str(),
-                installedVersion.c_str(), minPackageVersion.c_str());
-            return indicators.NonCompliant("Package " + packageName + " is installed but version " + installedVersion +
-                                           " is less than minimum required version " + minPackageVersion);
+            OsConfigLogInfo(log, "Package %s is installed but version %s is less than minimum required version %s", params.packageName.c_str(),
+                installedVersion.c_str(), params.minPackageVersion->c_str());
+            return indicators.NonCompliant("Package " + params.packageName + " is installed but version " + installedVersion +
+                                           " is less than minimum required version " + params.minPackageVersion.Value());
         }
         else
         {
-            OsConfigLogInfo(log, "Package %s is installed with version %s, which meets or exceeds the minimum required version %s", packageName.c_str(),
-                installedVersion.c_str(), minPackageVersion.c_str());
-            return indicators.Compliant("Package " + packageName + " is installed with version " + installedVersion +
-                                        ", which meets or exceeds the minimum required version " + minPackageVersion);
+            OsConfigLogInfo(log, "Package %s is installed with version %s, which meets or exceeds the minimum required version %s",
+                params.packageName.c_str(), installedVersion.c_str(), params.minPackageVersion->c_str());
+            return indicators.Compliant("Package " + params.packageName + " is installed with version " + installedVersion +
+                                        ", which meets or exceeds the minimum required version " + params.minPackageVersion.Value());
         }
     }
-    return indicators.Compliant("Package " + packageName + " is installed");
+    return indicators.Compliant("Package " + params.packageName + " is installed");
 }
 } // namespace ComplianceEngine

@@ -448,7 +448,7 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
 {
     unsigned int i = 0;
 
-    if (NULL != groupList)
+    if ((NULL != groupList) && ((NULL != *groupList)))
     {
         for (i = 0; i < size; i++)
         {
@@ -465,7 +465,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
-    int i = 0;
+    size_t listSize = numberOfGroups * sizeof(gid_t);
+    int i = 0, j = 0;
     int getGroupListResult = 0;
     int status = 0;
 
@@ -485,37 +486,44 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     *groupList = NULL;
     *size = 0;
 
-    if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
+    if (NULL == (groupIds = malloc(listSize)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
         OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         numberOfGroups = 0;
         status = ENOMEM;
     }
-    else if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
+    else
     {
-        OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
-        FREE_MEMORY(groupIds);
-
-        if (0 < numberOfGroups)
+        memset(groupIds, 0, listSize);
+        if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
         {
-            if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
+            OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
+            FREE_MEMORY(groupIds);
+
+            if (0 < numberOfGroups)
             {
-                getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
-                OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%u' (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
+                listSize = numberOfGroups * sizeof(gid_t);
+
+                if (NULL != (groupIds = malloc(listSize)))
+                {
+                    memset(groupIds, 0, listSize);
+                    getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
+                    OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%u' (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
+                }
+                else
+                {
+                    OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
+                    OSConfigTelemetryStatusTrace("malloc", ENOMEM);
+                    numberOfGroups = 0;
+                    status = ENOMEM;
+                }
             }
             else
             {
-                OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
-                OSConfigTelemetryStatusTrace("malloc", ENOMEM);
-                numberOfGroups = 0;
-                status = ENOMEM;
+                OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned -1 and %d groups", user->userId, user->groupId, numberOfGroups);
+                status = ENOENT;
             }
-        }
-        else
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned -1 and %d groups", user->userId, user->groupId, numberOfGroups);
-            status = ENOENT;
         }
     }
 
@@ -524,7 +532,9 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in %d group%s",
             user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
-        if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
+        listSize = sizeof(SimplifiedGroup)* numberOfGroups;
+
+        if (NULL == (*groupList = malloc(listSize)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             OSConfigTelemetryStatusTrace("malloc", ENOMEM);
@@ -532,42 +542,32 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         }
         else
         {
+            memset(*groupList, 0, listSize);
+
             *size = numberOfGroups;
 
-            for (i = 0; i < numberOfGroups; i++)
+            for (i = 0, j = 0; i < numberOfGroups; i++)
             {
-                if (NULL == (groupEntry = getgrgid(groupIds[i])))
-                {
-                    if (0 == errno)
-                    {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
-                        *size -= 1;
-                        continue;
-                    }
-                    else
-                    {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
-                        status = errno ? errno : ENOENT;
-                        break;
-                    }
-                }
+                errno = 0;
 
-                if (NULL != groupEntry)
+                if (NULL != (groupEntry = getgrgid(groupIds[i])))
                 {
-                    (*groupList)[i].groupId = groupEntry->gr_gid;
-                    (*groupList)[i].groupName = NULL;
-                    (*groupList)[i].hasUsers = true;
+                    (*groupList)[j].groupId = groupEntry->gr_gid;
+                    (*groupList)[j].groupName = NULL;
+                    (*groupList)[j].hasUsers = true;
 
                     if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                     {
-                        if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                        if (NULL != ((*groupList)[j].groupName = malloc(groupNameLength + 1)))
                         {
-                            memset((*groupList)[i].groupName, 0, groupNameLength + 1);
-                            memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
+                            memset((*groupList)[j].groupName, 0, groupNameLength + 1);
+                            memcpy((*groupList)[j].groupName, groupEntry->gr_name, groupNameLength);
 
                             OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')",
                                 user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId,
-                                (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
+                                (*groupList)[j].groupId, IsSystemGroup(&(*groupList)[j]) ? (*groupList)[j].groupName : g_redacted);
+
+                            j += 1;
                         }
                         else
                         {
@@ -578,10 +578,25 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         }
                     }
                 }
+                else
+                {
+                    if (0 == errno)
+                    {
+                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
+                        *size -= 1;
+                    }
+                    else
+                    {
+                        OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
+                        status = errno;
+                        break;
+                    }
+                }
             }
         }
     }
 
+    // If none of the groups were found
     if (0 == *size)
     {
         FREE_MEMORY(*groupList);
@@ -3188,4 +3203,126 @@ int RestrictSuToRootGroup(OsConfigLogHandle log)
     }
 
     return status;
+}
+
+bool GroupExists(gid_t groupId, OsConfigLogHandle log)
+{
+    bool result = false;
+
+    errno = 0;
+
+    if (NULL != getgrgid(groupId))
+    {
+        OsConfigLogInfo(log, "GroupExists: group %u exists", (unsigned int)groupId);
+        result = true;
+    }
+    else if (0 == errno)
+    {
+        OsConfigLogInfo(log, "GroupExists: group %u does not exist (errno: %d)", (unsigned int)groupId, errno);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "GroupExists: getgrgid(for gid: %u) failed (errno: %d, %s)", (unsigned int)groupId, errno, strerror(errno));
+    }
+
+    return result;
+}
+
+int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
+{
+    struct group* groupEntry = NULL;
+    int result = ENOENT;
+
+    errno = 0;
+
+    if ((NULL != name) && (NULL != (groupEntry = getgrnam(name))))
+    {
+        OsConfigLogInfo(log, "CheckGroupExists: group %u exists", (unsigned int)groupEntry->gr_gid);
+        OsConfigCaptureSuccessReason(reason, "Group %u exists", (unsigned int)groupEntry->gr_gid);
+        result = 0;
+    }
+
+    if (0 != result)
+    {
+        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d)", name, errno);
+        OsConfigCaptureReason(reason, "Group '%s' does not exist (%d)", name, errno);
+    }
+
+    return result;
+}
+
+int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
+{
+    struct passwd* userEntry = NULL;
+    int result = ENOENT;
+
+    if (NULL != username)
+    {
+        setpwent();
+
+        while (NULL != (userEntry = getpwent()))
+        {
+            if (NULL == userEntry->pw_name)
+            {
+                continue;
+            }
+            else if (0 == strcmp(userEntry->pw_name, username))
+            {
+                OsConfigLogInfo(log, "UserExists: user %u exists", userEntry->pw_uid);
+                OsConfigCaptureSuccessReason(reason, "User %u exists", userEntry->pw_uid);
+                result = 0;
+                break;
+            }
+        }
+
+        endpwent();
+    }
+
+    if (0 != result)
+    {
+        OsConfigLogInfo(log, "UserExists: user '%s' does not exist", username);
+        OsConfigCaptureReason(reason, "User '%s' does not exist", username);
+    }
+
+    return result;
+}
+
+int AddIfMissingSyslogSystemUser(OsConfigLogHandle log)
+{
+    const char* command = "useradd -r -s /usr/sbin/nologin -d /nonexistent syslog";
+    int result = 0;
+
+    if (0 != (result = CheckUserExists("syslog", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: useradd for user 'syslog' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: user 'syslog' successfully created");
+        }
+    }
+
+    return result;
+}
+
+int AddIfMissingAdmSystemGroup(OsConfigLogHandle log)
+{
+    const char* command = "groupadd -r adm";
+    int result = 0;
+
+    if (0 != (result = CheckGroupExists("adm", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: groupadd for group 'adm' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: group 'adm' successfully created");
+        }
+    }
+
+    return result;
 }

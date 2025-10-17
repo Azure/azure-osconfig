@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureUserIsOnlyAccountWith.h>
 #include <Optional.h>
 #include <fstream>
 
 using ComplianceEngine::AuditEnsureUserIsOnlyAccountWith;
+using ComplianceEngine::EnsureUserIsOnlyAccountWithParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
@@ -89,22 +89,13 @@ protected:
     }
 };
 
-TEST_F(EnsureUserIsOnlyAccountWithTest, InvalidArguments_1)
-{
-    map<string, string> args;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'username' parameter");
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
 TEST_F(EnsureUserIsOnlyAccountWithTest, NoParameter)
 {
     auto path = CreateTestPasswdFile(string("foo"), string("x"), 8888, 1000, string("/home/foo"), string("/bin/bash"));
-    map<string, string> args;
-    args["username"] = "foo";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -113,11 +104,11 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, NoParameter)
 TEST_F(EnsureUserIsOnlyAccountWithTest, EmptyFile)
 {
     auto path = CreateTestPasswdFile("");
-    map<string, string> args;
-    args["username"] = "foo";
-    args["uid"] = "8888";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.uid = 8888;
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -126,11 +117,11 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, EmptyFile)
 TEST_F(EnsureUserIsOnlyAccountWithTest, SingleUID)
 {
     auto path = CreateTestPasswdFile("foo:x:8888:9999:/home/foo:/bin/bash");
-    map<string, string> args;
-    args["username"] = "foo";
-    args["uid"] = "8888";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.uid = 8888;
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -141,11 +132,11 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, DuplicatedUID)
     auto path = CreateTestPasswdFile(
         "foo:x:8888:9999:/home/foo:/bin/bash\n"
         "bar:x:8888:9999:/home/bar:/bin/bash");
-    map<string, string> args;
-    args["username"] = "foo";
-    args["uid"] = "8888";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.uid = 8888;
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -154,11 +145,11 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, DuplicatedUID)
 TEST_F(EnsureUserIsOnlyAccountWithTest, SingleGID)
 {
     auto path = CreateTestPasswdFile("foo:x:8888:9999:/home/foo:/bin/bash");
-    map<string, string> args;
-    args["username"] = "foo";
-    args["gid"] = "9999";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.gid = 9999;
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -169,11 +160,11 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, DuplicatedGID)
     auto path = CreateTestPasswdFile(
         "foo:x:8888:9999:/home/foo:/bin/bash\n"
         "bar:x:8888:9999:/home/bar:/bin/bash");
-    map<string, string> args;
-    args["username"] = "foo";
-    args["gid"] = "9999";
-    args["test_etcPasswdPath"] = path;
-    auto result = AuditEnsureUserIsOnlyAccountWith(args, mIndicators, mContext);
+    EnsureUserIsOnlyAccountWithParams params;
+    params.username = "foo";
+    params.gid = 9999;
+    params.test_etcPasswdPath = path;
+    auto result = AuditEnsureUserIsOnlyAccountWith(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
