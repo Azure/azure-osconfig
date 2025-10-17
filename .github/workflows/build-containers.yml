@@ -93,14 +93,28 @@ jobs:
             type=raw,value=git-${{ github.sha }}
             type=raw,value=run-${{ github.run_number }}
 
+      - name: Build and push
+        id: build_and_push
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ steps.image.outputs.path }}
+          # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
       - name: Save digest
         run: |
-          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json}}' | jq -r '.tags [] |select (contains(":sha256-"))')
+          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":sha256-"))')
           DIGEST_SHA=$(echo ${DIGEST_SHA} | sed -e 's#.*:sha256-\(.*\)#@sha256:\1#')
+          echo $DIGEST_SHA
+          DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
+          GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
           jq --null-input \
           --arg distibution ${{ steps.image.outputs.distro }} \
           --arg digest_sha ${DIGEST_SHA} \
-          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha }' > digest-${{ steps.image.outputs.distro }}.json
+          --arg git_label ${GIT_LABEL} \
+        '{"name": $distibution, "arch": "amd64", "tag": $digest_sha "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
           cat digest-${{ steps.image.outputs.distro }}.json
 
       - name: Upload digest
@@ -111,14 +125,6 @@ jobs:
           path: digest-*.json
           retention-days: 1
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ steps.image.outputs.path }}
-          # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
 
   post-build:
     name: Post-Build Digest Collector
