@@ -1,0 +1,8 @@
+FROM ghcr.io/azure/azure-osconfig/ubuntu-14.04-amd64:latest
+
+RUN apt-get install -y ninja-build
+
+WORKDIR /git
+
+RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
+RUN cd googletest && cmake . -G Ninja && cmake --build . --target install && rm -rf /git/googletest

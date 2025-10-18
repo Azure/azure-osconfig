@@ -25,7 +25,6 @@ RUN apt-get -y update && apt-get -y install \
     libgtest-dev \
     libssl-dev \
     libtool \
-    ninja-build \
     pkg-config \
     sqlite3 \
     tar \
