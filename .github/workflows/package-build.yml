@@ -101,6 +101,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
+            (cd ../external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh)
             if [ "${{ inputs.machine-config }}" = "true" ]; then
               cmake ../src -DCMAKE_BUILD_TYPE='${{ env.BUILD_TYPE }}' -DBUILD_TESTS=OFF
             elif [ "${{ inputs.build-fuzzers }}" = "true" ]; then
