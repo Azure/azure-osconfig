@@ -53,7 +53,7 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_GetOpenPortsFails_ReturnsE
     EXPECT_EQ(result.Error().code, 1);
 }
 
-TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_IptablesCommandFails_ReturnsError)
+TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_IptablesCommandFails_ReturnsNonCompliant)
 {
     std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
 
@@ -62,8 +62,8 @@ TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_IptablesCommandFails_Retur
 
     auto result = AuditEnsureIptablesOpenPorts(indicators, mockContext);
 
-    ASSERT_FALSE(result.HasValue());
-    EXPECT_EQ(result.Error().code, 127);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFirewallOpenPortsTest, IptablesOpenPorts_NoOpenPorts_ReturnsCompliant)
@@ -159,7 +159,7 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_GetOpenPortsFails_Returns
     EXPECT_EQ(result.Error().code, 1);
 }
 
-TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_Ip6tablesCommandFails_ReturnsError)
+TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_Ip6tablesCommandFails_ReturnsNonCompliant)
 {
     std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128              [::]:80          [::]:*      users:((\"httpd\",pid=1234,fd=3))"});
 
@@ -168,8 +168,8 @@ TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_Ip6tablesCommandFails_Ret
 
     auto result = AuditEnsureIp6tablesOpenPorts(indicators, mockContext);
 
-    ASSERT_FALSE(result.HasValue());
-    EXPECT_EQ(result.Error().code, 127);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFirewallOpenPortsTest, Ip6tablesOpenPorts_AllIPv6PortsInIp6tables_ReturnsCompliant)
@@ -236,7 +236,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_GetOpenPortsFails_ReturnsError)
     EXPECT_EQ(result.Error().code, 1);
 }
 
-TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UfwCommandFails_ReturnsError)
+TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UfwCommandFails_ReturnsNonCompliant)
 {
     std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
 
@@ -245,11 +245,11 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UfwCommandFails_ReturnsError)
 
     auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
-    ASSERT_FALSE(result.HasValue());
-    EXPECT_EQ(result.Error().code, 127);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoSeparatorInOutput_ReturnsError)
+TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoSeparatorInOutput_ReturnsNonCompliant)
 {
     std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
     std::string ufwOutput =
@@ -263,8 +263,8 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoSeparatorInOutput_ReturnsErro
 
     auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
 
-    ASSERT_FALSE(result.HasValue());
-    EXPECT_TRUE(result.Error().message.find("Invalid") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_NoOpenPorts_ReturnsCompliant)
@@ -477,7 +477,7 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_Inactive)
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_InvalidStatus)
+TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_InvalidStatus_ReturnsNonCompliant)
 {
     std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
     std::string ufwOutput = "Status: ?\n";
@@ -486,5 +486,6 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_InvalidStatus)
     EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
 
     auto result = AuditEnsureUfwOpenPorts(indicators, mockContext);
-    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }

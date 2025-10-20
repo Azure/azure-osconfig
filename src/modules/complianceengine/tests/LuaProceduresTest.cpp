@@ -114,9 +114,9 @@ TEST_F(LuaProceduresTest, GetFilesystemEntriesWithPermsBasic)
     };
 
     // First script: require owner execute, exclude group write
-    runScript(MakePermsScript("0o0001", "0o0020"));
+    runScript(MakePermsScript("00001", "00020"));
     // Second script: exclude owner execute (select non-exec file)
-    runScript(MakePermsScript("0o0000", "0o0001"));
+    runScript(MakePermsScript("0", "00001"));
 }
 
 TEST_F(LuaProceduresTest, ListDirectory_NonRecursiveAllFiles)

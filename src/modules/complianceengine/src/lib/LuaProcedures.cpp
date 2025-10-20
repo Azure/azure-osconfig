@@ -267,13 +267,13 @@ static unsigned ParseMaskArg(lua_State* L, int index)
         return 0u;
     }
     const char* value = lua_tostring(L, index);
-    if (!value || (strlen(value) < 3) || (value[0] != '0' && value[1] != 'o'))
+    if (!value || value[0] != '0')
     {
-        luaL_error(L, "expected octal number starting with 0o for permission mask");
+        luaL_error(L, "expected octal number starting with 0 for permission mask");
         return 0u;
     }
     char* endptr;
-    long ln = strtol(value + 2, &endptr, 8);
+    long ln = strtol(value, &endptr, 8);
     if (*endptr != '\0')
     {
         luaL_error(L, "expected number or nil for permission mask");

@@ -169,7 +169,6 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             std::getline(lineStream, optionValue);
             optionValue.erase(0, optionValue.find_first_not_of(" \t"));
             std::transform(currentOption.begin(), currentOption.end(), currentOption.begin(), ::tolower);
-            std::transform(optionValue.begin(), optionValue.end(), optionValue.begin(), ::tolower);
             options[currentOption] = optionValue;
         }
     }
@@ -355,7 +354,7 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
         {
             try
             {
-                valueRegexes.push_back(regex(valuePart));
+                valueRegexes.push_back(regex(valuePart, std::regex_constants::icase));
             }
             catch (const regex_error& e)
             {
