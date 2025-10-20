@@ -37,10 +37,6 @@ public:
 
     // Returns shared_ptr view of full filesystem cache (may trigger background scan per timeout rules)
     Result<std::shared_ptr<const FSCache>> GetFullFilesystem();
-    // Filtered retrieval: returns subset map of entries where (if has_perms set) all bits are present in st_mode
-    // AND (if no_perms set) none of those bits are present.
-    Result<std::map<std::string, FSEntry>> GetFilteredFilesystemEntries(Optional<mode_t> has_perms, Optional<mode_t> no_perms);
-    // No synchronous scanning API: all scans occur in background processes.
 
 private:
     bool LoadCache(); // Attempt to load cache file; ignores stale/invalid formats.

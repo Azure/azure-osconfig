@@ -188,33 +188,6 @@ Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::Get
     return Result<std::shared_ptr<const FSCache>>(std::static_pointer_cast<const FSCache>(m_cache));
 }
 
-Result<std::map<std::string, FilesystemScanner::FSEntry>> FilesystemScanner::GetFilteredFilesystemEntries(Optional<mode_t> has_perms, Optional<mode_t> no_perms)
-{
-    auto full = GetFullFilesystem();
-    if (!full)
-    {
-        return full.Error();
-    }
-    std::map<std::string, FSEntry> filtered;
-    const mode_t hasMask = has_perms.HasValue() ? has_perms.Value() : 0;
-    const mode_t noMask = no_perms.HasValue() ? no_perms.Value() : 0;
-    for (const auto& kv : full.Value()->entries)
-    {
-        const auto& entry = kv.second;
-        mode_t m = entry.st.st_mode;
-        if (has_perms.HasValue() && (m & hasMask) != hasMask)
-        {
-            continue;
-        }
-        if (no_perms.HasValue() && (m & noMask) != 0)
-        {
-            continue;
-        }
-        filtered.insert(kv);
-    }
-    return filtered;
-}
-
 // Depth-first recursive directory scanner with lexicographically sorted sibling traversal.
 // Filesystem recursion with boundary detection: if st_dev differs from rootDev and
 // the target filesystem type is in a disallowed set (proc, devfs/devpts/devtmpfs variants,
@@ -274,7 +247,7 @@ static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std
             }
             if (traverse)
             {
-                ScanDirRecursive(fullPath, rootDev, entries);
+                ScanDirRecursive(fullPath, st.st_dev, entries);
             }
         }
     }
@@ -311,12 +284,11 @@ void BackgroundScan(const std::string& root, const std::string& cachePath, const
         cache->scan_start_time = start;
         // Determine root device for boundary detection
         struct stat rootSt;
-        dev_t rootDev = 0;
         if (::lstat(root.c_str(), &rootSt) != 0)
         {
             _exit(1);
         }
-        ScanDirRecursive(root, rootDev, cache->entries);
+        ScanDirRecursive(root, rootSt.st_dev, cache->entries);
         time_t end = ::time(nullptr);
         cache->scan_end_time = end;
         // Build and atomically replace cache file.
