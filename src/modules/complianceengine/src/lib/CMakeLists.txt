@@ -143,6 +143,7 @@ add_library(complianceenginelib STATIC
     KernelModuleTools.cpp
     ListValidShells.cpp
     LuaEvaluator.cpp
+    LuaProcedures.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
     Pattern.cpp
