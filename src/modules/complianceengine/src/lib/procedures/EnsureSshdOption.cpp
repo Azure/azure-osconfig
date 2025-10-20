@@ -355,7 +355,7 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
         {
             try
             {
-                valueRegexes.push_back(regex(valuePart));
+                valueRegexes.push_back(regex(valuePart, std::regex_constants::icase));
             }
             catch (const regex_error& e)
             {

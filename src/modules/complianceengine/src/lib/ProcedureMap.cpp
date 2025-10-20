@@ -62,7 +62,7 @@ const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", 
 // EnsureWirelessIsDisabled.h:15
 const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_class_net"};
 
-// ExecuteCommandGrep.h:35
+// ExecuteCommandGrep.h:43
 const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
 
 // FileRegexMatch.h:83

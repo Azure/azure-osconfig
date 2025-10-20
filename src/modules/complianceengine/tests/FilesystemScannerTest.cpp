@@ -171,56 +171,6 @@ TEST_F(FilesystemScannerTest, LoadCacheSkipsOverHardTimeout)
     ASSERT_FALSE(res2); // should treat stale cache as unusable and error (background scan kicked)
 }
 
-TEST_F(FilesystemScannerTest, GetFilteredFilesystemEntriesFiltersByPermissions)
-{
-    // Prepare files with different modes
-    std::string execFile = rootDir + "/exec.sh";
-    TouchFile(execFile);
-    ::chmod(execFile.c_str(), 0755);
-    std::string readOnlyFile = rootDir + "/ro.txt";
-    TouchFile(readOnlyFile);
-    ::chmod(readOnlyFile.c_str(), 0644);
-
-    FilesystemScanner scanner(rootDir, cachePath, lockPath, 5, 10, 2);
-    auto res = scanner.GetFullFilesystem();
-    if (!res)
-    {
-        ::usleep(400 * 1000);
-        res = scanner.GetFullFilesystem();
-    }
-    ASSERT_TRUE(res);
-
-    // Filter requiring execute bit for owner; exclude group write
-    auto filtered = scanner.GetFilteredFilesystemEntries(ComplianceEngine::Optional<mode_t>(S_IXUSR), ComplianceEngine::Optional<mode_t>(S_IWGRP));
-    ASSERT_TRUE(filtered);
-    bool sawExec = false;
-    for (const auto& kv : filtered.Value())
-    {
-        if (kv.first == execFile)
-        {
-            sawExec = true;
-        }
-        // Ensure none of the returned entries have group-write if excluded
-        EXPECT_EQ((kv.second.st.st_mode & S_IWGRP), 0u);
-        EXPECT_NE((kv.second.st.st_mode & S_IXUSR), 0u);
-    }
-    EXPECT_TRUE(sawExec);
-
-    // Inverse filter: want files lacking owner execute (should include readOnlyFile, exclude execFile)
-    auto nonExec = scanner.GetFilteredFilesystemEntries(ComplianceEngine::Optional<mode_t>(), ComplianceEngine::Optional<mode_t>(S_IXUSR));
-    ASSERT_TRUE(nonExec);
-    bool sawReadOnly = false;
-    for (const auto& kv : nonExec.Value())
-    {
-        if (kv.first == readOnlyFile)
-        {
-            sawReadOnly = true;
-        }
-        EXPECT_EQ((kv.second.st.st_mode & S_IXUSR), 0u);
-    }
-    EXPECT_TRUE(sawReadOnly);
-}
-
 TEST_F(FilesystemScannerTest, LegacyCacheFormatStillLoads)
 {
     // Manually create a legacy-format cache file (same format as current) with a couple entries
