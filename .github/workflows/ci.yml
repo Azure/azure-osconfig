@@ -70,7 +70,7 @@ jobs:
           cmd: |
             (cd external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh)
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec

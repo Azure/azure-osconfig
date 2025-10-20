@@ -2,14 +2,15 @@
 FROM centos:7
 
 RUN rm /etc/yum.repos.d/*.repo
-COPY centos.repo /etc/yum.repos.d/centos.repo
+# Docker context is at the root of the project
+COPY ./devops/docker/centos-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 # Install dependencies needed for Git compilation and general build
 RUN yum install -y \
     autoconf \
     curl \
-    gcc \
-    gcc-c++ \
+    devtoolset-7-gcc \
+    devtoolset-7-gcc-c++ \
     gettext-devel \
     jq \
     libcurl-devel \
@@ -25,6 +26,9 @@ RUN yum install -y \
     unzip \
     zip \
     zlib-devel
+
+# Add devtoolset-7 bin to PATH (GCC 7)
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
 WORKDIR /git
 

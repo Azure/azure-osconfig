@@ -26,6 +26,7 @@
 
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
+#define TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR "_ScenarioName"
 #define TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR "_Microseconds"
 
 // Buffer sizes for string conversion of numeric values
@@ -95,12 +96,12 @@ static inline int64_t TsToUs(struct timespec ts)
         {                                                                                                                                              \
             char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, telemetryFileNameMacro, \
                 TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
-            OSConfigTelemetryCleanup();                                                                                                                \
             if (NULL != command)                                                                                                                       \
             {                                                                                                                                          \
                 ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);                                           \
             }                                                                                                                                          \
             FREE_MEMORY(command);                                                                                                                      \
+            OSConfigTelemetryCleanup();                                                                                                                \
         }                                                                                                                                              \
     }
 
@@ -116,6 +117,7 @@ static inline int64_t TsToUs(struct timespec ts)
         snprintf(line_str, sizeof(line_str), "%d", (line));                                                                                                      \
         const char* _correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                            \
         const char* _ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR);                                                                              \
+        const char* _scenarioName = getenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR);                                                                              \
         const char* _timestamp = GetFormattedTime();                                                                                                             \
         int64_t _elapsed_us = 0;                                                                                                                                 \
         OSConfigGetElapsedTime(_elapsed_us);                                                                                                                     \
@@ -130,6 +132,7 @@ static inline int64_t TsToUs(struct timespec ts)
             "\"RuleCodename\":\"%s\","                                                                                                                           \
             "\"CallingFunctionName\":\"%s\","                                                                                                                    \
             "\"ResultCode\":\"%s\","                                                                                                                             \
+            "\"ScenarioName\":\"%s\","                                                                                                                           \
             "\"Microseconds\":\"%" PRId64                                                                                                                        \
             "\","                                                                                                                                                \
             "\"DistroName\":\"%s\","                                                                                                                             \
@@ -137,7 +140,7 @@ static inline int64_t TsToUs(struct timespec ts)
             "\"Version\":\"%s\""                                                                                                                                 \
             "}",                                                                                                                                                 \
             _timestamp ? _timestamp : "", __FILE__, line_str, __func__, _ruleCodename ? _ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", \
-            status_str, _elapsed_us, _distroName ? _distroName : "unknown", _correlationId ? _correlationId : "", OSCONFIG_VERSION);                             \
+            status_str, _scenarioName, _elapsed_us, _distroName ? _distroName : "unknown", _correlationId ? _correlationId : "", OSCONFIG_VERSION);              \
         if (NULL != _telemetry_json)                                                                                                                             \
         {                                                                                                                                                        \
             OSConfigTelemetryAppendJSON(_telemetry_json);                                                                                                        \
