@@ -28,7 +28,7 @@ jobs:
       arch: amd64
       artifact: nrp-test
       package-type: DEB
-      container-tag: "sha256:6314dea3522c970b3484268e5afb4e2ae4a8907269a1e7947de29db63e8aaf33"
+      container-tag: "@sha256:6314dea3522c970b3484268e5afb4e2ae4a8907269a1e7947de29db63e8aaf33"
       test: true
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
