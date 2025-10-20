@@ -3,7 +3,7 @@
 
 #include "MockContext.h"
 
-#include <SystemdConfig.h>
+#include <EnsureSystemdParameter.h>
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>

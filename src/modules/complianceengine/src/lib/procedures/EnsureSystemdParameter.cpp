@@ -2,62 +2,18 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
+#include <EnsureSystemdParameter.h>
 #include <SystemdConfig.h>
 #include <algorithm>
 #include <fts.h>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
 #include <sys/types.h>
 
 using ComplianceEngine::Optional;
 
 namespace ComplianceEngine
 {
-
-namespace
-{
-typedef std::map<std::string, std::pair<std::string, std::string>> SystemdConfigMap_t;
-
-Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& filename, ContextInterface& context)
-{
-    auto result = context.ExecuteCommand("/usr/bin/systemd-analyze cat-config " + filename);
-    if (!result.HasValue())
-    {
-        OsConfigLogError(context.GetLogHandle(), "Failed to execute systemd-analyze command: %s", result.Error().message.c_str());
-        return result.Error();
-    }
-    std::istringstream stream(result.Value());
-    std::string line;
-    std::string currentConfig = "<UNKNOWN>";
-    while (std::getline(stream, line))
-    {
-        if (line.empty())
-        {
-            continue;
-        }
-        if ('#' == line[0])
-        {
-            if ((line.size() > strlen("# .conf")) && ('#' == line[0]) && (".conf" == line.substr(line.size() - strlen(".conf"))))
-            {
-                currentConfig = line.substr(2);
-            }
-            continue;
-        }
-        size_t eqSign = line.find('=');
-        if (eqSign == std::string::npos)
-        {
-            OsConfigLogError(context.GetLogHandle(), "Invalid line in systemd config: %s", line.c_str());
-            continue;
-        }
-        std::string key = line.substr(0, eqSign);
-        std::string value = line.substr(eqSign + 1);
-        config[key] = std::make_pair(value, currentConfig);
-    }
-    return true;
-}
-} // namespace
-
 Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
@@ -73,16 +29,18 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         return Error("Both 'file' and 'dir' arguments are provided, only one is allowed");
     }
 
-    SystemdConfigMap_t config;
+    SystemdConfig config;
     if (params.file.HasValue())
     {
         OsConfigLogDebug(log, "Getting systemd config for file '%s'", params.file->c_str());
-        auto result = GetSystemdConfig(config, params.file.Value(), context);
+        auto result = GetSystemdConfig(params.file.Value(), context);
         if (!result.HasValue())
         {
             OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", params.file->c_str(), result.Error().message.c_str());
             return result.Error();
         }
+
+        config = std::move(result.Value());
     }
     else
     {
@@ -105,7 +63,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
                 if (filePath.size() >= strlen(".conf") && filePath.substr(filePath.size() - 5) == ".conf")
                 {
                     OsConfigLogDebug(log, "Getting systemd config for file '%s' in directory '%s'", filePath.c_str(), params.dir->c_str());
-                    auto result = GetSystemdConfig(config, filePath, context);
+                    auto result = GetSystemdConfig(filePath, context);
                     if (!result.HasValue())
                     {
                         OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", filePath.c_str(), result.Error().message.c_str());
@@ -114,6 +72,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
                     {
                         anySuccess = true;
                         OsConfigLogDebug(log, "Successfully got systemd config for file '%s'", filePath.c_str());
+                        config.Merge(std::move(result.Value()));
                     }
                 }
             }

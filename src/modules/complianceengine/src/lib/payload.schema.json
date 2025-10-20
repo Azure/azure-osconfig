@@ -240,6 +240,9 @@
           "$ref": "procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureSystemdParameter.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/audit"
         },
         {
@@ -362,6 +365,9 @@
         },
         {
           "$ref": "procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureSystemdParameter.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/remediation"

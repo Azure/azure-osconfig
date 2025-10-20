@@ -44,7 +44,7 @@ set(PROCEDURES
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
     procedures/SCE.cpp
-    procedures/SystemdConfig.cpp
+    procedures/EnsureSystemdParameter.cpp
     procedures/SystemdUnitState.cpp
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
@@ -86,7 +86,7 @@ set(SCHEMAS
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json
     procedures/SCE.schema.json
-    procedures/SystemdConfig.schema.json
+    procedures/EnsureSystemdParameter.schema.json
     procedures/SystemdUnitState.schema.json
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json
@@ -152,6 +152,7 @@ add_library(complianceenginelib STATIC
     ProcedureMap.cpp
     Result.cpp
     StringTools.cpp
+    SystemdConfig.cpp
     UsersIterator.cpp
     ${PROCEDURES}
     )

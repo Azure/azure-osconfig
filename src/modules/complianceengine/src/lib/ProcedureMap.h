@@ -31,6 +31,7 @@
 #include <EnsureSshdOption.h>
 #include <EnsureSysctl.h>
 #include <EnsureSystemAccountsDoNotHaveValidShell.h>
+#include <EnsureSystemdParameter.h>
 #include <EnsureUserIsOnlyAccountWith.h>
 #include <EnsureWirelessIsDisabled.h>
 #include <EnsureXdmcp.h>
@@ -38,7 +39,6 @@
 #include <FileRegexMatch.h>
 #include <PackageInstalled.h>
 #include <SCE.h>
-#include <SystemdConfig.h>
 #include <SystemdUnitState.h>
 #include <TestingProcedures.h>
 #include <UfwStatus.h>
@@ -393,6 +393,16 @@ struct Bindings<EnsureSysctlParams>
     static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
 };
 
+// Defines the bindings for the SystemdParameterParams structure.
+template <>
+struct Bindings<SystemdParameterParams>
+{
+    using T = SystemdParameterParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::file, &T::dir);
+};
+
 // Defines the bindings for the EnsureUserIsOnlyAccountWithParams structure.
 template <>
 struct Bindings<EnsureUserIsOnlyAccountWithParams>
@@ -451,16 +461,6 @@ struct Bindings<SCEParams>
     static constexpr size_t size = 2;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::scriptName, &T::ENVIRONMENT);
-};
-
-// Defines the bindings for the SystemdParameterParams structure.
-template <>
-struct Bindings<SystemdParameterParams>
-{
-    using T = SystemdParameterParams;
-    static constexpr size_t size = 4;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::file, &T::dir);
 };
 
 // Defines the bindings for the SystemdUnitStateParams structure.

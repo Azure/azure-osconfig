@@ -56,6 +56,9 @@ const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op"
 // EnsureSysctl.h:20
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
 
+// EnsureSystemdParameter.h:25
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
+
 // EnsureUserIsOnlyAccountWith.h:26
 const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
 
@@ -73,9 +76,6 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
-
-// SystemdConfig.h:25
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
