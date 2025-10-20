@@ -41,7 +41,7 @@ Result<SystemdConfig> GetSystemdConfig(const std::string& filename, ContextInter
         }
         std::string key = line.substr(0, eqSign);
         std::string value = line.substr(eqSign + 1);
-        config[key] = std::make_pair(std::move(value), std::move(currentConfig));
+        config[key] = std::make_pair(std::move(value), currentConfig);
     }
     return config;
 }

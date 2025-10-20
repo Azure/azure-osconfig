@@ -9,6 +9,7 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include <SystemdConfig.h>
 #include <cerrno>
 #include <cstring>
 #include <dirent.h>
@@ -21,9 +22,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
-
-using ComplianceEngine::FilesystemScanner;
-using ComplianceEngine::Result;
 
 namespace ComplianceEngine
 {
@@ -158,7 +156,7 @@ int ListDirectoryIterator(lua_State* L)
     return 0; // done
 }
 
-static int ListDirectoryGC(lua_State* L)
+int ListDirectoryGC(lua_State* L)
 {
     auto statePtr = reinterpret_cast<ListDirState**>(lua_touserdata(L, 1));
     if (statePtr && *statePtr)
@@ -170,7 +168,7 @@ static int ListDirectoryGC(lua_State* L)
 }
 
 // ce.ListDirectory implementation
-static int LuaListDirectory(lua_State* L)
+int LuaListDirectory(lua_State* L)
 {
     const char* path = luaL_checkstring(L, 1);
     std::string pattern;
@@ -222,7 +220,7 @@ struct FSCacheIterState
     bool started{false};
 };
 
-static int FSCacheIterNext(lua_State* L)
+int FSCacheIterNext(lua_State* L)
 {
     auto holder = reinterpret_cast<FSCacheIterState**>(lua_touserdata(L, lua_upvalueindex(1)));
     if (!holder || !*holder)
@@ -249,7 +247,7 @@ static int FSCacheIterNext(lua_State* L)
     return 0;
 }
 
-static int FSCacheIterGC(lua_State* L)
+int FSCacheIterGC(lua_State* L)
 {
     auto holder = reinterpret_cast<FSCacheIterState**>(lua_touserdata(L, 1));
     if (holder && *holder)
@@ -260,7 +258,7 @@ static int FSCacheIterGC(lua_State* L)
     return 0;
 }
 
-static unsigned ParseMaskArg(lua_State* L, int index)
+unsigned ParseMaskArg(lua_State* L, int index)
 {
     if (lua_isnoneornil(L, index))
     {
@@ -288,7 +286,7 @@ static unsigned ParseMaskArg(lua_State* L, int index)
     return v;
 }
 
-static int LuaGetFilesystemEntriesWithPerms(lua_State* L)
+int LuaGetFilesystemEntriesWithPerms(lua_State* L)
 {
     unsigned hasMask = ParseMaskArg(L, 1);
     unsigned noMask = ParseMaskArg(L, 2);
@@ -330,6 +328,60 @@ static int LuaGetFilesystemEntriesWithPerms(lua_State* L)
     return 1;
 }
 
+int LuaGetSystemdConfig(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+
+    // Filename parameter
+    constexpr int filenameArgIndex = 1;
+    if (lua_isnoneornil(L, filenameArgIndex))
+    {
+        return 0u;
+    }
+    const char* filename = lua_tostring(L, filenameArgIndex);
+    if (!filename)
+    {
+        luaL_error(L, "expected octal number starting with 0 for permission mask");
+        return 0u;
+    }
+
+    const auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    auto result = GetSystemdConfig(filename, view->ctx);
+    if (!result.HasValue())
+    {
+        luaL_error(L, "GetSystemdConfig failed: %s", result.Error().message.c_str());
+        return 0;
+    }
+
+    lua_newtable(L); // create the result table
+    for (const auto& item : result.Value())
+    {
+        const auto& key = item.first;
+        const auto& value = item.second.first;
+        const auto& source = item.second.second;
+
+        lua_pushstring(L, key.c_str());
+        lua_newtable(L);
+        lua_pushstring(L, value.c_str());
+        lua_setfield(L, -2, "value");
+        lua_pushstring(L, source.c_str());
+        lua_setfield(L, -2, "src");
+
+        lua_settable(L, -3); // result[key] = value_table
+    }
+
+    // table is on top of the stack
+    return 1;
+}
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -359,6 +411,9 @@ void RegisterLuaProcedures(lua_State* L)
 
     lua_pushcfunction(L, LuaGetFilesystemEntriesWithPerms);
     lua_setfield(L, -2, "GetFilesystemEntriesWithPerms");
+
+    lua_pushcfunction(L, LuaGetSystemdConfig);
+    lua_setfield(L, -2, "GetSystemdConfig");
 
     // pop ce and restricted_env
     lua_pop(L, 2);

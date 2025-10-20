@@ -17,6 +17,7 @@
 using ComplianceEngine::Action;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::LuaEvaluator;
+using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
 class LuaProceduresTest : public ::testing::Test
@@ -92,6 +93,21 @@ protected:
         script += "for p in ce.GetFilesystemEntriesWithPerms(\"" + hasExpr + "\", \"" + noExpr + "\") do ";
         script += "t[#t+1]=p end table.sort(t) return true, table.concat(t,';')";
         return script;
+    }
+
+    static std::string MakeSystemdConfigTestScript(const std::string& filename)
+    {
+        return R"(local t = ce.GetSystemdConfig(')" + filename + R"(')
+-- print("A value: " .. t["A"]["value"])
+-- print("B value: " .. t["B"]["value"])
+-- print("A defined in: " .. t["A"]["src"])
+-- print("B defined in: " .. t["B"]["src"])
+if t["A"]["value"] ~= "foo" then return false, "A value mismatch" end
+if t["B"]["value"] ~= "bar" then return false, "B value mismatch" end
+if not string.find(t["A"]["src"], ".conf") then return false, "A src mismatch" end
+if not string.find(t["B"]["src"], ".conf") then return false, "B src mismatch" end
+return true
+)";
     }
 };
 
@@ -180,4 +196,41 @@ TEST_F(LuaProceduresTest, ListDirectory_DirectoriesNotReturned)
     auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(LuaProceduresTest, GetSystemdConfig_1)
+{
+    LuaEvaluator evaluator;
+    const auto filename = mTempRoot + "/sub1/c.conf";
+    const auto cmd = "/usr/bin/systemd-analyze cat-config " + filename;
+    const std::string output = "# " + filename + "\nA=foo\nB=bar";
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(cmd))).WillOnce(::testing::Return(Result<std::string>(output)));
+    const auto result = evaluator.Evaluate(MakeSystemdConfigTestScript(filename), mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(LuaProceduresTest, GetSystemdConfig_2)
+{
+    LuaEvaluator evaluator;
+    const auto filename = mTempRoot + "/sub1/c.conf";
+    const auto cmd = "/usr/bin/systemd-analyze cat-config " + filename;
+    const std::string output = "# " + filename + "\nA=foo";
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(cmd))).WillOnce(::testing::Return(Result<std::string>(output)));
+    const auto result = evaluator.Evaluate(MakeSystemdConfigTestScript(filename), mIndicators, mContext, Action::Audit);
+    // The script expects the B key, it bails out
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, GetSystemdConfig_3)
+{
+    LuaEvaluator evaluator;
+    const auto filename = mTempRoot + "/sub1/c.conf";
+    const auto cmd = "/usr/bin/systemd-analyze cat-config " + filename;
+    const std::string output = "# " + filename + "\nA=foo\nB=baz";
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(cmd))).WillOnce(::testing::Return(Result<std::string>(output)));
+    const auto result = evaluator.Evaluate(MakeSystemdConfigTestScript(filename), mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    // The script expects the B value is "bar"
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
