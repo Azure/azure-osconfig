@@ -12,7 +12,7 @@ namespace ComplianceEngine
 
 static const std::set<std::string> allowedCommands = {"nft list ruleset", "nft list chain", "nft list tables", "ip6tables -L -n",
     "ip6tables -L INPUT -v -n", "ip6tables -L OUTPUT -v -n", "iptables -L -n", "iptables -L INPUT -v -n", "iptables -L OUTPUT -v -n", "uname", "ps -ef",
-    "ps -eZ", "sestatus", "journalctl", "arch", "grubby --info=ALL"};
+    "ps -eZ", "sestatus", "journalctl", "arch", "grubby --info=ALL", "pam-config --query --pwhistory"};
 
 Result<Status> AuditExecuteCommandGrep(const ExecuteCommandGrepParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
