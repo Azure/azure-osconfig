@@ -1812,14 +1812,18 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
 {
     char* reason = NULL;
     bool auditdActive = CheckDaemonActive(g_auditd, &reason, log);
-    bool auomsActive = CheckDaemonNotActive(g_auoms, &reason, log);
-
-    if (auditdActive && auomsActive)
+    if (false == CheckDaemonNotActive(g_auoms, &reason, log))
     {
         FREE_MEMORY(reason);
-        reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
+        if (auditdActive)
+        {
+            reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
+        }
+        else
+        {
+            reason = FormatAllocateString("'%s' is active instead of '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
+        }
     }
-
     return reason;
 }
 
