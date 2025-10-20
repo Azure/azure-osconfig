@@ -1,10 +1,13 @@
 # TODO: Add mcr.io retagged images
 FROM oraclelinux:7
 
+# Install dev repos
+RUN yum install -y oracle-softwarecollection-release-el7
+
 RUN yum install -y \
     autoconf \
-    gcc \
-    gcc-c++ \
+    devtoolset-7-gcc \
+    devtoolset-7-gcc-c++ \
     gettext \
     jq \
     libcurl-devel \
@@ -14,6 +17,9 @@ RUN yum install -y \
     perl \
     perl-IPC-Cmd \
     rpm-build
+
+# Enable devtoolset-7 by default
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
 WORKDIR /git
 
