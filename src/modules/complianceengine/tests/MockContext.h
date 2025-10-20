@@ -38,7 +38,7 @@ struct MockContext : public ComplianceEngine::ContextInterface
         std::string mCachePath = std::string(mTempdir) + "/fsscanner-cache";
         std::string mLockfilePath = std::string(mTempdir) + "/fsscanner-lock";
         mFsScannerp =
-            std::unique_ptr<ComplianceEngine::FilesystemScanner>(new ComplianceEngine::FilesystemScanner(mTempRootDir, mCachePath, mLockfilePath, 30, 60, 5));
+            std::unique_ptr<ComplianceEngine::FilesystemScanner>(new ComplianceEngine::FilesystemScanner(mTempRootDir, mCachePath, mLockfilePath, 60, 120, 10));
     }
 
     ~MockContext() override
@@ -137,6 +137,11 @@ struct MockContext : public ComplianceEngine::ContextInterface
     ComplianceEngine::FilesystemScanner& GetFilesystemScanner() override
     {
         return *mFsScannerp;
+    }
+
+    std::string GetFilesystemScannerRoot() const
+    {
+        return mTempRootDir;
     }
 
 private:
