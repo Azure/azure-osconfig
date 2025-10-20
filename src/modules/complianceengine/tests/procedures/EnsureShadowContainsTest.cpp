@@ -31,7 +31,7 @@ protected:
 
     void SetUp() override
     {
-        mIndicators.Push("UfwStatus");
+        mIndicators.Push("ShadowContains");
         char tempDirTemplate[] = "/tmp/EnsureShadowContainsTestXXXXXX";
         char* tempDir = mkdtemp(tempDirTemplate);
         ASSERT_NE(tempDir, nullptr);
@@ -97,15 +97,16 @@ protected:
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_1)
 {
-    if (0 != getuid())
-    {
-        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
-    }
     EnsureShadowContainsParams params;
     params.field = Field::LastChange;
     params.value = "42";
     params.operation = ComparisonOperation::PatternMatch;
+    // Use a non-empty password so the user is not skipped
+    const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
+    params.test_etcShadowPath = path;
+    params.username_operation = ComparisonOperation::Equal; // unused but required by procedure
     auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
+    RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Unsupported comparison operation for an integer type");
     ASSERT_EQ(result.Error().code, EINVAL);
@@ -113,15 +114,15 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_1)
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
 {
-    if (0 != getuid())
-    {
-        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
-    }
     EnsureShadowContainsParams params;
     params.field = Field::Username;
     params.value = "test";
     params.operation = ComparisonOperation::PatternMatch;
+    const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
+    params.test_etcShadowPath = path;
+    params.username_operation = ComparisonOperation::Equal;
     auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
+    RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Username field comparison is not supported");
     ASSERT_EQ(result.Error().code, EINVAL);
@@ -129,15 +130,15 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
 {
-    if (0 != getuid())
-    {
-        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
-    }
     EnsureShadowContainsParams params;
     params.field = Field::EncryptionMethod;
     params.value = "asdf";
     params.operation = ComparisonOperation::PatternMatch;
+    const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
+    params.test_etcShadowPath = path;
+    params.username_operation = ComparisonOperation::Equal;
     auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
+    RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Unsupported comparison operation for encryption method");
     ASSERT_EQ(result.Error().code, EINVAL);
@@ -161,16 +162,17 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 {
-    if (0 != getuid())
-    {
-        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
-    }
     EnsureShadowContainsParams params;
     params.field = Field::Password;
     params.value = "test";
     params.operation = ComparisonOperation::PatternMatch;
-    params.username = "root";
+    // Create controlled shadow file with password that does NOT contain 'test' so pattern fails
+    const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
+    params.username = "testuser";
+    params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
     auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
+    RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -245,17 +247,16 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_6)
 {
-    if (0 != getuid())
-    {
-        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
-    }
     EnsureShadowContainsParams params;
     params.field = Field::Password;
     params.value = "^test$";
     params.operation = ComparisonOperation::PatternMatch;
-    params.username = "root";
+    const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
+    params.username = "testuser";
     params.username_operation = ComparisonOperation::Equal;
+    params.test_etcShadowPath = path;
     auto result = AuditEnsureShadowContains(params, mIndicators, mContext);
+    RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }

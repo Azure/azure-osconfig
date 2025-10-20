@@ -39,10 +39,17 @@ runs:
 
     - name: Run container
       id: container
+      shell: bash
       run: |
-        echo Running container ${{ steps.setup.outputs.container }}:${{ inputs.tag }}...
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
+        name="${{ steps.setup.outputs.container }}"
+        tag="${{ inputs.tag }}"
+        if [[ "${tag}" =~ ^@sha256:.* ]] ; then
+          container_name_tag="${name}${tag}"
+          else
+          container_name_tag="${name}:${tag}"
+        fi
+        echo "Running container ${container_name_tag}"
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} "${container_name_tag}")
 
         echo Container ID: $id
         echo id=$id >> $GITHUB_OUTPUT
-      shell: bash
