@@ -79,11 +79,11 @@ RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm 
 
 # GTest
 RUN git clone https://github.com/google/googletest --recursive -b $GTEST_VERSION
-RUN cd googletest && cmake . && cmake --build . --target install
+RUN cd googletest && cmake . -G Ninja && cmake --build . --target install
 
 # rapidjson
 RUN git clone --no-checkout https://github.com/Tencent/rapidjson
 RUN cd rapidjson && git checkout $RAPIDJSON_COMMIT_HASH && git submodule update --init --recursive
-RUN cd rapidjson && cmake . -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF && cmake --build . --target install
+RUN cd rapidjson && cmake . -G Ninja -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF && cmake --build . --target install
 
 RUN rm -rf /git
