@@ -17,6 +17,14 @@ enum class RegexType
     /// Extended regex
     /// label: E
     Extended,
+
+    /// Perl regex inverted
+    /// label: Pv
+    PerlInverted,
+
+    /// Extended regex inverted
+    /// label: Ev
+    ExtendedInverted,
 };
 
 struct ExecuteCommandGrepParams
