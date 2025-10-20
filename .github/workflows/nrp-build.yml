@@ -11,11 +11,12 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
+            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB, tag: "sha256:6314dea3522c970b3484268e5afb4e2ae4a8907269a1e7947de29db63e8aaf33" },
           ]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.target.arch }}
+      container-tag: ${{ matrix.target.tag }}
       artifact: policy-packages
       machine-config: true
       release: true
