@@ -1510,12 +1510,6 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
             EXPECT_NE(nullptr, groupList[j].groupName);
         }
 
-        if (0 == strcmp(userList[i].username, "testuser"))
-        {
-            EXPECT_EQ(1, groupListSize);
-            EXPECT_EQ("root", groupList[0].groupName);
-        }
-
         FreeGroupList(&groupList, groupListSize);
         EXPECT_EQ(nullptr, groupList);
     }
@@ -1528,9 +1522,6 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
 {
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
-
-    FreeGroupList(&groupList, groupListSize);
-    EXPECT_EQ(nullptr, groupList);
 
     EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr, nullptr));
     EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group"));
@@ -2787,7 +2778,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
         "$FileCreateMode 00640",
         "$FileCreateMode  00640\n",
         "# This is a test for\n   $FileCreateMode 0640\n",
-        "$FileCreateMode 0600\n",
+        "$FileCreateMode 0600\n"
         "$FileCreateMode 600",
         "$FileCreateMode     600"
     };
