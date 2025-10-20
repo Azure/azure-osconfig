@@ -169,6 +169,8 @@ inline const std::map<std::string, RegexType>& MapEnum<RegexType>()
     static const std::map<std::string, RegexType> map = {
         {"P", RegexType::Perl},
         {"E", RegexType::Extended},
+        {"Pv", RegexType::PerlInverted},
+        {"Ev", RegexType::ExtendedInverted},
     };
     return map;
 }

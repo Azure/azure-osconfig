@@ -53,8 +53,11 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     }
 
     int lineNumber = 0;
+
     string line;
-    while (getline(input, line))
+
+    // Special case for empty files, read empty line then
+    while (getline(input, line) || lineNumber == 0)
     {
         lineNumber++;
         OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: '%s', pattern: '%s'", lineNumber, line.c_str(), matchPattern.c_str());
@@ -189,7 +192,7 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
         }
     }
 
-    if (nullptr == entry && errno != 0)
+    if (errno != 0)
     {
         int status = errno;
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", params.path.c_str(), strerror(status));

@@ -27,7 +27,8 @@ enum PasswordEncryptionMethod
     SHA256,
     SHA512,
     YesCrypt,
-    None, // Used for entries without a password
+    Empty, // Used for entries without a password
+    None,  // Used for entries with locked or disabled password
 };
 
 static const map<Field, string> fieldNamesMap = {
@@ -57,6 +58,7 @@ static const map<string, PasswordEncryptionMethod> encryptionTypeMap = {
     {"YesCrypt", PasswordEncryptionMethod::YesCrypt},
 
     // Allows to test against no pasword, e.g. !/*, used in tests
+    {"Empty", PasswordEncryptionMethod::Empty},
     {"None", PasswordEncryptionMethod::None},
 };
 
@@ -171,7 +173,7 @@ Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
     const string entry = shadowEntry.sp_pwdp;
     if (entry.empty())
     {
-        return PasswordEncryptionMethod::None; // No password set
+        return PasswordEncryptionMethod::Empty; // No password set
     }
 
     if ('_' == entry[0])
@@ -184,7 +186,7 @@ Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
     {
         // If the password starts with '!', it is locked
         // If it starts with '*', it is not set
-        return PasswordEncryptionMethod::None; // No password set
+        return PasswordEncryptionMethod::None;
     }
 
     if ('$' != entry[0])
@@ -300,7 +302,19 @@ Result<Status> AuditEnsureShadowContains(const EnsureShadowContainsParams& param
                 continue; // Skip this user if it does not match the specified username
             }
         }
-
+        // Skip users with password locked/disabled, unless explicitly looking at password
+        if (params.field != Field::Password && params.field != Field::EncryptionMethod)
+        {
+            auto method = ParseEncryptionMethod(entry);
+            if (!method.HasValue())
+            {
+                return method.Error();
+            }
+            if (method.Value() == PasswordEncryptionMethod::None)
+            {
+                continue;
+            }
+        }
         OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for %s field with value '%s' and operation '%d'.", entry.sp_namp,
             PrettyFieldName(params.field).c_str(), params.value.c_str(), (int)params.operation);
         auto result = CompareUserEntry(entry, params.field, params.value, params.operation);

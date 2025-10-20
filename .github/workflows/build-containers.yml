@@ -54,7 +54,6 @@ jobs:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup image
         id: image
         run: |
@@ -68,6 +67,7 @@ jobs:
           echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
           echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
           echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
+          echo "image=$image" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -88,16 +88,80 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.run_number }}
-            type=sha
+            type=sha,enable=true,priority=900,prefix=sha256-,suffix=,format=long
+            type=schedule,enable=true,priority=10,prefix=date-,suffix=,pattern=nightly
+            type=raw,value=git-${{ github.event.pull_request.head.sha }}
+            type=raw,value=run-${{ github.run_number }}
 
       - name: Build and push
+        id: build_and_push
         uses: docker/build-push-action@v3
         with:
-          context: .
-          file: ${{ matrix.container }}
-          # Only push the image when a pull request is merged to dev
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+          context: ${{ steps.image.outputs.path }}
+          # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Save digest
+        run: |
+          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":sha256-"))')
+          DIGEST_SHA=$(echo ${DIGEST_SHA} | sed -e 's#.*:sha256-\(.*\)#@sha256:\1#')
+          echo $DIGEST_SHA
+          DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
+          GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
+          jq --null-input \
+          --arg distibution "${{ steps.image.outputs.distro }}" \
+          --arg digest_sha "${DIGEST_SHA}" \
+          --arg git_label "${GIT_LABEL}" \
+          '{"name": $distibution, "arch": "amd64", "tag": $digest_sha, "git_label": $git_label }' > digest-${{ steps.image.outputs.distro }}.json
+          cat digest-${{ steps.image.outputs.distro }}.json
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: true
+          name: digest-${{ steps.image.outputs.distro }}
+          path: digest-*.json
+          retention-days: 1
+
+
+  post-build:
+    name: Post-Build Digest Collector
+    needs: [modified-containers, docker-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all digests artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - name:  Combine all digest artifacts
+        run: |
+          rm new-test-matrix.json || true
+          function concatenate_digest() {
+            FILES=( $(find all-digests -name 'digest-*.json' | sort) )
+            echo "["
+            last=$((${#FILES[@]}-1))
+            for((i = 0; i < ${#FILES[@]}; i++)); do
+                # ORS sets the output separator to noting, and than just print file
+                awk 'BEGIN{ORS=""} {print}' "${FILES[$i]}" ;
+                # add newline or comman
+                if [[ ${i} -eq ${last} ]] ; then
+                    echo ""
+                else
+                    echo ","
+                fi
+            done
+            echo "]"
+            }
+            concatenate_digest > new-test-matrix.json
+            cat new-test-matrix.json
+
+      - name: Upload New Test Matrix
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-test-matrix.json
+          path: new-test-matrix.json
