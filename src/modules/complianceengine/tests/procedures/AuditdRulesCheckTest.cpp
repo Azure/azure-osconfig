@@ -165,7 +165,7 @@ TEST_F(AuditdRulesCheckTest, InvalidOverridePathReturnsNonCompliant)
 TEST_F(AuditdRulesCheckTest, SyscallSearchCompliantWithOverridePath)
 {
     EXPECT_CALL(mContext, ExecuteCommand("auditctl -l"))
-        .WillOnce(Return(Result<std::string>(std::string("-S mount -F arch=b64 -a always,exit -F auid>=1000 -F auid!=4294967295\n"))));
+        .WillOnce(Return(Result<std::string>(std::string("-S chattr,mount -F arch=b64 -a always,exit -F auid>=1000 -F auid!=4294967295\n"))));
 
     std::string dir = MakeTempDir();
     ASSERT_FALSE(dir.empty());
