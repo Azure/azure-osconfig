@@ -203,7 +203,7 @@ Result<std::string> FindSudoLogfile(ContextInterface& context)
 }
 
 Status CheckRuleInList(const std::vector<std::string>& rules, const std::string& searchItem, const Optional<regex>& excludeRegex,
-    const std::vector<regex>& requiredRegexes, ContextInterface& context, IndicatorsTree& indicators)
+    const std::vector<std::pair<regex, std::string>>& requiredRegexes, ContextInterface& context, IndicatorsTree& indicators)
 {
     regex searchItemRegex;
     try
@@ -225,14 +225,20 @@ Status CheckRuleInList(const std::vector<std::string>& rules, const std::string&
         {
             continue;
         }
+        bool optionMissing = false;
         for (const auto& req : requiredRegexes)
         {
-            if (!regex_search(rule, req))
+            if (!regex_search(rule, req.first))
             {
-                return indicators.NonCompliant("Rule is missing required options: " + rule);
+                indicators.NonCompliant("Rule '" + rule + "' matching '" + searchItem + "' is missing required option " + req.second);
+                optionMissing = true;
+                break;
             }
         }
-        return indicators.Compliant("Rule matching " + searchItem + " found: " + rule + " and is properly configured");
+        if (!optionMissing)
+        {
+            return indicators.Compliant("Rule '" + rule + "' matching '" + searchItem + "' found  and is properly configured");
+        }
     }
     return indicators.NonCompliant("Rule not found " + searchItem);
 }
@@ -253,7 +259,7 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
         }
     }
     auto uidMin = GetUidMin(context);
-    std::vector<regex> requiredOptions;
+    std::vector<std::pair<regex, std::string>> requiredOptions;
     for (auto option : params.requiredOptions.items)
     {
         option = TrimWhiteSpaces(option);
@@ -262,7 +268,7 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
             option = ReplaceAuidPlaceholder(option, uidMin);
             try
             {
-                requiredOptions.push_back(regex(option, std::regex_constants::icase | std::regex_constants::extended));
+                requiredOptions.push_back(std::make_pair(regex(option, std::regex_constants::icase | std::regex_constants::extended), option));
             }
             catch (const regex_error& e)
             {
