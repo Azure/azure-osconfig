@@ -14,6 +14,9 @@ const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
 // EnsureDconf.h:31
 const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operation"};
 
+// EnsureFileExists.h:16
+const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
+
 // EnsureFilePermissions.h:31
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
 
@@ -103,6 +106,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureDconf", {MakeHandler(AuditEnsureDconf), nullptr}},
     {"EnsureDefaultShellTimeoutIsConfigured", {MakeHandler(AuditEnsureDefaultShellTimeoutIsConfigured), nullptr}},
     {"EnsureDefaultUserUmaskIsConfigured", {MakeHandler(AuditEnsureDefaultUserUmaskIsConfigured), nullptr}},
+    {"EnsureFileExists", {MakeHandler(AuditEnsureFileExists), nullptr}},
     {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
     {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
     {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},
