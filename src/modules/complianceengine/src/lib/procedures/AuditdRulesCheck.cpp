@@ -203,11 +203,21 @@ Result<std::string> FindSudoLogfile(ContextInterface& context)
 }
 
 Status CheckRuleInList(const std::vector<std::string>& rules, const std::string& searchItem, const Optional<regex>& excludeRegex,
-    const std::vector<regex>& requiredRegexes, IndicatorsTree& indicators)
+    const std::vector<regex>& requiredRegexes, ContextInterface& context, IndicatorsTree& indicators)
 {
+    regex searchItemRegex;
+    try
+    {
+        searchItemRegex = regex(searchItem);
+    }
+    catch (const regex_error& e)
+    {
+        OsConfigLogError(context.GetLogHandle(), "Invalid searchItem regex: %s", e.what());
+        return indicators.NonCompliant("Invalid searchItem regex: " + std::string(e.what()));
+    }
     for (const auto& rule : rules)
     {
-        if (rule.find(searchItem) == std::string::npos)
+        if (!regex_search(rule, searchItemRegex))
         {
             continue;
         }
@@ -222,16 +232,16 @@ Status CheckRuleInList(const std::vector<std::string>& rules, const std::string&
                 return indicators.NonCompliant("Rule is missing required options: " + rule);
             }
         }
-        return indicators.Compliant("Rule found: " + rule + " and is properly configured");
+        return indicators.Compliant("Rule matching " + searchItem + " found: " + rule + " and is properly configured");
     }
-    return indicators.NonCompliant("Rule not found: " + searchItem);
+    return indicators.NonCompliant("Rule not found " + searchItem);
 }
 } // namespace
 
 Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     Optional<regex> excludeOption;
-    if (params.excludeOption.HasValue())
+    if (params.excludeOption.HasValue() && !params.excludeOption.Value().empty())
     {
         try
         {
@@ -242,7 +252,6 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
             return Error("Invalid excludeOptions regex: " + std::string(e.what()), EINVAL);
         }
     }
-
     auto uidMin = GetUidMin(context);
     std::vector<regex> requiredOptions;
     for (auto option : params.requiredOptions.items)
@@ -286,12 +295,13 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
         std::string syscall;
         while (std::getline(ss, syscall, ','))
         {
-            auto runningResult = CheckRuleInList(runningRules, "-S " + syscall, excludeOption, requiredOptions, indicators);
+            std::string searchItem = "-S ([^ \\t]+,)*" + syscall + "(,[^ \\t]+)*";
+            auto runningResult = CheckRuleInList(runningRules, searchItem, excludeOption, requiredOptions, context, indicators);
             if (runningResult != Status::Compliant)
             {
                 return runningResult;
             }
-            auto fileResult = CheckRuleInList(filesRules, "-S " + syscall, excludeOption, requiredOptions, indicators);
+            auto fileResult = CheckRuleInList(filesRules, searchItem, excludeOption, requiredOptions, context, indicators);
             if (fileResult != Status::Compliant)
             {
                 return fileResult;
@@ -306,13 +316,13 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
         {
             return logfileResult.Error();
         }
-        std::string actualSearchItem = "-w " + logfileResult.Value();
-        auto runningResult = CheckRuleInList(runningRules, actualSearchItem, excludeOption, requiredOptions, indicators);
+        std::string searchItem = "-w " + logfileResult.Value();
+        auto runningResult = CheckRuleInList(runningRules, searchItem, excludeOption, requiredOptions, context, indicators);
         if (runningResult != Status::Compliant)
         {
             return runningResult;
         }
-        auto fileResult = CheckRuleInList(filesRules, actualSearchItem, excludeOption, requiredOptions, indicators);
+        auto fileResult = CheckRuleInList(filesRules, searchItem, excludeOption, requiredOptions, context, indicators);
         if (fileResult != Status::Compliant)
         {
             return fileResult;
@@ -321,16 +331,16 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
     }
     else if (params.searchItem.find("-e 2") == 0)
     {
-        return CheckRuleInList(filesRules, "-e 2", excludeOption, requiredOptions, indicators);
+        return CheckRuleInList(filesRules, "-e 2", excludeOption, requiredOptions, context, indicators);
     }
     else
     {
-        auto runningResult = CheckRuleInList(runningRules, params.searchItem, excludeOption, requiredOptions, indicators);
+        auto runningResult = CheckRuleInList(runningRules, params.searchItem, excludeOption, requiredOptions, context, indicators);
         if (runningResult != Status::Compliant)
         {
             return runningResult;
         }
-        auto fileResult = CheckRuleInList(filesRules, params.searchItem, excludeOption, requiredOptions, indicators);
+        auto fileResult = CheckRuleInList(filesRules, params.searchItem, excludeOption, requiredOptions, context, indicators);
         if (fileResult != Status::Compliant)
         {
             return fileResult;
