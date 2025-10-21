@@ -53,7 +53,7 @@ runs:
           container_name_tag="${name}:${tag}"
         fi
         echo "Running container ${container_name_tag}"
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} "${container_name_tag}")
+        id=$(docker run -di --privileged ${{ inputs.args }} -v ${{ inputs.mount }} "${container_name_tag}")
 
         echo Container ID: $id
         echo id=$id >> $GITHUB_OUTPUT
