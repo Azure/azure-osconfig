@@ -2,11 +2,11 @@
 FROM centos:centos7 AS centos
 RUN rm /etc/yum.repos.d/*.repo
 # Docker context is at the root of the project
-COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
+COPY ./centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
+COPY .centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yumdownloader rpm-build elfutils
 

@@ -3,7 +3,7 @@ FROM centos:7
 
 RUN rm /etc/yum.repos.d/*.repo
 # Docker context is at the root of the project
-COPY ./devops/docker/centos-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
+COPY ./centos.repo /etc/yum.repos.d/centos.repo
 
 # Install dependencies needed for Git compilation and general build
 RUN yum install -y \
