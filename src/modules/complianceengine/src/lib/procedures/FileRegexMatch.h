@@ -53,7 +53,7 @@ enum class IgnoreCase
 // Parameters used by the FileRegexMatch procedure.
 struct AuditFileRegexMatchParams
 {
-    /// A directory name contining files to check
+    /// A directory name containing files to check
     std::string path;
 
     /// A pattern to match file names in the provided path

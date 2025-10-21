@@ -13,6 +13,7 @@ set(PROCEDURES
     procedures/EnsureDconfTest.cpp
     procedures/EnsureDefaultShellTimeoutIsConfiguredTest.cpp
     procedures/EnsureDefaultUserUmaskIsConfiguredTest.cpp
+    procedures/EnsureFileExistsTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
@@ -25,7 +26,7 @@ set(PROCEDURES
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
     procedures/EnsureNoWritablesTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
-        procedures/EnsureNoUnownedTest.cpp
+    procedures/EnsureNoUnownedTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshKeyPermsTest.cpp
     procedures/EnsureSshdOptionTest.cpp
