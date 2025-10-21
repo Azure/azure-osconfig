@@ -21,7 +21,7 @@
               "properties": {
                 "path": {
                   "type": "string",
-                  "description": "A directory name contining files to check"
+                  "description": "A directory name containing files to check"
                 },
                 "filenamePattern": {
                   "type": "string",
