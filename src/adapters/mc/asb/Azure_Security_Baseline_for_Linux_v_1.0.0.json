@@ -1,0 +1,1869 @@
+{
+  "description": "",
+  "referenceAuditPolicyId": "/subscriptions/cdd53a71-7d81-493d-bce6-224fec7223a9/providers/Microsoft.Authorization/policyDefinitions/fc9b3da7-8347-4380-8e70-0a0361d8dedd",
+  "referenceSetPolicyId": "",
+  "version": "1.0.0",
+  "name": "Azure Security Baseline for Linux",
+  "metadataUri": "https://oaasguestconfigeaps1.blob.core.windows.net/catalog/baseline/Azure_Security_Baseline_for_Linux/Azure_Security_Baseline_for_Linux_v_1.0.0_metadata.json",
+  "settingsReference": [
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the local logging level for Azure OSConfig is configured",
+      "isEditable": "True",
+      "defaultValue": "Informational",
+      "settingName": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d13a3969-b46a-4017-a894-765a4d6252db"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/ssh/sshd_config are configured (CIS: L1 - Server - 5.2.1)",
+      "isEditable": "True",
+      "defaultValue": "600",
+      "settingName": "Ensure permissions on /etc/ssh/sshd_config are configured (CIS: L1 - Server - 5.2.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "43119747-263c-2c92-4ce5-726e63259049"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH protocol is configured (CIS: L1 - Server - 5.2.4)",
+      "isEditable": "True",
+      "defaultValue": "2",
+      "settingName": "Ensure that the SSH protocol is configured (CIS: L1 - Server - 5.2.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "35868e8c-97eb-4981-ab79-99b25101cc86"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH IgnoreRhosts is configured (CIS: L1 - Server - 5.2.8)",
+      "isEditable": "True",
+      "defaultValue": "yes",
+      "settingName": "Ensure that the SSH IgnoreRhosts is configured (CIS: L1 - Server - 5.2.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "43945588-1bdc-495c-bac8-6a71a62d30aa"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH LogLevel is configured (CIS: L1 - Server - 5.2.5)",
+      "isEditable": "True",
+      "defaultValue": "INFO",
+      "settingName": "Ensure that the SSH LogLevel is configured (CIS: L1 - Server - 5.2.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "31f1a912-1b98-42fd-8381-1e8d1033bfd1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH MaxAuthTries is configured (CIS: L1 - Server - 5.2.7)",
+      "isEditable": "True",
+      "defaultValue": "6",
+      "settingName": "Ensure that the SSH MaxAuthTries is configured (CIS: L1 - Server - 5.2.7);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "e7708534-5d98-406f-83ae-1de835b2906e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the allowed users for SSH access are configured (CIS: L1 - Server - 5.2.18)",
+      "isEditable": "True",
+      "defaultValue": "*@*",
+      "settingName": "Ensure that the allowed users for SSH access are configured (CIS: L1 - Server - 5.2.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "dc8da71d-aeba-4c03-8835-36fe158e372a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the denied users for SSH are configured (CIS: L1 - Server - 5.2.18)",
+      "isEditable": "True",
+      "defaultValue": "root",
+      "settingName": "Ensure that the denied users for SSH are configured (CIS: L1 - Server - 5.2.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1db7d147-3a75-4637-8cdc-c119e22d0206"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the allowed groups for SSH are configured (CIS: L1 - Server - 5.2.18)",
+      "isEditable": "True",
+      "defaultValue": "*",
+      "settingName": "Ensure that the allowed groups for SSH are configured (CIS: L1 - Server - 5.2.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d9868b1f-0c8e-4adb-889e-14e374874ece"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the denied groups for SSH are configured (CIS: L1 - Server - 5.2.18)",
+      "isEditable": "True",
+      "defaultValue": "root",
+      "settingName": "Ensure that the denied groups for SSH are configured (CIS: L1 - Server - 5.2.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f85c04a4-427b-4ee1-b988-c3ff7b4998cc"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH HostBasedAuthentication is configured (CIS: L1 - Server - 5.2.9)",
+      "isEditable": "True",
+      "defaultValue": "no",
+      "settingName": "Ensure that the SSH HostBasedAuthentication is configured (CIS: L1 - Server - 5.2.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "66511f6b-f690-43df-9654-642260699eec"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH PermitRootLogin is configured (CIS: L1 - Server - 5.2.10)",
+      "isEditable": "True",
+      "defaultValue": "no",
+      "settingName": "Ensure that the SSH PermitRootLogin is configured (CIS: L1 - Server - 5.2.10);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "16511f6b-f690-43df-9654-642260699eec"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH PermitEmptyPasswords is configured (CIS: L1 - Server - 5.2.11)",
+      "isEditable": "True",
+      "defaultValue": "no",
+      "settingName": "Ensure that the SSH PermitEmptyPasswords is configured (CIS: L1 - Server - 5.2.11);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d50c3f39-264c-4cdc-b0ba-89de8a0f6828"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH ClientAliveCountMax is configured",
+      "isEditable": "True",
+      "defaultValue": "3",
+      "settingName": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "fd9f1554-6b72-8610-826e-78578e6f7811"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH ClientAliveInterval is configured",
+      "isEditable": "True",
+      "defaultValue": "300",
+      "settingName": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c848bba4-93b1-4756-b08a-ff94c2b4814c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH LoginGraceTime is configured (CIS: L1 - Server - 5.2.17)",
+      "isEditable": "True",
+      "defaultValue": "60",
+      "settingName": "Ensure that the SSH LoginGraceTime is configured (CIS: L1 - Server - 5.2.17);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "39aa5c2b-5b36-84a7-4022-570a53c86ff9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that only approved MAC algorithms are used (CIS: L1 - Server - 5.2.14)",
+      "isEditable": "True",
+      "defaultValue": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com",
+      "settingName": "Ensure that only approved MAC algorithms are used (CIS: L1 - Server - 5.2.14);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "483e8b0c-7572-8467-7e0c-26e1e9ce6359"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH warning banner is configured (CIS: L1 - Server - 5.2.19)",
+      "isEditable": "True",
+      "defaultValue": "#######################################################################\\n\\nAuthorized access only!\\n\\nIf you are not authorized to access or use this system, disconnect now!\\n\\n#######################################################################\\n",
+      "settingName": "Ensure that the SSH warning banner is configured (CIS: L1 - Server - 5.2.19);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "9e240540-5e0a-4b60-beb2-57421c65a0b9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH PermitUserEnvironment is configured (CIS: L1 - Server - 5.2.12)",
+      "isEditable": "True",
+      "defaultValue": "no",
+      "settingName": "Ensure that the SSH PermitUserEnvironment is configured (CIS: L1 - Server - 5.2.12);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0e665978-91f4-45af-bb7b-e4090b600c8d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that appropriate ciphers are used for SSH (CIS: L1 - Server - 5.2.13)",
+      "isEditable": "True",
+      "defaultValue": "aes128-ctr,aes192-ctr,aes256-ctr",
+      "settingName": "Ensure that appropriate ciphers are used for SSH (CIS: L1 - Server - 5.2.13);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b07d4c69-a1d9-4c22-a486-634ec3b8c380"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that the SSH port is configured",
+      "isEditable": "True",
+      "defaultValue": "22",
+      "settingName": "Ensure that the SSH port is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1310042d-193f-414a-a7e3-b2c4e89aa537"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure nodev option set on /home partition (CIS: L1 - Server - 1.1.14)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure nodev option set on /home partition (CIS: L1 - Server - 1.1.14);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a87f15ed-1115-a22d-6f43-17db97c91111"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure nodev option set on /tmp partition (CIS: L1 - Server - 1.1.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure nodev option set on /tmp partition (CIS: L1 - Server - 1.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a87f15ed-1115-a22d-6f43-17db97c91161"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure nodev option set on /var/tmp partition (CIS: L1 - Server - 1.1.8)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure nodev option set on /var/tmp partition (CIS: L1 - Server - 1.1.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a87f15ed-1115-a22d-6f43-17db97c91181"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure nosuid option set on /tmp partition (CIS: L1 - Server - 1.1.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure nosuid option set on /tmp partition (CIS: L1 - Server - 1.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a87f15ed-1115-a22d-6f43-17db97c91191"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure nosuid option set on /var/tmp partition (CIS: L1 - Server - 1.1.9)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure nosuid option set on /var/tmp partition (CIS: L1 - Server - 1.1.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a87f15ed-1115-a22d-6f43-17db97c91171"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure noexec option set on /var/tmp partition (CIS: L1 - Server - 1.1.10)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure noexec option set on /var/tmp partition (CIS: L1 - Server - 1.1.10);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b97f15dd-8185-a12d-6f43-17db97c98477"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure noexec option set on /dev/shm partition (CIS: L1 - Server - 1.1.17)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure noexec option set on /dev/shm partition (CIS: L1 - Server - 1.1.17);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "11e6dc3b-0659-3dc8-7d12-8eb0bb6c0890"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure automounting is disabled (CIS: L1 - Server - 1.1.22)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure automounting is disabled (CIS: L1 - Server - 1.1.22);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8cffbbca-3e5b-9af9-65fe-ff7b6316565d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure mounting of USB storage devices is disabled (CIS: L1 - Server - 1.1.23)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure mounting of USB storage devices is disabled (CIS: L1 - Server - 1.1.23);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "acffbbca-3e5b-9aa9-65ee-ff7b6116565f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure core dumps are restricted (CIS: L1 - Server - 1.5.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure core dumps are restricted (CIS: L1 - Server - 1.5.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "429123d4-7e7d-2737-6542-2e86b82c16a1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure prelink is disabled (CIS: L1 - Server - 1.5.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure prelink is disabled (CIS: L1 - Server - 1.5.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "cdee3703-321a-69c4-107f-e7b350a95e5a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/motd are configured (CIS: L1 - Server - 1.7.1.4)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure permissions on /etc/motd are configured (CIS: L1 - Server - 1.7.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b08735e4-8565-0ab1-0fba-b15e31be98e4"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/issue are configured (CIS: L1 - Server - 1.7.1.5)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure permissions on /etc/issue are configured (CIS: L1 - Server - 1.7.1.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "69032884-324a-3289-a171-b17a541f7adb"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/issue.net are configured (CIS: L1 - Server - 1.7.1.6)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure permissions on /etc/issue.net are configured (CIS: L1 - Server - 1.7.1.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "9110c0c6-27f1-065e-140d-2672c1ad055b"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the nodev option is enabled for all removable media (CIS: L1 - Server - 1.1.18)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the nodev option is enabled for all removable media (CIS: L1 - Server - 1.1.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "5c7537f2-b90b-44a4-89c9-4fca5fd79ef7"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the noexec option is enabled for all removable media (CIS: L1 - Server - 1.1.20)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the noexec option is enabled for all removable media (CIS: L1 - Server - 1.1.20);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7976cc38-fddb-4913-9295-4fcac2e641c3"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the nosuid option is enabled for all removable media (CIS: L1 - Server - 1.1.19)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the nosuid option is enabled for all removable media (CIS: L1 - Server - 1.1.19);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "cdc390c9-fb4a-47f6-90a7-4e1bd6d0e9e6"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure talk client is not installed (CIS: L1 - Server - 2.3.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure talk client is not installed (CIS: L1 - Server - 2.3.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "5133422e-990f-971e-661d-ccfc913c1d2c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/hosts.allow are configured (CIS: L1 - Server - 3.3.2 + 3.3.4)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure permissions on /etc/hosts.allow are configured (CIS: L1 - Server - 3.3.2 + 3.3.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1d498679-5780-6db3-14cc-6433011e0310"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/hosts.deny are configured (CIS: L1 - Server - 3.3.3 + 3.3.5)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure permissions on /etc/hosts.deny are configured (CIS: L1 - Server - 3.3.3 + 3.3.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "71d554b5-1436-9676-1966-939ded8d0a37"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure default deny firewall policy is set (CIS: L1 - Server - 3.5.2.1)",
+      "isEditable": "True",
+      "defaultValue": "0",
+      "settingName": "Ensure default deny firewall policy is set (CIS: L1 - Server - 3.5.2.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "eb6c608a-2316-41bd-aa00-604249e31f27"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the nodev/nosuid option is enabled for all NFS mounts",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the nodev/nosuid option is enabled for all NFS mounts;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7ca24433-3c08-4ff5-9fe2-d8e1830c5829"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure password creation requirements are configured (CIS: L1 - Server - 5.3.1)",
+      "isEditable": "True",
+      "defaultValue": "3,14,4,-1,-1,-1,-1",
+      "settingName": "Ensure password creation requirements are configured (CIS: L1 - Server - 5.3.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b042fda5-55f6-17ba-78d5-1ba33a4709f5"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure lockout for failed password attempts is configured (CIS: L1 - Server - 5.3.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure lockout for failed password attempts is configured (CIS: L1 - Server - 5.3.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1895704d-a326-90ca-3795-3a1289e7482d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the cramfs file system is disabled (CIS: L1 - Server - 1.1.1.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the cramfs file system is disabled (CIS: L1 - Server - 1.1.1.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "9967cbaf-44be-0dd1-92ab-d4f4034b2d28"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the freevxfs file system is disabled (CIS: L1 - Server - 1.1.1.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the freevxfs file system is disabled (CIS: L1 - Server - 1.1.1.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "4c066a3d-8eba-a210-3228-cff300039363"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all users' home directories exist (CIS: L1 - Server - 6.2.7)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all users' home directories exist (CIS: L1 - Server - 6.2.7);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c07e6adc-93ab-1d40-2c6d-f3f16ca9561d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure users own their home directories (CIS: L1 - Server - 6.2.9)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure users own their home directories (CIS: L1 - Server - 6.2.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "54e255d1-038a-860b-48a2-3d1821e34661"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure users' dot files aren't group or world writable (CIS: L1 - Server - 6.2.10)",
+      "isEditable": "True",
+      "defaultValue": "600,644,664,700,744",
+      "settingName": "Ensure users' dot files aren't group or world writable (CIS: L1 - Server - 6.2.10);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "086cb95b-5427-3ac0-9b98-c5c5b593579a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no users have .forward files (CIS: L1 - Server - 6.2.11)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no users have .forward files (CIS: L1 - Server - 6.2.11);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d02297d2-9f49-5276-0a92-5ac1e42e243c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no users have .netrc files (CIS: L1 - Server - 6.2.12)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no users have .netrc files (CIS: L1 - Server - 6.2.12);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c1b7767e-6c84-6a54-10b8-b9797a8d707a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no users have .rhosts files (CIS: L1 - Server - 6.2.14)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no users have .rhosts files (CIS: L1 - Server - 6.2.14);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "28884fab-89e2-2250-a057-6f35637b4848"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all groups in /etc/passwd exist in /etc/group (CIS: L1 - Server - 6.2.15)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all groups in /etc/passwd exist in /etc/group (CIS: L1 - Server - 6.2.15);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "835a98f5-46da-5332-6b45-38df223e9d9a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no duplicate UIDs exist (CIS: L1 - Server - 6.2.16)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no duplicate UIDs exist (CIS: L1 - Server - 6.2.16);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "df7fd9e2-0cd0-47c1-92b0-f3cab6e06869"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no duplicate GIDs exist (CIS: L1 - Server - 6.2.17)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no duplicate GIDs exist (CIS: L1 - Server - 6.2.17);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "70f3d785-1410-440f-6f6d-79b051039d21"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no duplicate user names exist (CIS: L1 - Server - 6.2.18)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no duplicate user names exist (CIS: L1 - Server - 6.2.18);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "017e0242-25b9-2c72-7ac6-d601086f5c8b"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no duplicate groups exist (CIS: L1 - Server - 6.2.19)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no duplicate groups exist (CIS: L1 - Server - 6.2.19);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "bc5844b6-7e40-4f2f-7e81-1cbd18885dae"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure shadow group is empty (CIS: L1 - Server - 6.2.20)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure shadow group is empty (CIS: L1 - Server - 6.2.20);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "cbdc33fa-0f1c-0a90-7fe9-8ef1cf6643c2"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the hfs file system is disabled (CIS: L1 - Server - 1.1.1.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the hfs file system is disabled (CIS: L1 - Server - 1.1.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "39595d95-88a4-78e2-6e0e-fbde7fd95eed"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the hfsplus file systems is disabled (CIS: L1 - Server - 1.1.1.5)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the hfsplus file systems is disabled (CIS: L1 - Server - 1.1.1.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "68fb9c92-1009-9e24-694e-3d996a5e09c5"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the jffs2 file systems is disabled (CIS: L1 - Server - 1.1.1.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the jffs2 file systems is disabled (CIS: L1 - Server - 1.1.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "859c7aa0-6eeb-6aac-6160-2fdead2537bf"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the kernel is compiled from approved sources",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the kernel is compiled from approved sources;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "34e19f66-2387-4cdc-8ab2-cfac8e5865f0"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/shadow are configured (CIS: L1 - Server - 6.1.3)",
+      "isEditable": "True",
+      "defaultValue": "400",
+      "settingName": "Ensure file permissions on /etc/shadow are configured (CIS: L1 - Server - 6.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "13dabe7c-02ea-09d2-1a97-42cc7ac94eaa"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/shadow- are configured (CIS: L1 - Server - 6.1.7)",
+      "isEditable": "True",
+      "defaultValue": "400",
+      "settingName": "Ensure file permissions on /etc/shadow- are configured (CIS: L1 - Server - 6.1.7);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1e941132-a3a7-5ccb-1817-50551b65202e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/gshadow are configured (CIS: L1 - Server - 6.1.5)",
+      "isEditable": "True",
+      "defaultValue": "400",
+      "settingName": "Ensure file permissions on /etc/gshadow are configured (CIS: L1 - Server - 6.1.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0a7f2b28-8586-6cef-512e-a28f991d83cd"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/gshadow- are configured (CIS: L1 - Server - 6.1.9)",
+      "isEditable": "True",
+      "defaultValue": "400",
+      "settingName": "Ensure file permissions on /etc/gshadow- are configured (CIS: L1 - Server - 6.1.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0fe59dec-472c-4b11-a221-36053a47afb6"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/passwd are configured (CIS: L1 - Server - 6.1.2)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure file permissions on /etc/passwd are configured (CIS: L1 - Server - 6.1.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ad534c97-1070-415c-9fc7-c92366d3fc30"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/group are configured (CIS: L1 - Server - 6.1.4)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure file permissions on /etc/group are configured (CIS: L1 - Server - 6.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c41a47e9-1ba0-4e72-9f43-4659a4bfed63"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/passwd- are configured (CIS: L1 - Server - 6.1.6)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure file permissions on /etc/passwd- are configured (CIS: L1 - Server - 6.1.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0c67cac0-1e99-8a8f-32e1-841d18b01a9a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions on /etc/group- are configured (CIS: L1 - Server - 6.1.8)",
+      "isEditable": "True",
+      "defaultValue": "644",
+      "settingName": "Ensure file permissions on /etc/group- are configured (CIS: L1 - Server - 6.1.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "865ebb92-8e64-4e3a-aa9b-0290768aa8f1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that access to the root account via su is restricted to the 'root' group (CIS: L1 - Server - 5.5)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that access to the root account via su is restricted to the 'root' group (CIS: L1 - Server - 5.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0c77cac0-1e99-8a8f-32e1-841d18b01a9a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the 'root' group exists, and contain all members who can su to root (CIS: L1 - Server - 5.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the 'root' group exists, and contain all members who can su to root (CIS: L1 - Server - 5.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8cac0c32-1add-42b9-9300-5ccb9f91aab3"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that all user accounts that can login have a password set",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that all user accounts that can login have a password set;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ca9d29b7-79bd-4c99-85e2-1454295c3c8e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that all user accounts other than root have unique UIDs greater than zero (0)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that all user accounts other than root have unique UIDs greater than zero (0);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7de0f0e6-f97b-4e12-8f9e-c6538ca5a85b"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that randomized placement (ASLR) of virtual memory regions is enabled (CIS: L1 - Server - 1.5.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that randomized placement (ASLR) of virtual memory regions is enabled (CIS: L1 - Server - 1.5.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d790e942-efd3-42e6-a3a5-9eb1d651a588"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that kernel support for the XD/NX processor feature is enabled (CIS: L1 - Server - 1.5.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that kernel support for the XD/NX processor feature is enabled (CIS: L1 - Server - 1.5.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "49c89437-d116-4d84-a91d-0dd59daafa0d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure '.' does not appear in root's $PATH (CIS: L1 - Server - 6.2.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure '.' does not appear in root's $PATH (CIS: L1 - Server - 6.2.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d66f8908-7b9f-77fc-18d4-af85197e0aeb"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure access to user home directories is restricted",
+      "isEditable": "True",
+      "defaultValue": "700,750",
+      "settingName": "Ensure access to user home directories is restricted;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0754488a-75c7-a4e8-0fb4-9212f771623f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the default umask for all users is configured",
+      "isEditable": "True",
+      "defaultValue": "077",
+      "settingName": "Ensure the default umask for all users is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0753438a-75c7-a4e8-0fb4-9213f771623f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all bootloaders have password protection enabled (CIS: L1 - Server - 1.4.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all bootloaders have password protection enabled (CIS: L1 - Server - 1.4.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8a4f5ce8-41c4-710c-631e-fbc36a2fa53e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on bootloader config are configured (CIS: L1 - Server - 1.4.1)",
+      "isEditable": "True",
+      "defaultValue": "400",
+      "settingName": "Ensure permissions on bootloader config are configured (CIS: L1 - Server - 1.4.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "091f0150-80d1-0e2d-7353-8cdb77fc6aa1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure authentication is required for single user mode (CIS: L1 - Server - 1.4.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure authentication is required for single user mode (CIS: L1 - Server - 1.4.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "13a48ca1-92bc-63a1-a4de-b984375fa332"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure packet redirect sending is disabled (CIS: L1 - Server - 3.1.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure packet redirect sending is disabled (CIS: L1 - Server - 3.1.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "5ea9d618-1af4-4e59-65be-ffac234872e9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure ICMP redirects are not accepted (CIS: L1 - Server - 3.2.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure ICMP redirects are not accepted (CIS: L1 - Server - 3.2.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a492f72a-6b79-8a9d-3b4f-3fface972ab7"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure accepting source routed packets is disabled for all interfaces (CIS: L1 - Server - 3.2.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure accepting source routed packets is disabled for all interfaces (CIS: L1 - Server - 3.2.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "4ecae4e6-a3e2-44f5-9985-ea2a21962450"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the default setting for accepting source routed packets is disabled for network interfaces (CIS: L1 - Server - 3.2.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the default setting for accepting source routed packets is disabled for network interfaces (CIS: L1 - Server - 3.2.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "63613c25-8ae1-4792-9572-02bdc941febf"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure ignoring bogus ICMP responses to broadcasts is enabled (CIS: L1 - Server - 3.2.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure ignoring bogus ICMP responses to broadcasts is enabled (CIS: L1 - Server - 3.2.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "88acc143-2f76-4418-9aa9-d0d5f244ab5f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure ignoring ICMP echo requests (pings) sent to broadcast/multicast addresses is enabled (CIS: L1 - Server - 3.2.5)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure ignoring ICMP echo requests (pings) sent to broadcast/multicast addresses is enabled (CIS: L1 - Server - 3.2.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f5a5926d-9c64-41fa-8220-5bc0f8213550"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure logging of martian packets (those with impossible addresses) is enabled for all interfaces",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure logging of martian packets (those with impossible addresses) is enabled for all interfaces;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "dc1c08a3-91e8-1d60-9210-c18bdebd8778"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure performing source validation by reverse path is enabled for all interfaces (CIS: L1 - Server - 3.2.7)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure performing source validation by reverse path is enabled for all interfaces (CIS: L1 - Server - 3.2.7);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "177e6190-1026-49fb-a1f9-fd5b10302280"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure TCP SYN cookies are enabled (CIS: L1 - Server - 3.2.8)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure TCP SYN cookies are enabled (CIS: L1 - Server - 3.2.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "db6ca14e-26c5-48cd-a6b7-fc953861043c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the system does not act as a network sniffer",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the system does not act as a network sniffer;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "45766f27-5af3-453d-bade-f8195925cde1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all wireless interfaces are disabled (CIS: L1 - Server - 3.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all wireless interfaces are disabled (CIS: L1 - Server - 3.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8def2d0c-303a-4c0b-858c-319f80f7c814"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the IPv6 protocol is enabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the IPv6 protocol is enabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f04b1de8-1fd3-40da-a27f-39b7ea97bf8c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure DCCP is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure DCCP is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "93d2736e-7329-8806-3ef6-e71bb2203d11"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure SCTP is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure SCTP is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "78228616-15d4-33fe-0357-88e77f228f05"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure support for RDS is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure support for RDS is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d9ed5e76-2348-4409-94dd-c76352407fe8"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure TIPC is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure TIPC is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8ace9b14-820f-6e0d-37d8-c6df950454cd"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure logging is configured (CIS: L1 - Server - 4.2.1.2 + 4.2.1.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure logging is configured (CIS: L1 - Server - 4.2.1.2 + 4.2.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "15ca11bf-034a-56d6-564f-2f857d1f96c6"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the syslog, rsyslog, or syslog-ng package is installed (CIS: L1 - Server - 4.2.1.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the syslog, rsyslog, or syslog-ng package is installed (CIS: L1 - Server - 4.2.1.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8720959b-c356-4eaa-bb4f-720fb8006183"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the systemd-journald service persists log messages (CIS: L1 - Server - 4.2.2.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the systemd-journald service persists log messages (CIS: L1 - Server - 4.2.2.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7b3aa0e4-0464-4a0e-a265-9a585c4f266e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure a logging service is enabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure a logging service is enabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "4c4e42e2-4cd2-3eaf-147b-ea4f61164d3e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure file permissions for all rsyslog log files are configured (CIS: L1 - Server - 4.2.1.4)",
+      "isEditable": "True",
+      "defaultValue": "600,640",
+      "settingName": "Ensure file permissions for all rsyslog log files are configured (CIS: L1 - Server - 4.2.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "fcc86485-487a-4644-87a0-f29f1b1cd28b"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure logger configuration files are restricted (CIS: L1 - Server - 4.2.1.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure logger configuration files are restricted (CIS: L1 - Server - 4.2.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "afd57de2-4365-9949-79f7-f8e92c198746"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that all rsyslog log files are owned by the adm group",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that all rsyslog log files are owned by the adm group;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c1d99621-913e-45f7-96e1-a60b1af83015"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all rsyslog log files are owned by the syslog user (CIS: L1 - Server - 4.2.1.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all rsyslog log files are owned by the syslog user (CIS: L1 - Server - 4.2.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "2830790c-5b3f-43cb-be6b-7572e441acc1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure rsyslog does not accept remote messages",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure rsyslog does not accept remote messages;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1e9567e1-d96d-4f90-be1a-0809947e789c"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the logrotate (syslog rotater) service is enabled (CIS: L1 - Server - 4.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the logrotate (syslog rotater) service is enabled (CIS: L1 - Server - 4.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "2d2355e7-7b07-4c0e-a395-16499c27ae94"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rlogin service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rlogin service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f57ef648-bdaa-45a3-9e3a-f4649c48896f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure inetd is not installed (CIS: L1 - Server - 2.1.10)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure inetd is not installed (CIS: L1 - Server - 2.1.10);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "a8a37e7f-9aae-41cf-8313-42d1f69506b9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure xinetd is not installed (CIS: L1 - Server - 2.1.10)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure xinetd is not installed (CIS: L1 - Server - 2.1.10);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1d9557b2-b58f-4f81-bde9-4f9b08a3b2f1"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the telnet service is disabled (CIS: L1 - Server - 2.1.8)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the telnet service is disabled (CIS: L1 - Server - 2.1.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0617b91c-2a28-42bd-b5b3-7562555b41ed"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all telnetd packages are uninstalled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all telnetd packages are uninstalled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "6c716f88-a252-4fe9-9c5c-ba9236a80beb"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rcp/rsh service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rcp/rsh service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "dda66a42-30d1-4621-9565-f09628ac8047"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rsh-server package is uninstalled (CIS: L1 - Server - 2.1.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rsh-server package is uninstalled (CIS: L1 - Server - 2.1.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b256491f-f804-4c44-bfa4-057dd2f44c30"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the ypbind service is disabled and the nis package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the ypbind service is disabled and the nis package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "58f5187e-88bd-4f24-8570-2c295d5c93c6"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the tftp service is disabled (CIS: L1 - Server - 2.1.9)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the tftp service is disabled (CIS: L1 - Server - 2.1.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "cb086aef-fec2-467f-a03b-627c00020926"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the tftpd package is not installed (CIS: L1 - Server - 2.1.9)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the tftpd package is not installed (CIS: L1 - Server - 2.1.9);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ae9ce111-ef4d-4d34-8f76-fdc38263f153"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the readahead-fedora package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the readahead-fedora package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "dbae0d26-55e9-49d5-8782-86cb7412f99f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the bluetooth package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the bluetooth package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "9f107bb8-eaf3-445d-acbb-7ab635b442e9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the isdn service is disabled and the isdnutils-base package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the isdn service is disabled and the isdnutils-base package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "51ebf409-911a-4d92-9d3a-1e331e7e4b27"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the kdump service is disabled and the kdump-tools package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the kdump service is disabled and the kdump-tools package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "290d7102-c4e3-4e88-863d-6ddc7e952a5a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure zeroconf networking is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure zeroconf networking is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "083550af-f4fe-4e1a-a304-dac894d58908"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the cron service is enabled (CIS: L1 - Server - 5.1.1)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the cron service is enabled (CIS: L1 - Server - 5.1.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "80302f61-d760-4165-a92b-a789e579380f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure File permissions on /etc/anacrontab are configured",
+      "isEditable": "True",
+      "defaultValue": "600",
+      "settingName": "Ensure File permissions on /etc/anacrontab are configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "8199ae98-8d9c-4a26-88ca-e6d9b87d3644"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/cron.d are configured (CIS: L1 - Server - 5.1.7)",
+      "isEditable": "True",
+      "defaultValue": "700",
+      "settingName": "Ensure permissions on /etc/cron.d are configured (CIS: L1 - Server - 5.1.7);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "efa30987-4c67-73f5-979f-cb50f79466de"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/cron.daily are configured (CIS: L1 - Server - 5.1.4)",
+      "isEditable": "True",
+      "defaultValue": "700",
+      "settingName": "Ensure permissions on /etc/cron.daily are configured (CIS: L1 - Server - 5.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "0cc35843-7687-60cf-5280-bb98cf9a87c2"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/cron.hourly are configured (CIS: L1 - Server - 5.1.3)",
+      "isEditable": "True",
+      "defaultValue": "700",
+      "settingName": "Ensure permissions on /etc/cron.hourly are configured (CIS: L1 - Server - 5.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ecdce8a2-9986-5833-8211-baf1938c1940"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/cron.monthly are configured (CIS: L1 - Server - 5.1.6)",
+      "isEditable": "True",
+      "defaultValue": "700",
+      "settingName": "Ensure permissions on /etc/cron.monthly are configured (CIS: L1 - Server - 5.1.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b5e94c1f-4d12-8bde-4c5e-98c651bd4430"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure permissions on /etc/cron.weekly are configured (CIS: L1 - Server - 5.1.5)",
+      "isEditable": "True",
+      "defaultValue": "700",
+      "settingName": "Ensure permissions on /etc/cron.weekly are configured (CIS: L1 - Server - 5.1.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "61417e01-8cc4-86ab-0e3b-867d42dea66d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure at/cron is restricted to authorized users (CIS: L1 - Server - 5.1.8)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure at/cron is restricted to authorized users (CIS: L1 - Server - 5.1.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7ac5f3c8-917b-548e-3138-c6e326a362fc"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the remote login warning banner is properly configured (CIS: L1 - Server - 1.7.1.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the remote login warning banner is properly configured (CIS: L1 - Server - 1.7.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d8bba1aa-69e9-2caf-1632-72938ff6759a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the local login warning banner is properly configured (CIS: L1 - Server - 1.7.1.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the local login warning banner is properly configured (CIS: L1 - Server - 1.7.1.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "14c168de-4508-a69d-0feb-2f1efe245a71"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the avahi-daemon service is disabled (CIS: L1 - Server - 2.2.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the avahi-daemon service is disabled (CIS: L1 - Server - 2.2.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c3bf78d8-43a0-4768-b790-c940621057b6"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the cups service is disabled (CIS: L1 - Server - 2.2.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the cups service is disabled (CIS: L1 - Server - 2.2.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "4854666c-061b-4945-8a25-19133b8d5c7d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the isc-dhcp-server package is not installed (CIS: L1 - Server - 2.2.5)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the isc-dhcp-server package is not installed (CIS: L1 - Server - 2.2.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "660fa012-ca99-4314-a2a8-11728020bac7"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the sendmail package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the sendmail package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "43356a32-24bb-401c-9746-a27b2be668fa"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the postfix package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the postfix package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f56bf32f-528f-48b3-9f82-62f5ff4e9787"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure that postfix network listening is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure that postfix network listening is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "d0cc4e35-70a1-4ee5-b572-3b969201562e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the ldap service is disabled and the sldapd package is not installed (CIS: L1 - Server - 2.2.6)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the ldap service is disabled and the sldapd package is not installed (CIS: L1 - Server - 2.2.6);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b577b358-6ec9-4ed7-b0df-259e44713b16"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rpcgssd service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rpcgssd service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "9c11dc9f-ab7e-4c3f-923f-5a8fc4e97cb9"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rpcidmapd service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rpcidmapd service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b600d670-5b01-4458-9143-8aa7cd25dadc"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the portmap service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the portmap service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f4a80328-1d67-45ed-b915-274d2e6c699e"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the Network File System (NFS) service is disabled (CIS: L1 - Server - 2.2.7 - partial)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the Network File System (NFS) service is disabled (CIS: L1 - Server - 2.2.7 - partial);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ee372ff3-9221-498b-b467-7406bf421168"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rpcsvcgssd service is disabled",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rpcsvcgssd service is disabled;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "78963287-11b9-471b-9122-e6829e105989"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the named service is disabled and the bind9 package is not installed (CIS: L1 - Server - 2.2.8)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the named service is disabled and the bind9 package is not installed (CIS: L1 - Server - 2.2.8);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "361a6cb4-f761-426f-a9d0-9e82ec0b3285"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the dovecot service is disabled and the dovecot-core package is not installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the dovecot service is disabled and the dovecot-core package is not installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b0b6cf96-bd8a-40c5-b051-4615078a0bf0"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no legacy + entries exist in /etc/passwd (CIS: L1 - Server - 6.2.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no legacy + entries exist in /etc/passwd (CIS: L1 - Server - 6.2.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "cc627f0c-3b72-6cc9-36b0-d2a3957431f4"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no legacy + entries exist in /etc/shadow (CIS: L1 - Server - 6.2.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no legacy + entries exist in /etc/shadow (CIS: L1 - Server - 6.2.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "1a102d2e-76db-5ccf-3580-ccda064e8df3"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure no legacy + entries exist in /etc/group (CIS: L1 - Server - 6.2.4)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure no legacy + entries exist in /etc/group (CIS: L1 - Server - 6.2.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b487e075-15b4-0df1-550f-d8d5edd78eb4"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure password expiration is configured (CIS: L1 - Server - 5.4.1.1)",
+      "isEditable": "True",
+      "defaultValue": "365",
+      "settingName": "Ensure password expiration is configured (CIS: L1 - Server - 5.4.1.1);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "6ee7250d-142f-57db-25d0-c58207135059"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure password expiration warning days is configured (CIS: L1 - Server - 5.4.1.3)",
+      "isEditable": "True",
+      "defaultValue": "7",
+      "settingName": "Ensure password expiration warning days is configured (CIS: L1 - Server - 5.4.1.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b7ac978f-0963-a61f-58ae-5cf84ab76b5d"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure password reuse is limited (CIS: L1 - Server - 5.3.3)",
+      "isEditable": "True",
+      "defaultValue": "5",
+      "settingName": "Ensure password reuse is limited (CIS: L1 - Server - 5.3.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "57bdeae2-863e-14fb-a463-d6ee64816b33"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the password hashing algorithm is SHA-512 (CIS: L1 - Server - 5.3.4)",
+      "isEditable": "True",
+      "defaultValue": "6",
+      "settingName": "Ensure the password hashing algorithm is SHA-512 (CIS: L1 - Server - 5.3.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "01ec5346-882b-485d-8960-01dedd608792"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the minimum days between password changes is configured (CIS: L1 - Server - 5.4.1.2)",
+      "isEditable": "True",
+      "defaultValue": "7",
+      "settingName": "Ensure the minimum days between password changes is configured (CIS: L1 - Server - 5.4.1.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "50272a84-672d-4c11-a67e-9d058adaf67a"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the maximum days between password changes is configured",
+      "isEditable": "True",
+      "defaultValue": "365",
+      "settingName": "Ensure the maximum days between password changes is configured;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7f84f3a4-360d-494c-aa1e-1e15ae9fc9ac"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the inactive password lock period is configured (CIS: L1 - Server - 5.4.1.4)",
+      "isEditable": "True",
+      "defaultValue": "30",
+      "settingName": "Ensure the inactive password lock period is configured (CIS: L1 - Server - 5.4.1.4);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "91fbaeac-f5d0-4ac9-aa1b-52215aef1ed8"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure all system accounts are non-login (CIS: L1 - Server - 5.4.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure all system accounts are non-login (CIS: L1 - Server - 5.4.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "448b668a-738c-420b-b332-51ea49922933"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure default group for the root account is GID 0 (CIS: L1 - Server - 5.4.3)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure default group for the root account is GID 0 (CIS: L1 - Server - 5.4.3);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "732fa92f-647e-47b8-b5a4-fdf00b02d9e2"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure root is the only UID 0 account (CIS: L1 - Server - 6.2.5)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure root is the only UID 0 account (CIS: L1 - Server - 6.2.5);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b5845ff3-42f4-4112-b2a2-5b827232a053"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure unnecessary accounts are removed",
+      "isEditable": "True",
+      "defaultValue": "games,test",
+      "settingName": "Ensure unnecessary accounts are removed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "627b7494-0e62-4093-9f77-db8d526d036b"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the auditd package is installed",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the auditd package is installed;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "f9fd03d2-75e4-4564-84a9-4e955f1e7c30"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the auditd service is running",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the auditd service is running;DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "c146c4a4-5eb6-4205-88da-5a71a82f2d45"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the SNMP Server is not enabled (CIS: L1 - Server - 2.2.14)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the SNMP Server is not enabled (CIS: L1 - Server - 2.2.14);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "ca1aea32-3969-49ab-abfc-2c5796a9a8bb"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rsync service is not enabled (CIS: L1 - Server - 2.2.16)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rsync service is not enabled (CIS: L1 - Server - 2.2.16);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "63aba603-b1f8-40df-82c5-38915452ce23"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the NIS server is not enabled (CIS: L1 - Server - 2.2.17)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the NIS server is not enabled (CIS: L1 - Server - 2.2.17);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "b4ad3fdd-7b68-4b11-a3ed-84b37a68b995"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "6d441f31-f888-4f4f-b1da-7cfc26263e3f"
+    },
+    {
+      "schema": {
+        "type": "string"
+      },
+      "displayName": "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12)",
+      "isEditable": "False",
+      "defaultValue": "",
+      "settingName": "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12);DesiredObjectValue",
+      "severity": "Critical",
+      "ruleId": "7624efb0-3026-4c72-8920-48d5be78a50e"
+    }
+  ]
+}
