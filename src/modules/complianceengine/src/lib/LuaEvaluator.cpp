@@ -237,7 +237,7 @@ void LuaEvaluator::SecureLuaEnvironment()
     const std::vector<const char*> safeGlobals = {
         "print", "type", "tostring", "tonumber", "pairs", "ipairs", "next", "pcall", "xpcall", "select", "math"};
     const std::map<const char*, std::vector<const char*>> safeModuleFunctions = {
-        {"string", {"byte", "char", "find", "format", "gsub", "len", "lower", "match", "rep", "reverse", "sub", "upper"}},
+        {"string", {"byte", "char", "find", "format", "gsub", "len", "lower", "match", "gmatch", "rep", "reverse", "sub", "upper"}},
         {"table", {"concat", "insert", "remove", "sort"}}, {"io", {"lines"}}, {"os", {"time", "date", "clock", "difftime"}}};
 
     for (const auto& global : safeGlobals)
