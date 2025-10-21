@@ -4,7 +4,6 @@
 #define COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_EXISTS_H
 
 #include <Evaluator.h>
-#include <Regex.h>
 
 namespace ComplianceEngine
 {

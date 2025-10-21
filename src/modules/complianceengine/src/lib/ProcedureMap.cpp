@@ -14,7 +14,7 @@ const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
 // EnsureDconf.h:31
 const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operation"};
 
-// EnsureFileExists.h:16
+// EnsureFileExists.h:15
 const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 
 // EnsureFilePermissions.h:31
