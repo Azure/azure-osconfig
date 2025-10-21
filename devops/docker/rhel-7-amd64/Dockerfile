@@ -6,7 +6,7 @@ COPY ./centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-COPY .centos.repo /etc/yum.repos.d/centos.repo
+COPY ./centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yumdownloader rpm-build elfutils
 
