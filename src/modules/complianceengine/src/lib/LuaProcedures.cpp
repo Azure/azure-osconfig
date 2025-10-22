@@ -9,6 +9,7 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include <SystemdCatConfig.h>
 #include <cerrno>
 #include <cstring>
 #include <dirent.h>
@@ -27,10 +28,8 @@ using ComplianceEngine::Result;
 
 namespace ComplianceEngine
 {
-
 namespace
 {
-
 class ListDirState
 {
 public:
@@ -311,7 +310,8 @@ static int LuaGetFilesystemEntriesWithPerms(lua_State* L)
         luaL_error(L, "%s", full.Error().message.c_str());
         return 0;
     }
-    auto stateHolder = reinterpret_cast<FSCacheIterState**>(lua_newuserdata(L, sizeof(FSCacheIterState*))); // stack: userdata
+    auto stateHolder = reinterpret_cast<FSCacheIterState**>(lua_newuserdata(L, sizeof(FSCacheIterState*)));
+    // stack: userdata
     *stateHolder = new FSCacheIterState();
     (*stateHolder)->cache = full.Value();
     (*stateHolder)->it = (*stateHolder)->cache->entries.begin();
@@ -330,6 +330,44 @@ static int LuaGetFilesystemEntriesWithPerms(lua_State* L)
     return 1;
 }
 
+int LuaSystemdCatConfig(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+
+    // Filename parameter
+    constexpr int filenameArgIndex = 1;
+    if (lua_isnoneornil(L, filenameArgIndex))
+    {
+        luaL_error(L, "expected a filename");
+        return 0u;
+    }
+    const char* filename = lua_tostring(L, filenameArgIndex);
+    if (!filename)
+    {
+        luaL_error(L, "expected a filename");
+        return 0u;
+    }
+
+    auto result = SystemdCatConfig(filename, view->ctx);
+    if (!result.HasValue())
+    {
+        luaL_error(L, "SystemdCatConfigFailed: %s", result.Error().message.c_str());
+        return 0;
+    }
+
+    lua_pushlstring(L, result.Value().c_str(), result.Value().size());
+    return 1;
+}
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -359,6 +397,9 @@ void RegisterLuaProcedures(lua_State* L)
 
     lua_pushcfunction(L, LuaGetFilesystemEntriesWithPerms);
     lua_setfield(L, -2, "GetFilesystemEntriesWithPerms");
+
+    lua_pushcfunction(L, LuaSystemdCatConfig);
+    lua_setfield(L, -2, "SystemdCatConfig");
 
     // pop ce and restricted_env
     lua_pop(L, 2);
