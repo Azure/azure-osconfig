@@ -153,6 +153,7 @@ add_library(complianceenginelib STATIC
     ProcedureMap.cpp
     Result.cpp
     StringTools.cpp
+    SystemdCatConfig.cpp
     UsersIterator.cpp
     ${PROCEDURES}
     )
