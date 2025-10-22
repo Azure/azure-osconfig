@@ -320,7 +320,7 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
         auto logfileResult = FindSudoLogfile(context);
         if (!logfileResult.HasValue())
         {
-            return logfileResult.Error();
+            return indicators.NonCompliant("Can't find sudo logfile setting");
         }
         std::string searchItem = "-w " + logfileResult.Value();
         auto runningResult = CheckRuleInList(runningRules, searchItem, excludeOption, requiredOptions, context, indicators);
