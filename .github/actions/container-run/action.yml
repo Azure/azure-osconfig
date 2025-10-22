@@ -16,6 +16,10 @@ inputs:
     description: The container tag.
     required: false
     default: latest
+  args:
+    description: Additional arguments to pass to the container.
+    required: false
+    default: ""
 
 outputs:
   id:
@@ -49,7 +53,7 @@ runs:
           container_name_tag="${name}:${tag}"
         fi
         echo "Running container ${container_name_tag}"
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} "${container_name_tag}")
+        id=$(docker run -di --privileged ${{ inputs.args }} -v ${{ inputs.mount }} "${container_name_tag}")
 
         echo Container ID: $id
         echo id=$id >> $GITHUB_OUTPUT

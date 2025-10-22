@@ -63,6 +63,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     if ((NULL == destination) || (NULL == source))
     {
         OsConfigLogError(log, "CopyUserEntry: invalid arguments");
+        OSConfigTelemetryStatusTrace("destination", EINVAL);
         return EINVAL;
     }
 
@@ -73,6 +74,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
         if (NULL == (destination->username = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name for user %u", source->pw_uid);
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             status = ENOMEM;
         }
         else
@@ -95,6 +97,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
         if (NULL == (destination->home = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             status = ENOMEM;
         }
         else
@@ -109,6 +112,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
         if (NULL == (destination->shell = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             status = ENOMEM;
 
         }
@@ -210,6 +214,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
     if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "SetUserNonLogin: invalid argument");
+        OSConfigTelemetryStatusTrace("user", EINVAL);
         return EINVAL;
     }
 
@@ -228,6 +233,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
             if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username)))
             {
                 OsConfigLogError(log, "SetUserNonLogin: out of memory");
+                OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                 result = ENOMEM;
             }
             else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
@@ -265,6 +271,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
     if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "CheckIfUserHasPassword: invalid argument");
+        OSConfigTelemetryStatusTrace("user", EINVAL);
         return EINVAL;
     }
 
@@ -368,6 +375,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     if ((NULL == userList) || (NULL == size))
     {
         OsConfigLogError(log, "EnumerateUsers: invalid arguments");
+        OSConfigTelemetryStatusTrace("userList", EINVAL);
         return EINVAL;
     }
 
@@ -388,6 +396,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
                 if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
+                    OSConfigTelemetryStatusTrace("CopyUserEntry", status);
                     break;
                 }
                 else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
@@ -404,6 +413,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         else
         {
             OsConfigLogError(log, "EnumerateUsers: out of memory");
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             *size = 0;
             status = ENOMEM;
         }
@@ -463,11 +473,13 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     if ((NULL == user) || (NULL == groupList) || (NULL == size))
     {
         OsConfigLogError(log, "EnumerateUserGroups: invalid arguments");
+        OSConfigTelemetryStatusTrace("user", EINVAL);
         return EINVAL;
     }
     else if (NULL == user->username)
     {
         OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
+        OSConfigTelemetryStatusTrace("username", ENOENT);
         return ENOENT;
     }
 
@@ -477,6 +489,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     if (NULL == (groupIds = malloc(listSize)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         numberOfGroups = 0;
         status = ENOMEM;
     }
@@ -501,6 +514,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                 else
                 {
                     OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
+                    OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                     numberOfGroups = 0;
                     status = ENOMEM;
                 }
@@ -523,6 +537,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         if (NULL == (*groupList = malloc(listSize)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             status = ENOMEM;
         }
         else
@@ -557,6 +572,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         else
                         {
                             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
+                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                             status = ENOMEM;
                             break;
                         }
@@ -608,6 +624,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
     if ((NULL == groupList) || (NULL == size))
     {
         OsConfigLogError(log, "EnumerateAllGroups: invalid arguments");
+        OSConfigTelemetryStatusTrace("groupList", EINVAL);
         return EINVAL;
     }
 
@@ -642,6 +659,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
                     else
                     {
                         OsConfigLogError(log, "EnumerateAllGroups: out of memory");
+                        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                         status = ENOMEM;
                         break;
                     }
@@ -659,6 +677,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
         else
         {
             OsConfigLogError(log, "EnumerateAllGroups: out of memory");
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             status = ENOMEM;
         }
     }
@@ -794,6 +813,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                         else
                         {
                             OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: out of memory");
+                            OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                             _status = ENOMEM;
                         }
                     }
@@ -872,6 +892,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     if (NULL == user)
     {
         OsConfigLogError(log, "RemoveUser: invalid argument");
+        OSConfigTelemetryStatusTrace("user", EINVAL);
         return EINVAL;
     }
     else if (0 == user->userId)
@@ -910,6 +931,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "RemoveUser: out of memory");
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         status = ENOMEM;
     }
 
@@ -1134,6 +1156,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                         else
                         {
                             OsConfigLogError(log, "SetShadowGroupEmpty: out of memory");
+                            OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                             _status = ENOMEM;
                         }
 
@@ -1771,6 +1794,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
     if ((NULL == modes) || (0 == numberOfModes))
     {
         OsConfigLogError(log, "SetRestrictedUserHomeDirectories: invalid arguments (%p, %u)", modes, numberOfModes);
+        OSConfigTelemetryStatusTrace("modes", EINVAL);
         return EINVAL;
     }
 
@@ -1881,6 +1905,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
     if ((md5 != algorithm) && (sha256 != algorithm) && (sha512 != algorithm))
     {
         OsConfigLogError(log, "SetPasswordHashingAlgorithm: unsupported algorithm argument (%u, not: %u, %u, or %u)", algorithm, md5, sha256, sha512);
+        OSConfigTelemetryStatusTrace("algorithm", EINVAL);
         return EINVAL;
     }
 
@@ -1993,6 +2018,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2135,6 +2161,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2206,6 +2233,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
                 if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
                 {
                     OsConfigLogError(log, "EnsureUsersHaveDatesOfLastPasswordChanges: cannot allocate memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2402,6 +2430,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2563,6 +2592,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetLockoutAfterInactivityLessThan: cannot allocate memory");
+                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2741,6 +2771,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
     if (NULL == name)
     {
         OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles called with an invalid argument");
+        OSConfigTelemetryStatusTrace("name", EINVAL);
         return EINVAL;
     }
 
@@ -2761,6 +2792,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
                 if (NULL == (dotPath = malloc(length)))
                 {
                     OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: out of memory");
+                    OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -2820,6 +2852,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     if ((NULL == modes) || (0 == numberOfModes))
     {
         OsConfigLogError(log, "CheckUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
+        OSConfigTelemetryStatusTrace("modes", EINVAL);
         return EINVAL;
     }
 
@@ -2841,6 +2874,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         if (NULL == (path = malloc(length + 1)))
                         {
                             OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
+                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                             status = ENOMEM;
                             break;
                         }
@@ -2910,6 +2944,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     if ((NULL == modes) || (0 == numberOfModes))
     {
         OsConfigLogError(log, "SetUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
+        OSConfigTelemetryStatusTrace("modes", EINVAL);
         return EINVAL;
     }
 
@@ -2931,6 +2966,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                         if (NULL == (path = malloc(length + 1)))
                         {
                             OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
+                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                             status = ENOMEM;
                             break;
                         }
@@ -3002,6 +3038,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     if (NULL == names)
     {
         OsConfigLogError(log, "CheckUserAccountsNotFound: invalid argument");
+        OSConfigTelemetryStatusTrace("names", EINVAL);
         return EINVAL;
     }
 
@@ -3018,6 +3055,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
                 if (NULL == (name = DuplicateString(&(names[j]))))
                 {
                     OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
+                    OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -3078,11 +3116,13 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
     if (NULL == names)
     {
         OsConfigLogError(log, "RemoveUserAccounts: invalid argument");
+        OSConfigTelemetryStatusTrace("names", EINVAL);
         return EINVAL;
     }
     else if (0 == (numberOfPasswdLines = GetNumberOfLinesInFile(g_passwdFile)))
     {
         OsConfigLogError(log, "RemoveUserAccounts: cannot read from '%s'", g_passwdFile);
+        OSConfigTelemetryStatusTrace("GetNumberOfLinesInFile", ENOENT);
         return EPERM;
     }
     else if (0 == CheckUserAccountsNotFound(names, NULL, log))
@@ -3104,6 +3144,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
             if (NULL == (name = DuplicateString(&(names[j]))))
             {
                 OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
+                OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
                 status = ENOMEM;
                 break;
             }
@@ -3116,6 +3157,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
                     if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log)))
                     {
                         OsConfigLogError(log, "RemoveUserAccounts: failed making copy of user entry (%d)", status);
+                        OSConfigTelemetryStatusTrace("CopyUserEntry", status);
                         break;
                     }
                     else if ((0 != (_status = RemoveUser(&simplifiedUser, log))) && (0 == status))

@@ -14,6 +14,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
     if ((NULL == what) || (socketHandle < 0))
     {
         OsConfigLogError(log, "ReadUntilStringFound: invalid arguments");
+        OSConfigTelemetryStatusTrace("what", EINVAL);
         return NULL;
     }
 
@@ -21,6 +22,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
     if (NULL == buffer)
     {
         OsConfigLogError(log, "ReadUntilStringFound: out of memory allocating initial buffer");
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         return NULL;
     }
 
@@ -40,6 +42,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
             if (NULL == buffer)
             {
                 OsConfigLogError(log, "ReadUntilStringFound: out of memory reallocating buffer");
+                OSConfigTelemetryStatusTrace("realloc", ENOMEM);
                 break;
             }
             else
@@ -69,6 +72,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadUriFromSocket: invalid socket (%d)", socketHandle);
+        OSConfigTelemetryStatusTrace("socketHandle", EINVAL);
         return NULL;
     }
 
@@ -76,6 +80,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
     if (NULL == buffer)
     {
         OsConfigLogError(log, "ReadUriFromSocket: '%s' prefix not found", postPrefix);
+        OSConfigTelemetryStatusTrace("ReadUntilStringFound", ENOENT);
         return NULL;
     }
 
@@ -108,6 +113,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "ReadUriFromSocket: out of memory");
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
     }
 
     return returnUri;
@@ -125,6 +131,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadHttpStatusFromSocket: invalid socket (%d)", socketHandle);
+        OSConfigTelemetryStatusTrace("socketHandle", EINVAL);
         return httpStatus;
     }
 
@@ -132,6 +139,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
     if (NULL == buffer)
     {
         OsConfigLogError(log, "ReadHttpStatusFromSocket: '%s' prefix not found", httpPrefix);
+        OSConfigTelemetryStatusTrace("ReadUntilStringFound", ENOENT);
         return httpStatus;
     }
 
@@ -161,6 +169,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, OsConfigLogHandle log)
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadHttpContentLengthFromSocket: invalid socket (%d)", socketHandle);
+        OSConfigTelemetryStatusTrace("socketHandle", EINVAL);
         return httpContentLength;
     }
 
