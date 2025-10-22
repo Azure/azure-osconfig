@@ -28,6 +28,7 @@ jobs:
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}
       package-type: ${{ inputs.package-type }}
+      container-tag: ${{ inputs.container-tag }}
       test: true
 
   test:
