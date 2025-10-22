@@ -15,17 +15,17 @@ jobs:
       matrix:
         target:
           [
-            { os: almalinux, version: 9, package-type: RPM },
-            { os: azurelinux, version: 3, package-type: RPM },
-            { os: debian, version: 11, package-type: DEB },
-            { os: debian, version: 12, package-type: DEB },
-            { os: oraclelinux, version: 8, package-type: RPM },
-            { os: rhel, version: 8, package-type: RPM },
-            { os: rhel, version: 9, package-type: RPM },
-            { os: sles, version: 15, package-type: RPM },
-            { os: ubuntu, version: 20.04, package-type: DEB },
-            { os: ubuntu, version: 22.04, package-type: DEB },
-            { os: ubuntu, version: 24.04, package-type: DEB },
+            { os: almalinux, version: 9, package-type: RPM, container-tag: "@sha256:a787adce0cf68b731a091b37d45bd65f073640f06945f6d27bc520ac835ef234" },
+            { os: azurelinux, version: 3, package-type: RPM, container-tag: "@sha256:4d5e4ebdd2afbc47928c7f962d019ef1fd035f008b8b558a4e38108b6048c49a" },
+            { os: debian, version: 11, package-type: DEB, container-tag: "@sha256:c4516b82743991e3d2a1d399d884713574af3c9443458355684927f93cbb6d19" },
+            { os: debian, version: 12, package-type: DEB, container-tag: "@sha256:c1846bb9429ba388903d565d934c6fcbeeb314077b5228b030396606e3f7c554" },
+            { os: oraclelinux, version: 8, package-type: RPM, container-tag: "@sha256:c3758ef2015706cccd7a1a3f4b767fc6504c5ecbf1fc17998ceb566f370e3c20" },
+            { os: rhel, version: 8, package-type: RPM, container-tag: "@sha256:9ea0f1d0c85fae66a8ad884847935b504a1294a2cfe0433d3e6f4494c0eb4ebb" },
+            { os: rhel, version: 9, package-type: RPM, container-tag: "@sha256:ea2df3eb58e2b34dae338f6bf0a94e4572cd65193ee02f307424ceb86535ad48" },
+            { os: sles, version: 15, package-type: RPM, container-tag: "@sha256:6e6f2b56c8df749d5c1a41a2f27030fdb75b99e48aa15022f1f2d35e06058e63" },
+            { os: ubuntu, version: 20.04, package-type: DEB, container-tag: "@sha256:74b86c709c25219b9a1da637f69c4a0163ff159c2c130d04801a33172c690463" },
+            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: "@sha256:fede524627015f50d375e3247157671bb68bda3786896fb4188fdd9914aead76" },
+            { os: ubuntu, version: 24.04, package-type: DEB, container-tag: "@sha256:345429f10b5ef8951baaf7add36a2cfe949671bc9904a5f3113e1ef34dc0d8f2" },
           ]
         arch: [amd64]
     with:
@@ -33,3 +33,4 @@ jobs:
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       excluded-tests: ${{ matrix.target.excluded-tests }}
+      container-tag: ${{ matrix.target.container-tag }}
