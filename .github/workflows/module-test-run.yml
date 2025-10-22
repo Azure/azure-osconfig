@@ -12,6 +12,9 @@ on:
       package-type:
         required: true
         type: string
+      container-tag:
+        type: string
+        required: false
       excluded-tests:
         required: false
         description: 'A regex pattern of tests to exclude.'
