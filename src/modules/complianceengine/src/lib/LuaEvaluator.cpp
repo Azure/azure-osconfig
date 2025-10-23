@@ -60,7 +60,7 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
 
     OsConfigLogInfo(log, "Executing Lua compliance script");
 
-    LuaCallContext callContext{indicators, context, "Lua", action};
+    LuaCallContext callContext{indicators, context, "Lua", action, 0u};
 
     lua_pushstring(L, "lua_call_context");
     lua_pushlightuserdata(L, &callContext);

@@ -371,6 +371,7 @@ int LuaSystemdCatConfig(lua_State* L)
     return 1;
 }
 
+constexpr unsigned int INDICATORS_STACK_LIMIT = 10;
 int LuaIndicatorsPush(lua_State* L)
 {
     // Fetch call context placed in registry by evaluator to access ContextInterface
@@ -384,6 +385,11 @@ int LuaIndicatorsPush(lua_State* L)
         return 0;
     }
     auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    if (view->indicatorsDepth == INDICATORS_STACK_LIMIT)
+    {
+        luaL_error(L, "indicators stack limit reached");
+        return 0;
+    }
 
     // Procedure name parameter
     constexpr int procedureArgIndex = 1;
@@ -400,6 +406,7 @@ int LuaIndicatorsPush(lua_State* L)
     }
 
     view->indicators.Push(procedureName);
+    view->indicatorsDepth++;
     return 0;
 }
 
@@ -416,7 +423,14 @@ int LuaIndicatorsPop(lua_State* L)
         return 0;
     }
     auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    if (!view->indicatorsDepth)
+    {
+        luaL_error(L, "indicators stack is empty");
+        return 0;
+    }
+
     view->indicators.Pop();
+    view->indicatorsDepth--;
     return 0;
 }
 

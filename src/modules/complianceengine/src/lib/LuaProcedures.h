@@ -19,6 +19,7 @@ struct LuaCallContext
     ContextInterface& ctx;      // reference to execution context
     const char* procedureName;  // optional procedure name
     Action action;              // current action (Audit/Remediate)
+    unsigned indicatorsDepth;   // depth of indicators stack at start of procedure
 };
 
 // Registers additional custom helper procedures exposed to Lua under the `ce` table.
