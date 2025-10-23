@@ -429,6 +429,15 @@ int LuaIndicatorsPop(lua_State* L)
         return 0;
     }
 
+    // We pop and assign the status based on the argument
+    constexpr int statusArgIndex = 1;
+    if (lua_isnoneornil(L, statusArgIndex))
+    {
+        luaL_error(L, "expected a status");
+        return 0u;
+    }
+    const auto status = lua_toboolean(L, statusArgIndex);
+    view->indicators.Back().status = status ? Status::Compliant : Status::NonCompliant;
     view->indicators.Pop();
     view->indicatorsDepth--;
     return 0;
