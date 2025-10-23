@@ -23,7 +23,7 @@ jobs:
         run: |
           matrix="$(cat <<'EOL'
           [
-            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "@sha256:de2c11da255fa2c0ec39c9f56a53aaefbb4db97982e11c9487116551fc4ecae0" }
           ]
           EOL
           )"
