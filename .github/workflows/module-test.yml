@@ -24,7 +24,7 @@ jobs:
             { os: rhel, version: 9, package-type: RPM, container-tag: "@sha256:7cfb079ea2887a9cc8a524f109873126a76684076bec13bbd87e139d8d053b78" },
             { os: sles, version: 15, package-type: RPM, container-tag: "@sha256:b633a6effbe084b5cf34f1e10995374feb61b0a366160c5e7a786237aeb877a8" },
             { os: ubuntu, version: 20.04, package-type: DEB, container-tag: "@sha256:31687451ce1b8f50f4f26884bd0947fb5d5dba8711c63601b14bc0b19cb5c6ca" },
-            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: "@sha256:de2c11da255fa2c0ec39c9f56a53aaefbb4db97982e11c9487116551fc4ecae0" },
+            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: "@sha256:7ba3a3bd055c507c2a42ce71448c3ff71889a3b58a7656900baf23e1dac0ced6" },
             { os: ubuntu, version: 24.04, package-type: DEB, container-tag: "@sha256:f660171fcbb5ef1669303456c85b7a0f9fba447c2e35ae89953f9070200f5c15" },
           ]
         arch: [amd64]
