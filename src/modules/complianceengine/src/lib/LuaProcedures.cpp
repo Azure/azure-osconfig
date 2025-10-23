@@ -9,11 +9,13 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include <Indicators.h>
 #include <SystemdCatConfig.h>
 #include <cerrno>
 #include <cstring>
 #include <dirent.h>
 #include <fnmatch.h>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <stack>
@@ -368,6 +370,105 @@ int LuaSystemdCatConfig(lua_State* L)
     lua_pushlstring(L, result.Value().c_str(), result.Value().size());
     return 1;
 }
+
+int LuaIndicatorsPush(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+
+    // Procedure name parameter
+    constexpr int procedureArgIndex = 1;
+    if (lua_isnoneornil(L, procedureArgIndex))
+    {
+        luaL_error(L, "expected a procedure name");
+        return 0u;
+    }
+    const char* procedureName = lua_tostring(L, procedureArgIndex);
+    if (!procedureName)
+    {
+        luaL_error(L, "expected a procedure name");
+        return 0u;
+    }
+
+    view->indicators.Push(procedureName);
+    return 0;
+}
+
+int LuaIndicatorsPop(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    view->indicators.Pop();
+    return 0;
+}
+
+int LuaIndicatorsAddIndicator(lua_State* L, Status status)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+
+    // Message parameter
+    constexpr int messageArgIndex = 1;
+    if (lua_isnoneornil(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a message");
+        return 0u;
+    }
+    const char* message = lua_tostring(L, messageArgIndex);
+    if (!message)
+    {
+        luaL_error(L, "expected a message");
+        return 0u;
+    }
+
+    view->indicators.AddIndicator(message, status);
+    if (status == Status::Compliant)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+int LuaIndicatorsCompliant(lua_State* L)
+{
+    return LuaIndicatorsAddIndicator(L, Status::Compliant);
+}
+
+int LuaIndicatorsNonCompliant(lua_State* L)
+{
+    return LuaIndicatorsAddIndicator(L, Status::NonCompliant);
+}
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -401,7 +502,29 @@ void RegisterLuaProcedures(lua_State* L)
     lua_pushcfunction(L, LuaSystemdCatConfig);
     lua_setfield(L, -2, "SystemdCatConfig");
 
-    // pop ce and restricted_env
-    lua_pop(L, 2);
+    // Get or create ce.indicators table
+    lua_getfield(L, -1, "indicators");
+    if (!lua_istable(L, -1))
+    {
+        lua_pop(L, 1);   // pop non-table
+        lua_newtable(L); // create indicators
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -3, "indicators");
+
+        lua_pushcfunction(L, LuaIndicatorsPush);
+        lua_setfield(L, -2, "push");
+
+        lua_pushcfunction(L, LuaIndicatorsPop);
+        lua_setfield(L, -2, "pop");
+
+        lua_pushcfunction(L, LuaIndicatorsCompliant);
+        lua_setfield(L, -2, "compliant");
+
+        lua_pushcfunction(L, LuaIndicatorsNonCompliant);
+        lua_setfield(L, -2, "noncompliant");
+    }
+
+    // pop ce, restricted_env and indicators
+    lua_pop(L, 3);
 }
 } // namespace ComplianceEngine
