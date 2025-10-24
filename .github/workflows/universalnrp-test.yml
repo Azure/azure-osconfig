@@ -41,7 +41,6 @@ jobs:
           github.ref == 'refs/heads/ahbenmes/telemetry_staging' && secrets.ONEDS_TENANT_NONPROD ||
           ''
         }}
-
   setup-matrix:
     name: Setup Matrix
     runs-on: ubuntu-latest
