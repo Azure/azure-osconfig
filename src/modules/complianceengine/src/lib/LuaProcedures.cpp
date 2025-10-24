@@ -15,10 +15,8 @@
 #include <cstring>
 #include <dirent.h>
 #include <fnmatch.h>
-#include <iostream>
 #include <map>
 #include <memory>
-#include <stack>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
