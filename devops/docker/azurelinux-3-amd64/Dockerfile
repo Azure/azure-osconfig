@@ -14,6 +14,8 @@ RUN tdnf install -y \
     jq \
     ninja-build \
     openssl-devel \
+    perl \
+    perl-IPC-Cmd \
     rapidjson-devel \
     rpm-build \
     shadow-utils \

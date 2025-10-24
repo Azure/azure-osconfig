@@ -2,22 +2,23 @@ FROM mcr.microsoft.com/mirror/docker/library/ubuntu:18.04
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
-    git \
-    cmake \
+    bc \
     build-essential \
+    cmake \
     curl \
+    gcovr \
+    git \
+    jq \
     libcurl4-openssl-dev \
     libssl-dev \
-    uuid-dev \
-    rapidjson-dev \
     ninja-build \
+    pkg-config \
     python3-jsonschema \
-    wget \
-    gcovr \
-    jq \
-    bc \
+    rapidjson-dev \
     tar \
     unzip \
+    uuid-dev \
+    wget \
     zip
 
 WORKDIR /git

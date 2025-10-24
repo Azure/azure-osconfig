@@ -14,6 +14,7 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
+#include <Telemetry.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
@@ -1112,11 +1113,13 @@ void AsbShutdown(OsConfigLogHandle log)
         // For telemetry:
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        OSConfigTelemetryBaselineRun(g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
 
     FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
+    OSConfigProcessTelemetryFile();
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
@@ -4267,6 +4270,10 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     }
     else
     {
+        setenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR, objectName, 1);
+        setenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR, g_asbName, 1);
+        OSConfigTimeStampSave();
+
         if (0 == strcmp(objectName, g_auditEnsureLoggingLevelObject))
         {
             result = AuditEnsureLoggingLevel(log);
@@ -5023,6 +5030,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         // For telemetry:
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
+        OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
     }
 
     return status;
@@ -6011,7 +6019,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             // For telemetry:
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
-
+            OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
         }
     }
 

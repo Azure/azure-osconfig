@@ -84,8 +84,8 @@ MMI_HANDLE MmiOpen(
         Sample* session = new (std::nothrow) Sample(maxPayloadSizeBytes);
         if (nullptr == session)
         {
-            OsConfigLogError(SampleLog::Get(), "MmiOpen failed to allocate memory");
             status = ENOMEM;
+            OsConfigLogError(SampleLog::Get(), "MmiOpen failed to allocate memory");
         }
         else
         {
@@ -94,8 +94,8 @@ MMI_HANDLE MmiOpen(
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "MmiOpen called with null clientName");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "MmiOpen called with null clientName");
     }
 
     return handle;
@@ -141,8 +141,8 @@ int MmiSet(
 
     if (nullptr == clientSession)
     {
-        OsConfigLogError(SampleLog::Get(), "MmiSet called with null clientSession");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "MmiSet called with null clientSession");
     }
     else
     {
@@ -181,8 +181,8 @@ int MmiGet(
 
     if (nullptr == clientSession)
     {
-        OsConfigLogError(SampleLog::Get(), "MmiGet called with null clientSession");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "MmiGet called with null clientSession");
     }
     else
     {

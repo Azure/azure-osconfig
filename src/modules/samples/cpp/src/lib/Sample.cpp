@@ -82,8 +82,8 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
 
         if (nullptr == *payload)
         {
-            OsConfigLogError(SampleLog::Get(), "MmiGetInfo failed to allocate memory");
             status = ENOMEM;
+            OsConfigLogError(SampleLog::Get(), "MmiGetInfo failed to allocate memory");
         }
         else
         {
@@ -170,8 +170,8 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                     }
                     else
                     {
-                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize object");
                         status = EINVAL;
+                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize object");
                     }
                 }
                 else
@@ -194,8 +194,8 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                     }
                     else
                     {
-                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize array of objects");
                         status = EINVAL;
+                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize array of objects");
                     }
                 }
                 else
@@ -206,14 +206,14 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
             }
             else
             {
-                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
                 status = EINVAL;
+                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
         }
     }
 
@@ -226,8 +226,8 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
 
     if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(SampleLog::Get(), "Invalid payloadSizeBytes");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "Invalid payloadSizeBytes");
     }
     else
     {
@@ -282,8 +282,8 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
                 }
                 else
                 {
-                    OsConfigLogError(SampleLog::Get(), "Failed to serialize object");
                     status = EINVAL;
+                    OsConfigLogError(SampleLog::Get(), "Failed to serialize object");
                 }
             }
             else if (0 == m_reportedArrayObjectName.compare(objectName))
@@ -301,20 +301,20 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
                 }
                 else
                 {
-                    OsConfigLogError(SampleLog::Get(), "Failed to serialize array of objects");
                     status = EINVAL;
+                    OsConfigLogError(SampleLog::Get(), "Failed to serialize array of objects");
                 }
             }
             else
             {
-                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
                 status = EINVAL;
+                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
         }
     }
 
@@ -339,8 +339,8 @@ int Sample::SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer
             writer.String(m_stringEnumerationValue2.c_str());
             break;
         default:
-            OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %d", static_cast<int>(value));
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %d", static_cast<int>(value));
     }
 
     return status;
@@ -470,8 +470,8 @@ int Sample::DeserializeStringEnumeration(std::string str, Sample::StringEnumerat
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %s", str.c_str());
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %s", str.c_str());
     }
 
     return status;
@@ -490,14 +490,14 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringSettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringSettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string setting");
     }
 
     // Deserialize a boolean setting
@@ -509,14 +509,14 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not a boolean", m_booleanSettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not a boolean", m_booleanSettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a boolean setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a boolean setting");
     }
 
     // Deserialize an integer setting
@@ -528,14 +528,14 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerSettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerSettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer setting");
     }
 
     // Deserialize an enumeration setting
@@ -547,14 +547,14 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerEnumerationSettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not an integer", m_integerEnumerationSettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer enumeration setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer enumeration setting");
     }
 
     // Deserialize a string enumeration setting
@@ -567,14 +567,14 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringEnumerationSettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not a string", m_stringEnumerationSettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string enumeration setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string enumeration setting");
     }
 
     // Deserialize a string array setting
@@ -590,21 +590,21 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 }
                 else
                 {
-                    OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string array at position %d", i);
                     status = EINVAL;
+                    OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string array at position %d", i);
                 }
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not an array", m_stringArraySettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not an array", m_stringArraySettingName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string array setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string array setting");
     }
 
     // Deserialize an integer array setting
@@ -620,21 +620,22 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 }
                 else
                 {
-                    OsConfigLogError(SampleLog::Get(), "Invalid integer in JSON object integer array at position %d", i);
                     status = EINVAL;
+                    OsConfigLogError(SampleLog::Get(), "Invalid integer in JSON object integer array at position %d", i);
                 }
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "%s is not an array", m_integerArraySettingName.c_str());
             status = EINVAL;
+            OsConfigLogError(SampleLog::Get(), "%s is not an array", m_integerArraySettingName.c_str());
+
         }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer array setting");
         status = EINVAL;
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer array setting");
     }
 
     // Deserialize a map of strings to strings
@@ -748,8 +749,8 @@ int Sample::SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING*
 
     if ((0 != maxPayloadSizeBytes) && (buffer.GetSize() > maxPayloadSizeBytes))
     {
-        OsConfigLogError(SampleLog::Get(), "Failed to serialize JSON object to buffer");
         status = E2BIG;
+        OsConfigLogError(SampleLog::Get(), "Failed to serialize JSON object to buffer");
     }
     else
     {
@@ -766,8 +767,8 @@ int Sample::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* pa
     *payload = new (std::nothrow) char[buffer.GetSize()];
     if (nullptr == *payload)
     {
-        OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
         status = ENOMEM;
+        OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
     }
     else
     {
