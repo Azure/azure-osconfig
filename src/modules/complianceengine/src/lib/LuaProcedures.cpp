@@ -396,13 +396,28 @@ int LuaIndicatorsPush(lua_State* L)
     if (lua_isnoneornil(L, procedureArgIndex))
     {
         luaL_error(L, "expected a procedure name");
-        return 0u;
+        return 0;
+    }
+    if (!lua_isnone(L, procedureArgIndex + 1))
+    {
+        luaL_error(L, "too many arguments passed to indicators.push");
+        return 0;
+    }
+    if (!lua_isstring(L, procedureArgIndex))
+    {
+        luaL_error(L, "expected a string argument");
+        return 0;
     }
     const char* procedureName = lua_tostring(L, procedureArgIndex);
     if (!procedureName)
     {
         luaL_error(L, "expected a procedure name");
-        return 0u;
+        return 0;
+    }
+    if (!::strlen(procedureName))
+    {
+        luaL_error(L, "procedure name must not be empty");
+        return 0;
     }
 
     view->indicators.Push(procedureName);
@@ -434,13 +449,20 @@ int LuaIndicatorsPop(lua_State* L)
     if (lua_isnoneornil(L, statusArgIndex))
     {
         luaL_error(L, "expected a status");
-        return 0u;
+        return 0;
+    }
+    if (!lua_isboolean(L, statusArgIndex))
+    {
+        luaL_error(L, "expected a boolean argument");
+        return 0;
     }
     const auto status = lua_toboolean(L, statusArgIndex);
     view->indicators.Back().status = status ? Status::Compliant : Status::NonCompliant;
     view->indicators.Pop();
     view->indicatorsDepth--;
-    return 0;
+    // Return status for convenient forwarding on the script side
+    lua_pushboolean(L, status);
+    return 1;
 }
 
 int LuaIndicatorsAddIndicator(lua_State* L, Status status)
@@ -462,13 +484,28 @@ int LuaIndicatorsAddIndicator(lua_State* L, Status status)
     if (lua_isnoneornil(L, messageArgIndex))
     {
         luaL_error(L, "expected a message");
-        return 0u;
+        return 0;
+    }
+    if (!lua_isnone(L, messageArgIndex + 1))
+    {
+        luaL_error(L, "expected a single argument");
+        return 0;
+    }
+    if (!lua_isstring(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a string argument");
+        return 0;
     }
     const char* message = lua_tostring(L, messageArgIndex);
     if (!message)
     {
         luaL_error(L, "expected a message");
-        return 0u;
+        return 0;
+    }
+    if (!::strlen(message))
+    {
+        luaL_error(L, "message must not be empty");
+        return 0;
     }
 
     view->indicators.AddIndicator(message, status);
@@ -480,7 +517,8 @@ int LuaIndicatorsAddIndicator(lua_State* L, Status status)
     {
         lua_pushboolean(L, 0);
     }
-    return 1;
+    lua_pushstring(L, message);
+    return 2;
 }
 
 int LuaIndicatorsCompliant(lua_State* L)
