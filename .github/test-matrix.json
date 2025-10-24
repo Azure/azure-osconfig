@@ -16,7 +16,6 @@
     {"name":"rhel-9","arch":"amd64","tag":"@sha256:7cfb079ea2887a9cc8a524f109873126a76684076bec13bbd87e139d8d053b78"},
     {"name":"rockylinux-9","arch":"amd64","tag":"@sha256:93c24f671cd27cfbf92a25177fbaa43fdf4a1da4911794ce771cb44bad096604"},
     {"name":"sles-15","arch":"amd64","tag":"@sha256:b633a6effbe084b5cf34f1e10995374feb61b0a366160c5e7a786237aeb877a8"},
-    {"name":"ubuntu-14.04","arch":"amd64","tag":"@sha256:d6f9c8072541d23779b0fbd4ff53d7b55dbdcf5d8998aa44a790546d9ec1e747"},
     {"name":"ubuntu-18.04","arch":"amd64","tag":"@sha256:d0bf753624703349ad20886de2b7795caf46db005d5a5ece633aaa5aec7505f9"},
     {"name":"ubuntu-20.04","arch":"amd64","tag":"@sha256:31687451ce1b8f50f4f26884bd0947fb5d5dba8711c63601b14bc0b19cb5c6ca"},
     {"name":"ubuntu-22.04","arch":"amd64","tag":"@sha256:de2c11da255fa2c0ec39c9f56a53aaefbb4db97982e11c9487116551fc4ecae0"},
