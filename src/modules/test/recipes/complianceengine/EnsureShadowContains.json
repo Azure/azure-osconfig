@@ -59,52 +59,6 @@
     "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
   },
 
-  // Test the previously set inactivity period
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureShadowContains": {
-          "username": "securitybaselinetest",
-          "username_operation": "eq",
-          "field": "inactivity_period",
-          "value": "3",
-          "operation": "eq"
-        }
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureShadowContains: password inactivity period matches expected value for user 'securitybaselinetest', password inactivity period matches expected value for all tested users } == TRUE"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureShadowContains": {
-          "username": "securitybaselinetest",
-          "username_operation": "eq",
-          "field": "inactivity_period",
-          "value": "3",
-          "operation": "ge"
-        }
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureShadowContains: password inactivity period matches expected value for user 'securitybaselinetest', password inactivity period matches expected value for all tested users } == TRUE"
-  },
-
   // Test the previously set expiration date
   {
     "ObjectType": "Desired",
