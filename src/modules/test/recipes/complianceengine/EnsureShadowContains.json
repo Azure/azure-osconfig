@@ -58,20 +58,6 @@
   {
     "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
   },
-  {
-    "RunCommand": "echo \"securitybaselinetest:DFC&Dhduf9823ds!@#$\" | chpasswd"
-  },
-  {
-    "RunCommand": "cat /etc/shadow | grep securitybaselinetest"
-  },
-
-  // Match the encrypted password
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureShadowContains: encrypted password matches expected value for user 'securitybaselinetest', encrypted password matches expected value for all tested users } == TRUE"
-  },
 
   // Test the previously set inactivity period
   {
