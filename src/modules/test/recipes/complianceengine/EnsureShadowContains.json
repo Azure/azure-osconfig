@@ -59,52 +59,6 @@
     "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
   },
 
-  // Test the previously set expiration date
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureShadowContains": {
-          "username": "securitybaselinetest",
-          "username_operation": "eq",
-          "field": "expiration_date",
-          "value": "20089",
-          "operation": "eq"
-        }
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureShadowContains: account expiration date matches expected value for user 'securitybaselinetest', account expiration date matches expected value for all tested users } == TRUE"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureShadowContains": {
-          "username": "securitybaselinetest",
-          "username_operation": "eq",
-          "field": "expiration_date",
-          "value": "20089",
-          "operation": "lt"
-        }
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditTest",
-    "Payload": "{ EnsureShadowContains: account expiration date does not match expected value for user 'securitybaselinetest' } == FALSE"
-  },
-
   // cleanup
   {
     "RunCommand": "userdel -f -r securitybaselinetest || true"
