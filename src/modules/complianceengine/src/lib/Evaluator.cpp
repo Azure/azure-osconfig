@@ -379,6 +379,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
     for (std::size_t i = 0; i < node.children.size(); i++)
     {
         const auto& child = node.children[i];
+        assert(child);
         if (Status::Compliant == child->status)
         {
             compliantIndicatorsCount++;
@@ -392,7 +393,6 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        assert(child);
         bool ign = ignored;
         if (i + 1 != node.children.size() && node.procedureName == "anyOf" && node.status == Status::Compliant)
         {
