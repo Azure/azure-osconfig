@@ -41,7 +41,7 @@ public:
 
 class NestedListFormatter : public PayloadFormatter
 {
-    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output, int depth) const;
+    static void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, bool ignored);
 
 public:
     ~NestedListFormatter() override = default;
@@ -51,7 +51,7 @@ public:
 
 class CompactListFormatter : public PayloadFormatter
 {
-    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output) const;
+    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const;
 
 public:
     ~CompactListFormatter() override = default;
