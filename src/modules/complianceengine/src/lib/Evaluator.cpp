@@ -368,12 +368,22 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
 }
 
 static constexpr std::size_t cMaxNodeIndicators = 5;
-void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth) const
+void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, const bool ignored)
 {
+    static const char* greenCompliant = "✅";
+    static const char* redNonCompliant = "❌";
+    static const char* greyCompliant = "✓";
+    static const char* greyNonCompliant = "🇽";
+
+    std::size_t compliantIndicatorsCount = 0;
     for (std::size_t i = 0; i < node.children.size(); i++)
     {
         const auto& child = node.children[i];
-        if ((i >= cMaxNodeIndicators) && (Status::Compliant == child->status))
+        if (Status::Compliant == child->status)
+        {
+            compliantIndicatorsCount++;
+        }
+        if (compliantIndicatorsCount >= cMaxNodeIndicators)
         {
             continue;
         }
@@ -382,30 +392,67 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        result << (child->status == Status::Compliant ? "✅ " : "❌ ") << child->procedureName << "\n";
         assert(child);
-        FormatNode(*child.get(), result, depth + 1);
-    }
-
-    for (size_t i = 0; i < node.indicators.size(); i++)
-    {
-        const auto& indicator = node.indicators[i];
-        if ((i >= cMaxNodeIndicators) && (Status::Compliant == indicator.status))
+        bool ign = ignored;
+        if (i + 1 != node.children.size() && node.procedureName == "anyOf" && node.status == Status::Compliant)
         {
-            continue;
+            ign = true;
         }
 
-        for (int j = 0; j < depth; ++j)
+        if (node.procedureName == "not")
         {
-            result << "\t";
+            ign = true;
         }
-        if (indicator.status == Status::Compliant)
+
+        if (ign)
         {
-            result << "✅ " << indicator.message << "\n";
+            result << (child->status == Status::Compliant ? greyCompliant : greyNonCompliant) << " " << child->procedureName << "\n";
         }
         else
         {
-            result << "❌ " << indicator.message << "\n";
+            result << (child->status == Status::Compliant ? greenCompliant : redNonCompliant) << " " << child->procedureName << "\n";
+        }
+        FormatNode(*child.get(), result, depth + 1, ign);
+    }
+
+    compliantIndicatorsCount = 0;
+    for (size_t i = 0; i < node.indicators.size(); i++)
+    {
+        const auto& indicator = node.indicators[i];
+        if (Status::Compliant == indicator.status)
+        {
+            compliantIndicatorsCount++;
+        }
+        if (compliantIndicatorsCount >= cMaxNodeIndicators)
+        {
+            continue;
+        }
+
+        for (int j = 0; j < depth; ++j)
+        {
+            result << "\t";
+        }
+        if (node.status == Status::Compliant)
+        {
+            if (ignored)
+            {
+                result << greyCompliant << " " << indicator.message << "\n";
+            }
+            else
+            {
+                result << greenCompliant << " " << indicator.message << "\n";
+            }
+        }
+        else
+        {
+            if (ignored)
+            {
+                result << greyNonCompliant << " " << indicator.message << "\n";
+            }
+            else
+            {
+                result << redNonCompliant << " " << indicator.message << "\n";
+            }
         }
     }
 }
@@ -416,7 +463,7 @@ Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators
     const auto* node = indicators.GetRootNode();
     assert(nullptr != node);
     result << (node->status == Status::Compliant ? "✅ " : "❌ ") << node->procedureName << "\n";
-    FormatNode(*node, result, 1);
+    FormatNode(*node, result, 1, false);
     return result.str();
 }
 
