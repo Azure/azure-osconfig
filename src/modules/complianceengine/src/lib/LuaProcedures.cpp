@@ -9,6 +9,7 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include <Indicators.h>
 #include <SystemdCatConfig.h>
 #include <cerrno>
 #include <cstring>
@@ -16,7 +17,6 @@
 #include <fnmatch.h>
 #include <map>
 #include <memory>
-#include <stack>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -368,6 +368,166 @@ int LuaSystemdCatConfig(lua_State* L)
     lua_pushlstring(L, result.Value().c_str(), result.Value().size());
     return 1;
 }
+
+constexpr unsigned int INDICATORS_STACK_LIMIT = 10;
+int LuaIndicatorsPush(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    if (view->indicatorsDepth == INDICATORS_STACK_LIMIT)
+    {
+        luaL_error(L, "indicators stack limit reached");
+        return 0;
+    }
+
+    // Procedure name parameter
+    constexpr int procedureArgIndex = 1;
+    if (lua_isnoneornil(L, procedureArgIndex))
+    {
+        luaL_error(L, "expected a procedure name");
+        return 0;
+    }
+    if (!lua_isnone(L, procedureArgIndex + 1))
+    {
+        luaL_error(L, "too many arguments passed to indicators.push");
+        return 0;
+    }
+    if (!lua_isstring(L, procedureArgIndex))
+    {
+        luaL_error(L, "expected a string argument");
+        return 0;
+    }
+    const char* procedureName = lua_tostring(L, procedureArgIndex);
+    if (!procedureName)
+    {
+        luaL_error(L, "expected a procedure name");
+        return 0;
+    }
+    if (!::strlen(procedureName))
+    {
+        luaL_error(L, "procedure name must not be empty");
+        return 0;
+    }
+
+    view->indicators.Push(procedureName);
+    view->indicatorsDepth++;
+    return 0;
+}
+
+int LuaIndicatorsPop(lua_State* L)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    if (!view->indicatorsDepth)
+    {
+        luaL_error(L, "indicators stack is empty");
+        return 0;
+    }
+
+    // We pop and assign the status based on the argument
+    constexpr int statusArgIndex = 1;
+    if (lua_isnoneornil(L, statusArgIndex))
+    {
+        luaL_error(L, "expected a status");
+        return 0;
+    }
+    if (!lua_isboolean(L, statusArgIndex))
+    {
+        luaL_error(L, "expected a boolean argument");
+        return 0;
+    }
+    const auto status = lua_toboolean(L, statusArgIndex);
+    view->indicators.Back().status = status ? Status::Compliant : Status::NonCompliant;
+    view->indicators.Pop();
+    view->indicatorsDepth--;
+    // Return status for convenient forwarding on the script side
+    lua_pushboolean(L, status);
+    return 1;
+}
+
+int LuaIndicatorsAddIndicator(lua_State* L, Status status)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+
+    // Message parameter
+    constexpr int messageArgIndex = 1;
+    if (lua_isnoneornil(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a message");
+        return 0;
+    }
+    if (!lua_isnone(L, messageArgIndex + 1))
+    {
+        luaL_error(L, "expected a single argument");
+        return 0;
+    }
+    if (!lua_isstring(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a string argument");
+        return 0;
+    }
+    const char* message = lua_tostring(L, messageArgIndex);
+    if (!message)
+    {
+        luaL_error(L, "expected a message");
+        return 0;
+    }
+    if (!::strlen(message))
+    {
+        luaL_error(L, "message must not be empty");
+        return 0;
+    }
+
+    view->indicators.AddIndicator(message, status);
+    if (status == Status::Compliant)
+    {
+        lua_pushboolean(L, 1);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+    }
+    lua_pushstring(L, message);
+    return 2;
+}
+
+int LuaIndicatorsCompliant(lua_State* L)
+{
+    return LuaIndicatorsAddIndicator(L, Status::Compliant);
+}
+
+int LuaIndicatorsNonCompliant(lua_State* L)
+{
+    return LuaIndicatorsAddIndicator(L, Status::NonCompliant);
+}
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -401,7 +561,29 @@ void RegisterLuaProcedures(lua_State* L)
     lua_pushcfunction(L, LuaSystemdCatConfig);
     lua_setfield(L, -2, "SystemdCatConfig");
 
-    // pop ce and restricted_env
-    lua_pop(L, 2);
+    // Get or create ce.indicators table
+    lua_getfield(L, -1, "indicators");
+    if (!lua_istable(L, -1))
+    {
+        lua_pop(L, 1);   // pop non-table
+        lua_newtable(L); // create indicators
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -3, "indicators");
+
+        lua_pushcfunction(L, LuaIndicatorsPush);
+        lua_setfield(L, -2, "push");
+
+        lua_pushcfunction(L, LuaIndicatorsPop);
+        lua_setfield(L, -2, "pop");
+
+        lua_pushcfunction(L, LuaIndicatorsCompliant);
+        lua_setfield(L, -2, "compliant");
+
+        lua_pushcfunction(L, LuaIndicatorsNonCompliant);
+        lua_setfield(L, -2, "noncompliant");
+    }
+
+    // pop ce, restricted_env and indicators
+    lua_pop(L, 3);
 }
 } // namespace ComplianceEngine
