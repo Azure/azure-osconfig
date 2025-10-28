@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 using ComplianceEngine::Action;
+using ComplianceEngine::CompactListFormatter;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::LuaEvaluator;
 using ComplianceEngine::Status;
@@ -180,4 +181,200 @@ TEST_F(LuaProceduresTest, ListDirectory_DirectoriesNotReturned)
     auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Push_1)
+{
+    LuaEvaluator evaluator;
+    // Procedure name is required
+    const std::string script = R"(ce.indicators.push(); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Push_2)
+{
+    LuaEvaluator evaluator;
+    // Only a single argument is accepted
+    const std::string script = R"(ce.indicators.push("foo", "bar"); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Push_3)
+{
+    LuaEvaluator evaluator;
+    // Only a single argument is accepted
+    const std::string script = R"(ce.indicators.push(""); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Push_4)
+{
+    LuaEvaluator evaluator;
+    // A string argument is expected
+    const std::string script = R"(ce.indicators.push({}); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Pop_1)
+{
+    LuaEvaluator evaluator;
+    // pop requires an argument
+    const std::string script = R"(ce.indicators.push("foo"); ce.indicators.pop(); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Pop_2)
+{
+    LuaEvaluator evaluator;
+    // pop argument type is bool
+    const std::string script = R"(ce.indicators.push("foo"); ce.indicators.pop({}); return true, "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Pop_3)
+{
+    LuaEvaluator evaluator;
+    // Check return value from the pop function
+    const std::string script = R"(ce.indicators.push("foo"); return ce.indicators.pop(true), "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Pop_4)
+{
+    LuaEvaluator evaluator;
+    // Check return value from the pop function
+    const std::string script = R"(ce.indicators.push("foo"); return ce.indicators.pop(false), "NOK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_1)
+{
+    LuaEvaluator evaluator;
+    // indicators.compliant requres a string argument
+    const std::string script = R"(return ce.indicators.compliant())";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_2)
+{
+    LuaEvaluator evaluator;
+    // the argument must be a string
+    const std::string script = R"(return ce.indicators.compliant({foo = "bar"}))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_3)
+{
+    LuaEvaluator evaluator;
+    // the message must not be empty
+    const std::string script = R"(return ce.indicators.compliant(""))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_4)
+{
+    LuaEvaluator evaluator;
+    // only one argument is accepted
+    const std::string script = R"(return ce.indicators.compliant("a", "b"))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_5)
+{
+    LuaEvaluator evaluator;
+    // result should be true, "foo"
+    const std::string script = R"(return ce.indicators.compliant("foo"))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+
+    const CompactListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    EXPECT_NE(msg.Value().find("foo"), std::string::npos);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_6)
+{
+    LuaEvaluator evaluator;
+    // result should be false, "bar"
+    const std::string script = R"(return ce.indicators.noncompliant("bar"))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+
+    const CompactListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    EXPECT_NE(msg.Value().find("bar"), std::string::npos);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_7)
+{
+    LuaEvaluator evaluator;
+    // the message must not be empty
+    const std::string script = R"(return ce.indicators.noncompliant("bar"))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+
+    const CompactListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    EXPECT_NE(msg.Value().find("bar"), std::string::npos);
+}
+
+TEST_F(LuaProceduresTest, Indicators_PushPopAdd_1)
+{
+    LuaEvaluator evaluator;
+    // Push once and add an indicator, the script fails due to missing pop
+    const std::string script = R"(ce.indicators.push("nested"); return ce.indicators.noncompliant("bar"))";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(LuaProceduresTest, Indicators_PushPopAdd_2)
+{
+    LuaEvaluator evaluator;
+    // Correct push/pop behaviour
+    const std::string script = R"(ce.indicators.push("nested"); local r, m = ce.indicators.noncompliant("bar"); ce.indicators.pop(r); return r, m)";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+
+    const CompactListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    EXPECT_NE(msg.Value().find("[NonCompliant] bar"), std::string::npos);
+}
+
+TEST_F(LuaProceduresTest, Indicators_PushPopAdd_3)
+{
+    LuaEvaluator evaluator;
+    // Correct push/pop behaviour, the message returned is differnt from the last indicator
+    const std::string script = R"(ce.indicators.push("nested"); ce.indicators.noncompliant("bar"); return ce.indicators.pop(true), "OK")";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+
+    const CompactListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    // both messages and statuses are present
+    EXPECT_NE(msg.Value().find("[Compliant] OK"), std::string::npos);
+    EXPECT_NE(msg.Value().find("[NonCompliant] bar"), std::string::npos);
 }

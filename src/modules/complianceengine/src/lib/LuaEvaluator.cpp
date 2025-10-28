@@ -60,7 +60,7 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
 
     OsConfigLogInfo(log, "Executing Lua compliance script");
 
-    LuaCallContext callContext{indicators, context, "Lua", action};
+    LuaCallContext callContext{indicators, context, "Lua", action, 0u};
 
     lua_pushstring(L, "lua_call_context");
     lua_pushlightuserdata(L, &callContext);
@@ -137,6 +137,13 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
 
     if (lua_isboolean(L, 1))
     {
+        if (callContext.indicatorsDepth > 0)
+        {
+            // If scripts call ce.indicators.push(), we expect them to clean up the stack properly
+            lua_settop(L, 0);
+            return Error("Indicators stack not cleaned up properly");
+        }
+
         bool isCompliant = lua_toboolean(L, 1);
         if ((numReturns >= 2) && lua_isstring(L, 2))
         {
