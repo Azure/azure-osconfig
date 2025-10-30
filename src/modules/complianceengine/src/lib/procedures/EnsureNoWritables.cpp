@@ -10,6 +10,8 @@
 namespace ComplianceEngine
 {
 
+static constexpr int maxWritable = 3;
+
 Result<Status> AuditEnsureNoWritables(IndicatorsTree& indicators, ContextInterface& context)
 {
 
@@ -21,38 +23,33 @@ Result<Status> AuditEnsureNoWritables(IndicatorsTree& indicators, ContextInterfa
     }
     const auto& entries = fsRes.Value()->entries;
 
-    std::vector<std::string> violations;
-    violations.reserve(3);
+    int violations = 0;
     for (const auto& kv : entries)
     {
-        if (violations.size() >= 3)
+        if (violations >= maxWritable)
         {
             break;
         }
+
         const std::string& path = kv.first;
         const auto& st = kv.second.st;
         mode_t mode = st.st_mode;
         if (S_ISREG(mode) && (mode & S_IWOTH))
         {
-            violations.push_back("file: " + path);
+            indicators.NonCompliant("World writable file: '" + path + "'");
+            violations++;
             continue;
         }
         if (S_ISDIR(mode) && (mode & S_IWOTH) && !(mode & S_ISVTX))
         {
-            violations.push_back("dir-no-sticky: " + path);
+            indicators.NonCompliant("World writable non-sticky dir '" + path + "'");
+            violations++;
             continue;
         }
     }
-    if (!violations.empty())
+    if (violations > 0)
     {
-        std::string msg = "World-writable issues (up to 3): ";
-        for (size_t i = 0; i < violations.size(); ++i)
-        {
-            if (i)
-                msg += "; ";
-            msg += violations[i];
-        }
-        return indicators.NonCompliant(msg);
+        return indicators.NonCompliant("World writable files or directories exist (up to " + std::to_string(maxWritable) + " listed)");
     }
     return indicators.Compliant("No world-writable files; all world-writable directories have sticky bit");
 }
