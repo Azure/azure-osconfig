@@ -25,9 +25,9 @@ using ComplianceEngine::Status;
 
 static const char procModulesPath[] = "/proc/modules";
 static const char procModulesPositiveOutput[] =
-    "hator 110592 0 - Live 0xffffffffc135d000\n"
-    "curve25519_x86_64 36864 1 hator, Live 0xffffffffc12f7000\n"
-    "libcurve25519_generic 49152 2 hator,curve25519_x86_64, Live 0xffffffffc12e6000\n";
+    "usb_storage 110592 0 - Live 0xffffffffc135d000\n"
+    "curve25519_x86_64 36864 1 usb-storage, Live 0xffffffffc12f7000\n"
+    "libcurve25519_generic 49152 2 usb-storage,curve25519_x86_64, Live 0xffffffffc12e6000\n";
 static const char procModulesNegativeOutput[] =
     "rotah 110592 0 - Live 0xffffffffc135d000\n"
     "curve25519_x86_64 36864 1 rotah, Live 0xffffffffc12f7000\n"
@@ -35,10 +35,10 @@ static const char procModulesNegativeOutput[] =
 
 static const char modprobeCommand[] = "modprobe";
 static const char modprobeNothingOutput[] = "blacklist neofb\nalias net_pf_3 off\n";
-static const char modprobeBlacklistOutput[] = "blacklist hator\nalias net_pf_3 off\n";
-static const char modprobeAliasOutput[] = "blacklist neofb\ninstall hator /usr/bin/true\n";
-static const char modprobeBlockedOutput[] = "blacklist hator\ninstall hator /usr/bin/true\n";
-static const char modprobeBlockedOverlayOutput[] = "blacklist hator_overlay\ninstall hator_overlay /usr/bin/true\n";
+static const char modprobeBlacklistOutput[] = "blacklist usb_storage\nalias net_pf_3 off\n";
+static const char modprobeAliasOutput[] = "blacklist neofb\ninstall usb-storage /usr/bin/true\n";
+static const char modprobeBlockedOutput[] = "blacklist usb_storage\ninstall usb-storage /usr/bin/true\n";
+static const char modprobeBlockedOverlayOutput[] = "blacklist usb-storage_overlay\ninstall usb_storage_overlay /usr/bin/true\n";
 
 class EnsureKernelModuleTest : public ::testing::Test
 {
@@ -91,7 +91,7 @@ static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::st
 
 TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 {
-    CreateModulesTree(mContext, {"hator.ko", "nbd.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko", "nbd.ko"});
 
     // Set up the expectation for the proc modules read to fail
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath)))
@@ -101,7 +101,7 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -110,7 +110,7 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 
 TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko"});
 
     // Set up the expectation for the /proc/modules read to succeed
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -120,7 +120,7 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
         .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to execute modprobe", -1))));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -138,7 +138,7 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFilesystem)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -147,7 +147,7 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFilesystem)
 
 TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko"});
 
     // Set up the expectation for the proc modules read showing the module is loaded
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
@@ -156,7 +156,7 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -165,7 +165,7 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 
 TEST_F(EnsureKernelModuleTest, NoAlias)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko"});
 
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
@@ -174,7 +174,7 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -183,7 +183,7 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
 
 TEST_F(EnsureKernelModuleTest, NoBlacklist)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko"});
 
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -192,7 +192,7 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeAliasOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -201,7 +201,7 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
 
 TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 {
-    CreateModulesTree(mContext, {"hator.ko"});
+    CreateModulesTree(mContext, {"usb-storage.ko"});
 
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -210,7 +210,7 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -219,7 +219,7 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 {
-    CreateModulesTree(mContext, {"hator_overlay.ko"});
+    CreateModulesTree(mContext, {"usb-storage_overlay.ko"});
 
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -228,7 +228,7 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -237,7 +237,7 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
 {
-    CreateModulesTree(mContext, {"hator_overlay.ko"});
+    CreateModulesTree(mContext, {"usb-storage_overlay.ko"});
 
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
@@ -246,7 +246,7 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));
 
     EnsureKernelModuleUnavailableParams params;
-    params.moduleName = "hator";
+    params.moduleName = "usb-storage";
 
     auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
