@@ -432,7 +432,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        if (node.status == Status::Compliant)
+        if (indicator.status == Status::Compliant)
         {
             if (ignored)
             {
