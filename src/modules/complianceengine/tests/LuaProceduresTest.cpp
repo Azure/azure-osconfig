@@ -18,6 +18,7 @@ using ComplianceEngine::Action;
 using ComplianceEngine::CompactListFormatter;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::LuaEvaluator;
+using ComplianceEngine::NestedListFormatter;
 using ComplianceEngine::Status;
 
 class LuaProceduresTest : public ::testing::Test
@@ -377,4 +378,33 @@ TEST_F(LuaProceduresTest, Indicators_PushPopAdd_3)
     // both messages and statuses are present
     EXPECT_NE(msg.Value().find("[Compliant] OK"), std::string::npos);
     EXPECT_NE(msg.Value().find("[NonCompliant] bar"), std::string::npos);
+}
+
+TEST_F(LuaProceduresTest, Indicators_Add_LimitedIndicatorsOutput)
+{
+    LuaEvaluator evaluator;
+    const std::string script = R"(
+        ce.indicators.compliant("A")
+        ce.indicators.compliant("B")
+        ce.indicators.compliant("C")
+        ce.indicators.compliant("D")
+        ce.indicators.compliant("E")
+        return false
+    )";
+    const auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+
+    const NestedListFormatter formatter;
+    const auto msg = formatter.Format(mIndicators);
+    ASSERT_TRUE(msg.HasValue());
+    EXPECT_NE(msg.Value().find("✅ A"), std::string::npos);
+    EXPECT_NE(msg.Value().find("✅ B"), std::string::npos);
+    EXPECT_NE(msg.Value().find("✅ C"), std::string::npos);
+    EXPECT_NE(msg.Value().find("✅ D"), std::string::npos);
+    EXPECT_NE(msg.Value().find("✅ E"), std::string::npos);
+    // F must be taken out by positive indicators limiting
+    EXPECT_EQ(msg.Value().find("✅ F"), std::string::npos);
+    // Negative indicator must stay
+    EXPECT_NE(msg.Value().find("❌ Lua script completed"), std::string::npos);
 }
