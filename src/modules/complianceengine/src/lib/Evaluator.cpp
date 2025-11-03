@@ -384,7 +384,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount >= cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeIndicators)
         {
             continue;
         }
@@ -423,7 +423,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount >= cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeIndicators)
         {
             continue;
         }
@@ -432,7 +432,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        if (node.status == Status::Compliant)
+        if (indicator.status == Status::Compliant)
         {
             if (ignored)
             {
