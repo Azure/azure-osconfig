@@ -61,13 +61,13 @@ Result<PackageManagerType> DetectPackageManager(ContextInterface& context)
     {
         return PackageManagerType::DPKG;
     }
-    output = context.ExecuteCommand("rpm -qa rpm");
+    output = context.ExecuteCommand("rpm -q rpm");
     if (output.HasValue())
     {
         return PackageManagerType::RPM;
     }
     // For SLES 15
-    output = context.ExecuteCommand("rpm -qa rpm-ndb");
+    output = context.ExecuteCommand("rpm -q rpm-ndb");
     if (output.HasValue())
     {
         return PackageManagerType::RPM;

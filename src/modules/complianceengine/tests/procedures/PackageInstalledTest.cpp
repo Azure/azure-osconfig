@@ -54,7 +54,7 @@ static const std::string dpkgWithoutPackageOutput =
 
 // Package manager detection commands
 static const std::string dpkgDetectCommand = "dpkg -l dpkg";
-static const std::string rpmDetectCommand = "rpm -qa rpm";
+static const std::string rpmDetectCommand = "rpm -q rpm";
 static const std::string dpkgDetectOutput =
     "Desired=Unknown/Install/Remove/Purge/Hold\n"
     "| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n"
