@@ -27,6 +27,7 @@ Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree
     }
     else
     {
+        OsConfigLogInfo(context.GetLogHandle(), "Pattern '%s' matched the output of '%s' command", params.statusRegex.GetPattern().c_str(), cmd);
         return indicators.Compliant("Searched value found in UFW output");
     }
 }
