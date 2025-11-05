@@ -5,6 +5,7 @@
 #define COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSCTL_H
 
 #include <Evaluator.h>
+#include <Pattern.h>
 #include <Regex.h>
 
 namespace ComplianceEngine
@@ -16,7 +17,7 @@ struct EnsureSysctlParams
     std::string sysctlName;
 
     /// Regex that the value of sysctl has to match
-    regex value;
+    Pattern value;
 };
 
 Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTree& indicators, ContextInterface& context);

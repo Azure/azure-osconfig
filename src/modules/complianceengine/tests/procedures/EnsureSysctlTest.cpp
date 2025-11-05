@@ -19,6 +19,7 @@ using ComplianceEngine::CompactListFormatter;
 using ComplianceEngine::EnsureSysctlParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
+using ComplianceEngine::Pattern;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ::testing::Return;
@@ -148,7 +149,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -166,7 +167,7 @@ TEST_F(EnsureSysctlTest, HappyPathAlternativeSystemdSysctlLocation)
     EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -184,7 +185,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -201,7 +202,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWi
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -219,7 +220,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfigurationComment)
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -236,7 +237,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -253,7 +254,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("0");
+    params.value = Pattern::Make("0").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -271,7 +272,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverrid
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex(".");
+    params.value = Pattern::Make(".").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -288,7 +289,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverr
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("[0]");
+    params.value = Pattern::Make("[0]").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -305,7 +306,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOve
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("[0]");
+    params.value = Pattern::Make("[0]").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -322,7 +323,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("[0]");
+    params.value = Pattern::Make("[0]").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -339,7 +340,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameTabs)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
@@ -359,7 +360,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameExtraSpaces)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
@@ -379,7 +380,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0WithFilenames)));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
@@ -405,7 +406,7 @@ TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
         EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
         EnsureSysctlParams params;
         params.sysctlName = sysctlName;
-        params.value = value;
+        params.value = Pattern::Make(value).Value();
 
         auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
@@ -430,7 +431,7 @@ TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = value;
+    params.value = Pattern::Make(value).Value();
 
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
 
@@ -453,7 +454,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileMissing)
 
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -472,7 +473,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileNoIptSysctl)
 
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -492,7 +493,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileMissing)
 
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -512,7 +513,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueMatches)
 
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -532,7 +533,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueDoesNotMatch)
 
     EnsureSysctlParams params;
     params.sysctlName = sysctlName;
-    params.value = regex("1");
+    params.value = Pattern::Make("1").Value();
     auto result = AuditEnsureSysctl(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

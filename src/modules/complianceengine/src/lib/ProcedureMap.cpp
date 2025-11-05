@@ -56,7 +56,7 @@ const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 // EnsureSshdOption.h:61
 const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode"};
 
-// EnsureSysctl.h:20
+// EnsureSysctl.h:21
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
 
 // EnsureUserIsOnlyAccountWith.h:26
