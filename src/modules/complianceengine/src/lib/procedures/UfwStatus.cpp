@@ -18,13 +18,13 @@ Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree
         return indicators.NonCompliant("ufw not found: " + output.Error().message);
     }
 
-    if (regex_search(output.Value(), params.statusRegex) == false)
+    if (regex_search(output.Value(), params.statusRegex.GetRegex()) == false)
     {
-        return indicators.NonCompliant("Searched value not found in UFW output");
+        return indicators.NonCompliant("Searched value '" + params.statusRegex.GetPattern() + "' not found in UFW output");
     }
     else
     {
-        return indicators.Compliant("Searched value found in UFW output");
+        return indicators.Compliant("Searched value '" + params.statusRegex.GetPattern() + "' found in UFW output");
     }
 }
 } // namespace ComplianceEngine
