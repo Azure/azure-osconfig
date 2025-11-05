@@ -12,19 +12,22 @@ namespace ComplianceEngine
 {
 Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto output = context.ExecuteCommand("ufw status verbose");
+    const auto* cmd = "ufw status verbose";
+    auto output = context.ExecuteCommand(cmd);
     if (!output.HasValue())
     {
         return indicators.NonCompliant("ufw not found: " + output.Error().message);
     }
 
+    OsConfigLogDebug(context.GetLogHandle(), "Command '%s' output:\n%s", cmd, output.Value().c_str());
     if (regex_search(output.Value(), params.statusRegex.GetRegex()) == false)
     {
-        return indicators.NonCompliant("Searched value '" + params.statusRegex.GetPattern() + "' not found in UFW output");
+        OsConfigLogInfo(context.GetLogHandle(), "Pattern '%s' did not match the output of '%s' command", params.statusRegex.GetPattern().c_str(), cmd);
+        return indicators.NonCompliant("Searched value not found in UFW output");
     }
     else
     {
-        return indicators.Compliant("Searched value '" + params.statusRegex.GetPattern() + "' found in UFW output");
+        return indicators.Compliant("Searched value found in UFW output");
     }
 }
 } // namespace ComplianceEngine
