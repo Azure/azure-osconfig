@@ -82,7 +82,7 @@ void PrintHelp(const std::string& programName)
 // Command line parser using getopt_long
 Result<Options> ParseCommandLine(const int argc, char* argv[])
 {
-    const auto* short_opts = "hVvdlsf";
+    const auto* short_opts = "hVvdl:s:f:";
     const option long_opts[] = {{"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'}, {"verbose", no_argument, nullptr, 'v'},
         {"debug", no_argument, nullptr, 'd'}, {"log-file", required_argument, nullptr, 'l'}, {"section", required_argument, nullptr, 's'},
         {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
