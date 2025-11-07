@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "dependencies": [
     {
+      "name": "openssl",
+      "version>=": "3.6.0"
+    },
+    {
       "name": "curl",
+      "version>=": "8.16.0",
       "features": ["openssl"]
     },
     {
