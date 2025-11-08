@@ -18,7 +18,7 @@ RUN yum install -y \
     make \
     openssl-devel \
     perl \
-    perl-CPAN \
+    perl-core \
     perl-devel \
     perl-IPC-Cmd \
     rpm-build \

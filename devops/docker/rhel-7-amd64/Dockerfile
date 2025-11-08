@@ -31,6 +31,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     make \
     openssl-devel \
     perl \
+    perl-core \
     perl-IPC-Cmd \
     tar \
     unzip \
