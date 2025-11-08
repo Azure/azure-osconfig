@@ -21,6 +21,7 @@ set(target_name osconfig)
 
 add_executable(${target_name} ${osconfig_files})
 
+set(warnings_as_errors OFF CACHE BOOL "Disable warnings as errors in azure-iot-sdk-c")
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")
     add_subdirectory(azure-iot-sdk-c EXCLUDE_FROM_ALL)
