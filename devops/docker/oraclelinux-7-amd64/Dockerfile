@@ -15,6 +15,7 @@ RUN yum install -y \
     make \
     openssl-devel \
     perl \
+    perl-core \
     perl-IPC-Cmd \
     rpm-build
 
