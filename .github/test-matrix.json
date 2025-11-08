@@ -1,6 +1,6 @@
 [
     {"name":"almalinux-9","arch":"amd64","tag":"@sha256:457a85686d95bd324c1ddbdba43fccb79d8c127c11b1189941ccc913989461c5"},
-    {"name":"amazonlinux-2","arch":"amd64","tag":"@sha256:a3050ae3411346af01fe1151066dc28565d6b458e096eeb0f28fb97d6e170c32"},
+    {"name":"amazonlinux-2","arch":"amd64","tag":"@sha256:5f78d184712b39087d4448d1fe04ffa6a4dbb6e5ff0e29cdef0eff1f3980cfd8"},
     {"name":"azurelinux-3","arch":"amd64","tag":"@sha256:6d8d1134816ee789c5579570d83671cd572ac0634a1ffdc04a0ef5471f8b0877"},
     {"name":"centos-7","arch":"amd64","tag":"@sha256:61139b250e2a9390430f583b8e6f99e8a73874c7c258dedd560accf422bb7d76"},
     {"name":"centos-8","arch":"amd64","tag":"@sha256:2fb02a9f8259b91ea938c003a845b7e9dc7150ea643bf8c1b6ae8bd4087d8706"},
