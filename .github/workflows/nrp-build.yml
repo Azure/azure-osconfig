@@ -14,7 +14,12 @@ jobs:
             { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB, tag: "@sha256:d6f9c8072541d23779b0fbd4ff53d7b55dbdcf5d8998aa44a790546d9ec1e747" },
           ]
     secrets:
-      onedstenant: ${{ github.ref == 'refs/heads/main' && secrets.ONEDS_TENANT_PROD || github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD || '' }}
+      onedstenant: >-
+        ${{
+          (github.ref == 'refs/heads/main' && secrets.ONEDS_TENANT_PROD) ||
+          (github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD) ||
+          ''
+        }}
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.target.arch }}
