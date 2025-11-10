@@ -24,6 +24,8 @@ add_executable(${target_name} ${osconfig_files})
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")
 
+    # Disable warnings as errors in azure-iot-sdk-c
+    set(warnings_as_errors OFF CACHE BOOL "Disable warnings as errors on the azure-iot-sdk-c" FORCE)
     # Apply patch to disable -Werror in azure-iot-sdk-c before adding subdirectory
     # Find all azure_iot_build_rules.cmake files and comment out -Werror
     file(GLOB_RECURSE BUILD_RULES_FILES
