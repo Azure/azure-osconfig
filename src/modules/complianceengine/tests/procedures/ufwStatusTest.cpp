@@ -18,6 +18,7 @@ using ComplianceEngine::AuditUfwStatusParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
+using ComplianceEngine::Pattern;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
@@ -61,7 +62,9 @@ TEST_F(UfwStatusTest, UfwActiveStatusMatches)
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
     AuditUfwStatusParams args;
-    args.statusRegex = regex("Status:\\s*active");
+    auto pattern = Pattern::Make("Status:\\s*active");
+    ASSERT_TRUE(pattern.HasValue());
+    args.statusRegex = std::move(pattern.Value());
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -78,7 +81,9 @@ TEST_F(UfwStatusTest, UfwNotActiveStatusMismatch)
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwInactiveOutput)));
 
     AuditUfwStatusParams args;
-    args.statusRegex = regex("Status:\\s*active");
+    auto pattern = Pattern::Make("Status:\\s*active");
+    ASSERT_TRUE(pattern.HasValue());
+    args.statusRegex = std::move(pattern.Value());
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -95,7 +100,9 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMatches)
     EXPECT_CALL(mContext, ExecuteCommand((ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
     AuditUfwStatusParams args;
-    args.statusRegex = regex("22/tcp\\s+ALLOW IN\\s+Anywhere");
+    auto pattern = Pattern::Make("22/tcp\\s+ALLOW IN\\s+Anywhere");
+    ASSERT_TRUE(pattern.HasValue());
+    args.statusRegex = std::move(pattern.Value());
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -112,7 +119,9 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMissing)
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
     AuditUfwStatusParams args;
-    args.statusRegex = regex("8080/tcp\\s+ALLOW IN\\s+Anywhere"); // Rule not present in output
+    auto pattern = Pattern::Make("8080/tcp\\s+ALLOW IN\\s+Anywhere");
+    ASSERT_TRUE(pattern.HasValue());
+    args.statusRegex = std::move(pattern.Value());
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -129,7 +138,9 @@ TEST_F(UfwStatusTest, UfwNotFound)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(Error("Command not found", 127))));
 
     AuditUfwStatusParams args;
-    args.statusRegex = regex("Status:\\s*active");
+    auto pattern = Pattern::Make("Status:\\s*active");
+    ASSERT_TRUE(pattern.HasValue());
+    args.statusRegex = std::move(pattern.Value());
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
