@@ -23,25 +23,6 @@ add_executable(${target_name} ${osconfig_files})
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")
-
-    # Disable warnings as errors in azure-iot-sdk-c
-    set(warnings_as_errors OFF CACHE BOOL "Disable warnings as errors on the azure-iot-sdk-c" FORCE)
-    # Apply patch to disable -Werror in azure-iot-sdk-c before adding subdirectory
-    # Find all azure_iot_build_rules.cmake files and comment out -Werror
-    file(GLOB_RECURSE BUILD_RULES_FILES
-        "${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/**/azure_iot_build_rules.cmake")
-
-    foreach(BUILD_RULES_FILE ${BUILD_RULES_FILES})
-        file(READ "${BUILD_RULES_FILE}" FILE_CONTENT)
-        # Replace both occurrences of -Werror with commented out versions
-        string(REPLACE
-            "    set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -Werror\")\n    set(CMAKE_C_FLAGS \"\${CMAKE_C_FLAGS} -Werror\")"
-            "    #set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} -Werror\")\n    #set(CMAKE_C_FLAGS \"\${CMAKE_C_FLAGS} -Werror\")"
-            FILE_CONTENT "${FILE_CONTENT}")
-        file(WRITE "${BUILD_RULES_FILE}" "${FILE_CONTENT}")
-        message(STATUS "Patched ${BUILD_RULES_FILE} to disable -Werror")
-    endforeach()
-
     add_subdirectory(azure-iot-sdk-c EXCLUDE_FROM_ALL)
 else ()
     message(STATUS "Using azure-iot-sdk-c as package")
