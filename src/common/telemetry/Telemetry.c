@@ -100,6 +100,12 @@ void OSConfigTelemetryInit(void)
         g_moduleDirectory = ResolveModuleDirectory();
     }
 
+    if (NULL == g_moduleDirectory)
+    {
+        OsConfigLogError(g_telemetryLog, "Failed to resolve module directory for telemetry");
+        return;
+    }
+
     if (NULL == g_fileName)
     {
         g_fileName = GenerateRandomFilename();
