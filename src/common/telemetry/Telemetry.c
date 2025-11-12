@@ -21,26 +21,17 @@ static int g_telemetryFileInitialized = 0;
 
 static char* GenerateRandomFilename(void)
 {
-    char tempTemplate[] = "/tmp/telemetry_XXXXXX";
-    const char* suffix = ".json";
+    char tempTemplate[] = "/tmp/telemetry_XXXXXX.json";
     char* result = NULL;
     int fd = -1;
 
-    if (-1 != (fd = mkstemp(tempTemplate)))
+    if (-1 != (fd = mkstemps(tempTemplate, 5))) // 5 = length of ".json"
     {
         close(fd);
 
         if (0 == unlink(tempTemplate))
         {
-            size_t baseLength = strlen(tempTemplate);
-            size_t suffixLength = strlen(suffix);
-            result = (char*)malloc(baseLength + suffixLength + 1);
-
-            if (NULL != result)
-            {
-                memcpy(result, tempTemplate, baseLength);
-                memcpy(result + baseLength, suffix, suffixLength + 1);
-            }
+            result = strdup(tempTemplate);
         }
     }
 
