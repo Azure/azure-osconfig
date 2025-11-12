@@ -111,7 +111,6 @@ static inline int64_t TsToUs(struct timespec ts)
         struct timespec _end;                                                                                                                          \
         const char* _start_str = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);                                                                       \
         char* end;                                                                                                                                     \
-        errno = 0;                                                                                                                                     \
         int64_t _start_us = (_start_str != NULL) ? strtoll(_start_str, &end, 10) : 0;                                                                  \
         if (_start_us == 0)                                                                                                                            \
         {                                                                                                                                              \
@@ -136,8 +135,8 @@ static inline int64_t TsToUs(struct timespec ts)
             if (NULL != command)                                                                                                                       \
             {                                                                                                                                          \
                 ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);                                           \
+                FREE_MEMORY(command);                                                                                                                  \
             }                                                                                                                                          \
-            FREE_MEMORY(command);                                                                                                                      \
             OSConfigTelemetryCleanup();                                                                                                                \
         }                                                                                                                                              \
     }
@@ -148,18 +147,19 @@ static inline int64_t TsToUs(struct timespec ts)
     }
 #define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line)                                                                                      \
     {                                                                                                                                                            \
+        char* telemetry_json = NULL;                                                                                                                             \
         char status_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                                            \
-        snprintf(status_str, sizeof(status_str), "%d", (status));                                                                                                \
         char line_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                                              \
-        snprintf(line_str, sizeof(line_str), "%d", (line));                                                                                                      \
         const char* _correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                            \
         const char* _ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR);                                                                              \
         const char* _scenarioName = getenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR);                                                                              \
         const char* _timestamp = GetFormattedTime();                                                                                                             \
         int64_t _elapsed_us = 0;                                                                                                                                 \
-        OSConfigGetElapsedTime(_elapsed_us);                                                                                                                     \
         char* _distroName = GetOsName(NULL);                                                                                                                     \
-        char* _telemetry_json = FormatAllocateString(                                                                                                            \
+        snprintf(status_str, sizeof(status_str), "%d", (status));                                                                                                \
+        snprintf(line_str, sizeof(line_str), "%d", (line));                                                                                                      \
+        OSConfigGetElapsedTime(_elapsed_us);                                                                                                                     \
+        telemetry_json = FormatAllocateString(                                                                                                                   \
             "{"                                                                                                                                                  \
             "\"EventName\":\"StatusTrace\","                                                                                                                     \
             "\"Timestamp\":\"%s\","                                                                                                                              \
@@ -178,22 +178,23 @@ static inline int64_t TsToUs(struct timespec ts)
             "}",                                                                                                                                                 \
             _timestamp ? _timestamp : "", __FILE__, line_str, __func__, _ruleCodename ? _ruleCodename : "", (callingFunctionName) ? (callingFunctionName) : "-", \
             status_str, _scenarioName, _elapsed_us, _distroName ? _distroName : "unknown", _correlationId ? _correlationId : "", OSCONFIG_VERSION);              \
-        if (NULL != _telemetry_json)                                                                                                                             \
+        if (NULL != telemetry_json)                                                                                                                              \
         {                                                                                                                                                        \
-            OSConfigTelemetryAppendJSON(_telemetry_json);                                                                                                        \
+            OSConfigTelemetryAppendJSON(telemetry_json);                                                                                                         \
         }                                                                                                                                                        \
         FREE_MEMORY(_distroName);                                                                                                                                \
-        FREE_MEMORY(_telemetry_json);                                                                                                                            \
+        FREE_MEMORY(telemetry_json);                                                                                                                             \
     }
 
 #define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds)                                                                              \
     {                                                                                                                                                  \
+        char* telemetry_json = NULL;                                                                                                                   \
         char durationSeconds_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                         \
-        snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds));                                                 \
         const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                   \
         const char* timestamp = GetFormattedTime();                                                                                                    \
         char* distroName = GetOsName(NULL);                                                                                                            \
-        char* telemetry_json = FormatAllocateString(                                                                                                   \
+        snprintf(durationSeconds_str, sizeof(durationSeconds_str), "%.2f", (double)(durationSeconds));                                                 \
+        telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"BaselineRun\","                                                                                                           \
             "\"Timestamp\":\"%s\","                                                                                                                    \
@@ -216,14 +217,15 @@ static inline int64_t TsToUs(struct timespec ts)
 
 #define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds)                                                           \
     {                                                                                                                                                  \
+        char* telemetry_json = NULL;                                                                                                                   \
         char objectResult_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                            \
-        snprintf(objectResult_str, sizeof(objectResult_str), "%d", (objectResult));                                                                    \
         char microseconds_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                            \
-        snprintf(microseconds_str, sizeof(microseconds_str), "%ld", (long)(microseconds));                                                             \
         const char* correlationId = getenv("activityId");                                                                                              \
         const char* timestamp = GetFormattedTime();                                                                                                    \
         char* distroName = GetOsName(NULL);                                                                                                            \
-        char* telemetry_json = FormatAllocateString(                                                                                                   \
+        snprintf(objectResult_str, sizeof(objectResult_str), "%d", (objectResult));                                                                    \
+        snprintf(microseconds_str, sizeof(microseconds_str), "%ld", (long)(microseconds));                                                             \
+        telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"RuleComplete\","                                                                                                          \
             "\"Timestamp\":\"%s\","                                                                                                                    \
