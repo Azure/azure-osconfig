@@ -19,6 +19,7 @@ static char* g_fileName = NULL;
 static char* g_moduleDirectory = NULL;
 static int g_telemetryFileInitialized = 0;
 static OsConfigLogHandle g_telemetryLog = NULL;
+static char* g_cachedOsName = NULL;
 
 static char* GenerateRandomFilename(void)
 {
@@ -138,6 +139,7 @@ void OSConfigTelemetryCleanup(void)
 
     FREE_MEMORY(g_fileName);
     FREE_MEMORY(g_moduleDirectory);
+    FREE_MEMORY(g_cachedOsName);
 }
 
 void OSConfigTelemetrySetLogger(const OsConfigLogHandle log)
@@ -162,6 +164,15 @@ void OSConfigTelemetryAppendJSON(const char* jsonString)
         fprintf(g_telemetryFile, "%s\n", jsonString);
         fflush(g_telemetryFile);
     }
+}
+
+const char* OSConfigTelemetryGetCachedOsName(void)
+{
+    if (NULL == g_cachedOsName)
+    {
+        g_cachedOsName = GetOsName(g_telemetryLog);
+    }
+    return g_cachedOsName;
 }
 
 #endif // BUILD_TELEMETRY
