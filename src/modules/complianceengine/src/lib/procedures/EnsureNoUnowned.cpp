@@ -18,6 +18,7 @@
 
 namespace ComplianceEngine
 {
+static constexpr int maxUnowned = 3;
 
 Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface& context)
 {
@@ -53,11 +54,10 @@ Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface
     }
     const auto& entries = fsRes.Value()->entries;
 
-    std::vector<std::string> unowned;
-    unowned.reserve(3);
+    int unowned = 0;
     for (const auto& kv : entries)
     {
-        if (unowned.size() >= 3)
+        if (unowned >= maxUnowned)
         {
             break;
         }
@@ -79,23 +79,18 @@ Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface
         }
         if (knownUids.find(st.st_uid) == knownUids.end())
         {
-            unowned.push_back("uid=" + std::to_string(static_cast<long long>(st.st_uid)) + " path=" + path);
+            indicators.NonCompliant("Unowned file '" + path + "' with uid " + std::to_string(static_cast<long long>(st.st_uid)));
+            unowned++;
         }
         if (knownGids.find(st.st_gid) == knownGids.end())
         {
-            unowned.push_back("gid=" + std::to_string(static_cast<long long>(st.st_gid)) + " path=" + path);
+            indicators.NonCompliant("Unowned file '" + path + "' with gid " + std::to_string(static_cast<long long>(st.st_gid)));
+            unowned++;
         }
     }
-    if (!unowned.empty())
+    if (unowned > 0)
     {
-        std::string msg = "Unowned files (up to 3): ";
-        for (size_t i = 0; i < unowned.size(); ++i)
-        {
-            if (i)
-                msg += "; ";
-            msg += unowned[i];
-        }
-        return indicators.NonCompliant(msg);
+        return indicators.NonCompliant("Unowned files found in the filesystem (up to " + std::to_string(maxUnowned) + " listed)");
     }
     return indicators.Compliant("All files owned by known users");
 }
