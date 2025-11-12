@@ -37,6 +37,7 @@ extern "C"
 {
 #endif
 
+#ifdef BUILD_TELEMETRY
 void OSConfigTelemetryInit(void);
 void OSConfigTelemetryCleanup(void);
 void OSConfigTelemetryAppendJSON(const char* jsonString);
@@ -44,6 +45,34 @@ FILE* OSConfigTelemetryGetFile(void);
 const char* OSConfigTelemetryGetFileName(void);
 const char* OSConfigTelemetryGetModuleDirectory(void);
 int OSConfigTelemetryIsInitialized(void);
+#else
+static inline void OSConfigTelemetryInit(void)
+{
+}
+static inline void OSConfigTelemetryCleanup(void)
+{
+}
+static inline void OSConfigTelemetryAppendJSON(const char* jsonString)
+{
+    (void)jsonString;
+}
+static inline FILE* OSConfigTelemetryGetFile(void)
+{
+    return NULL;
+}
+static inline const char* OSConfigTelemetryGetFileName(void)
+{
+    return NULL;
+}
+static inline const char* OSConfigTelemetryGetModuleDirectory(void)
+{
+    return NULL;
+}
+static inline int OSConfigTelemetryIsInitialized(void)
+{
+    return 0;
+}
+#endif
 
 #ifdef __cplusplus
 }
@@ -59,6 +88,8 @@ static inline int64_t TsToUs(struct timespec ts)
 {
     return (int64_t)ts.tv_sec * 1000000LL + (int64_t)ts.tv_nsec / 1000LL;
 }
+
+#ifdef BUILD_TELEMETRY
 
 #define OSConfigTimeStampSave()                                                                                                                        \
     {                                                                                                                                                  \
@@ -207,5 +238,51 @@ static inline int64_t TsToUs(struct timespec ts)
         FREE_MEMORY(distroName);                                                                                                                       \
         FREE_MEMORY(telemetry_json);                                                                                                                   \
     }
+
+#else // BUILD_TELEMETRY
+
+#define OSConfigTimeStampSave()                                                                                                                        \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+    } while (0)
+#define OSConfigGetElapsedTime(elapsed_us_var)                                                                                                         \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (elapsed_us_var) = 0;                                                                                                                          \
+    } while (0)
+#define OSConfigProcessTelemetryFile()                                                                                                                 \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+    } while (0)
+#define OSConfigTelemetryStatusTrace(callingFunctionName, status)                                                                                      \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (void)(callingFunctionName);                                                                                                                   \
+        (void)(status);                                                                                                                                \
+    } while (0)
+#define OSConfigTelemetryStatusTraceImpl(callingFunctionName, status, line)                                                                            \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (void)(callingFunctionName);                                                                                                                   \
+        (void)(status);                                                                                                                                \
+        (void)(line);                                                                                                                                  \
+    } while (0)
+#define OSConfigTelemetryBaselineRun(baselineName, mode, durationSeconds)                                                                              \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (void)(baselineName);                                                                                                                          \
+        (void)(mode);                                                                                                                                  \
+        (void)(durationSeconds);                                                                                                                       \
+    } while (0)
+#define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds)                                                           \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (void)(componentName);                                                                                                                         \
+        (void)(objectName);                                                                                                                            \
+        (void)(objectResult);                                                                                                                          \
+        (void)(microseconds);                                                                                                                          \
+    } while (0)
+
+#endif // BUILD_TELEMETRY
 
 #endif // TELEMETRY_H

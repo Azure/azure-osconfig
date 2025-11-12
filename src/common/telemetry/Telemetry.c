@@ -3,6 +3,8 @@
 
 #include "Telemetry.h"
 
+#ifdef BUILD_TELEMETRY
+
 #include "CommonUtils.h"
 
 #include <dlfcn.h>
@@ -156,3 +158,5 @@ void OSConfigTelemetryAppendJSON(const char* jsonString)
         fflush(g_telemetryFile);
     }
 }
+
+#endif // BUILD_TELEMETRY
