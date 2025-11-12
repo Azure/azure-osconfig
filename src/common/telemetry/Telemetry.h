@@ -8,6 +8,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include <Logging.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -40,6 +41,7 @@ extern "C"
 #ifdef BUILD_TELEMETRY
 void OSConfigTelemetryInit(void);
 void OSConfigTelemetryCleanup(void);
+void OSConfigTelemetrySetLogger(const OsConfigLogHandle log);
 void OSConfigTelemetryAppendJSON(const char* jsonString);
 FILE* OSConfigTelemetryGetFile(void);
 const char* OSConfigTelemetryGetFileName(void);
@@ -51,6 +53,10 @@ static inline void OSConfigTelemetryInit(void)
 }
 static inline void OSConfigTelemetryCleanup(void)
 {
+}
+static inline void OSConfigTelemetrySetLogger(const OsConfigLogHandle log)
+{
+    (void)log;
 }
 static inline void OSConfigTelemetryAppendJSON(const char* jsonString)
 {

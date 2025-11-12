@@ -18,6 +18,7 @@ static FILE* g_telemetryFile = NULL;
 static char* g_fileName = NULL;
 static char* g_moduleDirectory = NULL;
 static int g_telemetryFileInitialized = 0;
+static OsConfigLogHandle g_telemetryLog = NULL;
 
 static char* GenerateRandomFilename(void)
 {
@@ -106,6 +107,7 @@ void OSConfigTelemetryInit(void)
 
     if (NULL == g_fileName)
     {
+        OsConfigLogError(g_telemetryLog, "No file name for telemetry file is present");
         return;
     }
 
@@ -113,6 +115,7 @@ void OSConfigTelemetryInit(void)
 
     if (NULL != g_telemetryFile)
     {
+        OsConfigLogInfo(g_telemetryLog, "Telemetry json used: %s", g_fileName);
         g_telemetryFileInitialized = 1;
     }
 }
@@ -129,6 +132,11 @@ void OSConfigTelemetryCleanup(void)
 
     FREE_MEMORY(g_fileName);
     FREE_MEMORY(g_moduleDirectory);
+}
+
+void OSConfigTelemetrySetLogger(const OsConfigLogHandle log)
+{
+    g_telemetryLog = log;
 }
 
 void OSConfigTelemetryAppendJSON(const char* jsonString)
