@@ -62,17 +62,21 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
 
 TelemetryManager::~TelemetryManager() noexcept
 {
-    ScopeGuard g = {[&]()
+    try
     {
-        OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
-    }};
-    status_t status = m_logManager->GetLogController()->UploadNow();
-    if (STATUS_SUCCESS != status)
-    {
-        OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
+        status_t status = m_logManager->UploadNow();
+        if (STATUS_SUCCESS != status)
+        {
+            OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(10)); // Minimal sleep required for upload to be triggered properly
+        m_logManager->FlushAndTeardown();
     }
-    std::this_thread::sleep_for(std::chrono::microseconds(10)); // Minimal sleep required for upload to be triggered properly
-    m_logManager.reset();
+    catch(...)
+    {
+        OsConfigLogError(m_log, "Exception during telemetry shutdown");
+    }
+    OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
 }
 
 void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
