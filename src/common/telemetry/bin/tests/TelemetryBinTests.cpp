@@ -114,7 +114,7 @@ TEST_F(TelemetryBinTest, PositionalArgumentAcceptsFilePath)
     EXPECT_TRUE(result);
     EXPECT_EQ(jsonFile, args.filepath);
     EXPECT_FALSE(args.verbose);
-    EXPECT_EQ(5, args.teardown_time); // Default teardown time
+    EXPECT_EQ(std::chrono::seconds{5}, args.teardown_time); // Default teardown time
 }
 
 TEST_F(TelemetryBinTest, FileOptionAcceptsFilePath)
@@ -185,7 +185,7 @@ TEST_F(TelemetryBinTest, TeardownOptionWithValue)
     bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
-    EXPECT_EQ(10, args.teardown_time);
+    EXPECT_EQ(std::chrono::seconds{10}, args.teardown_time);
 }
 
 TEST_F(TelemetryBinTest, LongFormTeardownWithValue)
@@ -199,7 +199,7 @@ TEST_F(TelemetryBinTest, LongFormTeardownWithValue)
     bool result = ParseCommandLineArgs(argList.size(), argv, args, nullptr);
 
     EXPECT_TRUE(result);
-    EXPECT_EQ(15, args.teardown_time);
+    EXPECT_EQ(std::chrono::seconds{15}, args.teardown_time);
 }
 
 TEST_F(TelemetryBinTest, NegativeTeardownValueFails)
@@ -240,7 +240,7 @@ TEST_F(TelemetryBinTest, CombinedOptionsWork)
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
-    EXPECT_EQ(1, args.teardown_time);
+    EXPECT_EQ(std::chrono::seconds{1}, args.teardown_time);
     EXPECT_EQ(jsonFile, args.filepath);
 }
 
@@ -256,7 +256,7 @@ TEST_F(TelemetryBinTest, MixedLongAndShortOptionsWork)
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(args.verbose);
-    EXPECT_EQ(1, args.teardown_time);
+    EXPECT_EQ(std::chrono::seconds{1}, args.teardown_time);
 }
 
 TEST_F(TelemetryBinTest, TooManyArgumentsFails)
@@ -293,7 +293,7 @@ TEST_F(TelemetryBinTest, ProcessesValidSingleLineJson)
 
     try
     {
-        Telemetry::TelemetryManager telemetryManager(false, 1);
+        Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds{1});
         EXPECT_FALSE(telemetryManager.ProcessJsonFile(jsonFile));
     }
     catch (const std::exception& e)

@@ -4,13 +4,14 @@
 #pragma once
 
 #include <Logging.h>
+#include <chrono>
 #include <string>
 
 struct CommandLineArgs
 {
     bool verbose;
     std::string filepath;
-    int teardown_time;
+    std::chrono::seconds teardown_time;
 };
 
 void PrintUsage(const char* program_name);

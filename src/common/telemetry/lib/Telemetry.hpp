@@ -9,6 +9,7 @@
 #include <Keys.h>
 #include <LogManager.hpp>
 #include <Logging.h>
+#include <chrono>
 #include <memory>
 #include <set>
 #include <string>
@@ -21,10 +22,10 @@ namespace Telemetry
 class TelemetryManager
 {
 public:
-    static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
+    static constexpr std::chrono::seconds CONFIG_DEFAULT_TEARDOWN_TIME{5};
     static constexpr const char* TELEMETRY_VERSION = "1.0.0";
 
-    explicit TelemetryManager(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
+    explicit TelemetryManager(bool enableDebug = false, std::chrono::seconds teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
 
     ~TelemetryManager() noexcept;
 

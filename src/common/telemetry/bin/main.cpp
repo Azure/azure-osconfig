@@ -39,9 +39,9 @@ int main(int argc, char* argv[])
         }
 
         std::string init_message = "Initializing telemetry with verbose=" + std::string(args.verbose ? "true" : "false");
-        if (args.teardown_time != TELEMETRY_TIMEOUT_SECONDS) // Default teardown time
+        if (args.teardown_time.count() != TELEMETRY_TIMEOUT_SECONDS) // Default teardown time
         {
-            init_message += " and teardown_time=" + std::to_string(args.teardown_time) + "s";
+            init_message += " and teardown_time=" + std::to_string(args.teardown_time.count()) + "s";
         }
         OsConfigLogInfo(g_log, "%s", init_message.c_str());
 

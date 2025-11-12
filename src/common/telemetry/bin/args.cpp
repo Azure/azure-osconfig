@@ -29,7 +29,7 @@ void PrintUsage(const char* program_name)
 bool ParseCommandLineArgs(int argc, char* argv[], CommandLineArgs& args, OsConfigLogHandle log)
 {
     args.verbose = false;
-    args.teardown_time = 5; // CONFIG_DEFAULT_TEARDOWN_TIME
+    args.teardown_time = std::chrono::seconds{5}; // CONFIG_DEFAULT_TEARDOWN_TIME
     args.filepath.clear();
 
     static struct option long_options[] = {
@@ -62,13 +62,14 @@ bool ParseCommandLineArgs(int argc, char* argv[], CommandLineArgs& args, OsConfi
                 {
                     try
                     {
-                        args.teardown_time = std::stoi(optarg);
-                        if (args.teardown_time < 0)
+                        int seconds = std::stoi(optarg);
+                        if (seconds < 0)
                         {
                             OsConfigLogError(log, "Error: Teardown time must be a non-negative integer.");
                             PrintUsage(argv[0]);
                             return false;
                         }
+                        args.teardown_time = std::chrono::seconds{seconds};
                     }
                     catch (const std::exception& e)
                     {

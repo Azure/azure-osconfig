@@ -21,7 +21,7 @@ using namespace MAT;
 namespace Telemetry
 {
 
-TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigLogHandle logHandle)
+TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardownTime, OsConfigLogHandle logHandle)
     : m_log(logHandle)
     , m_logManager(nullptr)
     , m_logger(nullptr)
@@ -39,7 +39,7 @@ TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigL
     m_logConfig["config"]["host"] = "*";
     m_logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
     m_logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
-    m_logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
+    m_logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime.count();
 
     status_t status = STATUS_SUCCESS;
     m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
