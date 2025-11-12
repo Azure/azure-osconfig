@@ -29,6 +29,10 @@ TelemetryManager::TelemetryManager(bool enableDebug, int teardownTime, OsConfigL
 #if defined(DEBUG) || defined(_DEBUG) || !defined(NDEBUG)
     SetLoggingLevel(LoggingLevelDebug);
 #endif
+    if (enableDebug)
+    {
+        SetLoggingLevel(LoggingLevelDebug);
+    }
 
     m_logConfig["name"] = "TelemetryModule";
     m_logConfig["version"] = TELEMETRY_VERSION;
@@ -126,7 +130,10 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
     // Check that no unexpected parameters are present
     for (const auto& jsonKey : jsonKeys)
     {
-        if (jsonKey == "EventName") continue; // Skip the event name field
+        if (jsonKey == "EventName")
+        {
+            continue; // Skip the event name field
+        }
 
         if (requiredParams.find(jsonKey) == requiredParams.end() &&
             optionalParams.find(jsonKey) == optionalParams.end())

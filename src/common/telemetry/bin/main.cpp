@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
         OsConfigLogInfo(g_log, "Telemetry initializing...");
         Telemetry::TelemetryManager telemetryManager(args.verbose, args.teardown_time, g_log);
 
-        telemetryManager.ProcessJsonFile(args.filepath);
+        (void)(telemetryManager.ProcessJsonFile(args.filepath));
         OsConfigLogInfo(g_log, "Processed telemetry JSON file: %s", args.filepath.c_str());
 
         if (std::remove(args.filepath.c_str()) != 0)
