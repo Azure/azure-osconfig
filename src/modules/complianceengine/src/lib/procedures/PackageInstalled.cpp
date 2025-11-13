@@ -3,6 +3,7 @@
 
 #include <Bindings.h>
 #include <CommonUtils.h>
+#include <FileStream.h>
 #include <PackageInstalled.h>
 #include <ProcedureMap.h>
 #include <Result.h>
@@ -37,10 +38,12 @@ public:
     template <class Callable>
     ScopeGuard(Callable&& f)
         : f(std::forward<Callable>(f)){};
+
     void Deactivate()
     {
         active = false;
     }
+
     ~ScopeGuard()
     {
         if (active)
@@ -76,32 +79,34 @@ Result<PackageManagerType> DetectPackageManager(ContextInterface& context)
     return Error("No package manager found", ENOENT);
 }
 
-Result<PackageCache> LoadPackageCache(const std::string& path)
+Result<PackageCache> LoadPackageCache(const std::string& path, ContextInterface& context)
 {
     PackageCache cache;
     const std::string pkgCacheHeader = "# PackageCache "; // "# PackageCache <packageManager>@<timestamp>\n"
     cache.lastUpdateTime = 0;
     cache.packageManager = PackageManagerType::Autodetect;
     cache.packages.clear();
-    std::ifstream cacheFile(path);
-    if (!cacheFile.is_open())
+    auto cacheFileResult = ComplianceEngine::FileStream::Open(path, context);
+    if (!cacheFileResult.HasValue())
     {
-        return Error("Failed to open cache file: " + path);
+        return cacheFileResult.Error();
+    }
+    auto cacheFile = std::move(cacheFileResult.Value());
+
+    auto header = cacheFile.ReadLine();
+    if (!header.HasValue())
+    {
+        OsConfigLogError(context.GetLogHandle(), "Failed to read '%s'", path.c_str());
+        return header.Error();
     }
 
-    std::string header;
-    if (!std::getline(cacheFile, header) || (0 != header.find(pkgCacheHeader, 0)))
-    {
-        return Error("Invalid cache file format");
-    }
-
-    auto separatorPos = header.find('@');
+    auto separatorPos = header->find('@');
     if (std::string::npos == separatorPos)
     {
         return Error("Invalid cache file header format");
     }
 
-    const auto packageMangerStr = header.substr(pkgCacheHeader.length(), separatorPos - pkgCacheHeader.length());
+    const auto packageMangerStr = header->substr(pkgCacheHeader.length(), separatorPos - pkgCacheHeader.length());
     if (packageMangerStr == "dpkg")
         cache.packageManager = PackageManagerType::DPKG;
     else if (packageMangerStr == "rpm")
@@ -110,32 +115,33 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
         return Error("Invalid package manager type");
     try
     {
-        cache.lastUpdateTime = std::stol(header.substr(separatorPos + 1));
+        cache.lastUpdateTime = std::stol(header->substr(separatorPos + 1));
     }
     catch (const std::exception&)
     {
         return Error("Invalid timestamp in cache file header");
     }
 
-    std::string line;
-    while (std::getline(cacheFile, line))
+    while (!cacheFile.AtEnd())
     {
-        if (!line.empty())
+        auto line = cacheFile.ReadLine();
+        if (!line)
         {
-            auto sepPos = line.find(' ');
+            OsConfigLogError(context.GetLogHandle(), "%s", line.Error().message.c_str());
+            return line.Error();
+        }
+
+        if (!line->empty())
+        {
+            auto sepPos = line->find(' ');
             if (sepPos == std::string::npos)
             {
                 continue; // Skip lines without a space
             }
-            std::string packageName = line.substr(0, sepPos);
-            std::string packageVersion = line.substr(sepPos + 1);
+            std::string packageName = line->substr(0, sepPos);
+            std::string packageVersion = line->substr(sepPos + 1);
             cache.packages[packageName] = packageVersion;
         }
-    }
-
-    if (cacheFile.bad())
-    {
-        return Error("Error reading cache file");
     }
 
     return cache;
@@ -454,7 +460,7 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
     auto log = context.GetLogHandle();
 
     PackageCache cache;
-    auto cacheResult = LoadPackageCache(params.test_cachePath.Value());
+    auto cacheResult = LoadPackageCache(params.test_cachePath.Value(), context);
     bool cacheValid = true;
     bool cacheStale = false;
     if (cacheResult.HasValue())

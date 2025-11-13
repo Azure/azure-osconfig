@@ -3,16 +3,22 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FileRegexMatch.h>
+#include <FileStream.h>
 #include <Optional.h>
 #include <ProcedureMap.h>
 #include <Regex.h>
 #include <Result.h>
 #include <dirent.h>
-#include <fstream>
+
+#define AssertResult(variable, ...)                                                                                                                    \
+    if (!(variable).HasValue())                                                                                                                        \
+    {                                                                                                                                                  \
+        OsConfigLogError(context.GetLogHandle(), __VA_ARGS__);                                                                                         \
+        return (variable).Error();                                                                                                                     \
+    }
 
 namespace ComplianceEngine
 {
-using std::ifstream;
 using std::string;
 using std::regex_constants::syntax_option_type;
 namespace
@@ -33,11 +39,9 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
 
-    ifstream input(filename);
-    if (!input.is_open())
-    {
-        return Error("Failed to open file: " + filename, errno);
-    }
+    auto input = FileStream::Open(filename, context);
+    AssertResult(input, "Failed to open '%s'", filename.c_str());
+
     try
     {
         matchRegex = regex(matchPattern, syntaxOptions.first);
@@ -53,18 +57,16 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     }
 
     int lineNumber = 0;
-
-    string line;
-
     // Special case for empty files, read empty line then
-    while (getline(input, line) || lineNumber == 0)
+    for (auto line : input->Lines())
     {
+        AssertResult(line, "Failed to read '%s'", filename.c_str());
         lineNumber++;
-        OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: '%s', pattern: '%s'", lineNumber, line.c_str(), matchPattern.c_str());
+        OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: '%s', pattern: '%s'", lineNumber, line->c_str(), matchPattern.c_str());
         smatch match;
-        if (regex_search(line, match, matchRegex.Value()))
+        if (regex_search(line.Value(), match, matchRegex.Value()))
         {
-            OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+            OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line->c_str());
             if (stateRegex.HasValue())
             {
                 assert(match.ready());
@@ -73,13 +75,13 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
                 OsConfigLogDebug(context.GetLogHandle(), "Value to match: %s", valueToMatch.c_str());
                 if (regex_search(valueToMatch, stateRegex.Value()))
                 {
-                    OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+                    OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line->c_str());
                     return true;
                 }
             }
             else
             {
-                OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+                OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line->c_str());
                 return true;
             }
         }
