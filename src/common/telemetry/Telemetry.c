@@ -170,7 +170,7 @@ const char* OSConfigTelemetryGetCachedOsName(void)
 {
     if (NULL == g_cachedOsName)
     {
-        g_cachedOsName = GetOsName(g_telemetryLog);
+        g_cachedOsName = GetOsPrettyName(g_telemetryLog);
     }
     return g_cachedOsName;
 }

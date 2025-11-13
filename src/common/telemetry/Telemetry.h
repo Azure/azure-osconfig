@@ -81,7 +81,7 @@ static inline int OSConfigTelemetryIsInitialized(void)
 }
 static inline const char* OSConfigTelemetryGetCachedOsName(void)
 {
-    return "unknown";
+    return "N/A";
 }
 #endif
 
