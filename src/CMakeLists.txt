@@ -28,7 +28,7 @@ set(MINOR_VERSION "0" CACHE STRING "Minor version")
 set(PATCH_VERSION "5" CACHE STRING "Patch version")
 
 # External Projects
-set(ONEDS_CPP_SDK_VERSION "3.9.22.1" CACHE STRING "1DS CPP SDK version")
+set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
 
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)

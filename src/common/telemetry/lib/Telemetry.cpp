@@ -84,7 +84,7 @@ TelemetryManager::~TelemetryManager() noexcept
         }
         // Minimal sleep required for upload to be triggered properly
         // See https://github.com/microsoft/cpp_client_telemetry/issues/1391
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // Minimal sleep required for upload to be triggered properly
         m_logManager->FlushAndTeardown();
     }
     catch(...)
