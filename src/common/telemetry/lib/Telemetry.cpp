@@ -43,11 +43,24 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
 
     status_t status = STATUS_SUCCESS;
     m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
-
     if (STATUS_SUCCESS != status)
     {
         OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
         throw std::runtime_error("Telemetry initialization failed");
+    }
+
+    status = m_logManager->LoadTransmitProfiles(TRANSMIT_PROFILE);
+    if (STATUS_SUCCESS != status)
+    {
+        OsConfigLogError(m_log, "Failed to load transmit profile. status=%d", status);
+        throw std::runtime_error("Failed to load transmit profile");
+    }
+
+    status = m_logManager->SetTransmitProfile("Telemetry_CustomProfile");
+    if (STATUS_SUCCESS != status)
+    {
+        OsConfigLogError(m_log, "Failed to set transmit profile. status=%d", status);
+        throw std::runtime_error("Failed to set transmit profile");
     }
 
     m_logger = m_logManager->GetLogger(API_KEY, "logger_direct");
@@ -69,7 +82,9 @@ TelemetryManager::~TelemetryManager() noexcept
         {
             OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(10)); // Minimal sleep required for upload to be triggered properly
+        // Minimal sleep required for upload to be triggered properly
+        // See https://github.com/microsoft/cpp_client_telemetry/issues/1391
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
         m_logManager->FlushAndTeardown();
     }
     catch(...)

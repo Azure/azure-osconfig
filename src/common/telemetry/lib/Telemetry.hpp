@@ -24,6 +24,17 @@ class TelemetryManager
 public:
     static constexpr std::chrono::seconds CONFIG_DEFAULT_TEARDOWN_TIME{5};
     static constexpr const char* TELEMETRY_VERSION = "1.0.0";
+    // Custom transmit profile to not automatically upload events
+    // Only a default rule defined with no timers (all -1)
+    // https://github.com/microsoft/cpp_client_telemetry/blob/main/docs/custom-transmit-profile.md
+    static constexpr const char* TRANSMIT_PROFILE = R"(
+[{
+    "name": "Telemetry_CustomProfile",
+    "rules": [
+    { "timers": [  -1,  -1,  -1 ] }
+    ]
+}]
+)";
 
     explicit TelemetryManager(bool enableDebug = false, std::chrono::seconds teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME, OsConfigLogHandle logHandle = nullptr);
 
