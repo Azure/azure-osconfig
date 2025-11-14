@@ -15,6 +15,13 @@
 #include <memory>
 #include <string>
 
+#define AssertResult(variable, ...)                                                                                                                    \
+    if (!(variable).HasValue())                                                                                                                        \
+    {                                                                                                                                                  \
+        OsConfigLogError(context.GetLogHandle(), __VA_ARGS__);                                                                                         \
+        return (variable).Error();                                                                                                                     \
+    }
+
 struct json_object_t;
 struct json_value_t;
 
