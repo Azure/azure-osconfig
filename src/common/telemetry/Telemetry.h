@@ -134,24 +134,23 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
     }
 }
 
-static inline void OSConfigProcessTelemetryFile(void)
-{
-    FILE* telemetryFile = OSConfigTelemetryGetFile();
-    const char* telemetryFileName = OSConfigTelemetryGetFileName();
-    const char* telemetryModuleDirectory = OSConfigTelemetryGetModuleDirectory();
-
-    if (telemetryFile && telemetryFileName && telemetryModuleDirectory)
-    {
-        char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectory, TELEMETRY_BINARY_NAME, telemetryFileName,
-            TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
-        if (NULL != command)
-        {
-            ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);
-            FREE_MEMORY(command);
-        }
-        OSConfigTelemetryCleanup();
+#define OSConfigProcessTelemetryFile()                                                                                                                 \
+    {                                                                                                                                                  \
+        FILE* telemetryFile = OSConfigTelemetryGetFile();                                                                                              \
+        const char* telemetryFileName = OSConfigTelemetryGetFileName();                                                                                \
+        const char* telemetryModuleDirectory = OSConfigTelemetryGetModuleDirectory();                                                                  \
+        if (telemetryFile && telemetryFileName && telemetryModuleDirectory)                                                                            \
+        {                                                                                                                                              \
+            char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectory, TELEMETRY_BINARY_NAME, telemetryFileName,           \
+                TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
+            if (NULL != command)                                                                                                                       \
+            {                                                                                                                                          \
+                ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);                                           \
+                FREE_MEMORY(command);                                                                                                                  \
+            }                                                                                                                                          \
+            OSConfigTelemetryCleanup();                                                                                                                \
+        }                                                                                                                                              \
     }
-}
 
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status)                                                                                      \
     {                                                                                                                                                  \
@@ -166,7 +165,7 @@ static inline void OSConfigProcessTelemetryFile(void)
         const char* _timestamp = GetFormattedTime();                                                                                                   \
         int64_t _elapsed_us = 0;                                                                                                                       \
         const char* _distroName = OSConfigTelemetryGetCachedOsName();                                                                                  \
-        OSConfigGetElapsedTime(_elapsed_us);                                                                                                           \
+        OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"StatusTrace\","                                                                                                           \
