@@ -11,7 +11,10 @@
 
 namespace ComplianceEngine
 {
+namespace InputStreamIterators
+{
 class LinesRange;
+} // namespace InputStreamIterators
 
 // This class wraps the C++ std::ifstream with
 // CE-specific error handling and a read size limit.
@@ -54,7 +57,7 @@ public:
     const std::string& GetFileName() const;
 
     // Obtains a range for line-by-line range-based iteration.
-    LinesRange Lines() &;
+    InputStreamIterators::LinesRange Lines() &;
 
     // Obtains the number of bytes read so far.
     std::size_t BytesRead() const;
@@ -77,6 +80,8 @@ private:
     std::size_t mBytesRead = 0;
 };
 
+namespace InputStreamIterators
+{
 // This class allows to iterate a file line by line.
 class LinesIterator
 {
@@ -129,6 +134,7 @@ public:
 private:
     InputStream& mStream;
 };
+} // namespace InputStreamIterators
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_FILE_STREAM_H

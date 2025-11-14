@@ -126,9 +126,9 @@ const string& InputStream::GetFileName() const
     return mFileName;
 }
 
-LinesRange InputStream::Lines() &
+InputStreamIterators::LinesRange InputStream::Lines() &
 {
-    return LinesRange(*this);
+    return InputStreamIterators::LinesRange(*this);
 }
 
 size_t InputStream::BytesRead() const
@@ -136,6 +136,8 @@ size_t InputStream::BytesRead() const
     return mBytesRead;
 }
 
+namespace InputStreamIterators
+{
 LinesIterator::LinesIterator(InputStream& stream)
     : mStream(stream)
 {
@@ -267,5 +269,5 @@ LinesIterator LinesRange::end() const
 {
     return LinesIterator(mStream);
 }
-
+} // namespace InputStreamIterators
 } // namespace ComplianceEngine
