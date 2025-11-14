@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <CommonUtils.h>
 #include <EnsureFilePermissions.h>
 #include <EnsureInteractiveUsersHomeDirectoriesAreConfigured.h>
 #include <Evaluator.h>
 #include <ListValidShells.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <UsersIterator.h>
 #include <fcntl.h>
 #include <fstream>
@@ -97,6 +97,7 @@ Result<Status> AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indicator
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name,
                 subResult.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("AuditEnsureFilePermissions", subResult.Error().code);
             return subResult;
         }
         indicators.Back().status = subResult.Value();
@@ -150,6 +151,7 @@ Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indic
                 {
                     status = errno;
                     OsConfigLogError(context.GetLogHandle(), "Failed to create home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                    OSConfigTelemetryStatusTrace("mkdir", status);
                     return Error(string("Failed to create home directory: ") + strerror(status), status);
                 }
             }
@@ -190,6 +192,7 @@ Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indic
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd.pw_dir,
                 pwd.pw_name, subResult.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("RemediateEnsureFilePermissionsHelper", subResult.Error().code);
             result = Status::NonCompliant;
         }
         indicators.Back().status = subResult.Value();

@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <Bindings.h>
-#include <CommonUtils.h>
 #include <PackageInstalled.h>
 #include <ProcedureMap.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <cstdio>
 #include <fstream>
 #include <functional>
@@ -531,6 +531,7 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
             else
             {
                 OsConfigLogError(log, "Failed to save package cache: %s", saveResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("SavePackageCache", saveResult.Error().code);
             }
         }
         else
@@ -538,10 +539,12 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
             if (cacheStale)
             {
                 OsConfigLogError(log, "Failed to get installed packages: %s, reusing stale cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
             }
             else
             {
                 OsConfigLogError(log, "Failed to get installed packages: %s, cannot use cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
                 return Error("Failed to get installed packages: " + cacheResult.Error().message);
             }
         }

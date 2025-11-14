@@ -4,6 +4,7 @@
 #include <EnsureSysctl.h>
 #include <Regex.h>
 #include <StringTools.h>
+#include <Telemetry.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -66,6 +67,7 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
     if (!execResult.HasValue())
     {
         OsConfigLogError(log, "Failed to execute systemd-sysctl command");
+        OSConfigTelemetryStatusTrace("ExecuteCommand", execResult.Error().code);
         return execResult.Error();
     }
 
