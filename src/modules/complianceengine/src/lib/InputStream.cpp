@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <CommonUtils.h>
 #include <InputStream.h>
 #include <cassert>
 #include <fcntl.h>
@@ -252,12 +253,14 @@ LinesRange::LinesRange(LinesRange&& other) noexcept
 
 LinesRange& LinesRange::operator=(const LinesRange& other)
 {
+    UNUSED(other);
     assert(&mStream == &other.mStream);
     return *this;
 }
 
 LinesRange& LinesRange::operator=(LinesRange&& other) noexcept
 {
+    UNUSED(other);
     assert(&mStream == &other.mStream);
     return *this;
 }
