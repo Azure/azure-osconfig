@@ -3,7 +3,7 @@
 
 #include <Bindings.h>
 #include <CommonUtils.h>
-#include <FileStream.h>
+#include <InputStream.h>
 #include <PackageInstalled.h>
 #include <ProcedureMap.h>
 #include <Result.h>
@@ -86,7 +86,7 @@ Result<PackageCache> LoadPackageCache(const std::string& path, ContextInterface&
     cache.lastUpdateTime = 0;
     cache.packageManager = PackageManagerType::Autodetect;
     cache.packages.clear();
-    auto cacheFileResult = ComplianceEngine::FileStream::Open(path, context);
+    auto cacheFileResult = ComplianceEngine::InputStream::Open(path, context);
     if (!cacheFileResult.HasValue())
     {
         return cacheFileResult.Error();
@@ -122,7 +122,7 @@ Result<PackageCache> LoadPackageCache(const std::string& path, ContextInterface&
         return Error("Invalid timestamp in cache file header");
     }
 
-    while (!cacheFile.AtEnd())
+    while (cacheFile.Good())
     {
         auto line = cacheFile.ReadLine();
         if (!line)

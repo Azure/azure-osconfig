@@ -3,19 +3,12 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FileRegexMatch.h>
-#include <FileStream.h>
+#include <InputStream.h>
 #include <Optional.h>
 #include <ProcedureMap.h>
 #include <Regex.h>
 #include <Result.h>
 #include <dirent.h>
-
-#define AssertResult(variable, ...)                                                                                                                    \
-    if (!(variable).HasValue())                                                                                                                        \
-    {                                                                                                                                                  \
-        OsConfigLogError(context.GetLogHandle(), __VA_ARGS__);                                                                                         \
-        return (variable).Error();                                                                                                                     \
-    }
 
 namespace ComplianceEngine
 {
@@ -39,7 +32,7 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
 
-    auto input = FileStream::Open(filename, context);
+    auto input = InputStream::Open(filename, context);
     AssertResult(input, "Failed to open '%s'", filename.c_str());
 
     try

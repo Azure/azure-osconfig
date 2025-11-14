@@ -3,7 +3,7 @@
 
 #include <CommonUtils.h>
 #include <DistributionInfo.h>
-#include <FileStream.h>
+#include <InputStream.h>
 #include <Logging.h>
 #include <Result.h>
 #include <RevertMap.h>

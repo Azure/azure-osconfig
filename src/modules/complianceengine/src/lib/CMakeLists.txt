@@ -138,7 +138,7 @@ add_library(complianceenginelib STATIC
     DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
-    FileStream.cpp
+        InputStream.cpp
     FileTreeWalk.cpp
     FilesystemScanner.cpp
     GroupsIterator.cpp
