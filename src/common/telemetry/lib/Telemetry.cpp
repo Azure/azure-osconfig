@@ -82,9 +82,9 @@ TelemetryManager::~TelemetryManager() noexcept
         {
             OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
         }
-        // Minimal sleep required for upload to be triggered properly
+        // TODO: Minimal sleep required for upload to be triggered properly due to UploadNow being async
         // See https://github.com/microsoft/cpp_client_telemetry/issues/1391
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // Minimal sleep required for upload to be triggered properly
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         m_logManager->FlushAndTeardown();
     }
     catch(...)
