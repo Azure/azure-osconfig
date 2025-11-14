@@ -54,7 +54,7 @@ void SetMaxLogSizeDebugMultiplier(unsigned int value);
 bool IsConsoleLoggingEnabled(void);
 void SetConsoleLoggingEnabled(bool enabledOrDisabled);
 FILE* GetLogFile(OsConfigLogHandle log);
-char* GetFormattedTime(void);
+const char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 

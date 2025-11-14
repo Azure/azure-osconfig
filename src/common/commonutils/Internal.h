@@ -30,6 +30,8 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <CommonUtils.h>
+#include <Telemetry.h>
+#include <version.h>
 
 #include "../asb/Asb.h"
 
