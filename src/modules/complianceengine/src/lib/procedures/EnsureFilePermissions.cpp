@@ -3,6 +3,7 @@
 #include <CommonUtils.h>
 #include <EnsureFilePermissions.h>
 #include <Evaluator.h>
+#include <Telemetry.h>
 #include <fnmatch.h>
 #include <fts.h>
 #include <grp.h>

@@ -8,6 +8,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include <CommonUtils.h>
 #include <Logging.h>
 #include <dlfcn.h>
 #include <errno.h>

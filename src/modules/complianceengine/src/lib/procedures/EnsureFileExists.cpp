@@ -3,6 +3,7 @@
 
 #include <CommonUtils.h>
 #include <EnsureFileExists.h>
+#include <Telemetry.h>
 
 namespace ComplianceEngine
 {
@@ -20,6 +21,7 @@ Result<Status> AuditEnsureFileExists(const AuditEnsureFileExistsParams& params, 
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 

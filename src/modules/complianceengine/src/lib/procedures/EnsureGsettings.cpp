@@ -6,6 +6,7 @@
 #include <Evaluator.h>
 #include <ProcedureMap.h>
 #include <StringTools.h>
+#include <Telemetry.h>
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
@@ -52,6 +53,7 @@ Result<Status> AuditEnsureGsettings(const EnsureGsettingsParams& params, Indicat
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid keyValue value not a number: %s", params.value.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid argument value: not a number " + params.value, EINVAL);
         }
     }

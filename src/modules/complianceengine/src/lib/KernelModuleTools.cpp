@@ -2,6 +2,7 @@
 #include <Evaluator.h>
 #include <KernelModuleTools.h>
 #include <Regex.h>
+#include <Telemetry.h>
 #include <dirent.h>
 #include <fts.h>
 #include <iostream>
@@ -59,6 +60,7 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
         if (!fts)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to open %s - errno %d", modulesVersionDir.c_str(), errno);
+            OSConfigTelemetryStatusTrace("fts_open", errno);
             continue;
         }
         auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(fts, fts_close);
