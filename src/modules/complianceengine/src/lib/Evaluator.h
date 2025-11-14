@@ -15,10 +15,10 @@
 #include <memory>
 #include <string>
 
-#define AssertResult(variable, fmt, ...)                                                                                                               \
+#define AssertResult(variable, ...)                                                                                                                    \
     if (!(variable).HasValue())                                                                                                                        \
     {                                                                                                                                                  \
-        OsConfigLogError(context.GetLogHandle(), fmt, __VA_ARGS__);                                                                                    \
+        OsConfigLogError(context.GetLogHandle(), __VA_ARGS__);                                                                                         \
         return (variable).Error();                                                                                                                     \
     }
 

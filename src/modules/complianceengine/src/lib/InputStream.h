@@ -8,6 +8,7 @@
 #include <Result.h>
 #include <cassert>
 #include <fstream>
+#include <memory>
 
 namespace ComplianceEngine
 {
@@ -74,7 +75,8 @@ private:
     std::string mFileName;
 
     // The underlying stream.
-    std::ifstream mStream;
+    // Note: wrapped with unique ptr as fstream is not movable on RHEL7-based platforms.
+    std::unique_ptr<std::ifstream> mStream;
 
     // The number of bytes read so far.
     std::size_t mBytesRead = 0;

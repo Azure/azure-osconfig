@@ -86,23 +86,21 @@ Result<PackageCache> LoadPackageCache(const std::string& path, ContextInterface&
     cache.lastUpdateTime = 0;
     cache.packageManager = PackageManagerType::Autodetect;
     cache.packages.clear();
-    auto cacheFileResult = ComplianceEngine::InputStream::Open(path, context);
-    if (!cacheFileResult.HasValue())
-    {
-        return cacheFileResult.Error();
-    }
-    auto cacheFile = std::move(cacheFileResult.Value());
+    auto cacheFile = ComplianceEngine::InputStream::Open(path, context);
+    AssertResult(cacheFile, "Failed to open cache file");
 
-    auto header = cacheFile.ReadLine();
-    if (!header.HasValue())
+    auto header = cacheFile->ReadLine();
+    AssertResult(header, "Failed to read cache header");
+    if (0 != header->find(pkgCacheHeader, 0))
     {
-        OsConfigLogError(context.GetLogHandle(), "Failed to read '%s'", path.c_str());
-        return header.Error();
+        OsConfigLogError(context.GetLogHandle(), "Invalid cache file format");
+        return Error("Invalid cache file format");
     }
 
-    auto separatorPos = header->find('@');
+    const auto separatorPos = header->find('@');
     if (std::string::npos == separatorPos)
     {
+        OsConfigLogError(context.GetLogHandle(), "Invalid cache file format");
         return Error("Invalid cache file header format");
     }
 
@@ -122,14 +120,9 @@ Result<PackageCache> LoadPackageCache(const std::string& path, ContextInterface&
         return Error("Invalid timestamp in cache file header");
     }
 
-    while (cacheFile.Good())
+    for (auto line : cacheFile->Lines())
     {
-        auto line = cacheFile.ReadLine();
-        if (!line)
-        {
-            OsConfigLogError(context.GetLogHandle(), "%s", line.Error().message.c_str());
-            return line.Error();
-        }
+        AssertResult(line, "Failed to read cache entry");
 
         if (!line->empty())
         {

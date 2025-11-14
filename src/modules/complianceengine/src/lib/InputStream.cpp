@@ -15,7 +15,6 @@ InputStream::InputStream(string fileName, ContextInterface& context)
     : mContext(context),
       mFileName(std::move(fileName))
 {
-    assert(!mStream.is_open());
 }
 
 InputStream::InputStream(InputStream&& other) noexcept
@@ -23,7 +22,8 @@ InputStream::InputStream(InputStream&& other) noexcept
       mFileName(std::move(other.mFileName)),
       mStream(std::move(other.mStream))
 {
-    assert(mStream.is_open());
+    assert(mStream);
+    assert(mStream->is_open());
 }
 
 InputStream& InputStream::operator=(InputStream&& other) noexcept
@@ -35,7 +35,8 @@ InputStream& InputStream::operator=(InputStream&& other) noexcept
     assert(&mContext == &other.mContext);
     mFileName = std::move(other.mFileName);
     mStream = std::move(other.mStream);
-    assert(mStream.is_open());
+    assert(mStream);
+    assert(mStream->is_open());
     return *this;
 }
 
@@ -50,20 +51,21 @@ Result<InputStream> InputStream::Open(const string& fileName, ContextInterface& 
     }
 
     InputStream result(fileName, context);
-    result.mStream.open(context.GetSpecialFilePath(fileName));
-    if (!result.mStream.is_open())
+    result.mStream.reset(new std::ifstream(context.GetSpecialFilePath(fileName)));
+    if (!result.mStream->is_open())
     {
         OsConfigLogInfo(context.GetLogHandle(), "Failed to open '%s'", result.mFileName.c_str());
         return Error(string("failed to open '") + result.mFileName + "'");
     }
 
-    assert(result.mStream.is_open());
+    assert(result.Good());
     return result;
 }
 
 Result<string> InputStream::ReadLine()
 {
-    assert(mStream.is_open());
+    assert(mStream);
+    assert(mStream->is_open());
     if (mBytesRead >= cMaxReadSize)
     {
         OsConfigLogError(mContext.GetLogHandle(), "Maximum file '%s' read size reached", mFileName.c_str());
@@ -71,14 +73,14 @@ Result<string> InputStream::ReadLine()
     }
 
     // We want to always check with Good() before reading
-    if (mStream.eof())
+    if (mStream->eof())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Attempted to read file '%s' after EOF", mFileName.c_str());
         return Error(string("attempted to read file '") + mFileName + "' after EOF", EBADFD);
     }
 
     // We won't return empty strings in case an error happened previously
-    if (mStream.fail() || mStream.bad())
+    if (mStream->fail() || mStream->bad())
     {
         OsConfigLogError(mContext.GetLogHandle(), "Attempted to read file '%s' after failure", mFileName.c_str());
         return Error(string("attempted to read file '") + mFileName + "' after failure", EBADFD);
@@ -88,20 +90,20 @@ Result<string> InputStream::ReadLine()
 
     // Read the data
     string line;
-    std::getline(mStream, line);
+    std::getline(*mStream, line);
 
     // Include the line size without the newline character
     mBytesRead += line.size();
-    if (!mStream.eof())
+    if (!mStream->eof())
     {
         // Here we know a newline has been parsed.
         ++mBytesRead;
     }
 
-    if (mStream.bad())
+    if (mStream->bad())
     {
         // fail() may return true here in case there's no trailing newline character, so we stick to bad().
-        OsConfigLogError(mContext.GetLogHandle(), "Failed to read line from '%s': %d", mFileName.c_str(), static_cast<int>(mStream.rdstate()));
+        OsConfigLogError(mContext.GetLogHandle(), "Failed to read line from '%s': %d", mFileName.c_str(), static_cast<int>(mStream->rdstate()));
         return Error("failed to read line from '" + mFileName + "'", EBADFD);
     }
 
@@ -110,19 +112,19 @@ Result<string> InputStream::ReadLine()
 
 bool InputStream::Good() const
 {
-    assert(mStream.is_open());
-    return mBytesRead < cMaxReadSize && mStream.good();
+    assert(mStream->is_open());
+    return mBytesRead < cMaxReadSize && mStream->good();
 }
 
 bool InputStream::AtEnd() const
 {
-    assert(mStream.is_open());
-    return mStream.eof();
+    assert(mStream->is_open());
+    return mStream->eof();
 }
 
 const string& InputStream::GetFileName() const
 {
-    assert(mStream.is_open());
+    assert(mStream->is_open());
     return mFileName;
 }
 

@@ -50,8 +50,7 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     }
 
     int lineNumber = 0;
-    // Special case for empty files, read empty line then
-    for (auto line : input->Lines())
+    for (const auto& line : input->Lines())
     {
         AssertResult(line, "Failed to read '%s'", filename.c_str());
         lineNumber++;
