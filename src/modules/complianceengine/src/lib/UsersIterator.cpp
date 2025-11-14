@@ -1,6 +1,7 @@
 // // Copyright (c) Microsoft Corporation. All rights reserved.
 // // Licensed under the MIT License.
 
+#include <Telemetry.h>
 #include <UsersIterator.h>
 
 namespace ComplianceEngine
@@ -21,6 +22,7 @@ Result<UsersRange> UsersRange::Make(std::string path, OsConfigLogHandle logHandl
     if (nullptr == stream)
     {
         OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(errno));
+        OSConfigTelemetryStatusTrace("fopen", errno);
         return Error("Failed to create UsersRange: " + std::string(strerror(errno)), errno);
     }
 

@@ -4,6 +4,7 @@
 #include <Regex.h>
 #include <ScopeGuard.h>
 #include <StringTools.h>
+#include <Telemetry.h>
 #include <algorithm>
 #include <array>
 #include <dirent.h>
@@ -200,6 +201,7 @@ Result<Status> AuditEnsureDefaultUserUmaskIsConfigured(IndicatorsTree& indicator
         if (ENOENT != status)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to open directory '%s': %s", profiledPath.c_str(), strerror(status));
+            OSConfigTelemetryStatusTrace("opendir", status);
             return Error(string("Failed to open directory '") + profiledPath + "': " + strerror(status), status);
         }
     }

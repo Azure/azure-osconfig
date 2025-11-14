@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <GroupsIterator.h>
+#include <Telemetry.h>
 #include <cerrno>
 #include <pwd.h>
 
@@ -25,6 +26,7 @@ Result<GroupsRange> GroupsRange::Make(std::string path, OsConfigLogHandle logHan
     {
         int status = errno;
         OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(status));
+        OSConfigTelemetryStatusTrace("fopen", status);
         return Error("Failed to create GroupsRange: " + std::string(strerror(status)), status);
     }
 
