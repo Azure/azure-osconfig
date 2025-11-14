@@ -26,14 +26,6 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
     , m_logManager(nullptr)
     , m_logger(nullptr)
 {
-#if defined(DEBUG) || defined(_DEBUG) || !defined(NDEBUG)
-    SetLoggingLevel(LoggingLevelDebug);
-#endif
-    if (enableDebug)
-    {
-        SetLoggingLevel(LoggingLevelDebug);
-    }
-
     m_logConfig["name"] = "TelemetryModule";
     m_logConfig["version"] = TELEMETRY_VERSION;
     m_logConfig["config"]["host"] = "*";
