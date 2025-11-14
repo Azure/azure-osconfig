@@ -28,7 +28,6 @@ jobs:
         ${{
           (github.ref == 'refs/heads/main' && secrets.ONEDS_TENANT_PROD) ||
           (github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD) ||
-          (github.ref == 'refs/heads/ahbenmes/telemetry_staging' && secrets.ONEDS_TENANT_NONPROD) ||
           ''
         }}
     with:
