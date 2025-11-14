@@ -29,7 +29,7 @@ public:
     // https://github.com/microsoft/cpp_client_telemetry/blob/main/docs/custom-transmit-profile.md
     static constexpr const char* TRANSMIT_PROFILE = R"(
 [{
-    "name": "Telemetry_CustomProfile",
+    "name": "Telemetry_NoAutoUpload_CustomProfile",
     "rules": [
     { "timers": [  -1,  -1,  -1 ] }
     ]

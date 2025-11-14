@@ -56,7 +56,7 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
         throw std::runtime_error("Failed to load transmit profile");
     }
 
-    status = m_logManager->SetTransmitProfile("Telemetry_CustomProfile");
+    status = m_logManager->SetTransmitProfile("Telemetry_NoAutoUpload_CustomProfile");
     if (STATUS_SUCCESS != status)
     {
         OsConfigLogError(m_log, "Failed to set transmit profile. status=%d", status);
