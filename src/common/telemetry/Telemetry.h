@@ -24,6 +24,7 @@
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define TELEMETRY_TIMEOUT_SECONDS 10
+#define TELEMETRY_NOTFOUND_STRING "N/A"
 
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
@@ -81,7 +82,7 @@ static inline int OSConfigTelemetryIsInitialized(void)
 }
 static inline const char* OSConfigTelemetryGetCachedOsName(void)
 {
-    return "N/A";
+    return TELEMETRY_NOTFOUND_STRING;
 }
 #endif
 
@@ -183,9 +184,9 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            _timestamp ? _timestamp : "N/A", __FILE__, line, __func__, _ruleCodename ? _ruleCodename : "N/A",                                          \
-            (callingFunctionName) ? (callingFunctionName) : "N/A", status, _scenarioName, _elapsed_us, _distroName ? _distroName : "N/A",              \
-            _correlationId ? _correlationId : "N/A", OSCONFIG_VERSION);                                                                                \
+            _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, __FILE__, line, __func__, _ruleCodename ? _ruleCodename : TELEMETRY_NOTFOUND_STRING,  \
+            (callingFunctionName) ? (callingFunctionName) : TELEMETRY_NOTFOUND_STRING, status, _scenarioName, _elapsed_us,                             \
+            _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
@@ -210,8 +211,9 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            timestamp ? timestamp : "N/A", (baselineName) ? (baselineName) : "N/A", (mode) ? (mode) : "N/A", durationSeconds,                          \
-            distroName ? distroName : "N/A", correlationId ? correlationId : "N/A", OSCONFIG_VERSION);                                                 \
+            timestamp ? timestamp : TELEMETRY_NOTFOUND_STRING, (baselineName) ? (baselineName) : TELEMETRY_NOTFOUND_STRING,                            \
+            (mode) ? (mode) : TELEMETRY_NOTFOUND_STRING, durationSeconds, distroName ? distroName : TELEMETRY_NOTFOUND_STRING,                         \
+            correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
@@ -237,8 +239,9 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            timestamp ? timestamp : "N/A", (componentName) ? (componentName) : "N/A", (objectName) ? (objectName) : "N/A", objectResult, microseconds, \
-            distroName ? distroName : "N/A", correlationId ? correlationId : "N/A", OSCONFIG_VERSION);                                                 \
+            timestamp ? timestamp : TELEMETRY_NOTFOUND_STRING, (componentName) ? (componentName) : TELEMETRY_NOTFOUND_STRING,                          \
+            (objectName) ? (objectName) : TELEMETRY_NOTFOUND_STRING, objectResult, microseconds, distroName ? distroName : TELEMETRY_NOTFOUND_STRING,  \
+            correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
