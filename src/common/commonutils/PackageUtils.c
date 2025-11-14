@@ -463,7 +463,14 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 
     if (0 == status)
     {
-        status = IsPackageInstalled(packageName, log);
+        if ((0 != (status = IsPackageInstalled(packageName, log))) && (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent))
+        {
+            // When package installation ends with 0 (success) but the package is not installed after, do one retry without the --cacheonly option
+            if (0 == (status = CheckOrInstallPackage(commandTemplate, g_tdnfIsPresent ? g_tdnf : (g_dnfIsPresent ? g_dnf : g_yum), packageName, log)))
+            {
+                status = IsPackageInstalled(packageName, log);
+            }
+        }
     }
 
     if (0 == status)
