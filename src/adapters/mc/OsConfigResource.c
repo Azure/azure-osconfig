@@ -48,6 +48,7 @@ OsConfigLogHandle GetLog(void)
     if (NULL == g_log)
     {
         g_log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+        OSConfigTelemetrySetLogger(g_log);
     }
 
     return g_log;

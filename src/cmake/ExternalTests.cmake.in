@@ -1,0 +1,8 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# This file is used to add external test targets not built by the
+# main build. Add subdirs for any external target containing tests
+
+subdirs("@TELEMETRY_TESTS_DIR@")
+subdirs("@TELEMETRY_BIN_TESTS_DIR@")

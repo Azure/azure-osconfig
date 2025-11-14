@@ -73,7 +73,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
-        payload = LoadStringFromFile(fileName, false, GetLog());
+        payload = LoadStringFromFile(fileName, false, log);
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
             // Do not call MpiSetDesired unless this desired configuration is different from previous
@@ -81,10 +81,10 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
             {
                 OsConfigLogInfo(log, "Watcher: processing DC payload from '%s'", fileName);
 
-                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, log);
                 if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
                 {
-                    mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                    mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, log);
                 }
 
                 if (MPI_OK == mpiResult)
