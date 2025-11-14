@@ -59,7 +59,7 @@ Result<InputStream> InputStream::Open(const string& fileName, ContextInterface& 
     }
 
     assert(result.Good());
-    return result;
+    return Result<InputStream>(std::move(result));
 }
 
 Result<string> InputStream::ReadLine()
