@@ -11,7 +11,6 @@ find_package(GTest REQUIRED)
 add_executable(commontests
     CommonUtilsUT.cpp
     SshUtilsUT.cpp
-    TelemetryUT.cpp
     Helper.c
 )
 
@@ -25,7 +24,6 @@ target_link_libraries(commontests
     commonutils
     asb
     parsonlib
-    telemetry
 )
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

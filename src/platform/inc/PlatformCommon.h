@@ -25,7 +25,6 @@
 #include <Mpi.h>
 #include <parson.h>
 #include <version.h>
-#include <Telemetry.h>
 
 #ifdef __cplusplus
 extern "C"

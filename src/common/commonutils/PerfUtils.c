@@ -10,7 +10,6 @@ int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
     if (NULL == clock)
     {
         OsConfigLogError(log, "StartPerfClock called with an clock invalid argument");
-        OSConfigTelemetryStatusTrace("clock", EINVAL);
         return status;
     }
 
@@ -19,7 +18,6 @@ int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
     if (0 != (status = clock_gettime(CLOCK_MONOTONIC, &(clock->start))))
     {
         OsConfigLogError(log, "StartPerfClock: clock_gettime failed with %d (%d)", status, errno);
-        OSConfigTelemetryStatusTrace("clock_gettime", errno);
     }
 
     return status;
@@ -32,7 +30,6 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
     if (NULL == clock)
     {
         OsConfigLogError(log, "StopPerfClock called with an invalid clock argument");
-        OSConfigTelemetryStatusTrace("clock", EINVAL);
         return status;
     }
 
@@ -42,7 +39,6 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
         {
             OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)",
                 clock->start.tv_sec - clock->stop.tv_sec);
-            OSConfigTelemetryStatusTrace("clock_gettime", ENOENT);
 
             memset(clock, 0, sizeof(PerfClock));
 
@@ -52,7 +48,6 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "StopPerfClock: clock_gettime failed with %d (%d)", status, errno);
-        OSConfigTelemetryStatusTrace("clock_gettime", errno);
     }
 
     return status;
@@ -67,7 +62,6 @@ long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log)
     if ((NULL == clock) || (0 == clock->stop.tv_sec))
     {
         OsConfigLogError(log, "GetPerfClockTime called with an invalid clock argument");
-        OSConfigTelemetryStatusTrace("clock", EINVAL);
         return microseconds;
     }
 
@@ -92,7 +86,6 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
     if ((NULL == clock) || (NULL == componentName))
     {
         OsConfigLogError(log, "LogPerfClock called with an invalid argument");
-        OSConfigTelemetryStatusTrace("clock", EINVAL);
         return;
     }
 
@@ -113,7 +106,6 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
         {
             OsConfigLogError(log, "%s.%s completion time of %ld microseconds is longer than %ld microseconds",
                 componentName, objectName, microseconds, limit);
-            OSConfigTelemetryStatusTrace("microseconds", ETIME);
         }
     }
     else
@@ -124,7 +116,6 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
         {
             OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %.2f minutes (%ld microseconds)",
                 componentName, microseconds, limit / 60000000.0, limit);
-            OSConfigTelemetryStatusTrace("microseconds", ETIME);
         }
     }
 }

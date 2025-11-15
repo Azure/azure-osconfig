@@ -24,22 +24,16 @@ set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigReso
 
 # Create the policy artifacts ZIP packages for the Azure Security Baseline for Linux (Get and Set)
 
-if(BUILD_TELEMETRY)
-    list(APPEND STAGING_COMMANDS_GET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
-    list(APPEND STAGING_COMMANDS_SET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
-endif()
-
 # For Audit (Get):
 
 add_custom_target(stage_create_asb_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/SetAzureLinuxBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.mof" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/SetAzureLinuxBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceAsb> ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    ${STAGING_COMMANDS_GET}
-    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceAsb)
 
 add_custom_target(create_asb_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/AzureLinuxBaseline.zip
@@ -52,10 +46,11 @@ add_custom_target(create_asb_zip ALL
 add_custom_target(stage_create_asb_zip_set
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/SetAzureLinuxBaseline.metaconfig.json
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/AzureLinuxBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.mof" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/SetAzureLinuxBaseline.mof
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/AzureLinuxBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceAsb> ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    ${STAGING_COMMANDS_SET}
-    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceAsb)
 
 add_custom_target(create_asb_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetAzureLinuxBaseline.zip

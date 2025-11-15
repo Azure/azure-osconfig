@@ -38,11 +38,9 @@ CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSize
 {
     if (m_usePersistedCache)
     {
-        int status = LoadPersistedCommandStatus(clientName);
-        if (0 != status)
+        if (0 != LoadPersistedCommandStatus(clientName))
         {
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to load persisted command status for client %s", clientName.c_str());
-            OSConfigTelemetryStatusTrace("LoadPersistedCommandStatus", status);
         }
         else if (m_commandMap.size() > 0)
         {
@@ -85,7 +83,6 @@ CommandRunner::~CommandRunner()
     if (!status.m_id.empty() && (0 != PersistCommandStatus(status)))
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command status for session %s during shutdown", m_clientName.c_str());
-        OSConfigTelemetryStatusTrace("PersistCommandStatus", status.m_exitCode);
     }
 }
 
@@ -95,21 +92,18 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
 
     if (nullptr == clientName)
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid clientName");
-        OSConfigTelemetryStatusTrace("clientName", status);
+        status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid payload");
-        OSConfigTelemetryStatusTrace("payload", status);
+        status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid payloadSizeBytes");
-        OSConfigTelemetryStatusTrace("payloadSizeBytes", status);
+        status = EINVAL;
     }
     else
     {
@@ -118,7 +112,6 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
         if (nullptr == *payload)
         {
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
-            OSConfigTelemetryStatusTrace("payload", ENOMEM);
             status = ENOMEM;
         }
         else
@@ -138,9 +131,8 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Unabled to parse JSON payload: %s", payload);
-        OSConfigTelemetryStatusTrace("Parse", status);
+        status = EINVAL;
     }
     else
     {
@@ -193,25 +185,21 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                             OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
                             break;
                         default:
-                            status = EINVAL;
                             OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
-                            OSConfigTelemetryStatusTrace("m_action", EINVAL);
+                            status = EINVAL;
                     }
                 }
             }
             else
             {
-                status = EINVAL;
                 OsConfigLogError(CommandRunnerLog::Get(), "Invalid object name: %s", objectName);
-                OSConfigTelemetryStatusTrace("objectName", status);
+                status = EINVAL;
             }
         }
         else
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Invalid component name: %s", componentName);
-            OSConfigTelemetryStatusTrace("componentName", status);
-
+            status = EINVAL;
         }
     }
 
@@ -224,15 +212,13 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
 
     if (nullptr == payload)
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid payload");
-        OSConfigTelemetryStatusTrace("payload", status);
+        status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid payloadSizeBytes");
-        OSConfigTelemetryStatusTrace("payloadSizeBytes", status);
+        status = EINVAL;
     }
     else
     {
@@ -259,23 +245,20 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
                 }
                 else
                 {
-                    status = ENOMEM;
                     OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
-                    OSConfigTelemetryStatusTrace("payload", status);
+                    status = ENOMEM;
                 }
             }
             else
             {
-                status = EINVAL;
                 OsConfigLogError(CommandRunnerLog::Get(), "Invalid object name: %s", objectName);
-                OSConfigTelemetryStatusTrace("objectName", status);
+                status = EINVAL;
             }
         }
         else
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Invalid component name: %s", componentName);
-            OSConfigTelemetryStatusTrace("componentName", status);
+            status = EINVAL;
         }
     }
 
@@ -328,9 +311,8 @@ int CommandRunner::Cancel(const std::string id)
     }
     else
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be canceled: %s", id.c_str());
-        OSConfigTelemetryStatusTrace("id", status);
+        status = EINVAL;
     }
 
     return status;
@@ -348,7 +330,6 @@ int CommandRunner::Refresh(const std::string id)
     {
         status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be refreshed: %s", id.c_str());
-        OSConfigTelemetryStatusTrace("CommandIdExists", status);
     }
 
     return status;
@@ -384,20 +365,17 @@ int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
                 else
                 {
                     OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", command->GetId().c_str());
-                    OSConfigTelemetryStatusTrace("CacheCommand", status);
                 }
             }
             else
             {
                 OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command: %s", command->GetId().c_str());
-                OSConfigTelemetryStatusTrace("PersistCommandStatus", status);
             }
         }
         else
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Command already exists with id: %s", command->GetId().c_str());
-            OSConfigTelemetryStatusTrace("CommandIdExists", status);
+            status = EINVAL;
         }
     }
     else
@@ -434,16 +412,14 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
         }
         else
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Cannot cache command with duplicate id: %s", command->GetId().c_str());
-            OSConfigTelemetryStatusTrace("find", status);
+            status = EINVAL;
         }
     }
     else
     {
-        status = EINVAL;
         OsConfigLogError(CommandRunnerLog::Get(), "Cannot cache command with empty id");
-        OSConfigTelemetryStatusTrace("GetId", status);
+        status = EINVAL;
     }
 
     return status;
@@ -528,15 +504,13 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 
         if (document.ParseStream(isw).HasParseError())
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file");
-            OSConfigTelemetryStatusTrace("ParseStream", status);
+            status = EINVAL;
         }
         else if (!document.IsObject())
         {
-            status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an array");
-            OSConfigTelemetryStatusTrace("IsObject", status);
+            status = EINVAL;
         }
         else if (document.HasMember(clientName.c_str()))
         {
@@ -551,10 +525,8 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 
                 if (0 != CacheCommand(command))
                 {
-                    status = -1;
                     OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
-                    OSConfigTelemetryStatusTrace("CacheCommand", status);
-
+                    status = -1;
                 }
             }
         }
@@ -642,9 +614,8 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
         std::FILE* file = std::fopen(m_persistedCacheFile, "w+");
         if (nullptr == file)
         {
-            status = EACCES;
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", m_persistedCacheFile);
-            OSConfigTelemetryStatusTrace("fopen", status);
+            status = EACCES;
         }
         else
         {
@@ -654,7 +625,6 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
             {
                 status = errno ? errno : EINVAL;
                 OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", m_persistedCacheFile, status, errno ? strerror(errno) : "-");
-                OSConfigTelemetryStatusTrace("fputs", status);
             }
 
             fflush(file);

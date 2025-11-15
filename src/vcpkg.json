@@ -1,24 +1,8 @@
 {
-  "name": "azure-osconfig",
-  "version": "1.0.0",
   "dependencies": [
-    {
-      "name": "openssl",
-      "version>=": "3.6.0"
-    },
-    {
-      "name": "curl",
-      "version>=": "8.16.0",
-      "features": ["openssl"]
-    },
     {
       "name": "lua",
       "features": ["cpp"]
-    },
-    "sqlite3",
-    {
-      "name": "nlohmann-json",
-      "version>=": "3.11.3"
     }
   ]
 }

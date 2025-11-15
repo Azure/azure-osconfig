@@ -39,7 +39,6 @@ jobs:
       artifact: ${{ inputs.target }}-fuzzer
       package-type: ${{ inputs.package-type }}
       build-fuzzers: true
-      container-tag: ${{ inputs.container-tag }}
 
   fuzzer-execution:
     if: ${{ inputs.execute }}

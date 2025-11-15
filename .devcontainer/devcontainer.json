@@ -21,5 +21,6 @@
 			]
 		}
 	},
+	"containerEnv": { "VCPKG_ROOT": "/vcpkg" },
 	"remoteUser": "root"
 }

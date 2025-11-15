@@ -3,25 +3,24 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
-    bc \
-    build-essential \
-    cmake \
-    curl \
-    gcovr\
     git \
-    jq \
+    cmake \
+    build-essential \
+    curl \
     libcurl4-openssl-dev \
-    libgmock-dev \
-    libgtest-dev \
     libssl-dev \
-    ninja-build \
-    pkg-config \
-    python3-jsonschema \
+    uuid-dev \
+    libgtest-dev \
+    libgmock-dev \
     rapidjson-dev \
+    ninja-build \
+    python3-jsonschema \
+    wget \
+    gcovr\
+    jq \
+    bc \
     tar \
     unzip \
-    uuid-dev \
-    wget \
     zip
 
 RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb

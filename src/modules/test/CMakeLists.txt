@@ -22,6 +22,7 @@ target_include_directories(moduletest PRIVATE ${MODULES_INC_DIR} ${CMAKE_CURRENT
 
 add_custom_command(TARGET moduletest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:moduletest> ${CMAKE_BINARY_DIR}/moduletest
+    DEPENDS $<TARGET_FILE:moduletest>
 )
 
 set(SRC  ${moduletest_SOURCE_DIR}/recipes)

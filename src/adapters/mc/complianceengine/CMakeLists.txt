@@ -23,19 +23,13 @@ target_link_libraries(OsConfigResourceComplianceEngine
         parsonlib
         complianceenginelib)
 
-if(BUILD_TELEMETRY)
-    list(APPEND STAGING_COMMANDS
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
-endif()
-
 add_custom_target(stage_create_compliance_engine_shell_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.mof" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceComplianceEngine> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceengineschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceengineschema,OUTPUT> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/
-    ${STAGING_COMMANDS}
-    DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema)
 
 add_custom_target(create_compliance_engine_shell_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineShell.zip

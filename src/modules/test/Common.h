@@ -22,7 +22,6 @@
 #include <Asb.h>
 #include <Mmi.h>
 #include <version.h>
-#include <Telemetry.h>
 
 #define LOG_INFO(format, ...) OsConfigLogInfo(NULL, format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) OsConfigLogError(NULL, format, ##__VA_ARGS__)

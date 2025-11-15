@@ -20,15 +20,3 @@ baseurl=https://vault.centos.org/7.9.2009/extras/$basearch/
 enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-
-[centos-sclo-rh]
-name=CentOS-$releasever - SCLo rh
-baseurl=https://vault.centos.org/7.9.2009/sclo/$basearch/rh/
-enabled=1
-gpgcheck=0
-
-[centos-sclo-sclo]
-name=CentOS-$releasever - SCLo sclo
-baseurl=https://vault.centos.org/7.9.2009/sclo/$basearch/sclo/
-enabled=1
-gpgcheck=0

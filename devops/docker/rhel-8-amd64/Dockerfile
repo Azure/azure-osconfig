@@ -14,8 +14,6 @@ RUN yum install -y --disableplugin=subscription-manager \
     ninja-build \
     openssl-devel \
     openssl-devel \
-    perl \
-    perl-IPC-Cmd \
     rpm-build \
     tar \
     unzip \

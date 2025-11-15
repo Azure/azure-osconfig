@@ -42,7 +42,6 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Telemetry.h>
 #include <Mpi.h>
 #include <MpiClient.h>
 #include <version.h>

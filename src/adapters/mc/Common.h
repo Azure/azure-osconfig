@@ -17,7 +17,6 @@
 #include <parson.h>
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Telemetry.h>
 #include <Reasons.h>
 #include <Mpi.h>
 #include <MpiClient.h>

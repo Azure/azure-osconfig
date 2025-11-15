@@ -24,22 +24,16 @@ set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigReso
 
 # Create the policy artifacts ZIP packages for SSH Posture Control (Get and Set)
 
-if(BUILD_TELEMETRY)
-    list(APPEND STAGING_COMMANDS_GET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
-    list(APPEND STAGING_COMMANDS_SET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
-endif()
-
 # For Audit (Get):
 
 add_custom_target(stage_create_ssh_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    ${STAGING_COMMANDS_GET}
-    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceSsh)
 
 add_custom_target(create_ssh_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip
@@ -52,10 +46,11 @@ add_custom_target(create_ssh_zip ALL
 add_custom_target(stage_create_ssh_zip_set
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.metaconfig.json
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/LinuxSshServerSecurityBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.mof
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/LinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    ${STAGING_COMMANDS_SET}
-    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceSsh)
 
 add_custom_target(create_ssh_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip

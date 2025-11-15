@@ -11,7 +11,6 @@
 #include <parson.h>
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Telemetry.h>
 #include <Mmi.h>
 
 #include "Configuration.h"
@@ -102,7 +101,6 @@ static char* LoadConfigurationFromFile(const char* fileName)
     else
     {
         OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", fileToLoadFrom);
-        OSConfigTelemetryStatusTrace("LoadStringFromFile", EINVAL);
     }
 
     return jsonConfiguration;
@@ -164,7 +162,6 @@ static int UpdateConfigurationFile(void)
     if (!existingConfiguration)
     {
         OsConfigLogError(ConfigurationGetLog(), "No configuration file, cannot update configuration");
-        OSConfigTelemetryStatusTrace("LoadConfigurationFromFile", ENOENT);
         return ENOENT;
     }
 
@@ -174,15 +171,13 @@ static int UpdateConfigurationFile(void)
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
-            status = EINVAL;
             OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfigurationFile failed", existingConfiguration);
-            OSConfigTelemetryStatusTrace("json_parse_string", status);
+            status = EINVAL;
         }
         else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
         {
-            status = EINVAL;
             OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfigurationFile failed", existingConfiguration);
-            OSConfigTelemetryStatusTrace("json_value_get_object", status);
+            status = EINVAL;
         }
 
         if (MMI_OK == status)
@@ -194,7 +189,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
-                OSConfigTelemetryStatusTrace("json_object_set_number", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, refreshIntervalName, (double)refreshInterval))
@@ -204,7 +198,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
-                OSConfigTelemetryStatusTrace("json_object_set_number", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
@@ -214,7 +207,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, debugLoggingEnabledName, (double)(debugLoggingEnabled ? 1: 0)))
@@ -224,7 +216,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_debugLoggingEnabledObject, debugLoggingEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubManagementEnabled ? 1 : 0)))
@@ -234,7 +225,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubManagementEnabledObject, iotHubManagementEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
@@ -244,7 +234,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_iotHubProtocolObject, iotHubProtocol);
-                OSConfigTelemetryStatusTrace("json_object_set_number", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, gitManagementEnabledName, (double)(gitManagementEnabled ? 1 : 0)))
@@ -254,7 +243,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
             }
 
             if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
@@ -265,7 +253,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_string(%s, %s) failed", g_gitBranchObject, gitBranch);
-                OSConfigTelemetryStatusTrace("json_object_set_string", EINVAL);
             }
         }
 
@@ -275,16 +262,14 @@ static int UpdateConfigurationFile(void)
             {
                 if (false == SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
-                    status = ENOENT;
                     OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
-                    OSConfigTelemetryStatusTrace("SavePayloadToFile", status);
+                    status = ENOENT;
                 }
             }
             else
             {
-                status = EIO;
                 OsConfigLogError(ConfigurationGetLog(), "json_serialize_to_string_pretty failed");
-                OSConfigTelemetryStatusTrace("json_serialize_to_string_pretty", status);
+                status = EIO;
             }
         }
     }
@@ -296,7 +281,6 @@ static int UpdateConfigurationFile(void)
     else
     {
         OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsDebugLoggingEnabled() ? newConfiguration : "-");
-        OSConfigTelemetryStatusTrace("ConfigurationApplyNew", status);
     }
 
     if (jsonValue)
@@ -339,7 +323,6 @@ void ConfigurationMmiClose(MMI_HANDLE clientSession)
     else
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiClose() called outside of a valid session");
-        OSConfigTelemetryStatusTrace("IsValidSession", EINVAL);
     }
 }
 
@@ -350,7 +333,6 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("payload", EINVAL);
         return status;
     }
 
@@ -365,11 +347,9 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
     }
     else
     {
-        status = ENOMEM;
         OsConfigLogError(ConfigurationGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("malloc", status);
         *payloadSizeBytes = 0;
-
+        status = ENOMEM;
     }
 
     OsConfigLogDebug(ConfigurationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -386,7 +366,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("componentName", EINVAL);
         status = EINVAL;
         return status;
     }
@@ -396,15 +375,13 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     if (!IsValidSession(clientSession))
     {
-        status = EINVAL;
         OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
-        OSConfigTelemetryStatusTrace("IsValidSession", status);
-    }
-    if (0 != strcmp(componentName, g_configurationComponentName))
-    {
         status = EINVAL;
+    }
+    else if (0 != strcmp(componentName, g_configurationComponentName))
+    {
         OsConfigLogError(ConfigurationGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
-        OSConfigTelemetryStatusTrace("componentName", status);
+        status = EINVAL;
     }
     else
     {
@@ -456,16 +433,14 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else
         {
-            status = EINVAL;
             OsConfigLogError(ConfigurationGetLog(), "MmiGet called for an unsupported object (%s)", objectName);
-            OSConfigTelemetryStatusTrace("objectName", status);
+            status = EINVAL;
         }
 
         if ((0 == status) && (NULL == jsonValue))
         {
-            status = ENOENT;
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to json_value_init_* failure", componentName, objectName);
-            OSConfigTelemetryStatusTrace("json_value_init_*", status);
+            status = ENOENT;
         }
     }
 
@@ -473,9 +448,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
-            status = ENOENT;
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_serialize_to_string failed", componentName, objectName);
-            OSConfigTelemetryStatusTrace("json_serialize_to_string", status);
+            status = ENOENT;
         }
         else
         {
@@ -485,7 +459,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             {
                 OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported buffer will be truncated",
                     componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-                OSConfigTelemetryStatusTrace("json_serialize_to_string", EINVAL);
 
                 *payloadSizeBytes = g_maxPayloadSizeBytes;
             }
@@ -497,10 +470,9 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             }
             else
             {
-                status = ENOMEM;
                 OsConfigLogError(ConfigurationGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                OSConfigTelemetryStatusTrace("malloc", status);
                 *payloadSizeBytes = 0;
+                status = ENOMEM;
             }
         }
     }
@@ -530,23 +502,20 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
-        status = EINVAL;
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("componentName", status);
+        status = EINVAL;
         return status;
     }
 
     if (!IsValidSession(clientSession))
     {
-        status = EINVAL;
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
-        OSConfigTelemetryStatusTrace("IsValidSession", status);
+        status = EINVAL;
     }
     else if (0 != strcmp(componentName, g_configurationComponentName))
     {
-        status = EINVAL;
         OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
-        OSConfigTelemetryStatusTrace("componentName", status);
+        status = EINVAL;
     }
 
     if (MMI_OK == status)
@@ -592,16 +561,14 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                         }
                         else
                         {
-                            status = EINVAL;
                             OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): unsupported value: '%s'", componentName, objectName, payloadString);
-                            OSConfigTelemetryStatusTrace("g_desiredIotHubProtocolObject", status);
+                            status = EINVAL;
                         }
                     }
                     else
                     {
-                        status = EINVAL;
                         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string('%s') failed", componentName, objectName, payloadString);
-                        OSConfigTelemetryStatusTrace("json_value_get_string", status);
+                        status = EINVAL;
                     }
                 }
                 else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
@@ -619,37 +586,32 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                         }
                         else
                         {
-                            status = EINVAL;
                             OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
-                            OSConfigTelemetryStatusTrace("json_value_get_string", status);
+                            status = EINVAL;
                         }
                     }
                     else
                     {
-                        status = EINVAL;
                         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string('%s') failed", componentName, objectName, payloadString);
-                        OSConfigTelemetryStatusTrace("json_value_get_string", status);
+                        status = EINVAL;
                     }
                 }
                 else
                 {
-                    status = EINVAL;
                     OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
-                    OSConfigTelemetryStatusTrace("objectName", status);
+                    status = EINVAL;
                 }
             }
             else
             {
                 status = EINVAL;
                 OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_parse_string(%s) failed", componentName, objectName, payloadString);
-                OSConfigTelemetryStatusTrace("json_parse_string", status);
             }
         }
         else
         {
-            status = ENOMEM;
             OsConfigLogError(ConfigurationGetLog(), "Failed to allocate %d bytes of memory, MmiSet failed", payloadSizeBytes + 1);
-            OSConfigTelemetryStatusTrace("malloc", status);
+            status = ENOMEM;
         }
     }
 

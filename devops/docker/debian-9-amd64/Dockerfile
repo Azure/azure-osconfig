@@ -10,23 +10,22 @@ EOF
 
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
-    bc \
-    build-essential \
-    cmake \
-    curl \
-    gcovr \
     git \
-    jq \
+    cmake \
+    build-essential \
+    curl \
     libcurl4-openssl-dev \
     libssl-dev \
-    ninja-build \
-    pkg-config \
-    python3-jsonschema \
+    uuid-dev \
     rapidjson-dev \
+    ninja-build \
+    python3-jsonschema \
+    wget \
+    gcovr \
+    jq \
+    bc \
     tar \
     unzip \
-    uuid-dev \
-    wget \
     zip
 
 WORKDIR /git

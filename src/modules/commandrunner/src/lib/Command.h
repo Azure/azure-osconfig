@@ -13,7 +13,6 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Telemetry.h>
 
 const std::string g_commandArguments = "commandArguments";
 const std::string g_commandId = "commandId";

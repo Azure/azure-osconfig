@@ -25,7 +25,7 @@ sudo apt-get update
 sudo apt-get install -y git cmake build-essential curl libcurl4-openssl-dev libssl-dev uuid-dev libgtest-dev libgmock-dev rapidjson-dev
 ```
 
-Verify that CMake is at least version 3.16.0 and gcc is at least version 4.4.7.
+Verify that CMake is at least version 3.2.0 and gcc is at least version 4.4.7.
 
 ```bash
 cmake --version

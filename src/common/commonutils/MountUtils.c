@@ -14,7 +14,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
         OsConfigLogError(log, "CheckFileSystemMountingOption called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("mountFileName", EINVAL);
         return EINVAL;
     }
 
@@ -124,7 +123,6 @@ static int CopyMountTableFile(const char* source, const char* target, OsConfigLo
     if ((NULL == source) || (NULL == target))
     {
         OsConfigLogError(log, "CopyMountTableFile called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("source", EINVAL);
         return EINVAL;
     }
 
@@ -221,7 +219,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     if (((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("mountDirectory", EINVAL);
         return EINVAL;
     }
 
@@ -236,7 +233,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, 3))))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         status = ENOMEM;
     }
 
@@ -289,7 +285,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     else
                     {
                         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                         status = ENOMEM;
                         break;
                     }
@@ -313,7 +308,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     else
                     {
                         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                         status = ENOMEM;
                         break;
                     }
@@ -380,7 +374,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 else
                                 {
                                     OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                                     status = ENOMEM;
                                     break;
                                 }

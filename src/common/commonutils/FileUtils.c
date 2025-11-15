@@ -108,7 +108,6 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     {
         result = false;
         OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%.*s', %d)", fileName, mode, payloadSizeBytes, payload, payloadSizeBytes);
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
     }
 
     return result;
@@ -173,7 +172,6 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(log, "AppendPayloadToFile: invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return result;
     }
 
@@ -210,13 +208,11 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return false;
     }
     else if (NULL == (fileNameCopy = DuplicateString(fileName)))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
-        OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
         return false;
     }
 
@@ -267,7 +263,6 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     else
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         result = false;
     }
 
@@ -341,7 +336,6 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
     {
         result = false;
         OsConfigLogError(log, "MakeFileBackupCopy: invalid arguments ('%s', '%s')", fileName, backupName);
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
     }
 
     FREE_MEMORY(fileContents);
@@ -358,7 +352,6 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
     if ((NULL == firstFileName) || (NULL == secondFileName))
     {
         OsConfigLogError(log, "ConcatenateFiles: invalid arguments");
-        OSConfigTelemetryStatusTrace("firstFileName", EINVAL);
         return false;
     }
 
@@ -404,7 +397,6 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLog
     if (NULL == name)
     {
         OsConfigLogError(log, "IsATrueFileOrDirectoryFileOrDirectory: invalid argument");
-        OSConfigTelemetryStatusTrace("name", EINVAL);
         return false;
     }
 
@@ -580,7 +572,6 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     if (NULL == name)
     {
         OsConfigLogError(log, "CheckAccess called with an invalid name argument");
-        OSConfigTelemetryStatusTrace("name", EINVAL);
         return EINVAL;
     }
 
@@ -663,7 +654,6 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     if (NULL == name)
     {
         OsConfigLogError(log, "SetAccess called with an invalid name argument");
-        OSConfigTelemetryStatusTrace("name", EINVAL);
         return EINVAL;
     }
 
@@ -798,7 +788,6 @@ static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, 
     if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode))
     {
         OsConfigLogError(log, "GetAccess: invalid arguments");
-        OSConfigTelemetryStatusTrace("name", EINVAL);
         return EINVAL;
     }
 
@@ -846,13 +835,11 @@ static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
     if (NULL == target)
     {
         OsConfigLogError(log, "RestoreSelinuxContext called with an invalid argument");
-        OSConfigTelemetryStatusTrace("target", EINVAL);
         status = EINVAL;
     }
     else if (NULL == (restoreCommand = FormatAllocateString("restorecon -F '%s'", target)))
     {
         OsConfigLogError(log, "RestoreSelinuxContext: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         status = ENOMEM;
     }
     else if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, &textResult, NULL, log)))
@@ -873,7 +860,6 @@ int RenameFile(const char* original, const char* target, OsConfigLogHandle log)
     if ((NULL == original) || (NULL == target))
     {
         OsConfigLogError(log, "RenameFile: invalid arguments");
-        OSConfigTelemetryStatusTrace("original", EINVAL);
         return EINVAL;
     }
     else if (false == FileExists(original))
@@ -908,7 +894,6 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
     if ((NULL == original) || (NULL == target))
     {
         OsConfigLogError(log, "RenameFileWithOwnerAndAccess: invalid arguments");
-        OSConfigTelemetryStatusTrace("original", EINVAL);
         return EINVAL;
     }
     else if (false == FileExists(original))
@@ -976,7 +961,6 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
     if ((NULL == fileName) || (NULL == marker))
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile called with invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return EINVAL;
     }
     else if (false == FileExists(fileName))
@@ -987,7 +971,6 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
     else if (NULL == (line = malloc(lineMax + 1)))
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile: out of memory");
-        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         return ENOMEM;
     }
 
@@ -1086,7 +1069,6 @@ static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* ma
     else
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         status = ENOMEM;
     }
 
@@ -1148,7 +1130,6 @@ int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInFile called with invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return EINVAL;
     }
 
@@ -1255,7 +1236,6 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
         (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return EINVAL;
     }
     else if (false == FileExists(fileName))
@@ -1266,7 +1246,6 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     else if (NULL == (command = FormatAllocateString(commandTemplate, commentCharacter, fileName, text)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         return ENOMEM;
     }
     else
@@ -1324,7 +1303,6 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text) || (false == IsValidDaemonName(variableName))))
     {
         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable called with invalid arguments");
-        OSConfigTelemetryStatusTrace("IsValidDaemonName", EINVAL);
         return EINVAL;
     }
 
@@ -1332,7 +1310,6 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     if (NULL == (command = malloc(commandLength)))
     {
         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: out of memory");
-        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         status = ENOMEM;
     }
     else
@@ -1405,7 +1382,6 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == (textLength = strlen(text))))
     {
         OsConfigLogError(log, "CheckSmallFileContainsText called with invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return EINVAL;
     }
     else if ((0 == stat(fileName, &statStruct)) && ((statStruct.st_size > MAX_STRING_LENGTH)))
@@ -1463,7 +1439,6 @@ int FindTextInFolder(const char* directory, const char* text, const char* extens
                 if (NULL == (path = malloc(length + 1)))
                 {
                     OsConfigLogError(log, "FindTextInFolder: out of memory");
-                    OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                     status = ENOMEM;
                     break;
                 }
@@ -1538,7 +1513,6 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "IsLineNotFoundOrCommentedOut called with invalid arguments");
-        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         return EINVAL;
     }
 
@@ -1674,7 +1648,6 @@ static int FindTextInCommandOutput(const char* command, const char* text, OsConf
     if ((NULL == command) || (NULL == text) || (0 == strlen(command)) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInCommandOutput called with invalid argument");
-        OSConfigTelemetryStatusTrace("command", EINVAL);
         return EINVAL;
     }
 
@@ -1753,14 +1726,12 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     if ((NULL == buffer) || (NULL == option))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer called with invalid arguments");
-        OSConfigTelemetryStatusTrace("option", EINVAL);
         return result;
     }
 
     if (NULL == (temp = DuplicateString(buffer)))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
-        OSConfigTelemetryStatusTrace("DuplicateString", errno);
         return result;
     }
 
@@ -1789,7 +1760,6 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
             if (NULL == (result = DuplicateString(found)))
             {
                 OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
-                OSConfigTelemetryStatusTrace("DuplicateString", errno);
             }
 
             break;
@@ -1897,7 +1867,6 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     if ((NULL == values) || (0 == numberOfValues))
     {
         OsConfigLogError(log, "CheckIntegerOptionFromFileEqualWithAny: invalid arguments (%p, %u)", values, numberOfValues);
-        OSConfigTelemetryStatusTrace("values", EINVAL);
         return EINVAL;
     }
 
@@ -1988,7 +1957,6 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, OsCon
     if ((NULL == file) || (NULL == name) || (0 == strlen(name)) || (NULL == value) || (0 == strlen(value)))
     {
         OsConfigLogError(log, "SetEtcConfValue: invalid argument");
-        OSConfigTelemetryStatusTrace("file", EINVAL);
         return EINVAL;
     }
     else if (false == FileExists(file))
@@ -1999,7 +1967,6 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, OsCon
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
     {
         OsConfigLogError(log, "SetEtcConfValue: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         return ENOMEM;
     }
 

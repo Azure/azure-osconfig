@@ -129,7 +129,6 @@ char* GetHttpProxyData(OsConfigLogHandle log)
             if (NULL == proxyData)
             {
                 OsConfigLogError(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
-                OSConfigTelemetryStatusTrace("DuplicateString", errno);
             }
             else
             {
@@ -212,7 +211,6 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     if ((NULL == source) || (NULL == integers) || (NULL == numIntegers))
     {
         OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: invalid arguments");
-        OSConfigTelemetryStatusTrace("source", EINVAL);
         return EINVAL;
     }
 
@@ -226,7 +224,6 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
         if (NULL == (value = DuplicateString(&(source[i]))))
         {
             OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to duplicate string");
-            OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
             status = ENOMEM;
             break;
         }
@@ -254,7 +251,6 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
             if (NULL == *integers)
             {
                 OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
-                OSConfigTelemetryStatusTrace("realloc", ENOMEM);
                 *numIntegers = 0;
                 status = ENOMEM;
                 break;
@@ -677,7 +673,6 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                 else
                 {
                     OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
-                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                     status = ENOMEM;
                 }
 

@@ -15,7 +15,7 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: '@sha256:7ba3a3bd055c507c2a42ce71448c3ff71889a3b58a7656900baf23e1dac0ced6' },
+            { os: ubuntu, version: 22.04, package-type: DEB },
           ]
         arch: [amd64]
     with:
@@ -24,4 +24,3 @@ jobs:
       package-type: ${{ matrix.target.package-type }}
       timeout-seconds: 3600
       execute: ${{ contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
-      container-tag: ${{ matrix.target.container-tag }}
