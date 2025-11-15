@@ -18,11 +18,60 @@ OSConfig's C/C++ code currently targets compliance with C11.
 
 ### Prerequisites
 
-Make sure all dependencies are installed. For example, on Ubuntu:
+Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/). The following packages are typically required however the package names may vary:
+
+**Common dependencies across distributions:**
+- git
+- cmake (>= 3.16.0)
+- build-essential (gcc >= 4.4.7, g++, make)
+- curl
+- autoconf
+- perl (perl-core, perl-IPC-Cmd)
+- tar
+- unzip
+- zip
+- python3
+- gtest/gmock
+
+Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies.
+
+For example, on Ubuntu 22.04:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y git cmake build-essential curl libcurl4-openssl-dev libssl-dev uuid-dev libgtest-dev libgmock-dev rapidjson-dev
+sudo apt -y update && sudo apt-get -y install software-properties-common
+sudo apt -y update && sudo apt-get -y install \
+    apt-transport-https \
+    bc \
+    build-essential \
+    clang \
+    clang-tools \
+    cmake \
+    curl \
+    file \
+    gcovr\
+    git \
+    jq \
+    libasan8 \
+    libcurl4-openssl-dev \
+    libgmock-dev \
+    libgtest-dev \
+    libssl-dev \
+    libubsan1 \
+    ninja-build \
+    pkg-config \
+    python3-jsonschema \
+    rapidjson-dev \
+    tar \
+    unzip \
+    uuid-dev \
+    wget \
+    zip
+
+mkdir -p ~/git && cd ~/git
+
+# Clone/Build/Install CMake 3.21.7
+git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
+cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
 ```
 
 Verify that CMake is at least version 3.16.0 and gcc is at least version 4.4.7.
