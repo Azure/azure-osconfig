@@ -19,10 +19,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
     set(CMAKE_ARGS -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5)
 endif()
 
-# Force vcpkg-only usage - determine vcpkg installed directory
-if (DEFINED ENV{VCPKG_ROOT})
-    set(VCPKG_INSTALLED_DIR "$ENV{VCPKG_ROOT}/vcpkg_installed")
-endif()
 set(VCPKG_PACKAGES_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 
 # Set CMAKE_PREFIX_PATH to vcpkg only
@@ -59,11 +55,11 @@ set(MAT_SDK_LIB ${CMAKE_BINARY_DIR}/1ds_install/lib)
 set(MAT_SDK_INCLUDE ${CMAKE_BINARY_DIR}/1ds_install/include/mat)
 
 # Use vcpkg-managed dependencies with NO_DEFAULT_PATH to prevent system fallback
-find_package(CURL REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
-find_package(OpenSSL REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
+find_package(CURL CONFIG REQUIRED)
+find_package(OpenSSL CONFIG REQUIRED)
 find_package(Threads REQUIRED)  # Threads can still use system
-find_package(unofficial-sqlite3 REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
-find_package(nlohmann_json REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 include_directories(../../telemetry)
 add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)

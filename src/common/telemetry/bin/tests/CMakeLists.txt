@@ -5,8 +5,8 @@ project(telemetryexetests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-include(CTest)
-find_package(GTest REQUIRED)
+find_package(GTest CONFIG REQUIRED)
+include(GoogleTest)
 
 # Build the args.cpp as a library for testing
 add_library(telemetrybin_args_lib
@@ -32,10 +32,10 @@ add_executable(telemetrybintests
 target_link_libraries(telemetrybintests
     telemetrybin_args_lib
     logging
-    gtest
-    gtest_main
-    gmock
-    gmock_main
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    GTest::gmock_main
     pthread
 )
 
