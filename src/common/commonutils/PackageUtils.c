@@ -191,7 +191,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 
     if ((0 == status) && (NULL != results))
     {
-        if (NULL != (buffer = DuplicateString(results)))
+        if (NULL != (buffer = FormatAllocateString("\n%s", results)))
         {
             FREE_MEMORY(g_installedPackagesCache);
             g_installedPackagesCache = buffer;
