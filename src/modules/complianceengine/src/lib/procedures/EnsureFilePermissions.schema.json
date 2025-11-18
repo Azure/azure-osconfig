@@ -62,6 +62,10 @@
                   "type": "string",
                   "description": "Directory path"
                 },
+                "recurse": {
+                  "type": "string",
+                  "description": "Whether to recurse"
+                },
                 "ext": {
                   "type": "string",
                   "description": "File pattern"
@@ -150,6 +154,10 @@
                 "directory": {
                   "type": "string",
                   "description": "Directory path"
+                },
+                "recurse": {
+                  "type": "string",
+                  "description": "Whether to recurse"
                 },
                 "ext": {
                   "type": "string",

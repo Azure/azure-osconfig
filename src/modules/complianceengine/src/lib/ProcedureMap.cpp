@@ -20,8 +20,8 @@ const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 // EnsureFilePermissions.h:31
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
 
-// EnsureFilePermissions.h:57
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "ext", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:60
+const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask"};
 
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};

@@ -25,6 +25,8 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 {
     auto log = context.GetLogHandle();
     auto directory = params.directory;
+    // Respect explicit false; default behavior when unset is true
+    bool recurse = params.recurse.ValueOr(true);
     char* const paths[] = {&directory[0], nullptr};
     FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, nullptr);
 
@@ -39,7 +41,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     FTSENT* entry = nullptr;
     while (nullptr != (entry = fts_read(ftsp)))
     {
-        if (FTS_F == entry->fts_info)
+        if (FTS_F == entry->fts_info && (recurse || entry->fts_level == 1))
         {
             if (0 == fnmatch(params.ext.c_str(), entry->fts_name, 0))
             {
@@ -68,6 +70,10 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 }
                 OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
             }
+        }
+        if (FTS_D == entry->fts_info && !recurse)
+        {
+            fts_set(ftsp, entry, FTS_SKIP);
         }
     }
 

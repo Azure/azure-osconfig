@@ -279,9 +279,9 @@ template <>
 struct Bindings<EnsureFilePermissionsCollectionParams>
 {
     using T = EnsureFilePermissionsCollectionParams;
-    static constexpr size_t size = 6;
+    static constexpr size_t size = 7;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::directory, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask);
+    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask);
 };
 
 // Defines the bindings for the EnsureFilesystemOptionParams structure.
