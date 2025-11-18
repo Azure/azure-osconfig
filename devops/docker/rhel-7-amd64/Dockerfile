@@ -3,6 +3,7 @@ ARG GIT_VERSION=2.14.0
 
 # ubi7 images are missing RPM devtools, copy from centos7
 FROM centos:centos7 AS centos
+
 RUN rm /etc/yum.repos.d/*.repo
 COPY ./centos.repo /etc/yum.repos.d/centos.repo
 
@@ -17,6 +18,10 @@ RUN yumdownloader --resolve --destdir=/devtoolset devtoolset-7-gcc devtoolset-7-
 
 # TODO: Add mcr.io retagged images
 FROM registry.access.redhat.com/ubi7/ubi
+
+ARG CMAKE_VERSION
+ARG GIT_VERSION
+
 COPY --from=centos /rpm-build*.rpm /rpm-build.rpm
 COPY --from=centos /elfutils*.rpm /elfutils.rpm
 COPY --from=centos /devtoolset/ /devtoolset/
