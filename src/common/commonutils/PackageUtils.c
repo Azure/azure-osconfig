@@ -154,8 +154,8 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
-    const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
-    const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
+    const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\\n\"";
+    const char* commandTemplateYumDnf = "%s list installed --cacheonly | awk '{print $1}'";
     const char* commandTmeplateZypper = "%s search -i";
 
     char* results = NULL;
@@ -191,7 +191,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 
     if ((0 == status) && (NULL != results))
     {
-        if (NULL != (buffer = DuplicateString(results)))
+        if (NULL != (buffer = FormatAllocateString("\n%s", results)))
         {
             FREE_MEMORY(g_installedPackagesCache);
             g_installedPackagesCache = buffer;
@@ -463,7 +463,14 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 
     if (0 == status)
     {
-        status = IsPackageInstalled(packageName, log);
+        if ((0 != (status = IsPackageInstalled(packageName, log))) && (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent))
+        {
+            // When package installation ends with 0 (success) but the package is not installed after, do one retry without the --cacheonly option
+            if (0 == (status = CheckOrInstallPackage(commandTemplate, g_tdnfIsPresent ? g_tdnf : (g_dnfIsPresent ? g_dnf : g_yum), packageName, log)))
+            {
+                status = IsPackageInstalled(packageName, log);
+            }
+        }
     }
 
     if (0 == status)
