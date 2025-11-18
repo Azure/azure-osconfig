@@ -215,7 +215,7 @@ set(CPACK_SOURCE_IGNORE_FILES ${CPACK_EXCLUDES})
 set(CPACK_VERBATIM_VARIABLES YES)
 
 # RPM packaging - see /devops/rpm for postinst/postun/preun scripts
-set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, gtest-devel, gmock, gmock-devel, curl-devel, openssl, rapidjson")
+set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, gtest-devel, gmock, gmock-devel, curl-devel, openssl")
 set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/changelog")
 set(CPACK_RPM_PACKAGE_AUTOREQ 1)
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")

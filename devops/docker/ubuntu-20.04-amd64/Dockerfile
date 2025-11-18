@@ -17,7 +17,6 @@ RUN apt -y update && apt-get -y install \
     ninja-build \
     pkg-config \
     python3-jsonschema \
-    rapidjson-dev \
     tar \
     unzip \
     uuid-dev \

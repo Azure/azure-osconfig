@@ -6,20 +6,14 @@ RUN tdnf install -y \
     build-essential \
     ca-certificates \
     cmake \
-    curl \
-    curl-devel \
     file \
-    gcovr \
     git \
     jq \
-    ninja-build \
-    openssl-devel \
     perl \
     perl-IPC-Cmd \
-    rapidjson-devel \
     rpm-build \
     shadow-utils \
-    tar \
+    qtar \
     tmux \
     tree \
     unzip \
