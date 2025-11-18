@@ -1415,6 +1415,45 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
+char* CheckForMountCreds(char* options);
+
+TEST_F(CommonUtilsTest, CheckForMountCreds)
+{
+    const char* badOptions[] = {
+        "Test domain",
+        "password test",
+        "domain/username",
+        "username@domain",
+        "Test options domain=foo userame:test",
+        "domain=foo userame:test,password",
+        "nosuid,password=test,test",
+        "nosuid,domain=test,test",
+        "nosuid,domain=test,password=test,test",
+        "nosuid,username=test,domain=test,test",
+        "nosuid,domain=test,username=test,test,password=test",
+        "nosuid,username=test,23=test"
+    };
+    size_t numBadOptions = ARRAY_SIZE(badOptions);
+    char* test = NULL;
+
+    EXPECT_EQ(nullptr, CheckForMountCreds(NULL));
+
+    for (size_t i = 0; i < numBadOptions; i++)
+    {
+        EXPECT_NE(nullptr, test = DuplicateString(badOptions[i]));
+        EXPECT_EQ(nullptr, CheckForMountCreds(test));
+        FREE_MEMORY(test);
+    }
+
+    EXPECT_NE(nullptr, test = DuplicateString("errors=remount-ro"));
+    EXPECT_STREQ(test, CheckForMountCreds(test));
+    FREE_MEMORY(test);
+
+    EXPECT_NE(nullptr, test = DuplicateString("umask=0077,nosuid"));
+    EXPECT_STREQ(test, CheckForMountCreds(test));
+    FREE_MEMORY(test);
+}
+
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 {
     const char* testFstab =
