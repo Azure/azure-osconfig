@@ -1415,9 +1415,9 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
-char* CheckMountOptions(char* options);
+char* CheckForMountCreds(char* options);
 
-TEST_F(CommonUtilsTest, CheckMountOptions)
+TEST_F(CommonUtilsTest, CheckForMountCreds)
 {
     const char* badOptions[] = {
         "Test options domain=foo userame:test",
@@ -1432,21 +1432,21 @@ TEST_F(CommonUtilsTest, CheckMountOptions)
     size_t numBadOptions = ARRAY_SIZE(badOptions);
     char* test = NULL;
 
-    EXPECT_EQ(nullptr, CheckMountOptions(NULL));
+    EXPECT_EQ(nullptr, CheckForMountCreds(NULL));
 
     for (size_t i = 0; i < numBadOptions; i++)
     {
         EXPECT_NE(nullptr, test = DuplicateString(badOptions[i]));
-        EXPECT_EQ(nullptr, CheckMountOptions(test));
+        EXPECT_EQ(nullptr, CheckForMountCreds(test));
         FREE_MEMORY(test);
     }
 
     EXPECT_NE(nullptr, test = DuplicateString("errors=remount-ro"));
-    EXPECT_STREQ(test, CheckMountOptions(test));
+    EXPECT_STREQ(test, CheckForMountCreds(test));
     FREE_MEMORY(test);
 
     EXPECT_NE(nullptr, test = DuplicateString("umask=0077,nosuid"));
-    EXPECT_STREQ(test, CheckMountOptions(test));
+    EXPECT_STREQ(test, CheckForMountCreds(test));
     FREE_MEMORY(test);
 }
 
