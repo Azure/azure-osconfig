@@ -106,17 +106,21 @@ Result<std::vector<std::string>> GetAllMatches(ContextInterface& context)
 
     return allMatches;
 }
-Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& context, const std::string& matchContext = "")
+Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& context, const std::string& extraConfig, const std::string& matchContext)
 {
-    std::string sshdCommand;
+    std::string sshdCommand = "sshd -T";
+    if (!extraConfig.empty())
+    {
+        sshdCommand = sshdCommand + " " + extraConfig;
+    }
 
     if (!matchContext.empty())
     {
-        sshdCommand = "sshd -T -C " + matchContext;
+        sshdCommand = sshdCommand + " -C " + matchContext;
     }
     else
     {
-        auto sshdTestOutput = context.ExecuteCommand("sshd -T 2>&1");
+        auto sshdTestOutput = context.ExecuteCommand(sshdCommand + " 2>&1");
         if (!sshdTestOutput.HasValue())
         {
             return Error("Failed to execute sshd -T command: " + sshdTestOutput.Error().message, sshdTestOutput.Error().code);
@@ -139,11 +143,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             hostnameStr.erase(hostnameStr.find_last_not_of(" \n\r\t") + 1);
             hostAddrStr.erase(hostAddrStr.find_last_not_of(" \n\r\t") + 1);
 
-            sshdCommand = "sshd -T -C user=root -C host=" + hostnameStr + " -C addr=" + hostAddrStr;
-        }
-        else
-        {
-            sshdCommand = "sshd -T";
+            sshdCommand = sshdCommand + " -C user=root -C host=" + hostnameStr + " -C addr=" + hostAddrStr;
         }
     }
 
@@ -410,9 +410,24 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
         matchModes.push_back(""); // regular
     }
 
+    std::string extraConfig;
+    if (params.readExtraConfigs.HasValue() && params.readExtraConfigs.Value())
+    {
+        auto result = context.ExecuteCommand("source /etc/sysconfig/sshd 2>/dev/null && echo -n $OPTIONS");
+        if (result.HasValue() && result.Value() != "")
+        {
+            extraConfig += result.Value();
+        }
+        result = context.ExecuteCommand("source /etc/crypto-policies/back-ends/opensshserver.config 2>/dev/null && echo -n $CRYPTO_POLICY");
+        if (result.HasValue() && result.Value() != "")
+        {
+            extraConfig += " " + result.Value();
+        }
+    }
+
     for (auto const& matchMode : matchModes)
     {
-        auto sshdConfig = GetSshdOptions(context, matchMode);
+        auto sshdConfig = GetSshdOptions(context, extraConfig, matchMode);
         if (!sshdConfig.HasValue())
         {
             return indicators.NonCompliant("Failed to get sshd options: " + sshdConfig.Error().message);

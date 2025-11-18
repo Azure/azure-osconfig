@@ -720,3 +720,34 @@ TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
     // No matches => loop skipped => Compliant per current implementation
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+// ========================= Tests for readExtraConfigs parameter =========================
+TEST_F(EnsureSshdOptionTest, ReadExtraConfigs_AppendsExtraOptionsToSshdCommand)
+{
+    using ::testing::InSequence;
+    InSequence seq;
+
+    // Mock sourcing of extra config files returning option flags
+    EXPECT_CALL(mContext, ExecuteCommand("source /etc/sysconfig/sshd 2>/dev/null && echo -n $OPTIONS")).WillOnce(Return(Result<std::string>("-oX")));
+
+    EXPECT_CALL(mContext, ExecuteCommand("source /etc/crypto-policies/back-ends/opensshserver.config 2>/dev/null && echo -n $CRYPTO_POLICY"))
+        .WillOnce(Return(Result<std::string>("-Y")));
+
+    // Initial probe command with 2>&1 (to detect match group logic) should include aggregated extra config flags
+    EXPECT_CALL(mContext, ExecuteCommand("sshd -T -oX -Y 2>&1")).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    // Final command (without 2>&1) to collect options also includes flags
+    EXPECT_CALL(mContext, ExecuteCommand("sshd -T -oX -Y")).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
+    params.readExtraConfigs = true;
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'permitrootlogin' has a compliant value 'no'") != std::string::npos);
+    ASSERT_TRUE(formatted.find("All options are compliant") != std::string::npos);
+}

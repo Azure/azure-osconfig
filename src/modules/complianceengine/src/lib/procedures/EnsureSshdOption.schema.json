@@ -36,6 +36,10 @@
                   "type": "string",
                   "description": "Mode, one of (regular|all_matches). Optional, defaults to 'regular'",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((regular|all_matches))$|(^(regular|all_matches)$))"
+                },
+                "readExtraConfigs": {
+                  "type": "string",
+                  "description": ""
                 }
               }
             }
