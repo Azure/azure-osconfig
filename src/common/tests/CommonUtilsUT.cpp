@@ -1420,13 +1420,13 @@ char* CheckMountOptions(char* options);
 TEST_F(CommonUtilsTest, CheckMountOptions)
 {
     EXPECT_EQ(nullptr, CheckMountOptions(NULL));
-    EXPECT_EQ(nullptr, CheckMountOptions("Test options domain=foo userame:test"));
-    EXPECT_EQ(nullptr, CheckMountOptions("domain=foo userame:test,password"));
-    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,password=test,test"));
-    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,domain=test,test"));
-    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,username=test,test"));
-    EXPECT_STREQ("errors=remount-ro", CheckMountOptions("errors=remount-ro"));
-    EXPECT_STREQ("umask=0077,nosuid", CheckMountOptions("umask=0077,nosuid"));
+    EXPECT_EQ(nullptr, CheckMountOptions((void*)"Test options domain=foo userame:test"));
+    EXPECT_EQ(nullptr, CheckMountOptions((void*)"domain=foo userame:test,password"));
+    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,password=test,test"));
+    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,domain=test,test"));
+    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,username=test,test"));
+    EXPECT_STREQ((void*)"errors=remount-ro", CheckMountOptions((void*)"errors=remount-ro"));
+    EXPECT_STREQ((void*)"umask=0077,nosuid", CheckMountOptions((void*)"umask=0077,nosuid"));
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
