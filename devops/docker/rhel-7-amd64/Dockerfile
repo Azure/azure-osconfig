@@ -30,6 +30,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     gettext \
     libtool \
     make \
+    openssl-devel \
     perl \
     perl-core \
     perl-IPC-Cmd \

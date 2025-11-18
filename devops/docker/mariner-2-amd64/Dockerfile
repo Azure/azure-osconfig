@@ -11,6 +11,7 @@ RUN tdnf install -y \
     git \
     jq \
     mariner-rpm-macros \
+    openssl-devel \
     rpm-build \
     tar \
     tmux \

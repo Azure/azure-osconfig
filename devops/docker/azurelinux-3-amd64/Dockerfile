@@ -13,7 +13,7 @@ RUN tdnf install -y \
     perl-IPC-Cmd \
     rpm-build \
     shadow-utils \
-    qtar \
+    tar \
     tmux \
     tree \
     unzip \

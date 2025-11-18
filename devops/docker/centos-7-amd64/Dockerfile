@@ -18,6 +18,7 @@ RUN yum install -y \
     jq \
     libtool \
     make \
+    openssl-devel \
     perl \
     perl-core \
     perl-devel \

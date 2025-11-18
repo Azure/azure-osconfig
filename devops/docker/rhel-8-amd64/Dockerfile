@@ -12,6 +12,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     jq \
     libtool \
     make \
+    openssl-devel \
     perl \
     perl-IPC-Cmd \
     rpm-build \

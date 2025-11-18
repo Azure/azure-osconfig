@@ -12,6 +12,7 @@ RUN zypper install -y \
     jq \
     libtool \
     make \
+    libopenssl-devel \
     rpm-build \
     tar \
     unzip \
