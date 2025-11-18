@@ -3,6 +3,34 @@
 
 #include "Internal.h"
 
+// The mntent.mnt_opts field (which corresponds to the mount options in /etc/fstab) can technically contain credentials.
+// For certain network filesystems like CIFS/SMB or NFS, one can specify options such as: 'username', 'password', 'domain'.
+// These options are parsed by the mount helper (e.g., mount.cifs) when mounting the share.
+// When such credentials appear in the mntent.mnt_opts field we do not want to log contents of mntent.mnt_opts.
+char* CheckForMountCreds(char* options)
+{
+    const char* anyOf[] = {"username", "password", "domain"};
+    size_t size = ARRAY_SIZE(anyOf);
+    size_t i = 0;
+    char* result = NULL;
+
+    if (NULL != options)
+    {
+        result = options;
+
+        for (i = 0; i < size; i++)
+        {
+            if (NULL != strstr(options, anyOf[i]))
+            {
+                result = NULL;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log)
 {
     FILE* mountFileHandle = NULL;
@@ -44,41 +72,41 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found in '%s' at line %d ('%s')",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber, mountStruct->mnt_opts);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                     if (NULL != mountDirectory)
                     {
                         OsConfigCaptureSuccessReason(reason, "Option '%s' for mount directory '%s' found in '%s' at line %d ('%s')",
-                            desiredOption, mountDirectory, mountFileName, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountDirectory, mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
                     }
 
                     if (NULL != mountType)
                     {
                         OsConfigCaptureSuccessReason(reason, "Option '%s' for mount type '%s' found in '%s' at line %d ('%s')",
-                            desiredOption, mountType, mountFileName, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountType, mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
                     }
                 }
                 else
                 {
                     status = ENOENT;
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d ('%s')",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber, mountStruct->mnt_opts);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                     if (NULL != mountDirectory)
                     {
                         OsConfigCaptureReason(reason, "Option '%s' for mount directory '%s' is missing from file '%s' at line %d ('%s')",
-                            desiredOption, mountDirectory, mountFileName, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountDirectory, mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
                     }
 
                     if (NULL != mountType)
                     {
                         OsConfigCaptureReason(reason, "Option '%s' for mount type '%s' missing from file '%s' at line %d ('%s')",
-                            desiredOption, mountType, mountFileName, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountType, mountFileName, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
                     }
                 }
 
                 OsConfigLogDebug(log, "CheckFileSystemMountingOption, line %d in '%s': mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d",
-                    lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts,
+                    lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, CheckForMountCreds(mountStruct->mnt_opts),
                     mountStruct->mnt_freq, mountStruct->mnt_passno);
             }
 
@@ -143,7 +171,7 @@ static int CopyMountTableFile(const char* source, const char* target, OsConfigLo
                 if (0 != (status = addmntent(targetHandle, mountStruct)))
                 {
                     OsConfigLogInfo(log, "CopyMountTableFile ('%s' to '%s'): failed adding '%s %s %s %s %d %d', addmntent() failed with %d (errno: %d)", source, target,
-                        mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status, errno);
+                        mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, CheckForMountCreds(mountStruct->mnt_opts), mountStruct->mnt_freq, mountStruct->mnt_passno, status, errno);
                     break;
                 }
             }
@@ -257,7 +285,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != hasmntopt(mountStruct, desiredOption))
                     {
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in '%s' at line %d ('%s')",
-                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                         // The option is found, copy this mount entry as-is
                         FREE_MEMORY(newLine);
@@ -267,7 +295,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     else
                     {
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d ('%s')",
-                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, mountStruct->mnt_opts);
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                         // The option is not found and is needed for this entry, add the needed option when copying this mount entry
                         FREE_MEMORY(newLine);
@@ -348,7 +376,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 if (NULL != hasmntopt(mountStruct, desiredOption))
                                 {
                                     OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found set in '%s' at line %d ('%s')",
-                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, mountStruct->mnt_opts);
+                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                                     // Copy this mount entry as-is
                                     FREE_MEMORY(newLine);
@@ -358,7 +386,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 else
                                 {
                                     OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found missing from '%s' at line %d ('%s')",
-                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, mountStruct->mnt_opts);
+                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber, CheckForMountCreds(mountStruct->mnt_opts));
 
                                     // The option is not found and is needed for this entry, add it when copying this entry
                                     FREE_MEMORY(newLine);
