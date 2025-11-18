@@ -11,7 +11,7 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB, tag: "@sha256:1420b5ddf538bd058c77ef94ea65f6d8178ed18df613f39c6aba5f77067500ed" },
+            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB, tag: "@sha256:49f34a36780ee52c0b800c1035097e51e59293c8b725d4f94114a491065e0c2a" },
           ]
     secrets:
       onedstenant: >-

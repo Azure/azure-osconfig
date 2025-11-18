@@ -15,17 +15,17 @@ jobs:
       matrix:
         target:
           [
-            { os: almalinux, version: 9, package-type: RPM, container-tag: "@sha256:4b939b0a50c007c9886e216bab5b9342120f65bcf02ddd95ac730180fe976c9b" },
-            { os: azurelinux, version: 3, package-type: RPM, container-tag: "@sha256:57c5bd226dfca2b692e2c7aeb3cb8092413d2603246aa516d0438b4592210109" },
-            { os: debian, version: 11, package-type: DEB, container-tag: "@sha256:e44fc64d1d92f523fae302112eaea6a695cc3963719a8434247d0283bbba59bc" },
-            { os: debian, version: 12, package-type: DEB, container-tag: "@sha256:d7cc88bcc11041dfcc02024f2f89c64e01458ee0054ab5caecb63fa2325b5ed0" },
-            { os: oraclelinux, version: 8, package-type: RPM, container-tag: "@sha256:4aab402b38a8e455cf02595da737c9e81c4877c202687c5bfe32483922d99b89" },
-            { os: rhel, version: 8, package-type: RPM, container-tag: "@sha256:b01a5fbd1f58843550aa39fdd6928b01d1642cd91fe928a323336ffc491c0dce" },
-            { os: rhel, version: 9, package-type: RPM, container-tag: "@sha256:8675a833d0135e10b7e2a9c1a136db2b643a093b22118aba7c9615de90fb0c85" },
-            { os: sles, version: 15, package-type: RPM, container-tag: "@sha256:e4b36f00fdcd9892f19a118f0b7ca6781c368d086ae37e4ebc93ea23a9dd7327" },
-            { os: ubuntu, version: 20.04, package-type: DEB, container-tag: "@sha256:544b65bc43c6f1cbd3d9bc0c0085d64ccb1c7c6a9a7d82497a9edc166faa8677" },
-            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: "@sha256:04d0c74948ff005746df559bad00e257ddcdf309082807da04e150ab5cd5a736" },
-            { os: ubuntu, version: 24.04, package-type: DEB, container-tag: "@sha256:7ac74b5fbe9bce992322cf1ce2c9d095b02ad82ce3aaab2ad0cb795c872a524b" },
+            { os: almalinux, version: 9, package-type: RPM, container-tag: "@sha256:815553327dabe2fbf52548ce48e63eb71c3982c1be6ad07fc77903cdb81da331" },
+            { os: azurelinux, version: 3, package-type: RPM, container-tag: "@sha256:541935b005d65281798dcd4a8c3400650d70105afcfd5cd34dd3ecbccfec5e74" },
+            { os: debian, version: 11, package-type: DEB, container-tag: "@sha256:2d45d6f99a517c3ceb970c21faa3cda6d9d6b34f70593cf971cec095e2d090b0" },
+            { os: debian, version: 12, package-type: DEB, container-tag: "@sha256:630feaa03825b3f319df2b09c9a0216a0a11902e923713144399357218254d2e" },
+            { os: oraclelinux, version: 8, package-type: RPM, container-tag: "@sha256:f422f0ed324b5f3fbf2e5e09275a03d7a290ec3aa24c55ea388cc50b6ccc576d" },
+            { os: rhel, version: 8, package-type: RPM, container-tag: "@sha256:98cc3106943b549059c126443c3dd1c9faf7e8e217b5f3feb94a8482d3a6afc6" },
+            { os: rhel, version: 9, package-type: RPM, container-tag: "@sha256:46cbe90ba3734b58692fa95af1414f870ef449b934cf89af84e6aa02fc3d7480" },
+            { os: sles, version: 15, package-type: RPM, container-tag: "@sha256:a9ce3548af3a0fba29ee2a35471894bc3c1ef32ce5e445d5fea0a94140cc0d75" },
+            { os: ubuntu, version: 20.04, package-type: DEB, container-tag: "@sha256:70a23590f03aeec76208d970d3fc73afcfa4006764ecb9867760456dae34efe4" },
+            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: "@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e" },
+            { os: ubuntu, version: 24.04, package-type: DEB, container-tag: "@sha256:0a3038b32d4b5d0f2402d576f4a96533e01e98b608eb095928e523b7ef9dfa2f" },
           ]
         arch: [amd64]
     with:
