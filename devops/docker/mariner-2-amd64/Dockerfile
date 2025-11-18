@@ -6,17 +6,11 @@ RUN tdnf install -y \
     ca-certificates \
     cmake \
     curl \
-    curl-devel \
     file \
     gcovr \
     git \
-    gmock-devel \
-    gtest-devel \
     jq \
     mariner-rpm-macros \
-    ninja-build \
-    openssl-devel \
-    rapidjson-devel \
     rpm-build \
     tar \
     tmux \
@@ -24,6 +18,7 @@ RUN tdnf install -y \
     unzip \
     util-linux \
     wget \
-    zip && \
-    tdnf upgrade -y && \
+    zip
+
+RUN tdnf upgrade -y && \
     tdnf clean all
