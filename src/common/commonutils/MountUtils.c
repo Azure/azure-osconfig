@@ -10,7 +10,7 @@
 char* CheckMountOptions(char* options)
 {
     const char* anyOf[] = {"username", "password", "domain"};
-    size_t size = ARRAY_SIZE(credentials);
+    size_t size = ARRAY_SIZE(anyOf);
     size_t i = 0;
     char* result = NULL;
 
