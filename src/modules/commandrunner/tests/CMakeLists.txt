@@ -7,10 +7,11 @@ cmake_minimum_required(VERSION 3.2.0)
 
 include(CTest)
 find_package(GTest REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 add_library(testutils TestUtils.cpp)
 target_include_directories(testutils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(testutils gtest gtest_main)
+target_link_libraries(testutils gtest gtest_main nlohmann_json::nlohmann_json)
 
 add_executable(commandrunnertests CommandRunnerTests.cpp)
 target_link_libraries(commandrunnertests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging testutils)

@@ -118,31 +118,30 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
     }
     else
     {
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        nlohmann::json result;
 
         *payloadSizeBytes = 0;
         *payload = nullptr;
 
         if (0 == m_reportedState.compare(objectName))
         {
-            status = GetState(writer);
+            status = GetState(result);
         }
         else if (0 == m_reportedFingerprint.compare(objectName))
         {
-            status = GetFingerprint(writer);
+            status = GetFingerprint(result);
         }
         else if (0 == m_reportedDefaultPolicies.compare(objectName))
         {
-            status = GetDefaultPolicies(writer);
+            status = GetDefaultPolicies(result);
         }
         else if (0 == m_reportedConfigurationStatus.compare(objectName))
         {
-            status = GetConfigurationStatus(writer);
+            status = GetConfigurationStatus(result);
         }
         else if (0 == m_reportedConfigurationStatusDetail.compare(objectName))
         {
-            status = GetConfigurationStatusDetail(writer);
+            status = GetConfigurationStatusDetail(result);
         }
         else
         {
@@ -152,20 +151,22 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
 
         if (MMI_OK == status)
         {
-            if ((m_maxPayloadSizeBytes > 0) && (buffer.GetSize() > m_maxPayloadSizeBytes))
+            std::string jsonString = result.dump();
+
+            if ((m_maxPayloadSizeBytes > 0) && (jsonString.size() > m_maxPayloadSizeBytes))
             {
-                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum payload size: %d > %d", static_cast<int>(buffer.GetSize()), m_maxPayloadSizeBytes);
+                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum payload size: %d > %d", static_cast<int>(jsonString.size()), m_maxPayloadSizeBytes);
                 status = E2BIG;
             }
             else
             {
-                *payloadSizeBytes = buffer.GetSize();
+                *payloadSizeBytes = jsonString.size();
                 *payload = new (std::nothrow) char[*payloadSizeBytes];
 
                 if (*payload != nullptr)
                 {
                     std::fill(*payload, *payload + *payloadSizeBytes, 0);
-                    std::memcpy(*payload, buffer.GetString(), *payloadSizeBytes);
+                    std::memcpy(*payload, jsonString.c_str(), *payloadSizeBytes);
                 }
                 else
                 {
@@ -209,11 +210,10 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
 
         if (0 == m_firewallComponent.compare(componentName))
         {
-            rapidjson::Document document;
-            document.Parse(payloadJson.c_str());
-
-            if (!document.HasParseError())
+            try
             {
+                nlohmann::json document = nlohmann::json::parse(payloadJson);
+
                 if (0 == m_desiredRules.compare(objectName))
                 {
                     status = SetRules(document);
@@ -228,11 +228,11 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
                     status = EINVAL;
                 }
             }
-            else
+            catch (const nlohmann::json::parse_error& e)
             {
                 if (IsDebugLoggingEnabled())
                 {
-                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
+                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s (error: %s)", payloadJson.c_str(), e.what());
                     status = EINVAL;
                 }
                 else
@@ -252,22 +252,22 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
     return status;
 }
 
-GenericRule& GenericRule::Parse(const rapidjson::Value& value)
+GenericRule& GenericRule::Parse(const nlohmann::json& value)
 {
-    if (value.IsObject())
+    if (value.is_object())
     {
-        if (value.HasMember(g_desiredState))
+        if (value.contains(g_desiredState))
         {
-            if (value[g_desiredState].IsString())
+            if (value[g_desiredState].is_string())
             {
-                DesiredState state = DesiredState(value[g_desiredState].GetString());
+                DesiredState state = DesiredState(value[g_desiredState].get<std::string>());
                 if (state.IsValid())
                 {
                     m_desiredState = state;
                 }
                 else
                 {
-                    m_parseError.push_back("Invalid desired state: " + std::string(value[g_desiredState].GetString()));
+                    m_parseError.push_back("Invalid desired state: " + value[g_desiredState].get<std::string>());
                 }
             }
             else
@@ -280,18 +280,18 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_desiredState) + "' field");
         }
 
-        if (value.HasMember(g_action))
+        if (value.contains(g_action))
         {
-            if (value[g_action].IsString())
+            if (value[g_action].is_string())
             {
-                Action action = Action(value[g_action].GetString());
+                Action action = Action(value[g_action].get<std::string>());
                 if (action.IsValid())
                 {
                     m_action = action;
                 }
                 else
                 {
-                    m_parseError.push_back("Invalid action: " + std::string(value[g_action].GetString()));
+                    m_parseError.push_back("Invalid action: " + value[g_action].get<std::string>());
                 }
             }
             else
@@ -304,18 +304,18 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_action) + "' field");
         }
 
-        if (value.HasMember(g_direction))
+        if (value.contains(g_direction))
         {
-            if (value[g_direction].IsString())
+            if (value[g_direction].is_string())
             {
-                Direction direction = Direction(value[g_direction].GetString());
+                Direction direction = Direction(value[g_direction].get<std::string>());
                 if (direction.IsValid())
                 {
                     m_direction = direction;
                 }
                 else
                 {
-                    m_parseError.push_back("Invalid direction: " + std::string(value[g_direction].GetString()));
+                    m_parseError.push_back("Invalid direction: " + value[g_direction].get<std::string>());
                 }
             }
             else
@@ -328,18 +328,18 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_direction) + "' field");
         }
 
-        if (value.HasMember(g_protocol))
+        if (value.contains(g_protocol))
         {
-            if (value[g_protocol].IsString())
+            if (value[g_protocol].is_string())
             {
-                Protocol protocol = Protocol(value[g_protocol].GetString());
+                Protocol protocol = Protocol(value[g_protocol].get<std::string>());
                 if (protocol.IsValid())
                 {
                     m_protocol = protocol;
                 }
                 else
                 {
-                    m_parseError.push_back("Invalid protocol: " + std::string(value[g_protocol].GetString()));
+                    m_parseError.push_back("Invalid protocol: " + value[g_protocol].get<std::string>());
                 }
             }
             else
@@ -348,11 +348,11 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             }
         }
 
-        if (value.HasMember(g_source))
+        if (value.contains(g_source))
         {
-            if (value[g_source].IsString())
+            if (value[g_source].is_string())
             {
-                m_sourceAddress = value[g_source].GetString();
+                m_sourceAddress = value[g_source].get<std::string>();
             }
             else
             {
@@ -360,11 +360,11 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             }
         }
 
-        if (value.HasMember(g_destination))
+        if (value.contains(g_destination))
         {
-            if (value[g_destination].IsString())
+            if (value[g_destination].is_string())
             {
-                m_destinationAddress = value[g_destination].GetString();
+                m_destinationAddress = value[g_destination].get<std::string>();
             }
             else
             {
@@ -372,11 +372,11 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             }
         }
 
-        if (value.HasMember(g_sourcePort))
+        if (value.contains(g_sourcePort))
         {
-            if (value[g_sourcePort].IsInt())
+            if (value[g_sourcePort].is_number_integer())
             {
-                m_sourcePort = std::to_string(value[g_sourcePort].GetInt());
+                m_sourcePort = std::to_string(value[g_sourcePort].get<int>());
             }
             else
             {
@@ -384,11 +384,11 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             }
         }
 
-        if (value.HasMember(g_destinationPort))
+        if (value.contains(g_destinationPort))
         {
-            if (value[g_destinationPort].IsInt())
+            if (value[g_destinationPort].is_number_integer())
             {
-                m_destinationPort = std::to_string(value[g_destinationPort].GetInt());
+                m_destinationPort = std::to_string(value[g_destinationPort].get<int>());
             }
             else
             {
@@ -844,30 +844,28 @@ std::vector<IpTablesPolicy> IpTables::GetDefaultPolicies() const
     return policies;
 }
 
-void GenericPolicy::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
+nlohmann::json GenericPolicy::Serialize() const
 {
-    writer.StartObject();
-    writer.String(g_direction);
-    writer.String(m_direction.ToString().c_str());
-    writer.String(g_action);
-    writer.String(m_action.ToString().c_str());
-    writer.EndObject();
+    nlohmann::json obj;
+    obj[g_direction] = m_direction.ToString();
+    obj[g_action] = m_action.ToString();
+    return obj;
 }
 
-GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
+GenericPolicy& GenericPolicy::Parse(const nlohmann::json& value)
 {
-    if (value.HasMember(g_action))
+    if (value.contains(g_action))
     {
-        if (value[g_action].IsString())
+        if (value[g_action].is_string())
         {
-            Action action = Action(value[g_action].GetString());
+            Action action = Action(value[g_action].get<std::string>());
             if (action.IsValid() && (action != "reject"))
             {
                 m_action = action;
             }
             else
             {
-                m_parseError.push_back("Invalid action: " + std::string(value[g_action].GetString()));
+                m_parseError.push_back("Invalid action: " + value[g_action].get<std::string>());
             }
         }
         else
@@ -880,18 +878,18 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
         m_parseError.push_back("Policy must contain action");
     }
 
-    if (value.HasMember(g_direction))
+    if (value.contains(g_direction))
     {
-        if (value[g_direction].IsString())
+        if (value[g_direction].is_string())
         {
-            Direction direction = Direction(value[g_direction].GetString());
+            Direction direction = Direction(value[g_direction].get<std::string>());
             if (direction.IsValid())
             {
                 m_direction = direction;
             }
             else
             {
-                m_parseError.push_back("Invalid direction: " + std::string(value[g_direction].GetString()));
+                m_parseError.push_back("Invalid direction: " + value[g_direction].get<std::string>());
             }
         }
         else

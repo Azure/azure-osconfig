@@ -3,10 +3,12 @@
 
 project(firewalllib)
 
+find_package(nlohmann_json CONFIG REQUIRED)
+
 add_library(firewalllib STATIC Firewall.cpp)
 set_property(TARGET firewalllib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_link_libraries(firewalllib PRIVATE logging commonutils)
+target_link_libraries(firewalllib PRIVATE logging commonutils nlohmann_json::nlohmann_json)
 target_include_directories(firewalllib
     PUBLIC
         ${MODULES_INC_DIR}
