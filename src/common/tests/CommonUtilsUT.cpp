@@ -1419,7 +1419,7 @@ char* CheckMountOptions(char* options);
 
 TEST_F(CommonUtilsTest, CheckMountOptions)
 {
-    char* badOptions[] = {
+    const char* badOptions[] = {
         "Test options domain=foo userame:test",
         "domain=foo userame:test,password",
         "nosuid,password=test,test",
