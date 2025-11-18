@@ -87,6 +87,7 @@ int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desi
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
 int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 
+char* CheckMountOptions(char* options);
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log);
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
 

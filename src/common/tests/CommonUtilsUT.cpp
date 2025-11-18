@@ -1415,6 +1415,20 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
+char* CheckMountOptions(char* options);
+
+TEST_F(CommonUtilsTest, CheckMountOptions)
+{
+    EXPECT_EQ(nullptr, CheckMountOptions(NULL));
+    EXPECT_EQ(nullptr, CheckMountOptions("Test options domain=foo userame:test"));
+    EXPECT_EQ(nullptr, CheckMountOptions("domain=foo userame:test,password"));
+    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,password=test,test"));
+    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,domain=test,test"));
+    EXPECT_EQ(nullptr, CheckMountOptions("nosuid,username=test,test"));
+    EXPECT_STREQ("errors=remount-ro", CheckMountOptions("errors=remount-ro"));
+    EXPECT_STREQ("umask=0077,nosuid", CheckMountOptions("umask=0077,nosuid"));
+}
+
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 {
     const char* testFstab =
