@@ -176,6 +176,62 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
     return options;
 }
 
+// Helper for evaluating delimited numeric limits such as MaxStartups style values.
+static Result<Status> EvaluateDelimitedNumericLimits(const std::string& option, const std::string& value, const std::string& realValue,
+    const char delimiter, size_t numFields, IndicatorsTree& indicators)
+{
+    // Parse realValue using provided delimiter, value always uses ':' per specification.
+    std::vector<long long> realParts(numFields, 0);
+    std::vector<long long> limitParts(numFields, 0);
+
+    try
+    {
+        std::istringstream realStream(realValue);
+        std::string token;
+        size_t idx = 0;
+        while ((idx < numFields) && std::getline(realStream, token, delimiter))
+        {
+            if (!token.empty())
+            {
+                realParts[idx] = std::stoll(token);
+            }
+            ++idx;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        return Error("Failed to parse " + option + " value '" + realValue + "': " + e.what(), EINVAL);
+    }
+
+    try
+    {
+        std::istringstream limitStream(value);
+        std::string token;
+        size_t idx = 0;
+        while ((idx < numFields) && std::getline(limitStream, token, ':'))
+        {
+            if (!token.empty())
+            {
+                limitParts[idx] = std::stoll(token);
+            }
+            ++idx;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        return Error("Failed to parse " + option + " limit '" + value + "': " + e.what(), EINVAL);
+    }
+
+    for (size_t i = 0; i < numFields; ++i)
+    {
+        if (realParts[i] > limitParts[i])
+        {
+            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
+        }
+    }
+    return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
+}
+
 // Helper that evaluates a single sshd option against the provided operation/value.
 // valueRegexes are only used (and must be valid) when op is regex, match, or not_match.
 static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string>& sshdConfig, const std::string& option, const std::string& value,
@@ -196,45 +252,12 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 
     if (("maxstartups" == option) && ("match" == op))
     {
-        // special case
-        int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
-        try
-        {
-            std::istringstream valueStream(realValue);
-            std::string token;
-            if (std::getline(valueStream, token, ':'))
-                val1 = std::stoi(token);
-            if (std::getline(valueStream, token, ':'))
-                val2 = std::stoi(token);
-            if (std::getline(valueStream, token, ':'))
-                val3 = std::stoi(token);
-        }
-        catch (const std::exception& e)
-        {
-            return Error("Failed to parse maxstartups value '" + realValue + "': " + e.what(), EINVAL);
-        }
+        return EvaluateDelimitedNumericLimits(option, value, realValue, ':', 3, indicators);
+    }
 
-        try
-        {
-            std::istringstream limitStream(value);
-            std::string token;
-            if (std::getline(limitStream, token, ':'))
-                lim1 = std::stoi(token);
-            if (std::getline(limitStream, token, ':'))
-                lim2 = std::stoi(token);
-            if (std::getline(limitStream, token, ':'))
-                lim3 = std::stoi(token);
-        }
-        catch (const std::exception& e)
-        {
-            return Error("Failed to parse maxstartups limit '" + value + "': " + e.what(), EINVAL);
-        }
-
-        if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
-        {
-            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
-        }
-        return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
+    if (("rekeylimit" == option) && ("match" == op))
+    {
+        return EvaluateDelimitedNumericLimits(option, value, realValue, ' ', 2, indicators);
     }
 
     if (op == "match" || op == "regex") // The only difference is in the valueRegexes preparation
