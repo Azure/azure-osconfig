@@ -1419,14 +1419,35 @@ char* CheckMountOptions(char* options);
 
 TEST_F(CommonUtilsTest, CheckMountOptions)
 {
+    char* badOptions[] = {
+        "Test options domain=foo userame:test",
+        "domain=foo userame:test,password",
+        "nosuid,password=test,test",
+        "nosuid,domain=test,test",
+        "nosuid,domain=test,test",
+        "nosuid,domain=test,test",
+        "nosuid,domain=test,test",
+        "nosuid,username=test,test"
+    };
+    size_t numBadOptions = ARRAY_SIZE(badOptions);
+    char* test = NULL;
+
     EXPECT_EQ(nullptr, CheckMountOptions(NULL));
-    EXPECT_EQ(nullptr, CheckMountOptions((void*)"Test options domain=foo userame:test"));
-    EXPECT_EQ(nullptr, CheckMountOptions((void*)"domain=foo userame:test,password"));
-    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,password=test,test"));
-    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,domain=test,test"));
-    EXPECT_EQ(nullptr, CheckMountOptions((void*)"nosuid,username=test,test"));
-    EXPECT_STREQ((void*)"errors=remount-ro", CheckMountOptions((void*)"errors=remount-ro"));
-    EXPECT_STREQ((void*)"umask=0077,nosuid", CheckMountOptions((void*)"umask=0077,nosuid"));
+
+    for (size_t i = 0; i < numBadOptions; i++)
+    {
+        EXPECT_NE(nullptr, test = DuplicateString(badOptions[i]));
+        EXPECT_EQ(nullptr, CheckMountOptions(test));
+        FREE_MEMORY(test);
+    }
+
+    EXPECT_NE(nullptr, test = DuplicateString("errors=remount-ro"));
+    EXPECT_STREQ(test, CheckMountOptions(test));
+    FREE_MEMORY(test);
+
+    EXPECT_NE(nullptr, test = DuplicateString("umask=0077,nosuid"));
+    EXPECT_STREQ(test, CheckMountOptions(test));
+    FREE_MEMORY(test);
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
