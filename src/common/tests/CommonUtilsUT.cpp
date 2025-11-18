@@ -1420,14 +1420,18 @@ char* CheckForMountCreds(char* options);
 TEST_F(CommonUtilsTest, CheckForMountCreds)
 {
     const char* badOptions[] = {
+        "Test domain",
+        "password test",
+        "domain/username",
+        "username@domain",
         "Test options domain=foo userame:test",
         "domain=foo userame:test,password",
         "nosuid,password=test,test",
         "nosuid,domain=test,test",
-        "nosuid,domain=test,test",
-        "nosuid,domain=test,test",
-        "nosuid,domain=test,test",
-        "nosuid,username=test,test"
+        "nosuid,domain=test,password=test,test",
+        "nosuid,username=test,domain=test,test",
+        "nosuid,domain=test,username=test,test,password=test",
+        "nosuid,username=test,23=test"
     };
     size_t numBadOptions = ARRAY_SIZE(badOptions);
     char* test = NULL;
