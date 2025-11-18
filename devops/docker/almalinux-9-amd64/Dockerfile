@@ -11,6 +11,8 @@ RUN dnf install -y \
     libtool \
     make \
     openssl-devel \
+    perl \
+    perl-IPC-Cmd \
     rpm-build \
     tar \
     unzip \

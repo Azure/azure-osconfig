@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set (CMAKE_C_STANDARD 11)
-set (CMAKE_CXX_STANDARD 11)
-
 # VCPKG integration
 if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     if (DEFINED ENV{VCPKG_ROOT})
@@ -20,17 +17,25 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16)
+project(osconfig)
+
+set (CMAKE_C_STANDARD 11)
+set (CMAKE_CXX_STANDARD 11)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
 set(PATCH_VERSION "5" CACHE STRING "Patch version")
+
+# External Projects
+set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
 
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
+option(BUILD_TELEMETRY "Build telemetry" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
@@ -43,6 +48,17 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
         set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
     endif()
+endif()
+
+if(BUILD_TELEMETRY)
+    message(STATUS "Telemetry: Enabled")
+    if(NOT DEFINED ENV{OsConfigTelemetryApiKey} OR "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
+        message(WARNING "Telemetry enabled but missing OsConfigTelemetryApiKey environment variable")
+    endif()
+    add_compile_definitions(BUILD_TELEMETRY=1)
+else()
+    message(STATUS "Telemetry: Disabled")
+    set(BUILD_TELEMETRY OFF)
 endif()
 
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)
@@ -121,6 +137,7 @@ endif()
 
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
+set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
 if (BUILD_TESTS)
     message(STATUS "Google Unit Test: Enabled")
@@ -153,6 +170,20 @@ if (BUILD_PLATFORM)
 endif()
 if (BUILD_MODULES)
     add_subdirectory(modules)
+endif()
+
+if (BUILD_TELEMETRY)
+    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
+    set(TELEMETRY_TESTS_DIR ${BINARY_DIR}/lib/tests)
+    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
+        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
+        @ONLY)
+
+    set_property(DIRECTORY APPEND PROPERTY
+        TEST_INCLUDE_FILES
+            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
 endif()
 
 message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
