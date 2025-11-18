@@ -11,6 +11,8 @@ RUN apt -y update && apt-get -y install \
     gcovr \
     git \
     jq \
+    libcurl4-openssl-dev \
+    libssl-dev \
     pkg-config \
     python3-jsonschema \
     tar \

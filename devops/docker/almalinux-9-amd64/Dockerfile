@@ -10,6 +10,7 @@ RUN dnf install -y \
     git \
     jq \
     libtool \
+    openssl-devel \
     make \
     perl \
     perl-IPC-Cmd \

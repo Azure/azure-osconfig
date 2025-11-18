@@ -29,6 +29,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     gcc-c++ \
     gettext \
     libtool \
+    libcurl-devel \
     make \
     openssl-devel \
     perl \
@@ -48,7 +49,7 @@ WORKDIR /git
 RUN curl -L https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz | tar xz
 RUN cd git-${GIT_VERSION} && \
     make configure && \
-    ./configure && \
+    ./configure --with-curl --with-openssl && \
     make all -j$(nproc) && \
     make install && \
     hash -r && \

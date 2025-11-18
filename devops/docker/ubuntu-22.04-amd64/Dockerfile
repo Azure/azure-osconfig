@@ -17,6 +17,8 @@ RUN apt -y update && apt-get -y install \
     git \
     jq \
     libasan8 \
+    libcurl4-openssl-dev \
+    libssl-dev \
     libubsan1 \
     pkg-config \
     python3-jsonschema \

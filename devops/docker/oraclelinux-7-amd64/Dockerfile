@@ -13,6 +13,7 @@ RUN yum install -y \
     devtoolset-7-gcc-c++ \
     gettext \
     jq \
+    libcurl-devel \
     libtool \
     make \
     openssl-devel \
@@ -30,7 +31,7 @@ WORKDIR /git
 RUN curl -L https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz | tar xz
 RUN cd git-${GIT_VERSION} && \
     make configure && \
-    ./configure && \
+    ./configure --with-curl --with-openssl && \
     make all -j$(nproc) && \
     make install && \
     hash -r && \
