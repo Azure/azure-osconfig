@@ -22,68 +22,38 @@ Build environments have many dependencies required, the easiest way to get start
 
 Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions. There might also be packages that are out-of-date so they are built installed from source.
 
-**Common dependencies across distributions:**
-- git
+**Common build dependencies across distributions:**
+- vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
+    - git
+    - curl
+    - autoconf
+    - unzip
+    - zip
 - cmake (>= 3.16.0)
 - build-essential (gcc >= 4.4.7, g++, make)
-- curl
-- autoconf
 - perl (perl-core, perl-IPC-Cmd)
 - tar
-- unzip
-- zip
 - python3
-- gtest/gmock
 
-Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example.
+Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example. The environments do also contain tools used in our CI which are not required for building (bc, jq, libubsan1, libasan8, clang, clang-tools, file).
 
 #### Example prerequisite install on Ubuntu 24.04
-Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root`.
+Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
 
 ```bash
-# login as `root` so we don't have to `sudo` all the time
+# Login as `root` so we don't have to `sudo` all the time
 sudo -i
-
 apt -y update && apt-get -y install software-properties-common
 apt -y update && apt-get -y install \
-    apt-transport-https \
-    bc \
     build-essential \
-    clang \
-    clang-tools \
     cmake \
-    curl \
-    file \
-    gcovr\
     git \
-    jq \
-    libasan8 \
-    libcurl4-openssl-dev \
-    libgmock-dev \
-    libgtest-dev \
-    libssl-dev \
-    libubsan1 \
-    ninja-build \
     pkg-config \
-    python3-jsonschema \
-    rapidjson-dev \
     tar \
     unzip \
-    uuid-dev \
     wget \
     zip
-
-mkdir -p ~/git && cd ~/git
-
-# Clone/Build/Install CMake 3.21.7
-git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
-cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf ~/git/CMake
-
-# Clone/Build/Install GTest 1.12.0
-git clone https://github.com/google/googletest --recursive -b release-1.12.0
-cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf ~/git/googletest
-
-# logout of `root`
+# Logout of `root`
 exit
 ```
 
@@ -96,7 +66,7 @@ gcc --version
 
 For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
-For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/):
+For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/) (or just use the devcontainer):
 
 ```bash
 sudo apt-get install python3
