@@ -4,9 +4,9 @@
 project(adhstests)
 
 include(CTest)
-find_package(GTest REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(adhstests AdhsTests.cpp)
-target_link_libraries(adhstests gtest gtest_main pthread adhslib logging commonutils)
+target_link_libraries(adhstests GTest::gtest GTest::gtest_main pthread adhslib logging commonutils)
 
 gtest_discover_tests(adhstests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

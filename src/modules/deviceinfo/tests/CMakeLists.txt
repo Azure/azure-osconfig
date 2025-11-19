@@ -4,9 +4,9 @@
 project(deviceinfotests)
 
 include(CTest)
-find_package(GTest REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(deviceinfotests DeviceInfoTests.cpp)
-target_link_libraries(deviceinfotests gtest gtest_main pthread deviceinfolib logging commonutils)
+target_link_libraries(deviceinfotests GTest::gtest GTest::gtest_main pthread deviceinfolib logging commonutils)
 
 gtest_discover_tests(deviceinfotests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
