@@ -5,7 +5,7 @@ project(commandrunnertests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 

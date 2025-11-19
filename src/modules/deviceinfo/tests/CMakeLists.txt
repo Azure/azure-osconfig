@@ -3,7 +3,7 @@
 
 project(deviceinfotests)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(deviceinfotests DeviceInfoTests.cpp)

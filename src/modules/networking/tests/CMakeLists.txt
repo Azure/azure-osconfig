@@ -5,7 +5,7 @@ project(networkingtests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(networkingtests NetworkingTests.cpp)

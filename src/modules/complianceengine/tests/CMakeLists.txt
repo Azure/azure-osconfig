@@ -3,7 +3,7 @@
 
 project(compliancetests)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 set(PROCEDURES

@@ -5,7 +5,7 @@ project(platformtests)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(platformtests

@@ -3,7 +3,7 @@
 
 project(adhstests)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(adhstests AdhsTests.cpp)

@@ -3,7 +3,7 @@
 
 project(deliveryoptimizationtests)
 
-include(CTest)
+include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(deliveryoptimizationtests DeliveryOptimizationTests.cpp)

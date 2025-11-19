@@ -5,8 +5,8 @@ project(telemetrytests)
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
-find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(telemetrytests TelemetryTests.cpp)
 
