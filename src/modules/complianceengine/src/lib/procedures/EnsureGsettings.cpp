@@ -131,6 +131,7 @@ Result<Status> AuditEnsureGsettings(const EnsureGsettingsParams& params, Indicat
         if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid keyValue value not a number: %s", params.value.c_str());
+            OSConfigTelemetryStatusTrace("strtol", EINVAL);
             return Error("Invalid operation value: not a number " + params.value, EINVAL);
         }
     }

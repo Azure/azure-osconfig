@@ -30,6 +30,7 @@ Result<Status> AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indicator
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -63,6 +64,7 @@ Result<Status> AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indicator
             else
             {
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -71,6 +73,7 @@ Result<Status> AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indicator
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 
@@ -119,6 +122,7 @@ Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indic
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -158,6 +162,7 @@ Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indic
             else
             {
                 OsConfigLogError(context.GetLogHandle(), "Failed to stat home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name, strerror(status));
+                OSConfigTelemetryStatusTrace("stat", status);
                 return Error(string("Failed to stat home directory: ") + strerror(status), status);
             }
         }
@@ -166,6 +171,7 @@ Result<Status> RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured(Indic
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", pwd.pw_name, strerror(errno));
+            OSConfigTelemetryStatusTrace("getgrgid", errno);
             return Error(string("Failed to get group for user: ") + strerror(errno), errno);
         }
 

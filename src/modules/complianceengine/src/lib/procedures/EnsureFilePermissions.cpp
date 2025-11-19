@@ -57,11 +57,13 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 if (!result.HasValue())
                 {
                     OsConfigLogError(log, "Error processing permissions for '%s'", fileName);
+                    OSConfigTelemetryStatusTrace(isRemediation ? "RemediateEnsureFilePermissions" : "AuditEnsureFilePermissions", result.Error().code);
                     return result;
                 }
                 if (Status::NonCompliant == result.Value())
                 {
                     OsConfigLogError(log, "File '%s' does not match expected permissions", fileName);
+                    OSConfigTelemetryStatusTrace("EnsureFilePermissionsCollectionHelper", EACCES);
                     return result;
                 }
                 OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
@@ -95,6 +97,7 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -165,6 +168,7 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
     if ((params.permissions.HasValue() && params.mask.HasValue()) && (0 != (params.permissions.Value() & params.mask.Value())))
     {
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        OSConfigTelemetryStatusTrace("permissions", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both");
     }
     if (params.permissions.HasValue())
@@ -216,6 +220,7 @@ Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams&
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
@@ -306,6 +311,7 @@ Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams&
         {
             int status = errno;
             OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
+            OSConfigTelemetryStatusTrace("chown", status);
             return Error(std::string("Chown error: ") + strerror(status), status);
         }
 
@@ -326,6 +332,7 @@ Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams&
     if ((params.permissions.HasValue() && params.mask.HasValue()) && (0 != (params.permissions.Value() & params.mask.Value())))
     {
         OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        OSConfigTelemetryStatusTrace("permissions", EINVAL);
         return Error("Invalid permissions and mask - same bits set in both", EINVAL);
     }
     if (new_perms != statbuf.st_mode)
@@ -335,6 +342,7 @@ Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams&
         {
             int status = errno;
             OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
+            OSConfigTelemetryStatusTrace("chmod", status);
             return Error(std::string("Chmod error: ") + strerror(status), status);
         }
 

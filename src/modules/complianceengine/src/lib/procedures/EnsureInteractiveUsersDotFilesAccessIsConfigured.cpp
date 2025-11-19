@@ -27,6 +27,7 @@ Result<Status> AuditEnsureInteractiveUsersDotFilesAccessIsConfigured(IndicatorsT
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -150,6 +151,7 @@ Result<Status> RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured(Indicat
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 
@@ -256,6 +258,7 @@ Result<Status> RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured(Indicat
         if (!result.HasValue() || result.Value() == Status::NonCompliant)
         {
             OsConfigLogError(context.GetLogHandle(), "Directory validation for user %s id %d returned NonCompliant, but continuing", user.pw_name, user.pw_uid);
+            OSConfigTelemetryStatusTrace("FileTreeWalk", result.HasValue() ? EPERM : result.Error().code);
             status = Status::NonCompliant;
         }
     }
