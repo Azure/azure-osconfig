@@ -3,11 +3,13 @@
 
 project(commandrunner)
 
+find_package(nlohmann_json CONFIG REQUIRED)
 add_library(commandrunner SHARED CommandRunnerModule.cpp)
 target_link_libraries(commandrunner
     PRIVATE
         logging
         commonutils
+        nlohmann_json::nlohmann_json
     PUBLIC
         commandrunnerlib
 )
