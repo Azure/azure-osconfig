@@ -5,8 +5,8 @@ project(platformtests)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include(CTest)
-find_package(GTest REQUIRED)
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(platformtests
     ./PlatformTests.cpp
@@ -15,8 +15,8 @@ add_executable(platformtests
     ../MpiServer.c)
 
 target_link_libraries(platformtests
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
     pthread
     logging
     commonutils

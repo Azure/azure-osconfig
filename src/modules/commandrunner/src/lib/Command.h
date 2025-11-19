@@ -6,9 +6,7 @@
 
 #include <cstring>
 #include <mutex>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include <CommonUtils.h>
@@ -86,8 +84,8 @@ public:
         Arguments(std::string id, std::string command, Command::Action action, unsigned int timeout, bool singleLineTextResult);
 
         static std::string Serialize(const Command::Arguments& arguments);
-        static void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Arguments& arguments);
-        static Arguments Deserialize(const rapidjson::Value& object);
+        static nlohmann::json ToJson(const Command::Arguments& arguments);
+        static Arguments Deserialize(const nlohmann::json& object);
     };
 
     class Status
@@ -101,8 +99,8 @@ public:
         Status(const std::string id, int exitCode, std::string textResult, Command::State state);
 
         static std::string Serialize(const Command::Status& status, bool serializeTextResult = true);
-        static void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Status& status, bool serializeTextResult = true);
-        static Command::Status Deserialize(const rapidjson::Value& object);
+        static nlohmann::json ToJson(const Command::Status& status, bool serializeTextResult = true);
+        static Command::Status Deserialize(const nlohmann::json& object);
     };
 
     const std::string m_arguments;

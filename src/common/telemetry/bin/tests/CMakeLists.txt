@@ -5,8 +5,8 @@ project(telemetryexetests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 # Build the args.cpp as a library for testing
 add_library(telemetrybin_args_lib

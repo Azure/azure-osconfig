@@ -13,17 +13,14 @@ RUN tdnf install -y \
     perl-IPC-Cmd \
     rpm-build \
     shadow-utils \
-    qtar \
+    tar \
     tmux \
     tree \
     unzip \
     util-linux \
     uuid-devel \
     wget \
-    zip && \
-    tdnf upgrade -y && \
-    tdnf clean all
+    zip
 
-# GTest
-RUN git clone https://github.com/google/googletest --recursive -b release-1.12.0
-RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
+RUN tdnf upgrade -y && \
+    tdnf clean all
