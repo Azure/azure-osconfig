@@ -128,7 +128,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         if (!anySuccess)
         {
             OsConfigLogError(log, "No valid systemd config files found in directory '%s'", params.dir->c_str());
-            OSConfigTelemetryStatusTrace("fts_close", errno ? errno : EINVAL);
+            OSConfigTelemetryStatusTrace("fts_close", EINVAL);
             return Error("No valid systemd config files found in directory '" + params.dir.Value() + "'");
         }
     }

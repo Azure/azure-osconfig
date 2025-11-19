@@ -21,9 +21,10 @@ Result<UsersRange> UsersRange::Make(std::string path, OsConfigLogHandle logHandl
     auto stream = fopen(path.c_str(), "r");
     if (nullptr == stream)
     {
-        OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(errno));
-        OSConfigTelemetryStatusTrace("fopen", errno);
-        return Error("Failed to create UsersRange: " + std::string(strerror(errno)), errno);
+        int status = errno;
+        OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(status));
+        OSConfigTelemetryStatusTrace("fopen", status);
+        return Error("Failed to create UsersRange: " + std::string(strerror(status)), status);
     }
 
     return UsersRange(stream, logHandle);
