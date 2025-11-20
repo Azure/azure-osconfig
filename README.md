@@ -20,7 +20,7 @@ OSConfig's C/C++ code currently targets compliance with C11.
 
 Build environments have many dependencies required, the easiest way to get started is to use our pre-defined container environments in [devops/docker](devops/docker/).
 
-Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions. There might also be packages that are out-of-date so they are built installed from source.
+Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
 
 **Common build dependencies across distributions:**
 - vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
@@ -41,20 +41,8 @@ Refer to the specific Dockerfile for your distribution under [devops/docker/](de
 Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
 
 ```bash
-# Login as `root` so we don't have to `sudo` all the time
-sudo -i
-apt -y update && apt-get -y install software-properties-common
-apt -y update && apt-get -y install \
-    build-essential \
-    cmake \
-    git \
-    pkg-config \
-    tar \
-    unzip \
-    wget \
-    zip
-# Logout of `root`
-exit
+sudo apt -y update && sudo apt-get -y install software-properties-common
+sudo apt -y update && sudo apt-get -y install build-essential cmake git pkg-config tar unzip wget zip
 ```
 
 Verify that CMake is at least version 3.16.0 and gcc is at least version 4.4.7.
@@ -66,7 +54,7 @@ gcc --version
 
 For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
-For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/) (or just use the devcontainer):
+For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/):
 
 ```bash
 sudo apt-get install python3
