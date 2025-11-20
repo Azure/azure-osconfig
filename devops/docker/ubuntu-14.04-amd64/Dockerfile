@@ -1,11 +1,8 @@
 FROM ubuntu:trusty
 
-ARG CMAKE_VERSION=v3.31.8
-ARG GTEST_VERSION=release-1.10.0
-ARG RAPIDJSON_COMMIT_HASH=24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+ARG CMAKE_VERSION=v3.21.7
 ARG GIT_VERSION=2.14.0
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VCPKG_REF=master
 
 RUN apt-get -y update && apt-get -y install software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -58,14 +55,5 @@ WORKDIR /tmp
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b $CMAKE_VERSION
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
-
-# GTest
-RUN git clone https://github.com/google/googletest --recursive -b $GTEST_VERSION
-RUN cd googletest && cmake . -G Ninja && cmake --build . --target install
-
-# rapidjson
-RUN git clone --no-checkout https://github.com/Tencent/rapidjson
-RUN cd rapidjson && git checkout $RAPIDJSON_COMMIT_HASH && git submodule update --init --recursive
-RUN cd rapidjson && cmake . -G Ninja -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF && cmake --build . --target install
 
 RUN rm -rf /git

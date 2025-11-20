@@ -19,10 +19,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
     set(CMAKE_ARGS -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5)
 endif()
 
-# Force vcpkg-only usage - determine vcpkg installed directory
-if (DEFINED ENV{VCPKG_ROOT})
-    set(VCPKG_INSTALLED_DIR "$ENV{VCPKG_ROOT}/vcpkg_installed")
-endif()
 set(VCPKG_PACKAGES_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 
 # Set CMAKE_PREFIX_PATH to vcpkg only

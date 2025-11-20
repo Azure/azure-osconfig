@@ -2,11 +2,7 @@
 // Licensed under the MIT License.
 
 #include <fstream>
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/prettywriter.h>
+#include <nlohmann/json.hpp>
 
 #include <Command.h>
 #include <CommandRunner.h>
@@ -134,85 +130,87 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
 int CommandRunner::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
-    rapidjson::Document document;
+    nlohmann::json document;
 
-    if (document.Parse(payload, payloadSizeBytes).HasParseError())
+    try
+    {
+        document = nlohmann::json::parse(std::string(payload, payloadSizeBytes));
+    }
+    catch (const nlohmann::json::exception& e)
     {
         status = EINVAL;
-        OsConfigLogError(CommandRunnerLog::Get(), "Unabled to parse JSON payload: %s", payload);
+        OsConfigLogError(CommandRunnerLog::Get(), "Unable to parse JSON payload: %s", payload);
         OSConfigTelemetryStatusTrace("Parse", status);
+        return status;
     }
-    else
+
+    if (0 == CommandRunner::m_componentName.compare(componentName))
     {
-        if (0 == CommandRunner::m_componentName.compare(componentName))
+        if (0 == g_commandArguments.compare(objectName))
         {
-            if (0 == g_commandArguments.compare(objectName))
+            size_t payloadHash = HashString(payload);
+            Command::Arguments arguments = Command::Arguments::Deserialize(document);
+
+            if (m_usePersistedCache)
             {
-                size_t payloadHash = HashString(payload);
-                Command::Arguments arguments = Command::Arguments::Deserialize(document);
-
-                if (m_usePersistedCache)
+                std::lock_guard<std::mutex> lock(m_cacheMutex);
+                if ((m_commandMap.find(arguments.m_id) != m_commandMap.end()) && (m_commandMap[arguments.m_id]->GetId() == m_commandIdLoadedFromDisk))
                 {
-                    std::lock_guard<std::mutex> lock(m_cacheMutex);
-                    if ((m_commandMap.find(arguments.m_id) != m_commandMap.end()) && (m_commandMap[arguments.m_id]->GetId() == m_commandIdLoadedFromDisk))
-                    {
-                        OsConfigLogDebug(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
+                    OsConfigLogDebug(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
 
-                        // Update the partial command loaded from the persisted cache
-                        Command::Status currentStatus = m_commandMap[arguments.m_id]->GetStatus();
+                    // Update the partial command loaded from the persisted cache
+                    Command::Status currentStatus = m_commandMap[arguments.m_id]->GetStatus();
 
-                        std::shared_ptr<Command> command = std::make_shared<Command>(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
-                        command->SetStatus(currentStatus.m_exitCode, currentStatus.m_textResult, currentStatus.m_state);
+                    std::shared_ptr<Command> command = std::make_shared<Command>(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
+                    command->SetStatus(currentStatus.m_exitCode, currentStatus.m_textResult, currentStatus.m_state);
 
-                        m_commandMap[arguments.m_id] = command;
-                    }
-                }
-
-                if (m_lastPayloadHash != payloadHash)
-                {
-                    m_lastPayloadHash = payloadHash;
-
-                    switch (arguments.m_action)
-                    {
-                        case Command::Action::RunCommand:
-                            status = Run(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
-                            break;
-                        case Command::Action::Reboot:
-                            status = Reboot(arguments.m_id);
-                            break;
-                        case Command::Action::Shutdown:
-                            status = Shutdown(arguments.m_id);
-                            break;
-                        case Command::Action::CancelCommand:
-                            status = Cancel(arguments.m_id);
-                            break;
-                        case Command::Action::RefreshCommandStatus:
-                            status = Refresh(arguments.m_id);
-                            break;
-                        case Command::Action::None:
-                            OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
-                            break;
-                        default:
-                            status = EINVAL;
-                            OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
-                            OSConfigTelemetryStatusTrace("m_action", EINVAL);
-                    }
+                    m_commandMap[arguments.m_id] = command;
                 }
             }
-            else
+
+            if (m_lastPayloadHash != payloadHash)
             {
-                status = EINVAL;
-                OsConfigLogError(CommandRunnerLog::Get(), "Invalid object name: %s", objectName);
-                OSConfigTelemetryStatusTrace("objectName", status);
+                m_lastPayloadHash = payloadHash;
+
+                switch (arguments.m_action)
+                {
+                    case Command::Action::RunCommand:
+                        status = Run(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
+                        break;
+                    case Command::Action::Reboot:
+                        status = Reboot(arguments.m_id);
+                        break;
+                    case Command::Action::Shutdown:
+                        status = Shutdown(arguments.m_id);
+                        break;
+                    case Command::Action::CancelCommand:
+                        status = Cancel(arguments.m_id);
+                        break;
+                    case Command::Action::RefreshCommandStatus:
+                        status = Refresh(arguments.m_id);
+                        break;
+                    case Command::Action::None:
+                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
+                        break;
+                    default:
+                        status = EINVAL;
+                        OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
+                        OSConfigTelemetryStatusTrace("m_action", EINVAL);
+                }
             }
         }
         else
         {
             status = EINVAL;
-            OsConfigLogError(CommandRunnerLog::Get(), "Invalid component name: %s", componentName);
-            OSConfigTelemetryStatusTrace("componentName", status);
-
+            OsConfigLogError(CommandRunnerLog::Get(), "Invalid object name: %s", objectName);
+            OSConfigTelemetryStatusTrace("objectName", status);
         }
+    }
+    else
+    {
+        status = EINVAL;
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid component name: %s", componentName);
+        OSConfigTelemetryStatusTrace("componentName", status);
     }
 
     return status;
@@ -243,19 +241,16 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
         {
             if (0 == g_commandStatus.compare(objectName))
             {
-                rapidjson::StringBuffer buffer;
-                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-
                 Command::Status commandStatus = GetReportedStatus();
-                Command::Status::Serialize(writer, commandStatus);
+                std::string jsonStr = Command::Status::ToJson(commandStatus).dump();
 
-                *payload = new (std::nothrow) char[buffer.GetSize()];
+                *payload = new (std::nothrow) char[jsonStr.size()];
 
                 if (nullptr != *payload)
                 {
-                    std::fill(*payload, *payload + buffer.GetSize(), 0);
-                    std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
-                    *payloadSizeBytes = buffer.GetSize();
+                    std::fill(*payload, *payload + jsonStr.size(), 0);
+                    std::memcpy(*payload, jsonStr.c_str(), jsonStr.size());
+                    *payloadSizeBytes = jsonStr.size();
                 }
                 else
                 {
@@ -523,38 +518,45 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 
     if (file.good())
     {
-        rapidjson::IStreamWrapper isw(file);
-        rapidjson::Document document;
+        nlohmann::json document;
 
-        if (document.ParseStream(isw).HasParseError())
+        try
+        {
+            file >> document;
+        }
+        catch (const nlohmann::json::exception& e)
         {
             status = EINVAL;
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file");
             OSConfigTelemetryStatusTrace("ParseStream", status);
+            return status;
         }
-        else if (!document.IsObject())
+
+        if (!document.is_object())
         {
             status = EINVAL;
-            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an array");
-            OSConfigTelemetryStatusTrace("IsObject", status);
+            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an object");
+            OSConfigTelemetryStatusTrace("is_object", status);
         }
-        else if (document.HasMember(clientName.c_str()))
+        else if (document.contains(clientName))
         {
-            const rapidjson::Value& client = document[clientName.c_str()];
+            const nlohmann::json& client = document[clientName];
 
-            for (auto& it : client.GetArray())
+            if (client.is_array())
             {
-                Command::Status commandStatus = Command::Status::Deserialize(it);
-
-                std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
-                command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
-
-                if (0 != CacheCommand(command))
+                for (const auto& it : client)
                 {
-                    status = -1;
-                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
-                    OSConfigTelemetryStatusTrace("CacheCommand", status);
+                    Command::Status commandStatus = Command::Status::Deserialize(it);
 
+                    std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
+                    command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
+
+                    if (0 != CacheCommand(command))
+                    {
+                        status = -1;
+                        OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
+                        OSConfigTelemetryStatusTrace("CacheCommand", status);
+                    }
                 }
             }
         }
@@ -575,42 +577,46 @@ int CommandRunner::PersistCommandStatus(const Command::Status& status)
 int CommandRunner::PersistCommandStatus(const std::string& clientName, const Command::Status commandStatus)
 {
     int status = 0;
-    rapidjson::Document document;
-    rapidjson::Document statusDocument;
-    statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
+    nlohmann::json document;
+    nlohmann::json statusJson = Command::Status::ToJson(commandStatus, false);
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
 
     std::ifstream file(m_persistedCacheFile);
     if (file.good())
     {
-        rapidjson::IStreamWrapper isw(file);
-        if (document.ParseStream(isw).HasParseError() || (!document.IsObject()))
+        try
         {
-            document.Parse(m_defaultCacheTemplate);
+            file >> document;
+            if (!document.is_object())
+            {
+                document = nlohmann::json::parse(m_defaultCacheTemplate);
+            }
+        }
+        catch (const nlohmann::json::exception& e)
+        {
+            document = nlohmann::json::parse(m_defaultCacheTemplate);
         }
     }
     else
     {
-        document.Parse(m_defaultCacheTemplate);
+        document = nlohmann::json::parse(m_defaultCacheTemplate);
     }
 
-    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
-
-    if (document.HasMember(clientName.c_str()))
+    if (document.contains(clientName))
     {
         bool updated = false;
-        rapidjson::Value& client = document[clientName.c_str()];
+        nlohmann::json& client = document[clientName];
 
-        if (!client.IsArray())
+        if (!client.is_array())
         {
-            client.SetArray();
+            client = nlohmann::json::array();
         }
 
-        for (auto& it : client.GetArray())
+        for (auto& it : client)
         {
-            if (it.HasMember(g_commandId.c_str()) && it[g_commandId.c_str()].IsString() && (it[g_commandId.c_str()].GetString() == commandStatus.m_id))
+            if (it.contains(g_commandId) && it[g_commandId].is_string() && (it[g_commandId].get<std::string>() == commandStatus.m_id))
             {
-                it.CopyFrom(statusDocument, allocator);
+                it = statusJson;
                 updated = true;
                 break;
             }
@@ -618,26 +624,24 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
         if (!updated)
         {
-            if (client.Size() >= m_maxCacheSize)
+            if (client.size() >= m_maxCacheSize)
             {
-                client.Erase(client.Begin());
+                client.erase(client.begin());
             }
 
-            client.PushBack(statusDocument, allocator);
+            client.push_back(statusJson);
         }
     }
     else
     {
-        rapidjson::Value object(rapidjson::kArrayType);
-        object.PushBack(statusDocument, allocator);
-        document.AddMember(rapidjson::Value(clientName.c_str(), allocator), object, allocator);
+        nlohmann::json clientArray = nlohmann::json::array();
+        clientArray.push_back(statusJson);
+        document[clientName] = clientArray;
     }
 
-    rapidjson::StringBuffer buffer;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
+    std::string jsonStr = document.dump(4);  // 4 spaces for indentation
 
-    if (buffer.GetSize() > 0)
+    if (jsonStr.size() > 0)
     {
         std::FILE* file = std::fopen(m_persistedCacheFile, "w+");
         if (nullptr == file)
@@ -648,7 +652,7 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
         }
         else
         {
-            int rc = std::fputs(buffer.GetString(), file);
+            int rc = std::fputs(jsonStr.c_str(), file);
 
             if ((0 > rc) || (EOF == rc))
             {
