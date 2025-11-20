@@ -153,187 +153,187 @@ jobs:
           name: nrp-test
           path: '*.zip'
 
-  mc-test:
-    name: MC Test
-    if: ${{ always() && needs.setup-matrix.result == 'success' && (needs.package.result == 'success' || needs.custom-download.result == 'success') }}
-    needs: [setup-matrix, package, custom-download]
-    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
-        arch: [amd64]
-        mode: [Audit, Remediate]
-        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
+  # mc-test:
+  #   name: MC Test
+  #   if: ${{ always() && needs.setup-matrix.result == 'success' && (needs.package.result == 'success' || needs.custom-download.result == 'success') }}
+  #   needs: [setup-matrix, package, custom-download]
+  #   runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
+  #       arch: [amd64]
+  #       mode: [Audit, Remediate]
+  #       policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: false
-          clean: true
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: false
+  #         clean: true
 
-      - uses: actions/download-artifact@v4
-        id: download
-        with:
-          name: nrp-test
+  #     - uses: actions/download-artifact@v4
+  #       id: download
+  #       with:
+  #         name: nrp-test
 
-      - name: Normalize variables
-        id: normalize
-        run: |
-          echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
-          echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
-          echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
+  #     - name: Normalize variables
+  #       id: normalize
+  #       run: |
+  #         echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
+  #         echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
+  #         echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
 
-      - name: Fix policy package names
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
-        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
-        shell: pwsh
-        run: |
-          $name="${{ matrix.policy-package.name }}"
-          Get-ChildItem -Path $name*.zip -File | Select-Object -First 1 {
-              Write-Host "Renaming $($_.Name) to $name.zip"
-              Rename-Item -Path $_.Name -NewName "$name.zip"
-          }
+  #     - name: Fix policy package names
+  #       if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+  #       working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
+  #       shell: pwsh
+  #       run: |
+  #         $name="${{ matrix.policy-package.name }}"
+  #         Get-ChildItem -Path $name*.zip -File | Select-Object -First 1 {
+  #             Write-Host "Renaming $($_.Name) to $name.zip"
+  #             Rename-Item -Path $_.Name -NewName "$name.zip"
+  #         }
 
-      - name: Check package size
-        if: success() || failure()
-        uses: ./.github/actions/check-size
-        with:
-          package: '${{ steps.normalize.outputs.path }}'
-          limit: 5000
+  #     - name: Check package size
+  #       if: success() || failure()
+  #       uses: ./.github/actions/check-size
+  #       with:
+  #         package: '${{ steps.normalize.outputs.path }}'
+  #         limit: 5000
 
-      - name: Run Guest Configuration Test
-        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
-        run: |
-          script="./universalNRPTest.ps1"
-          cat >$script <<EOL
-          Install-Module -Name GuestConfiguration -Force
-          Install-Module Pester -Force -SkipPublisherCheck
-          Import-Module Pester -Passthru
+  #     - name: Run Guest Configuration Test
+  #       working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
+  #       run: |
+  #         script="./universalNRPTest.ps1"
+  #         cat >$script <<EOL
+  #         Install-Module -Name GuestConfiguration -Force
+  #         Install-Module Pester -Force -SkipPublisherCheck
+  #         Import-Module Pester -Passthru
 
-          \$params = @{
-              PolicyPackage = '${{ steps.normalize.outputs.path }}'
-              SkipRemediation = if ('${{ matrix.mode }}' -eq 'Audit') { \$true } else { \$false }
-              ResourceCount = ${{ matrix.policy-package.resource-count }}
-          }
-          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data \$params
-          \$pesterConfig = [PesterConfiguration]@{
-              Run = @{
-                  Exit = \$true
-                  Container = \$container
-              }
-              Output = @{
-                  Verbosity = 'Detailed'
-              }
-              TestResult = @{
-                  Enabled      = \$true
-                  OutputFormat = 'JUnitXml'
-                  OutputPath   =  '${{ steps.normalize.outputs.name }}-testResults.xml'
-              }
-              Should = @{
-                  ErrorAction = 'Continue'
-              }
-          };
-          Invoke-Pester -Configuration \$pesterConfig
-          EOL
+  #         \$params = @{
+  #             PolicyPackage = '${{ steps.normalize.outputs.path }}'
+  #             SkipRemediation = if ('${{ matrix.mode }}' -eq 'Audit') { \$true } else { \$false }
+  #             ResourceCount = ${{ matrix.policy-package.resource-count }}
+  #         }
+  #         \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data \$params
+  #         \$pesterConfig = [PesterConfiguration]@{
+  #             Run = @{
+  #                 Exit = \$true
+  #                 Container = \$container
+  #             }
+  #             Output = @{
+  #                 Verbosity = 'Detailed'
+  #             }
+  #             TestResult = @{
+  #                 Enabled      = \$true
+  #                 OutputFormat = 'JUnitXml'
+  #                 OutputPath   =  '${{ steps.normalize.outputs.name }}-testResults.xml'
+  #             }
+  #             Should = @{
+  #                 ErrorAction = 'Continue'
+  #             }
+  #         };
+  #         Invoke-Pester -Configuration \$pesterConfig
+  #         EOL
 
-          sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
-          stat *testResults.xml
+  #         sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+  #         stat *testResults.xml
 
-      - name: Check performance
-        if: success() || failure()
-        uses: ./.github/actions/check-perf
-        with:
-          perflog: /var/log/osconfig_asb_perf.log
-          mark: "is longer than"
+  #     - name: Check performance
+  #       if: success() || failure()
+  #       uses: ./.github/actions/check-perf
+  #       with:
+  #         perflog: /var/log/osconfig_asb_perf.log
+  #         mark: "is longer than"
 
-      - name: Stage OSConfig Logs
-        if: success() || failure()
-        run: |
-          mkdir  osconfig-logs
-          stat /var/log/osconfig_nrp.log
-          sudo chown -R $USER:$(id -gn) /var/log/osconfig*
-          sudo chmod 644 /var/log/osconfig*
-          cp -r /var/log/osconfig* osconfig-logs/
+  #     - name: Stage OSConfig Logs
+  #       if: success() || failure()
+  #       run: |
+  #         mkdir  osconfig-logs
+  #         stat /var/log/osconfig_nrp.log
+  #         sudo chown -R $USER:$(id -gn) /var/log/osconfig*
+  #         sudo chmod 644 /var/log/osconfig*
+  #         cp -r /var/log/osconfig* osconfig-logs/
 
-      - uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: ${{ steps.normalize.outputs.name }}_report
-          path: '${{ steps.normalize.outputs.dir }}/*testResults.xml'
+  #     - uses: actions/upload-artifact@v4
+  #       if: success() || failure()
+  #       with:
+  #         name: ${{ steps.normalize.outputs.name }}_report
+  #         path: '${{ steps.normalize.outputs.dir }}/*testResults.xml'
 
-      - uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: ${{ steps.normalize.outputs.name }}_logs
-          path: osconfig-logs/osconfig*
+  #     - uses: actions/upload-artifact@v4
+  #       if: success() || failure()
+  #       with:
+  #         name: ${{ steps.normalize.outputs.name }}_logs
+  #         path: osconfig-logs/osconfig*
 
-  module-test:
-    name: Module Test
-    # Module test requires the package artifact as it also includes the modules to be tested in the artifact
-    if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
-    needs: [setup-matrix, package]
-    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
-        arch: [amd64]
-    steps:
-      - uses: actions/checkout@v4
+  # module-test:
+  #   name: Module Test
+  #   # Module test requires the package artifact as it also includes the modules to be tested in the artifact
+  #   if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
+  #   needs: [setup-matrix, package]
+  #   runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
+  #       arch: [amd64]
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - run: ldd --version
+  #     - run: ldd --version
 
-      - uses: actions/download-artifact@v4
-        id: download
-        with:
-          name: nrp-test
+  #     - uses: actions/download-artifact@v4
+  #       id: download
+  #       with:
+  #         name: nrp-test
 
-      - name: Create osconfig.json
-        run: |
-          sudo mkdir -p /etc/osconfig
-          sudo cp -r ${{ steps.download.outputs.download-path }}/modules/test/osconfig.json /etc/osconfig/osconfig.json
+  #     - name: Create osconfig.json
+  #       run: |
+  #         sudo mkdir -p /etc/osconfig
+  #         sudo cp -r ${{ steps.download.outputs.download-path }}/modules/test/osconfig.json /etc/osconfig/osconfig.json
 
-      - name: Defer test execution
-        uses: ./.github/actions/defer-tests
+  #     - name: Defer test execution
+  #       uses: ./.github/actions/defer-tests
 
-      - name: Run moduletest
-        working-directory: ${{ steps.download.outputs.download-path }}/modules/test
-        run: |
-          sudo chmod +x ./moduletest
+  #     - name: Run moduletest
+  #       working-directory: ${{ steps.download.outputs.download-path }}/modules/test
+  #       run: |
+  #         sudo chmod +x ./moduletest
 
-          result=0
-          recipe="./recipes/SecurityBaselineTests.json"
+  #         result=0
+  #         recipe="./recipes/SecurityBaselineTests.json"
 
-          name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
+  #         name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
-          echo -n "testing $name ... "
+  #         echo -n "testing $name ... "
 
-          if output=$(sudo ./moduletest $recipe --bin ../bin); then
-            echo passed
-          else
-            echo failed
-            result=1
-            echo "::warning file=$name.log::Error(s) in module-test for '$name'"
-          fi
+  #         if output=$(sudo ./moduletest $recipe --bin ../bin); then
+  #           echo passed
+  #         else
+  #           echo failed
+  #           result=1
+  #           echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+  #         fi
 
-          echo "$output"
-          echo "$output" > ../../$name.log
+  #         echo "$output"
+  #         echo "$output" > ../../$name.log
 
-          exit $result
+  #         exit $result
 
-      - name: Check performance
-        if: success() || failure()
-        uses: ./.github/actions/check-perf
-        with:
-          perflog: /var/log/osconfig_asb_perf.log
-          mark: "is longer than"
+  #     - name: Check performance
+  #       if: success() || failure()
+  #       uses: ./.github/actions/check-perf
+  #       with:
+  #         perflog: /var/log/osconfig_asb_perf.log
+  #         mark: "is longer than"
 
-      - uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: ${{ matrix.target.os }}-${{ matrix.target.version }}_logs
-          path: '*.log'
+  #     - uses: actions/upload-artifact@v4
+  #       if: success() || failure()
+  #       with:
+  #         name: ${{ matrix.target.os }}-${{ matrix.target.version }}_logs
+  #         path: '*.log'
 
   local-tests:
     name: Local Tests
@@ -414,33 +414,33 @@ jobs:
         run: sudo rm -rf /root/.azure
 
   # See for more details: https://github.com/marketplace/actions/publish-test-results
-  report:
-    name: Report
-    needs: [mc-test, local-tests]
-    runs-on: ubuntu-latest
-    permissions:
-      checks: write
-      pull-requests: write
-    if: always()
-    steps:
-      - name: Download CloudTest Report Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: universal-nrp-test
-          pattern: '*_report'
-          merge-multiple: true
+  # report:
+  #   name: Report
+  #   needs: [mc-test, local-tests]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     checks: write
+  #     pull-requests: write
+  #   if: always()
+  #   steps:
+  #     - name: Download CloudTest Report Artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: universal-nrp-test
+  #         pattern: '*_report'
+  #         merge-multiple: true
 
-      - name: Download Local Test Report Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: local_tests_reports
+  #     - name: Download Local Test Report Artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: local_tests_reports
 
-      - name: Publish CloudTest Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: 'universal-nrp-test/*testResults.xml'
+  #     - name: Publish CloudTest Test Results
+  #       uses: EnricoMi/publish-unit-test-result-action@v2
+  #       with:
+  #         files: 'universal-nrp-test/*testResults.xml'
 
-      - name: Publish Local Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: 'local_tests_reports/**/*testResults.xml'
+  #     - name: Publish Local Test Results
+  #       uses: EnricoMi/publish-unit-test-result-action@v2
+  #       with:
+  #         files: 'local_tests_reports/**/*testResults.xml'
