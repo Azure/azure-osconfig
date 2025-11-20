@@ -16,6 +16,7 @@ env:
   storageContainerName: 'policypackages'
   defaultSelfHostedImage: 'ubuntu-22.04'
   vmDefaultMemory: '2048' # Default memory for local VMs in MB
+  localTestsJobCount: '5'  # Number of parallel jobs for local tests
 
 jobs:
   package:
@@ -364,7 +365,7 @@ jobs:
           # Start tests using built packages, use 2048MB of memory per VM and disable the GUI
           # The -n flag disables the GUI, which is needed in the headless environment
           # The -p flag disables parallel image downloads
-          sudo ./StartTests.sh -d ${{ steps.download.outputs.download-path }} -m ${{ env.vmDefaultMemory }} -n -p
+          sudo ./StartTests.sh -d ${{ steps.download.outputs.download-path }} -m ${{ env.vmDefaultMemory }} -j ${{ env.localTestsJobCount }} -n -p
 
       - name: Stage logs and reports
         if: success() || failure()
