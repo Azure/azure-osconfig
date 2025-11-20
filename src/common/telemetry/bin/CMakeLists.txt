@@ -13,6 +13,6 @@ target_include_directories(telemetrybin
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_SOURCE_DIR}/../../commonutils)
 
-if(BUILD_TESTING)
+if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()

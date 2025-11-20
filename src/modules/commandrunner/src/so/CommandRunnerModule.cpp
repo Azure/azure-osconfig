@@ -3,8 +3,6 @@
 
 #include <cstdio>
 #include <cstring>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
 
 #include <Command.h>
 #include <CommandRunner.h>

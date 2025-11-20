@@ -24,6 +24,7 @@
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define TELEMETRY_TIMEOUT_SECONDS 10
+#define TELEMETRY_NOTFOUND_STRING "N/A"
 
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
 #define TELEMETRY_RULECODENAME_ENVIRONMENT_VAR "_RuleCodename"
@@ -81,7 +82,7 @@ static inline int OSConfigTelemetryIsInitialized(void)
 }
 static inline const char* OSConfigTelemetryGetCachedOsName(void)
 {
-    return "N/A";
+    return TELEMETRY_NOTFOUND_STRING;
 }
 #endif
 
@@ -102,40 +103,46 @@ static inline int64_t TsToUs(struct timespec ts)
 
 #ifdef BUILD_TELEMETRY
 
-#define OSConfigTimeStampSave()                                                                                                                        \
-    {                                                                                                                                                  \
-        struct timespec _start;                                                                                                                        \
-        clock_gettime(CLOCK_MONOTONIC, &_start);                                                                                                       \
-        char _start_str[MAX_NUM_STRING_LENGTH] = {0};                                                                                                  \
-        snprintf(_start_str, sizeof(_start_str), "%" PRId64, TsToUs(_start));                                                                          \
-        setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, _start_str, 1);                                                                                 \
+static inline void OSConfigTimeStampSave(void)
+{
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    char start_str[MAX_NUM_STRING_LENGTH] = {0};
+    snprintf(start_str, sizeof(start_str), "%" PRId64, TsToUs(start));
+    setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, start_str, 1);
+}
+
+static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
+{
+    if (elapsed_us_var == NULL)
+    {
+        return;
     }
 
-#define OSConfigGetElapsedTime(elapsed_us_var)                                                                                                         \
-    {                                                                                                                                                  \
-        struct timespec _end;                                                                                                                          \
-        const char* _start_str = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);                                                                       \
-        char* end;                                                                                                                                     \
-        int64_t _start_us = (_start_str != NULL) ? strtoll(_start_str, &end, 10) : 0;                                                                  \
-        if (_start_us == 0)                                                                                                                            \
-        {                                                                                                                                              \
-            (elapsed_us_var) = 0;                                                                                                                      \
-        }                                                                                                                                              \
-        else                                                                                                                                           \
-        {                                                                                                                                              \
-            clock_gettime(CLOCK_MONOTONIC, &_end);                                                                                                     \
-            (elapsed_us_var) = TsToUs(_end) - _start_us;                                                                                               \
-        }                                                                                                                                              \
+    struct timespec end;
+    const char* start_str = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);
+    char* end_ptr;
+    int64_t start_us = (start_str != NULL) ? strtoll(start_str, &end_ptr, 10) : 0;
+
+    if (start_us == 0)
+    {
+        *elapsed_us_var = 0;
     }
+    else
+    {
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        *elapsed_us_var = TsToUs(end) - start_us;
+    }
+}
 
 #define OSConfigProcessTelemetryFile()                                                                                                                 \
     {                                                                                                                                                  \
-        FILE* telemetryFileMacro = OSConfigTelemetryGetFile();                                                                                         \
-        const char* telemetryFileNameMacro = OSConfigTelemetryGetFileName();                                                                           \
-        const char* telemetryModuleDirectoryMacro = OSConfigTelemetryGetModuleDirectory();                                                             \
-        if (telemetryFileMacro && telemetryFileNameMacro && telemetryModuleDirectoryMacro)                                                             \
+        FILE* telemetryFile = OSConfigTelemetryGetFile();                                                                                              \
+        const char* telemetryFileName = OSConfigTelemetryGetFileName();                                                                                \
+        const char* telemetryModuleDirectory = OSConfigTelemetryGetModuleDirectory();                                                                  \
+        if (telemetryFile && telemetryFileName && telemetryModuleDirectory)                                                                            \
         {                                                                                                                                              \
-            char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectoryMacro, TELEMETRY_BINARY_NAME, telemetryFileNameMacro, \
+            char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectory, TELEMETRY_BINARY_NAME, telemetryFileName,           \
                 TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
             if (NULL != command)                                                                                                                       \
             {                                                                                                                                          \
@@ -159,7 +166,7 @@ static inline int64_t TsToUs(struct timespec ts)
         const char* _timestamp = GetFormattedTime();                                                                                                   \
         int64_t _elapsed_us = 0;                                                                                                                       \
         const char* _distroName = OSConfigTelemetryGetCachedOsName();                                                                                  \
-        OSConfigGetElapsedTime(_elapsed_us);                                                                                                           \
+        OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"StatusTrace\","                                                                                                           \
@@ -177,9 +184,9 @@ static inline int64_t TsToUs(struct timespec ts)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            _timestamp ? _timestamp : "N/A", __FILE__, line, __func__, _ruleCodename ? _ruleCodename : "N/A",                                          \
-            (callingFunctionName) ? (callingFunctionName) : "N/A", status, _scenarioName, _elapsed_us, _distroName ? _distroName : "N/A",              \
-            _correlationId ? _correlationId : "N/A", OSCONFIG_VERSION);                                                                                \
+            _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, __FILE__, line, __func__, _ruleCodename ? _ruleCodename : TELEMETRY_NOTFOUND_STRING,  \
+            (callingFunctionName) ? (callingFunctionName) : TELEMETRY_NOTFOUND_STRING, status, _scenarioName, _elapsed_us,                             \
+            _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
@@ -204,8 +211,9 @@ static inline int64_t TsToUs(struct timespec ts)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            timestamp ? timestamp : "N/A", (baselineName) ? (baselineName) : "N/A", (mode) ? (mode) : "N/A", durationSeconds,                          \
-            distroName ? distroName : "N/A", correlationId ? correlationId : "N/A", OSCONFIG_VERSION);                                                 \
+            timestamp ? timestamp : TELEMETRY_NOTFOUND_STRING, (baselineName) ? (baselineName) : TELEMETRY_NOTFOUND_STRING,                            \
+            (mode) ? (mode) : TELEMETRY_NOTFOUND_STRING, durationSeconds, distroName ? distroName : TELEMETRY_NOTFOUND_STRING,                         \
+            correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
@@ -231,8 +239,9 @@ static inline int64_t TsToUs(struct timespec ts)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            timestamp ? timestamp : "N/A", (componentName) ? (componentName) : "N/A", (objectName) ? (objectName) : "N/A", objectResult, microseconds, \
-            distroName ? distroName : "N/A", correlationId ? correlationId : "N/A", OSCONFIG_VERSION);                                                 \
+            timestamp ? timestamp : TELEMETRY_NOTFOUND_STRING, (componentName) ? (componentName) : TELEMETRY_NOTFOUND_STRING,                          \
+            (objectName) ? (objectName) : TELEMETRY_NOTFOUND_STRING, objectResult, microseconds, distroName ? distroName : TELEMETRY_NOTFOUND_STRING,  \
+            correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
             OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \

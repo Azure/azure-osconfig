@@ -1,5 +1,8 @@
 FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04
+
+ARG CMAKE_VERSION=v3.21.7
 ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
@@ -17,7 +20,6 @@ RUN apt -y update && apt-get -y install \
     ninja-build \
     pkg-config \
     python3-jsonschema \
-    rapidjson-dev \
     tar \
     unzip \
     uuid-dev \
@@ -31,5 +33,5 @@ RUN apt-get update && apt-get install -y dotnet-sdk-5.0
 WORKDIR /git
 
 # CMake
-RUN git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
+RUN git clone https://github.com/Kitware/CMake --recursive -b ${CMAKE_VERSION}
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake

@@ -1,31 +1,30 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <rapidjson/document.h>
+#include <nlohmann/json.hpp>
 #include <TestUtils.h>
 
 namespace Tests
 {
     testing::AssertionResult IsJsonEq(const std::string& expectedJson, const std::string& actualJson)
     {
-        rapidjson::Document actual;
-        rapidjson::Document expected;
+        try
+        {
+            auto expected = nlohmann::json::parse(expectedJson);
+            auto actual = nlohmann::json::parse(actualJson);
 
-        if (expected.Parse(expectedJson.c_str()).HasParseError())
-        {
-            return testing::AssertionFailure() << "expected JSON is not valid JSON";
+            if (actual == expected)
+            {
+                return testing::AssertionSuccess();
+            }
+            else
+            {
+                return testing::AssertionFailure() << "expected:\n" << expectedJson << "\n but got:\n" << actualJson;
+            }
         }
-        else if (actual.Parse(actualJson.c_str()).HasParseError())
+        catch (const nlohmann::json::parse_error& e)
         {
-            return testing::AssertionFailure() << "actual JSON is not valid JSON";
-        }
-        else if (actual == expected)
-        {
-            return testing::AssertionSuccess();
-        }
-        else
-        {
-            return testing::AssertionFailure() << "expected:\n" << expectedJson << "\n but got:\n" << actualJson;
+            return testing::AssertionFailure() << "JSON parse error: " << e.what();
         }
     }
 } // namespace Tests

@@ -3,9 +3,7 @@
 
 #include <cstdio>
 #include <map>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 
@@ -113,14 +111,14 @@ public:
     void MmiFree(MMI_JSON_STRING payload);
 
 private:
-    static int SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer>& writer, StringEnumeration value);
-    static int SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Object& object);
-    static int SerializeObjectArray(rapidjson::Writer<rapidjson::StringBuffer>& writer, const std::vector<Object>& objectArray);
+    static int SerializeStringEnumeration(nlohmann::ordered_json& jsonObj, StringEnumeration value);
+    static nlohmann::ordered_json SerializeObject(const Object& object);
+    static nlohmann::ordered_json SerializeObjectArray(const std::vector<Object>& objectArray);
     static int DeserializeStringEnumeration(std::string str, StringEnumeration& value);
-    static int DeserializeObject(rapidjson::Document& document, Object& object);
-    static int DeserializeObjectArray(rapidjson::Document& document, std::vector<Object>& objects);
-    static int SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
-    static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    static int DeserializeObject(const nlohmann::ordered_json& document, Object& object);
+    static int DeserializeObjectArray(const nlohmann::ordered_json& document, std::vector<Object>& objects);
+    static int SerializeJsonPayload(const nlohmann::ordered_json& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
+    static int CopyJsonPayload(const std::string& jsonString, MMI_JSON_STRING* payload, int* payloadSizeBytes);
 
     // Store desired settings for reporting
     std::string m_stringValue;

@@ -8,9 +8,7 @@
 #include <map>
 #include <mutex>
 #include <queue>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
 
@@ -103,8 +101,8 @@ private:
     int PersistCommandStatus(const Command::Status& status);
     static int PersistCommandStatus(const std::string& clientName, const Command::Status status);
 
-    static int WriteFile(const std::string& fileName, const rapidjson::StringBuffer& buffer);
-    static int CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const rapidjson::StringBuffer& buffer);
+    static int WriteFile(const std::string& fileName, const std::string& content);
+    static int CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const std::string& content);
 };
 
 #endif // COMMANDRUNNER_H

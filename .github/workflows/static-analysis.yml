@@ -7,7 +7,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64@sha256:7ba3a3bd055c507c2a42ce71448c3ff71889a3b58a7656900baf23e1dac0ced6
+      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e
 
     steps:
     - uses: actions/checkout@v4

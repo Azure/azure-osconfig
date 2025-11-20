@@ -3,8 +3,8 @@
 
 project(compliancetests)
 
-include(CTest)
-find_package(GTest REQUIRED)
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 set(PROCEDURES
     procedures/AuditdRulesCheckTest.cpp
@@ -78,8 +78,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(complianceenginetests
     GTest::gtest
     GTest::gtest_main
-    gmock
-    gmock_main
+    GTest::gmock
+    GTest::gmock_main
     pthread
     complianceenginelib
     logging
