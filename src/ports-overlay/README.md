@@ -8,7 +8,7 @@ The `gtest` overlay provides Google Test version 1.10.0, which is used specifica
 
 ### Usage
 
-When building with the GCC-5 triplet, add the overlay ports parameter to your CMake command:
+When building with the GCC-5 triplet (See the [triplets concept documentation](https://learn.microsoft.com/vcpkg/users/triplets) for a high-level view of triplet capabilities), add the overlay ports parameter to your CMake command:
 
 ```bash
 cmake ../src \
