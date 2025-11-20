@@ -5,10 +5,10 @@ project(tpmtests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-include(CTest)
-find_package(GTest REQUIRED)
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(tpmtests TpmTests.cpp)
-target_link_libraries(tpmtests gtest gtest_main pthread tpmlib tpm logging commonutils)
+target_link_libraries(tpmtests GTest::gtest GTest::gtest_main pthread tpmlib tpm logging commonutils)
 
 gtest_discover_tests(tpmtests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

@@ -432,9 +432,7 @@ namespace Tests
             "singleLineTextResult": true
         })""";
 
-        rapidjson::Document document;
-        document.Parse(json.c_str());
-        EXPECT_FALSE(document.HasParseError());
+        nlohmann::json document = nlohmann::json::parse(json);
 
         Command::Arguments arguments = Command::Arguments::Deserialize(document);
 
@@ -456,11 +454,9 @@ namespace Tests
             "currentState": 2
         })""";
 
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        Command::Status::Serialize(writer, status);
+        std::string serialized = Command::Status::ToJson(status).dump();
 
-        EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
+        EXPECT_TRUE(IsJsonEq(expected, serialized));
     }
 
     TEST_F(CommandRunnerTests, SerializeSkipTextResult)
@@ -473,11 +469,9 @@ namespace Tests
             "currentState": 2
         })""";
 
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        Command::Status::Serialize(writer, status, false);
+        std::string serialized = Command::Status::ToJson(status, false).dump();
 
-        EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
+        EXPECT_TRUE(IsJsonEq(expected, serialized));
     }
 
     TEST_F(CommandRunnerTests, Deserialize)
@@ -489,8 +483,7 @@ namespace Tests
             "currentState": 2
         })""";
 
-        rapidjson::Document document;
-        document.Parse(json.c_str());
+        nlohmann::json document = nlohmann::json::parse(json);
 
         Command::Status status = Command::Status::Deserialize(document);
 

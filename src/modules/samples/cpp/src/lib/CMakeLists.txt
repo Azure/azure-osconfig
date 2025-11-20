@@ -3,8 +3,16 @@
 
 project(cppsamplelib)
 
+find_package(nlohmann_json CONFIG REQUIRED)
+
 add_library(cppsamplelib STATIC Sample.cpp)
-target_link_libraries(cppsamplelib PRIVATE logging commonutils)
+target_link_libraries(cppsamplelib
+    PRIVATE
+        logging
+        commonutils
+    PUBLIC
+        nlohmann_json::nlohmann_json
+)
 
 target_include_directories(cppsamplelib
     PUBLIC

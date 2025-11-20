@@ -13,9 +13,6 @@ static const char alphanum[] = "0123456789"\
 
 OsConfigLogHandle CommandRunnerLog::m_log = nullptr;
 
-template<typename T>
-int DeserializeMember(const rapidjson::Value& document, const std::string key, T& value);
-
 Command::Command(std::string id, std::string command, unsigned int timeout, bool replaceEol) :
     m_arguments(command),
     m_timeout(timeout),
@@ -214,35 +211,21 @@ Command::Arguments::Arguments(std::string id, std::string command, Command::Acti
 
 std::string Command::Arguments::Serialize(const Command::Arguments& arguments)
 {
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    Command::Arguments::Serialize(writer, arguments);
-    return buffer.GetString();
+    return Command::Arguments::ToJson(arguments).dump();
 }
 
-void Command::Arguments::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Arguments& arguments)
+nlohmann::json Command::Arguments::ToJson(const Command::Arguments& arguments)
 {
-    writer.StartObject();
-
-    writer.String(g_commandId.c_str());
-    writer.String(arguments.m_id.c_str());
-
-    writer.String(g_arguments.c_str());
-    writer.String(arguments.m_arguments.c_str());
-
-    writer.String(g_action.c_str());
-    writer.Int(static_cast<int>(arguments.m_action));
-
-    writer.String(g_timeout.c_str());
-    writer.Uint(arguments.m_timeout);
-
-    writer.String(g_singleLineTextResult.c_str());
-    writer.Bool(arguments.m_singleLineTextResult);
-
-    writer.EndObject();
+    nlohmann::json j;
+    j[g_commandId] = arguments.m_id;
+    j[g_arguments] = arguments.m_arguments;
+    j[g_action] = static_cast<int>(arguments.m_action);
+    j[g_timeout] = arguments.m_timeout;
+    j[g_singleLineTextResult] = arguments.m_singleLineTextResult;
+    return j;
 }
 
-Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value)
+Command::Arguments Command::Arguments::Deserialize(const nlohmann::json& value)
 {
     std::string id = "";
     std::string command = "";
@@ -250,20 +233,17 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
     unsigned int timeout = 0;
     bool singleLineTextResult = false;
 
-    if (value.IsObject())
+    if (value.is_object())
     {
-        int actionValue = 0;
-        if (0 != DeserializeMember(value, g_action.c_str(), actionValue))
+        if (value.contains(g_action) && value[g_action].is_number_integer())
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s", g_commandArguments.c_str(), g_action.c_str());
-            OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
-        }
-        else
-        {
+            int actionValue = value[g_action].get<int>();
             action = static_cast<Command::Action>(actionValue);
 
-            if (0 == DeserializeMember(value, g_commandId, id))
+            if (value.contains(g_commandId) && value[g_commandId].is_string())
             {
+                id = value[g_commandId].get<std::string>();
+
                 switch (action)
                 {
                     case Command::Action::Reboot:
@@ -280,12 +260,18 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                     case Command::Action::RunCommand:
                         if (!id.empty())
                         {
-                            if (0 == DeserializeMember(value, g_arguments, command))
+                            if (value.contains(g_arguments) && value[g_arguments].is_string())
                             {
+                                command = value[g_arguments].get<std::string>();
+
                                 if (!command.empty())
                                 {
                                     // Timeout is an optional field
-                                    if (0 != DeserializeMember(value, g_timeout, timeout))
+                                    if (value.contains(g_timeout) && value[g_timeout].is_number_unsigned())
+                                    {
+                                        timeout = value[g_timeout].get<unsigned int>();
+                                    }
+                                    else
                                     {
                                         // Assume default of no timeout (0)
                                         timeout = 0;
@@ -293,7 +279,11 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                                     }
 
                                     // SingleLineTextResult is an optional field
-                                    if (0 != DeserializeMember(value, g_singleLineTextResult, singleLineTextResult))
+                                    if (value.contains(g_singleLineTextResult) && value[g_singleLineTextResult].is_boolean())
+                                    {
+                                        singleLineTextResult = value[g_singleLineTextResult].get<bool>();
+                                    }
+                                    else
                                     {
                                         // Assume default of true
                                         singleLineTextResult = true;
@@ -325,6 +315,11 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                 }
             }
         }
+        else
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s", g_commandArguments.c_str(), g_action.c_str());
+            OSConfigTelemetryStatusTrace("DeserializeMember", EINVAL);
+        }
     }
     else
     {
@@ -343,53 +338,52 @@ Command::Status::Status(const std::string id, int exitCode, std::string textResu
 
 std::string Command::Status::Serialize(const Command::Status& status, bool serializeTextResult)
 {
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    Command::Status::Serialize(writer, status, serializeTextResult);
-    return buffer.GetString();
+    return Command::Status::ToJson(status, serializeTextResult).dump();
 }
 
-void Command::Status::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Status& status, bool serializeTextResult)
+nlohmann::json Command::Status::ToJson(const Command::Status& status, bool serializeTextResult)
 {
-    writer.StartObject();
-
-    writer.Key(g_commandId.c_str());
-    writer.String(status.m_id.c_str());
-
-    writer.Key(g_resultCode.c_str());
-    writer.Int(status.m_exitCode);
+    nlohmann::json j;
+    j[g_commandId] = status.m_id;
+    j[g_resultCode] = status.m_exitCode;
 
     if (serializeTextResult)
     {
-        writer.Key(g_textResult.c_str());
-        writer.String(status.m_textResult.c_str());
+        j[g_textResult] = status.m_textResult;
     }
 
-    writer.Key(g_currentState.c_str());
-    writer.Int(status.m_state);
-
-    writer.EndObject();
+    j[g_currentState] = static_cast<int>(status.m_state);
+    return j;
 }
 
-Command::Status Command::Status::Deserialize(const rapidjson::Value& value)
+Command::Status Command::Status::Deserialize(const nlohmann::json& value)
 {
     std::string id = "";
     int exitCode = 0;
     std::string textResult;
     Command::State state = Command::State::Unknown;
 
-    if (value.IsObject())
+    if (value.is_object())
     {
         // Command id is a required field
-        if (0 == DeserializeMember(value, g_commandId, id))
+        if (value.contains(g_commandId) && value[g_commandId].is_string())
         {
-            // Use defaults for other fields
-            DeserializeMember(value, g_resultCode, exitCode);
-            DeserializeMember(value, g_textResult, textResult);
+            id = value[g_commandId].get<std::string>();
 
-            int stateValue = 0;
-            if (0 == DeserializeMember(value, g_currentState, stateValue))
+            // Use defaults for other fields
+            if (value.contains(g_resultCode) && value[g_resultCode].is_number_integer())
             {
+                exitCode = value[g_resultCode].get<int>();
+            }
+
+            if (value.contains(g_textResult) && value[g_textResult].is_string())
+            {
+                textResult = value[g_textResult].get<std::string>();
+            }
+
+            if (value.contains(g_currentState) && value[g_currentState].is_number_integer())
+            {
+                int stateValue = value[g_currentState].get<int>();
                 state = static_cast<Command::State>(stateValue);
             }
         }
@@ -397,97 +391,8 @@ Command::Status Command::Status::Deserialize(const rapidjson::Value& value)
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Invalid command status JSON value");
-        OSConfigTelemetryStatusTrace("value.IsObject", EINVAL);
+        OSConfigTelemetryStatusTrace("value.is_object", EINVAL);
     }
 
     return Command::Status(id, exitCode, textResult, state);
-}
-
-int Deserialize(const rapidjson::Value& object, const char* key, std::string& value)
-{
-    int status = 0;
-
-    if (object[key].IsString())
-    {
-        value = object[key].GetString();
-    }
-    else
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "%s is not a string", key);
-        OSConfigTelemetryStatusTrace("IsString", EINVAL);
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-int Deserialize(const rapidjson::Value& object, const char* key, int& value)
-{
-    int status = 0;
-
-    if (object[key].IsInt())
-    {
-        value = object[key].GetInt();
-    }
-    else
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "%s is not an int", key);
-        OSConfigTelemetryStatusTrace("IsInt", EINVAL);
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-int Deserialize(const rapidjson::Value& object, const char* key, bool& value)
-{
-    int status = 0;
-
-    if (object[key].IsBool())
-    {
-        value = object[key].GetBool();
-    }
-    else
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "%s is not a bool", key);
-        OSConfigTelemetryStatusTrace("IsBool", EINVAL);
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-int Deserialize(const rapidjson::Value& object, const char* key, unsigned int& value)
-{
-    int status = 0;
-
-    if (object[key].IsUint())
-    {
-        value = object[key].GetUint();
-    }
-    else
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "%s is not an unsigned int", key);
-        OSConfigTelemetryStatusTrace("IsUint", EINVAL);
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-template<typename T>
-int DeserializeMember(const rapidjson::Value& object, const std::string key, T& value)
-{
-    int status = 0;
-
-    if (object.IsObject() && object.HasMember(key.c_str()))
-    {
-        status = Deserialize(object, key.c_str(), value);
-    }
-    else
-    {
-        status = EINVAL;
-    }
-
-    return status;
 }

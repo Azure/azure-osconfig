@@ -10,21 +10,21 @@ namespace tests
 {
     testing::AssertionResult JsonEq(const std::string& expectedJson, const std::string& actualJson)
     {
-        rapidjson::Document actual;
-        rapidjson::Document expected;
         testing::AssertionResult result = testing::AssertionSuccess();
 
-        if (expected.Parse(expectedJson.c_str()).HasParseError())
+        try
         {
-            result = testing::AssertionFailure() << "expected JSON is not valid JSON" << expectedJson;
+            auto expected = nlohmann::json::parse(expectedJson);
+            auto actual = nlohmann::json::parse(actualJson);
+
+            if (actual != expected)
+            {
+                result = testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
+            }
         }
-        else if (actual.Parse(actualJson.c_str()).HasParseError())
+        catch (const nlohmann::json::parse_error& e)
         {
-            result = testing::AssertionFailure() << "actual JSON is not valid JSON" << actualJson;
-        }
-        else if (actual != expected)
-        {
-            result = testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
+            result = testing::AssertionFailure() << "JSON parse error: " << e.what();
         }
 
         return result;
@@ -352,18 +352,23 @@ namespace tests
 
         for (auto policyJson : policies)
         {
-            rapidjson::Document document;
-            document.Parse(policyJson.c_str());
+            try
+            {
+                nlohmann::json document = nlohmann::json::parse(policyJson);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
-            EXPECT_TRUE(document.HasMember("direction"));
-            EXPECT_TRUE(document.HasMember("action"));
+                EXPECT_TRUE(document.is_object());
+                EXPECT_TRUE(document.contains("direction"));
+                EXPECT_TRUE(document.contains("action"));
 
-            IpTablesPolicy policy;
-            policy.Parse(document);
+                IpTablesPolicy policy;
+                policy.Parse(document);
 
-            EXPECT_FALSE(policy.HasParseError());
+                EXPECT_FALSE(policy.HasParseError());
+            }
+            catch (const nlohmann::json::parse_error& e)
+            {
+                FAIL() << "Failed to parse policy JSON: " << e.what();
+            }
         }
     }
 
@@ -380,19 +385,24 @@ namespace tests
 
         for (auto ruleJson : rules)
         {
-            rapidjson::Document document;
-            document.Parse(ruleJson.c_str());
+            try
+            {
+                nlohmann::json document = nlohmann::json::parse(ruleJson);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
-            EXPECT_TRUE(document.HasMember("desiredState"));
-            EXPECT_TRUE(document.HasMember("action"));
-            EXPECT_TRUE(document.HasMember("direction"));
+                EXPECT_TRUE(document.is_object());
+                EXPECT_TRUE(document.contains("desiredState"));
+                EXPECT_TRUE(document.contains("action"));
+                EXPECT_TRUE(document.contains("direction"));
 
-            IpTablesRule rule;
-            rule.Parse(document);
+                IpTablesRule rule;
+                rule.Parse(document);
 
-            EXPECT_FALSE(rule.HasParseError());
+                EXPECT_FALSE(rule.HasParseError());
+            }
+            catch (const nlohmann::json::parse_error& e)
+            {
+                FAIL() << "Failed to parse rule JSON: " << e.what();
+            }
         }
     }
 
@@ -418,16 +428,21 @@ namespace tests
 
         for (auto ruleJson : invalidRules)
         {
-            rapidjson::Document document;
-            document.Parse(ruleJson.c_str());
+            try
+            {
+                nlohmann::json document = nlohmann::json::parse(ruleJson);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
+                EXPECT_TRUE(document.is_object());
 
-            IpTablesRule rule;
-            rule.Parse(document);
+                IpTablesRule rule;
+                rule.Parse(document);
 
-            EXPECT_TRUE(rule.HasParseError()) << ruleJson;
+                EXPECT_TRUE(rule.HasParseError()) << ruleJson;
+            }
+            catch (const nlohmann::json::parse_error& e)
+            {
+                FAIL() << "Failed to parse rule JSON: " << e.what();
+            }
         }
     }
 
@@ -445,16 +460,21 @@ namespace tests
 
         for (auto policyJson : invalidPolicies)
         {
-            rapidjson::Document document;
-            document.Parse(policyJson.c_str());
+            try
+            {
+                nlohmann::json document = nlohmann::json::parse(policyJson);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
+                EXPECT_TRUE(document.is_object());
 
-            IpTablesPolicy policy;
-            policy.Parse(document);
+                IpTablesPolicy policy;
+                policy.Parse(document);
 
-            EXPECT_TRUE(policy.HasParseError()) << policyJson;
+                EXPECT_TRUE(policy.HasParseError()) << policyJson;
+            }
+            catch (const nlohmann::json::parse_error& e)
+            {
+                FAIL() << "Failed to parse policy JSON: " << e.what();
+            }
         }
     }
 } // namespace tests

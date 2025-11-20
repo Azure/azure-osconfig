@@ -2,8 +2,9 @@
 # Licensed under the MIT License.
 
 project(commandrunnerlib)
+find_package(nlohmann_json CONFIG REQUIRED)
 add_library(commandrunnerlib STATIC CommandRunner.cpp Command.cpp)
-target_link_libraries(commandrunnerlib PRIVATE logging commonutils)
+target_link_libraries(commandrunnerlib PRIVATE logging commonutils nlohmann_json::nlohmann_json)
 target_include_directories(commandrunnerlib
     PUBLIC
         ${MODULES_INC_DIR}
