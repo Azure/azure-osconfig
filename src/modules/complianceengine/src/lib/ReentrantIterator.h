@@ -7,6 +7,7 @@
 #include <Logging.h>
 #include <MmiResults.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <vector>
 
 namespace ComplianceEngine
@@ -102,6 +103,7 @@ public:
             }
 
             OsConfigLogError(mRange->GetLogHandle(), "Failed to read next entry: %s", strerror(status));
+            OSConfigTelemetryStatusTrace("ReentrantIterator", status);
             throw std::runtime_error("Failed to read next entry: " + std::string(strerror(status)));
         }
     }
