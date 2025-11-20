@@ -98,7 +98,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         if (!file_system)
         {
             OsConfigLogError(log, "Failed to open directory '%s' with fts", params.dir->c_str());
-            OSConfigTelemetryStatusTrace("fts_open", errno);
+            OSConfigTelemetryStatusTrace("fts_open", EINVAL);
             return Error("Failed to open directory '" + params.dir.Value() + "'");
         }
 
