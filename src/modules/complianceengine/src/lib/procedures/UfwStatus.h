@@ -5,14 +5,14 @@
 #define COMPLIANCEENGINE_PROCEDURES_UFWSTATUS_H
 
 #include <Evaluator.h>
-#include <Regex.h>
+#include <Pattern.h>
 
 namespace ComplianceEngine
 {
 struct AuditUfwStatusParams
 {
     /// Regex that the status must match
-    regex statusRegex;
+    Pattern statusRegex;
 };
 
 Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context);
