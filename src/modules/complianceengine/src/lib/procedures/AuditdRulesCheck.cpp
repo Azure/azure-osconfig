@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include <AuditdRulesCheck.h>
-#include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Optional.h>
 #include <Regex.h>
 #include <StringTools.h>
+#include <Telemetry.h>
 #include <fstream>
 #include <fts.h>
 #include <iostream>
@@ -213,6 +213,7 @@ Status CheckRuleInList(const std::vector<std::string>& rules, const std::string&
     catch (const regex_error& e)
     {
         OsConfigLogError(context.GetLogHandle(), "Invalid searchItem regex: %s", e.what());
+        OSConfigTelemetryStatusTrace("regex", EINVAL);
         return indicators.NonCompliant("Invalid searchItem regex: " + std::string(e.what()));
     }
     for (const auto& rule : rules)

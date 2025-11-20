@@ -10,6 +10,7 @@
 #include "Optional.h"
 #include "Procedure.h"
 #include "Result.h"
+#include "Telemetry.h"
 
 #include <cerrno>
 #include <cstring>
@@ -66,6 +67,7 @@ Optional<Error> Engine::LoadDistributionInfo()
         {
             OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultOverrideFilePath,
                 overrideInfo.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ParseOverrideFile", overrideInfo.Error().code);
             return overrideInfo.Error();
         }
 
@@ -80,6 +82,7 @@ Optional<Error> Engine::LoadDistributionInfo()
         {
             OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to parse %s: %s", DistributionInfo::cDefaultEtcOsReleasePath,
                 osReleaseInfo.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ParseEtcOsRelease", osReleaseInfo.Error().code);
             return osReleaseInfo.Error();
         }
 
@@ -89,6 +92,7 @@ Optional<Error> Engine::LoadDistributionInfo()
     {
         int status = errno;
         OsConfigLogError(Log(), "ComplianceEngineValidatePayload failed to access %s: %s", DistributionInfo::cDefaultOverrideFilePath, strerror(status));
+        OSConfigTelemetryStatusTrace("stat", status);
         return Error("Failed to access override file", status);
     }
 
@@ -203,6 +207,7 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
     if (nullptr == procedure.Audit())
     {
         OsConfigLogError(Log(), "Failed to copy 'audit' object");
+        OSConfigTelemetryStatusTrace("Audit", ENOMEM);
         return Error("Out of memory");
     }
 
@@ -222,6 +227,7 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
         if (nullptr == procedure.Remediation())
         {
             OsConfigLogError(Log(), "Failed to copy 'remediate' object");
+            OSConfigTelemetryStatusTrace("Remediation", ENOMEM);
             return Error("Out of memory");
         }
     }
@@ -243,6 +249,7 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
             if ((nullptr == key) || (nullptr == val))
             {
                 OsConfigLogError(Log(), "Failed to get parameter name and value");
+                OSConfigTelemetryStatusTrace("json_object_get_string", EINVAL);
                 return Error("Failed to get parameter name and value");
             }
 
@@ -308,6 +315,7 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
     if (nullptr == objectName)
     {
         OsConfigLogError(Log(), "Object name is null");
+        OSConfigTelemetryStatusTrace("objectName", EINVAL);
         return Error("Invalid argument", EINVAL);
     }
 
@@ -345,6 +353,7 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
     }
 
     OsConfigLogError(Log(), "Invalid object name: Must start with %s, %s or %s prefix", initPrefix, procedurePrefix, remediatePrefix);
+    OSConfigTelemetryStatusTrace("objectName", EINVAL);
     return Error("Invalid object name");
 }
 } // namespace ComplianceEngine

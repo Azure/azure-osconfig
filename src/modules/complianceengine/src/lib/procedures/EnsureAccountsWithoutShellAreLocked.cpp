@@ -6,6 +6,7 @@
 #include <ListValidShells.h>
 #include <PasswordEntriesIterator.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <UsersIterator.h>
 #include <set>
 #include <shadow.h>
@@ -21,6 +22,7 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(IndicatorsTree& indicato
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
         return validShells.Error();
     }
 

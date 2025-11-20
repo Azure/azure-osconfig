@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <NetworkTools.h>
+#include <Telemetry.h>
 #include <sstream>
 
 namespace ComplianceEngine
@@ -64,6 +65,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
         if (pos == std::string::npos)
         {
             OsConfigLogError(context.GetLogHandle(), "Invalid local address format: %s", local.c_str());
+            OSConfigTelemetryStatusTrace("rfind", EINVAL);
             continue;
         }
         try
@@ -73,6 +75,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
         catch (const std::exception& e)
         {
             OsConfigLogError(context.GetLogHandle(), "Invalid port number: %s", local.substr(pos + 1).c_str());
+            OSConfigTelemetryStatusTrace("stoi", EINVAL);
             continue;
         }
 
@@ -102,6 +105,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
             if (r <= 0)
             {
                 OsConfigLogError(context.GetLogHandle(), "Invalid IP address: %s", ip.c_str());
+                OSConfigTelemetryStatusTrace("inet_pton", EINVAL);
                 continue;
             }
             openPort.family = AF_INET6;
