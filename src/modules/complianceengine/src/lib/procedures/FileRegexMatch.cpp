@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FileRegexMatch.h>
 #include <Optional.h>
 #include <ProcedureMap.h>
 #include <Regex.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <dirent.h>
 #include <fstream>
 
@@ -196,6 +196,7 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
     {
         int status = errno;
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", params.path.c_str(), strerror(status));
+        OSConfigTelemetryStatusTrace("readdir", status);
         return Error("Failed to read directory '" + params.path + "': " + strerror(status), status);
     }
 

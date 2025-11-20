@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include <Bindings.h>
-#include <CommonUtils.h>
 #include <EnsureFilePermissions.h>
 #include <EnsureLogfileAccess.h>
 #include <Evaluator.h>
 #include <FileTreeWalk.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <fnmatch.h>
 #include <map>
 #include <string>
@@ -104,6 +104,7 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to %s permissions for logfile '%s': %s", remediate ? "remediate" : "audit", fullPath.c_str(),
             result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace(remediate ? "RemediateEnsureFilePermissionsHelper" : "AuditEnsureFilePermissionsHelper", result.Error().code);
         return result.Error();
     }
     indicators.Back().status = result.Value();
@@ -134,6 +135,7 @@ Result<Status> AuditEnsureLogfileAccess(const EnsureLogfileAccessParams& params,
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", params.path->c_str(), result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         return result.Error();
     }
 
@@ -161,6 +163,7 @@ Result<Status> RemediateEnsureLogfileAccess(const EnsureLogfileAccessParams& par
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", params.path->c_str(), result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         return result.Error();
     }
 
