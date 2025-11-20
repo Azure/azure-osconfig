@@ -167,6 +167,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         const char* _timestamp = GetFormattedTime();                                                                                                   \
         int64_t _elapsed_us = 0;                                                                                                                       \
         const char* _distroName = OSConfigTelemetryGetCachedOsName();                                                                                  \
+        const char* _resultString = strerror(status);                                                                                                  \
         OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
@@ -178,6 +179,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"RuleCodename\":\"%s\","                                                                                                                 \
             "\"CallingFunctionName\":\"%s\","                                                                                                          \
             "\"ResultCode\":\"%d\","                                                                                                                   \
+            "\"ResultString\":\"%s\","                                                                                                                 \
             "\"ScenarioName\":\"%s\","                                                                                                                 \
             "\"Microseconds\":\"%" PRId64                                                                                                              \
             "\","                                                                                                                                      \
@@ -186,7 +188,8 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
             _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, __FILE__, line, __func__, _ruleCodename ? _ruleCodename : TELEMETRY_NOTFOUND_STRING,  \
-            (callingFunctionName) ? (callingFunctionName) : TELEMETRY_NOTFOUND_STRING, status, _scenarioName, _elapsed_us,                             \
+            (callingFunctionName) ? (callingFunctionName) : TELEMETRY_NOTFOUND_STRING, status,                                                         \
+            _resultString ? _resultString : TELEMETRY_NOTFOUND_STRING, _scenarioName, _elapsed_us,                                                     \
             _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
