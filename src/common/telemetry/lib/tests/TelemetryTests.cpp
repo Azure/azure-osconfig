@@ -137,7 +137,7 @@ TEST_F(TelemetryTest, ProcessBaselineRunMissingTimestampEvent)
 
 TEST_F(TelemetryTest, ProcessStatusTraceEvent)
 {
-    std::string realEvent = R"({"EventName":"StatusTrace","Timestamp":"2025-10-17 22:52:56+0000","FileName":"/workspaces/azure-osconfig/src/common/asb/Asb.c","LineNumber":"1109","FunctionName":"AsbShutdown","RuleCodename":"auditEnsureSmbWithSambaIsDisabled","CallingFunctionName":"TestingStatusTrace","ResultCode":"0","ScenarioName":"TestingScenario","Microseconds":"101807","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
+    std::string realEvent = R"({"EventName":"StatusTrace","Timestamp":"2025-10-17 22:52:56+0000","FileName":"/workspaces/azure-osconfig/src/common/asb/Asb.c","LineNumber":"1109","FunctionName":"AsbShutdown","RuleCodename":"auditEnsureSmbWithSambaIsDisabled","CallingFunctionName":"TestingStatusTrace","ResultCode":"0","ResultString":"OK","ScenarioName":"TestingScenario","Microseconds":"101807","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
     ASSERT_TRUE(CreateTestJsonFile(realEvent));
     Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
     EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
