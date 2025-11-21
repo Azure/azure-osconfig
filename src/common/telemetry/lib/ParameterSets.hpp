@@ -34,7 +34,7 @@ const std::set<std::string> RULE_COMPLETE_OPTIONAL_PARAMS = {
 
 // StatusTrace
 const std::set<std::string> STATUS_TRACE_REQUIRED_PARAMS = {
-    "FileName", "LineNumber", "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode"};
+    "FileName", "LineNumber", "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
 const std::set<std::string> STATUS_TRACE_OPTIONAL_PARAMS = {
     // No optional params for now
 };
