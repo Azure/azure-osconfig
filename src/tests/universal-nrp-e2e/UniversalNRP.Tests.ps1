@@ -30,14 +30,15 @@ Describe 'Validate Universal NRP' {
             $result.resources | Should -HaveCount $ResourceCount
         }
 
-        It 'Ensure resons are properly populated' {
+        It 'Ensure reasons are properly populated' {
             foreach ($instance in $result.resources) {
+                $resourceName = $instance.properties.DesiredObjectName
                 if ($instance.properties.Reasons.Code.StartsWith("BaselineSettingCompliant:{")) {
-                    $instance.complianceStatus | Should -BeTrue
+                    $instance.complianceStatus | Should -BeTrue -Because "Policy '$resourceName' has compliant reason code but wrong compliance status"
                 } elseif ($instance.properties.Reasons.Code.StartsWith("BaselineSettingNotCompliant:{")) {
-                    $instance.complianceStatus | Should -BeFalse
+                    $instance.complianceStatus | Should -BeFalse -Because "Policy '$resourceName' has non-compliant reason code but wrong compliance status"
                 } else {
-                    throw "Reasons are not properly populated"
+                    throw "Reasons are not properly populated for policy '$resourceName'. Reason Code: $($instance.properties.Reasons.Code)"
                 }
             }
         }
