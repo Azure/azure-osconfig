@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureSystemdParameterV4"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureSystemdParameterV4": {
+              "type": "object",
+              "required": [
+                "file",
+                "section",
+                "option",
+                "expression",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Main configuration filename"
+                },
+                "section": {
+                  "type": "string",
+                  "description": "Systemd section name"
+                },
+                "option": {
+                  "type": "string",
+                  "description": "Systemd option name"
+                },
+                "expression": {
+                  "type": "string",
+                  "description": "Expression"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Value to compare using provided expression"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "SystemdParameter"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "SystemdParameter": {
+              "type": "object",
+              "required": [
+                "parameter",
+                "valueRegex"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "parameter": {
+                  "type": "string",
+                  "description": "Parameter name"
+                },
+                "valueRegex": {
+                  "type": "string",
+                  "description": "Regex for the value"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "Config filename"
+                },
+                "dir": {
+                  "type": "string",
+                  "description": "Directory to search for config files"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
