@@ -10,8 +10,8 @@ endif()
 find_package(Lua REQUIRED)
 
 set(PROCEDURES
-    procedures/EnsureAccountsWithoutShellAreLocked.cpp
     procedures/AuditdRulesCheck.cpp
+    procedures/EnsureAccountsWithoutShellAreLocked.cpp
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
     procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureDconf.cpp
@@ -38,6 +38,7 @@ set(PROCEDURES
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
     procedures/EnsureSystemAccountsDoNotHaveValidShell.cpp
+    procedures/EnsureSystemdParameter.cpp
     procedures/EnsureUserIsOnlyAccountWith.cpp
     procedures/EnsureWirelessIsDisabled.cpp
     procedures/EnsureXdmcp.cpp
@@ -45,7 +46,6 @@ set(PROCEDURES
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
     procedures/SCE.cpp
-    procedures/SystemdConfig.cpp
     procedures/SystemdUnitState.cpp
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
@@ -53,8 +53,8 @@ set(PROCEDURES
     procedures/EnsureSshKeyPerms.cpp
 )
 set(SCHEMAS
-    procedures/EnsureAccountsWithoutShellAreLocked.schema.json
     procedures/AuditdRulesCheck.schema.json
+    procedures/EnsureAccountsWithoutShellAreLocked.schema.json
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
     procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureDconf.schema.json
@@ -81,6 +81,7 @@ set(SCHEMAS
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
     procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json
+    procedures/EnsureSystemdParameter.schema.json
     procedures/EnsureUserIsOnlyAccountWith.schema.json
     procedures/EnsureWirelessIsDisabled.schema.json
     procedures/EnsureXdmcp.schema.json
@@ -88,7 +89,6 @@ set(SCHEMAS
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json
     procedures/SCE.schema.json
-    procedures/SystemdConfig.schema.json
     procedures/SystemdUnitState.schema.json
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json

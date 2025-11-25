@@ -32,6 +32,7 @@
 #include <EnsureSshdOption.h>
 #include <EnsureSysctl.h>
 #include <EnsureSystemAccountsDoNotHaveValidShell.h>
+#include <EnsureSystemdParameter.h>
 #include <EnsureUserIsOnlyAccountWith.h>
 #include <EnsureWirelessIsDisabled.h>
 #include <EnsureXdmcp.h>
@@ -39,7 +40,6 @@
 #include <FileRegexMatch.h>
 #include <PackageInstalled.h>
 #include <SCE.h>
-#include <SystemdConfig.h>
 #include <SystemdUnitState.h>
 #include <TestingProcedures.h>
 #include <UfwStatus.h>
@@ -159,6 +159,20 @@ inline const std::map<std::string, EnsureSshdOptionMode>& MapEnum<EnsureSshdOpti
     static const std::map<std::string, EnsureSshdOptionMode> map = {
         {"regular", EnsureSshdOptionMode::Regular},
         {"all_matches", EnsureSshdOptionMode::AllMatches},
+    };
+    return map;
+}
+
+// Maps the SystemdParameterExpression enum labels to the enum values.
+template <>
+inline const std::map<std::string, SystemdParameterExpression>& MapEnum<SystemdParameterExpression>()
+{
+    static const std::map<std::string, SystemdParameterExpression> map = {
+        {"lt", SystemdParameterExpression::LessThan},
+        {"le", SystemdParameterExpression::LessOrEqual},
+        {"gt", SystemdParameterExpression::GreaterThan},
+        {"ge", SystemdParameterExpression::GreaterOrEqual},
+        {"eq", SystemdParameterExpression::Equal},
     };
     return map;
 }
@@ -404,6 +418,26 @@ struct Bindings<EnsureSysctlParams>
     static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
 };
 
+// Defines the bindings for the SystemdParameterParams structure.
+template <>
+struct Bindings<SystemdParameterParams>
+{
+    using T = SystemdParameterParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::file, &T::dir);
+};
+
+// Defines the bindings for the EnsureSystemdParameterV4Params structure.
+template <>
+struct Bindings<EnsureSystemdParameterV4Params>
+{
+    using T = EnsureSystemdParameterV4Params;
+    static constexpr size_t size = 5;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::file, &T::section, &T::option, &T::expression, &T::value);
+};
+
 // Defines the bindings for the EnsureUserIsOnlyAccountWithParams structure.
 template <>
 struct Bindings<EnsureUserIsOnlyAccountWithParams>
@@ -462,16 +496,6 @@ struct Bindings<SCEParams>
     static constexpr size_t size = 2;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::scriptName, &T::ENVIRONMENT);
-};
-
-// Defines the bindings for the SystemdParameterParams structure.
-template <>
-struct Bindings<SystemdParameterParams>
-{
-    using T = SystemdParameterParams;
-    static constexpr size_t size = 4;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::file, &T::dir);
 };
 
 // Defines the bindings for the SystemdUnitStateParams structure.
@@ -551,6 +575,9 @@ string to_string(ComplianceEngine::EnsureSshdOptionOperation value) noexcept(fal
 
 // Returns a string representation of the EnsureSshdOptionMode enum value.
 string to_string(ComplianceEngine::EnsureSshdOptionMode value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the SystemdParameterExpression enum value.
+string to_string(ComplianceEngine::SystemdParameterExpression value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the RegexType enum value.
 string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*-identifier-naming)
