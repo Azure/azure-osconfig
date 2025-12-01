@@ -365,7 +365,7 @@ void UnloadModule(MANAGEMENT_MODULE* module)
         module->set = NULL;
         module->free = NULL;
 
-        dlclose(module->handle);
+        //dlclose(module->handle);
         module->handle = NULL;
     }
 
