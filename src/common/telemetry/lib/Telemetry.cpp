@@ -35,7 +35,7 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
 
     status_t status = STATUS_SUCCESS;
     m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
-    if (STATUS_SUCCESS != status)
+    if ((STATUS_SUCCESS != status) || !m_logManager)
     {
         OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
         throw std::runtime_error("Telemetry initialization failed");
@@ -166,9 +166,14 @@ bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     {
         jsonObject = nlohmann::json::parse(jsonLine);
     }
-    catch(const nlohmann::json::parse_error& e)
+    catch(const nlohmann::json::exception& e)
     {
-        // Ignore invalid JSON lines
+        OsConfigLogDebug(m_log, "JSON exception: %s", e.what());
+        return false;
+    }
+    catch(...)
+    {
+        OsConfigLogDebug(m_log, "Unknown exception during JSON parsing");
         return false;
     }
 
