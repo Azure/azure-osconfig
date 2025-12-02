@@ -2012,7 +2012,17 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
         CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
     }
 
-    char* test[3];
+    char* test[1];
+    for (int i = 0; i < 1; i++)
+    {
+        test[i] = FormatAllocateString("test pass %d", i);
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        free(test[i]);
+    }
+
     free(test[0]);
 
     return reason;
