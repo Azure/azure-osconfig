@@ -2011,20 +2011,6 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
         RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_legacyNetworkService, &reason, log));
         CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
     }
-
-    char* test[3];
-    for (int i = 0; i < 2; i++)
-    {
-        test[i] = FormatAllocateString("test pass %d", i);
-    }
-
-    for (int i = 0; i < 3; i++)
-    {
-        free(test[i]);
-    }
-
-    free(test[0]);
-
     return reason;
 }
 
