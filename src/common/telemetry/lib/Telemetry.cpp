@@ -168,12 +168,17 @@ bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     }
     catch(const nlohmann::json::exception& e)
     {
-        OsConfigLogDebug(m_log, "JSON exception: %s", e.what());
+        OsConfigLogError(m_log, "JSON exception: %s", e.what());
+        return false;
+    }
+    catch(const std::exception& e)
+    {
+        OsConfigLogError(m_log, "Exception during JSON parsing: %s", e.what());
         return false;
     }
     catch(...)
     {
-        OsConfigLogDebug(m_log, "Unknown exception during JSON parsing");
+        OsConfigLogError(m_log, "Unknown exception during JSON parsing");
         return false;
     }
 
