@@ -12,6 +12,7 @@ void __attribute__((constructor)) InitModule(void)
 void __attribute__((destructor)) DestroyModule(void)
 {
     SecurityBaselineShutdown();
+    OsConfigLogInfo(NULL, "################################### DestroyModule ###########################################");
 }
 
 // This module implements one global static session for all clients. This allows the MMI implementation
