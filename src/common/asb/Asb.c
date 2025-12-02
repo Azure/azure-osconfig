@@ -2011,6 +2011,7 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
         RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_legacyNetworkService, &reason, log));
         CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
     }
+    FREE_MEMORY((void*)0xFFFFFF33);
     return reason;
 }
 
