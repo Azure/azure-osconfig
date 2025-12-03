@@ -1,0 +1,5 @@
+# LeakSanitizer suppressions for fuzzer
+# Suppress leaks from external dependencies that are not part of our codebase
+
+# SQLite3 internal allocations
+leak:sqlite3MemMalloc
