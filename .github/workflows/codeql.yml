@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   push:
-    branches: [main, release/*]
+    branches: [dev, main, release/*]
   schedule:
     - cron: 30 1 1,15 * * # At 01:30 UTC on the 1st and 15th of every month
 
