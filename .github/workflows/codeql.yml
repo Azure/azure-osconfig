@@ -34,7 +34,7 @@ jobs:
         if: matrix.language == 'csharp'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
 
@@ -59,9 +59,9 @@ jobs:
 
       - name: Autobuild
         if: matrix.language == 'csharp'
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:${{matrix.language}}'
