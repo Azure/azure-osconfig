@@ -157,10 +157,10 @@ if (BUILD_FUZZER)
     message(STATUS "Fuzzer: Enabled")
     message(STATUS "Modified CXX flags: ${CMAKE_CXX_FLAGS}")
     message(STATUS "Modified C flags: ${CMAKE_C_FLAGS}")
-    add_subdirectory(tests)
 else()
     message(STATUS "Fuzzer: Disabled")
 endif()
+
 add_subdirectory(common)
 if (BUILD_ADAPTERS)
     add_subdirectory(adapters)
@@ -174,7 +174,7 @@ endif()
 
 if (BUILD_TELEMETRY)
     ExternalProject_Get_Property(telemetry-external BINARY_DIR)
-    set(TELEMETRY_TESTS_DIR ${BINARY_DIR}/lib/tests)
+    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
     set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
@@ -185,6 +185,8 @@ if (BUILD_TELEMETRY)
         TEST_INCLUDE_FILES
             ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
 endif()
+
+add_subdirectory(tests)
 
 message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")

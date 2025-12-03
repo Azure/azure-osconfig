@@ -61,10 +61,12 @@ find_package(Threads REQUIRED)  # Threads can still use system
 find_package(unofficial-sqlite3 REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 find_package(nlohmann_json REQUIRED NO_DEFAULT_PATH PATHS ${VCPKG_PACKAGES_DIR})
 
-include_directories(../../telemetry)
-add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)
-add_subdirectory(../../logging ${CMAKE_CURRENT_BINARY_DIR}/logging)
-add_subdirectory(../../commonutils ${CMAKE_CURRENT_BINARY_DIR}/commonutils)
+if(BUILD_EXTERNAL)
+    include_directories(../../telemetry)
+    add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)
+    add_subdirectory(../../logging ${CMAKE_CURRENT_BINARY_DIR}/logging)
+    add_subdirectory(../../commonutils ${CMAKE_CURRENT_BINARY_DIR}/commonutils)
+endif()
 
 # Add telemetry ingestion key (if defined)
 if(DEFINED ENV{OsConfigTelemetryApiKey} AND NOT "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
@@ -81,8 +83,10 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
-# commonutils is used which uses telemetry, create an alias to avoid name conflict
-add_library(telemetry ALIAS telemetrylib)
+if(BUILD_EXTERNAL)
+    # commonutils is used which uses telemetry, create an alias to avoid name conflict
+    add_library(telemetry ALIAS telemetrylib)
+endif()
 
 target_link_libraries(telemetrylib
     PUBLIC
