@@ -29,7 +29,7 @@ Make sure all dependencies are installed for your distribution. All of our suppo
     - autoconf
     - unzip
     - zip
-- cmake (>= 3.16.0)
+- cmake (>= 3.21)
 - build-essential (gcc >= 4.4.7, g++, make)
 - perl (perl-core, perl-IPC-Cmd)
 - tar
@@ -42,10 +42,10 @@ Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docke
 
 ```bash
 sudo apt -y update && sudo apt-get -y install software-properties-common
-sudo apt -y update && sudo apt-get -y install build-essential cmake git pkg-config tar unzip wget zip
+sudo apt -y update && sudo apt-get -y install build-essential cmake git curl pkg-config tar unzip wget zip
 ```
 
-Verify that CMake is at least version 3.16.0 and gcc is at least version 4.4.7.
+Verify that CMake is at least version 3.21 and gcc is at least version 4.4.7.
 
 ```bash
 cmake --version
