@@ -167,7 +167,7 @@ static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle, MI_Contex
         mpiHandle = NULL;
     }
 
-    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
+    if ((0 == IsPresent(g_mpiServer, GetLog())) && (true == EnableAndStartDaemon(g_mpiServer, GetLog())))
     {
         sleep(1);
 
