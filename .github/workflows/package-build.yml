@@ -105,14 +105,20 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            (cd ../external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh)
             if [ "${{ inputs.machine-config }}" = "true" ]; then
-              cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DVCPKG_OVERLAY_TRIPLETS=../src/triplets -DVCPKG_TARGET_TRIPLET=x64-linux-gcc5 -DVCPKG_OVERLAY_PORTS=../src/ports-overlay
+              cmake_args="-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}"
             elif [ "${{ inputs.build-fuzzers }}" = "true" ]; then
-              cmake ../src -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=OFF -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON -DBUILD_FUZZER=ON
+              cmake_args="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=OFF -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON -DBUILD_FUZZER=ON"
             else
-              cmake ../src -DCMAKE_C_COMPILER='/usr/bin/gcc' -DCMAKE_CXX_COMPILER='/usr/bin/g++' -DCMAKE_BUILD_TYPE='${{ env.BUILD_TYPE }}' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
+              cmake_args="-DCMAKE_C_COMPILER='/usr/bin/gcc' -DCMAKE_CXX_COMPILER='/usr/bin/g++' -DCMAKE_BUILD_TYPE='${{ env.BUILD_TYPE }}' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON"
             fi
+
+            # For targets rhel-7, ubuntu-14.04 and centos-7 use GCC 5.5 toolchain
+            if [[ "${{ inputs.target }}" == "rhel-7" || "${{ inputs.target }}" == "ubuntu-14.04" || "${{ inputs.target }}" == "centos-7" ]]; then
+              cmake_args="$cmake_args -DVCPKG_OVERLAY_TRIPLETS=../src/triplets -DVCPKG_TARGET_TRIPLET=x64-linux-gcc5 -DVCPKG_OVERLAY_PORTS=../src/ports-overlay"
+            fi
+
+            cmake ../src $cmake_args
 
       - name: Build Azure OSConfig
         uses: ./.github/actions/container-exec
