@@ -114,7 +114,7 @@ jobs:
             fi
 
             # For targets rhel-7, ubuntu-14.04 and centos-7 use GCC 5.5 toolchain
-            if [[ "${{ inputs.target }}" == "rhel-7" || "${{ inputs.target }}" == "ubuntu-14.04" || "${{ inputs.target }}" == "centos-7" ]]; then
+            if [ "${{ inputs.target }}" = "rhel-7" ] || [ "${{ inputs.target }}" = "ubuntu-14.04" ] || [ "${{ inputs.target }}" = "centos-7" ]; then
               cmake_args="$cmake_args -DVCPKG_OVERLAY_TRIPLETS=../src/triplets -DVCPKG_TARGET_TRIPLET=x64-linux-gcc5 -DVCPKG_OVERLAY_PORTS=../src/ports-overlay"
             fi
 
