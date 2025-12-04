@@ -18,5 +18,8 @@ runs:
   steps:
     - id: execute
       run: |
-        docker exec ${{ inputs.container }} bash -c "cd ${{ inputs.working-directory }}; ${{ inputs.cmd }}"
+        docker exec ${{ inputs.container }} bash <<'EOF'
+        cd ${{ inputs.working-directory }}
+        ${{ inputs.cmd }}
+        EOF
       shell: bash
