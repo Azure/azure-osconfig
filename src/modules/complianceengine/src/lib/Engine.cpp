@@ -295,7 +295,12 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
         return Error("Out-of-order operation: procedure must be set first", EINVAL);
     }
     auto& procedure = it->second;
-    if (nullptr == procedure.Remediation())
+    auto remediation = procedure.Remediation();
+    if (nullptr == remediation)
+    {
+        remediation = procedure.Audit();
+    }
+    if (nullptr == remediation)
     {
         return Error("Failed to get 'remediate' object");
     }
@@ -306,7 +311,7 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
         return error.Value();
     }
 
-    Evaluator evaluator(ruleName, procedure.Remediation(), procedure.Parameters(), *mContext);
+    Evaluator evaluator(ruleName, remediation, procedure.Parameters(), *mContext);
     return evaluator.ExecuteRemediation();
 }
 
