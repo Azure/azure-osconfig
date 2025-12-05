@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   push:
-    branches: [main, release/*]
+    branches: [dev, main, release/*]
   schedule:
     - cron: 30 1 1,15 * * # At 01:30 UTC on the 1st and 15th of every month
 
@@ -11,7 +11,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/azure/azure-osconfig/ubuntu20.04-amd64
+      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e
     permissions:
       actions: read
       contents: read
@@ -34,7 +34,7 @@ jobs:
         if: matrix.language == 'csharp'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
@@ -44,12 +44,12 @@ jobs:
       - name: Generate build
         if: matrix.language == 'cpp'
         working-directory: build
-        run: cmake ../src -DCMAKE_build-type=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
+        run: cmake ../src -DCMAKE_build-type=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON
 
       - name: Build azure-osconfig
         if: matrix.language == 'cpp'
         working-directory: build
-        run: cmake --build . --config Release
+        run: cmake --build . --config Release --parallel
 
       - name: Setup dotnet
         if: matrix.language == 'csharp'
@@ -59,9 +59,9 @@ jobs:
 
       - name: Autobuild
         if: matrix.language == 'csharp'
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v4
         with:
           category: '/language:${{matrix.language}}'
