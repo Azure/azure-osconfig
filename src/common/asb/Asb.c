@@ -654,8 +654,8 @@ static const int g_varLogJournalMode = 02755;
 static PerfClock g_perfClock = {{0, 0}, {0, 0}};
 
 // Expected time limits under ideal conditions
-// Maximum per-rule audit time: 5 seconds
-static const long g_maxAuditTime = 5000000;
+// Maximum per-rule audit time: 10 seconds
+static const long g_maxAuditTime = 10000000;
 // Maximum ASB rule remediation time: 5 minutes
 static const long g_maxRemediateTime = 300000000;
 // Maximum baseline run times: 30 minutes
