@@ -25,3 +25,11 @@ jobs:
       timeout-seconds: 3600
       execute: ${{ contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
       container-tag: ${{ matrix.target.container-tag }}
+
+  # Needed for required checks to aggregate the results of all fuzzer executions
+  fuzzer-status:
+    runs-on: ubuntu-latest
+    needs: [fuzzer-execution]
+    if: always()
+    steps:
+      - run: ${{!contains(needs.*.result, 'failure')}}
