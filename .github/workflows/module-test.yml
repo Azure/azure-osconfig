@@ -34,3 +34,11 @@ jobs:
       package-type: ${{ matrix.target.package-type }}
       excluded-tests: ${{ matrix.target.excluded-tests }}
       container-tag: ${{ matrix.target.container-tag }}
+
+  # Needed for required checks to aggregate the results of all module test executions
+  module-test-status:
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+    steps:
+      - run: ${{!contains(needs.*.result, 'failure')}}
