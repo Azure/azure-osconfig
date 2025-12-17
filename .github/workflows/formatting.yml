@@ -3,7 +3,7 @@ name: Code Formatting
 on: [push, pull_request]
 
 jobs:
-  build:
+  code-formatting:
     runs-on: ubuntu-latest
 
     steps:

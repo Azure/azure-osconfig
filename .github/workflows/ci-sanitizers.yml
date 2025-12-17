@@ -100,7 +100,7 @@ jobs:
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-sanitizer.xml
 
   report:
-    name: Report
+    name: Report CI Sanitizers Test Results
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:
