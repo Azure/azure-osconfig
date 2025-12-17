@@ -106,7 +106,7 @@ jobs:
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
 
   report:
-    name: Report
+    name: Report CI Test Results
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:
