@@ -227,7 +227,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
 #define OSConfigTelemetryRuleComplete(componentName, objectName, objectResult, microseconds)                                                           \
     {                                                                                                                                                  \
         char* telemetry_json = NULL;                                                                                                                   \
-        const char* correlationId = getenv("activityId");                                                                                              \
+        const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                   \
         const char* timestamp = GetFormattedTime();                                                                                                    \
         const char* distroName = OSConfigTelemetryGetCachedOsName();                                                                                   \
         telemetry_json = FormatAllocateString(                                                                                                         \
