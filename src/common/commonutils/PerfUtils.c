@@ -113,7 +113,6 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
         {
             OsConfigLogError(log, "%s.%s completion time of %ld microseconds is longer than %ld microseconds",
                 componentName, objectName, microseconds, limit);
-            OSConfigTelemetryStatusTrace("microseconds", ETIME);
         }
     }
     else
@@ -124,7 +123,6 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
         {
             OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %.2f minutes (%ld microseconds)",
                 componentName, microseconds, limit / 60000000.0, limit);
-            OSConfigTelemetryStatusTrace("microseconds", ETIME);
         }
     }
 }
