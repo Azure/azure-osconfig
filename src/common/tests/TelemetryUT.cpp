@@ -25,15 +25,8 @@ protected:
 
     void CleanupState()
     {
-        const char* fileName = OSConfigTelemetryGetFileName();
-        std::string filePath = (fileName != nullptr) ? std::string(fileName) : std::string();
-
         OSConfigTelemetryCleanup();
-
-        if (!filePath.empty())
-        {
-            remove(filePath.c_str());
-        }
+        remove(TELEMETRY_TMP_FILE_NAME);
     }
 };
 
@@ -41,26 +34,8 @@ TEST_F(TelemetryTest, InitCreatesTelemetryFile)
 {
     OSConfigTelemetryInit();
 
-    EXPECT_NE(nullptr, OSConfigTelemetryGetFile());
-    EXPECT_NE(nullptr, OSConfigTelemetryGetFileName());
-    EXPECT_EQ(1, OSConfigTelemetryIsInitialized());
-
-    std::string filePath(OSConfigTelemetryGetFileName());
     struct stat fileInfo;
-    EXPECT_EQ(0, stat(filePath.c_str(), &fileInfo));
-}
-
-TEST_F(TelemetryTest, InitIsIdempotent)
-{
-    OSConfigTelemetryInit();
-    FILE* firstHandle = OSConfigTelemetryGetFile();
-    std::string firstPath(OSConfigTelemetryGetFileName());
-
-    OSConfigTelemetryInit();
-
-    EXPECT_EQ(firstHandle, OSConfigTelemetryGetFile());
-    EXPECT_EQ(firstPath, std::string(OSConfigTelemetryGetFileName()));
-    EXPECT_EQ(1, OSConfigTelemetryIsInitialized());
+    EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
 }
 
 TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
@@ -69,12 +44,7 @@ TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 
     OSConfigTelemetryAppendJSON(sampleJson);
 
-    EXPECT_NE(nullptr, OSConfigTelemetryGetFile());
-    EXPECT_EQ(1, OSConfigTelemetryIsInitialized());
-    ASSERT_NE(nullptr, OSConfigTelemetryGetFileName());
-
-    std::string filePath(OSConfigTelemetryGetFileName());
-    std::ifstream input(filePath);
+    std::ifstream input(TELEMETRY_TMP_FILE_NAME);
     ASSERT_TRUE(input.is_open());
 
     std::string line;
@@ -85,17 +55,9 @@ TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 TEST_F(TelemetryTest, CleanupResetsTelemetryState)
 {
     OSConfigTelemetryInit();
-    ASSERT_NE(nullptr, OSConfigTelemetryGetFileName());
-    std::string filePath(OSConfigTelemetryGetFileName());
-
     OSConfigTelemetryCleanup();
 
-    EXPECT_EQ(nullptr, OSConfigTelemetryGetFile());
-    EXPECT_EQ(nullptr, OSConfigTelemetryGetFileName());
-    EXPECT_EQ(0, OSConfigTelemetryIsInitialized());
-
     struct stat fileInfo;
-    EXPECT_EQ(0, stat(filePath.c_str(), &fileInfo));
-
-    EXPECT_EQ(0, remove(filePath.c_str()));
+    EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
+    EXPECT_EQ(0, remove(TELEMETRY_TMP_FILE_NAME));
 }

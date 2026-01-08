@@ -24,7 +24,9 @@
 #include <version.h>
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
-#define TELEMETRY_TIMEOUT_SECONDS 10
+#define TELEMETRY_TMP_FILE_NAME "/tmp/osconfig_telemetry.jsonl"
+#define TELEMETRY_COMMAND_TIMEOUT_SECONDS 10
+#define TELEMETRY_TEARDOWN_TIMEOUT_SECONDS 8 // Must be less than TELEMETRY_COMMAND_TIMEOUT_SECONDS
 #define TELEMETRY_NOTFOUND_STRING "N/A"
 
 #define TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR "activityId"
@@ -45,10 +47,7 @@ void OSConfigTelemetryInit(void);
 void OSConfigTelemetryCleanup(void);
 void OSConfigTelemetrySetLogger(const OsConfigLogHandle log);
 void OSConfigTelemetryAppendJSON(const char* jsonString);
-FILE* OSConfigTelemetryGetFile(void);
-const char* OSConfigTelemetryGetFileName(void);
 const char* OSConfigTelemetryGetModuleDirectory(void);
-int OSConfigTelemetryIsInitialized(void);
 const char* OSConfigTelemetryGetCachedOsName(void);
 #else
 static inline void OSConfigTelemetryInit(void)
@@ -65,21 +64,9 @@ static inline void OSConfigTelemetryAppendJSON(const char* jsonString)
 {
     (void)jsonString;
 }
-static inline FILE* OSConfigTelemetryGetFile(void)
-{
-    return NULL;
-}
-static inline const char* OSConfigTelemetryGetFileName(void)
-{
-    return NULL;
-}
 static inline const char* OSConfigTelemetryGetModuleDirectory(void)
 {
     return NULL;
-}
-static inline int OSConfigTelemetryIsInitialized(void)
-{
-    return 0;
 }
 static inline const char* OSConfigTelemetryGetCachedOsName(void)
 {
@@ -136,22 +123,30 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
     }
 }
 
-#define OSConfigProcessTelemetryFile()                                                                                                                 \
-    {                                                                                                                                                  \
-        FILE* telemetryFile = OSConfigTelemetryGetFile();                                                                                              \
-        const char* telemetryFileName = OSConfigTelemetryGetFileName();                                                                                \
-        const char* telemetryModuleDirectory = OSConfigTelemetryGetModuleDirectory();                                                                  \
-        if (telemetryFile && telemetryFileName && telemetryModuleDirectory)                                                                            \
-        {                                                                                                                                              \
-            char* command = FormatAllocateString("%s/%s -f %s -t %d %s", telemetryModuleDirectory, TELEMETRY_BINARY_NAME, telemetryFileName,           \
-                TELEMETRY_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);                                                                                     \
-            if (NULL != command)                                                                                                                       \
-            {                                                                                                                                          \
-                ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_TIMEOUT_SECONDS, NULL, NULL, NULL);                                           \
-                FREE_MEMORY(command);                                                                                                                  \
-            }                                                                                                                                          \
-            OSConfigTelemetryCleanup();                                                                                                                \
-        }                                                                                                                                              \
+#define OSConfigProcessTelemetryFile()                                                                                                                                  \
+    {                                                                                                                                                                   \
+        const char* _directoryName = NULL;                                                                                                                              \
+        char* _fileName = NULL;                                                                                                                                         \
+        char* _command = NULL;                                                                                                                                          \
+        _directoryName = OSConfigTelemetryGetModuleDirectory();                                                                                                         \
+        if (NULL != _directoryName)                                                                                                                                     \
+        {                                                                                                                                                               \
+            _fileName = FormatAllocateString("%s/%s", _directoryName, TELEMETRY_BINARY_NAME);                                                                           \
+            if (NULL != _fileName)                                                                                                                                      \
+            {                                                                                                                                                           \
+                if (0 == SetFileAccess(_fileName, 0, 0, 0700, log))                                                                                                     \
+                {                                                                                                                                                       \
+                    _command = FormatAllocateString("%s -f %s -t %d %s", _fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_COMMAND_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG); \
+                    if (NULL != _command)                                                                                                                               \
+                    {                                                                                                                                                   \
+                        ExecuteCommand(NULL, _command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log);                                            \
+                        FREE_MEMORY(_command);                                                                                                                          \
+                    }                                                                                                                                                   \
+                }                                                                                                                                                       \
+                FREE_MEMORY(_fileName);                                                                                                                                 \
+            }                                                                                                                                                           \
+        }                                                                                                                                                               \
+        OSConfigTelemetryCleanup();                                                                                                                                     \
     }
 
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status)                                                                                      \
