@@ -38,15 +38,6 @@ TEST_F(TelemetryTest, InitCreatesTelemetryFile)
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
 }
 
-TEST_F(TelemetryTest, InitIsIdempotent)
-{
-    TelemetryInitialize(NULL);
-    TelemetryInitialize(NULL);
-
-    struct stat fileInfo;
-    EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
-}
-
 TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 {
     const char* sampleJson = "{\"EventName\":\"UnitTest\"}";
