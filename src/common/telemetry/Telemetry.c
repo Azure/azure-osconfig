@@ -116,7 +116,7 @@ void TelemetryCleanup(const OsConfigLogHandle log)
     FREE_MEMORY(g_distroName);
 }
 
-void TelemetryAppendJson(const char* jsonString)
+void TelemetryAppendPayloadToFile(const char* jsonString)
 {
     if ((NULL != jsonString) && (NULL != g_tmpFile))
     {

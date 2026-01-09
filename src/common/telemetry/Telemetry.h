@@ -50,7 +50,7 @@ char* GetCachedDistroName(void);
 
 void TelemetryInitialize(const OsConfigLogHandle log);
 void TelemetryCleanup(const OsConfigLogHandle log);
-void TelemetryAppendJson(const char* jsonString);
+void TelemetryAppendPayloadToFile(const char* jsonString);
 #else
 static char* GetModuleDirectory(void)
 {
@@ -62,17 +62,17 @@ static char* GetCachedDistroName(void)
     return NULL;
 }
 
-static inline void TelemetryInitialize(const OsConfigLogHandle log)
+static void TelemetryInitialize(const OsConfigLogHandle log)
 {
     (void)log;
 }
 
-static inline void TelemetryCleanup(const OsConfigLogHandle log)
+static void TelemetryCleanup(const OsConfigLogHandle log)
 {
     (void)log;
 }
 
-static inline void TelemetryAppendJson(const char* jsonString)
+static void TelemetryAppendPayloadToFile(const char* jsonString)
 {
     (void)jsonString;
 }
@@ -164,7 +164,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            TelemetryAppendJson(telemetry_json);                                                                                                       \
+            TelemetryAppendPayloadToFile(telemetry_json);                                                                                              \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
@@ -191,7 +191,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            TelemetryAppendJson(telemetry_json);                                                                                                       \
+            TelemetryAppendPayloadToFile(telemetry_json);                                                                                              \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
@@ -219,7 +219,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            TelemetryAppendJson(telemetry_json);                                                                                                       \
+            TelemetryAppendPayloadToFile(telemetry_json);                                                                                              \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
