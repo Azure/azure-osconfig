@@ -32,7 +32,7 @@ char* GetModuleDirectory(void)
 
             if (NULL != lastSlash)
             {
-                size_t length = (size_t)(lastSlash - modulePath);
+                size_t length = (size_t)(lastSlash - modulePath) - 1;
                 directory = (char*)malloc(length + 1);
 
                 if (NULL != directory)
