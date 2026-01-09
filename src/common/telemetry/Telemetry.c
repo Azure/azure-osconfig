@@ -14,17 +14,16 @@
 #include <string.h>
 #include <unistd.h>
 
-static FILE* g_telemetryFile = NULL;
+static FILE* g_tmpFile = NULL;
 static char* g_moduleDirectory = NULL;
-static OsConfigLogHandle g_telemetryLog = NULL;
-static char* g_cachedOsName = NULL;
+static char* g_distroName = NULL;
 
-static char* ResolveModuleDirectory(void)
+char* GetModuleDirectory(void)
 {
     Dl_info dlInfo = {0};
     char* directory = NULL;
 
-    if (0 != dladdr((void*)&ResolveModuleDirectory, &dlInfo))
+    if (0 != dladdr((void*)&GetModuleDirectory, &dlInfo))
     {
         if (NULL != dlInfo.dli_fname)
         {
@@ -48,80 +47,82 @@ static char* ResolveModuleDirectory(void)
     return directory;
 }
 
-const char* OSConfigTelemetryGetModuleDirectory(void)
+char* GetCachedDistroName(void)
 {
-    return g_moduleDirectory;
+    return g_distroName;
 }
 
-void OSConfigTelemetryInit(void)
+void TelemetryInitialize(const OsConfigLogHandle log)
 {
-    if (NULL != g_telemetryFile)
+    g_tmpFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
+
+    if (NULL != g_tmpFile)
     {
-        return;
+        OsConfigLogInfo(log, "TelemetryInitialize: Opened file: %s", TELEMETRY_TMP_FILE_NAME);
+
+        g_moduleDirectory = GetModuleDirectory();
+
+        if (NULL != g_moduleDirectory)
+        {
+            OsConfigLogInfo(log, "TelemetryInitialize: Found module directory: %s", g_moduleDirectory);
+        }
+        else
+        {
+            OsConfigLogError(log, "TelemetryInitialize: Failed to resolve module directory");
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "TelemetryInitialize: Failed to open file %s", TELEMETRY_TMP_FILE_NAME);
     }
 
-    if (NULL == g_moduleDirectory)
-    {
-        g_moduleDirectory = ResolveModuleDirectory();
-    }
-
-    if (NULL == g_moduleDirectory)
-    {
-        OsConfigLogError(g_telemetryLog, "Failed to resolve module directory for telemetry");
-        return;
-    }
-
-    g_telemetryFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
-
-    if (NULL != g_telemetryFile)
-    {
-        OsConfigLogInfo(g_telemetryLog, "Telemetry json used: %s", TELEMETRY_TMP_FILE_NAME);
-    }
+    g_distroName = GetOsPrettyName(log);
 }
 
-void OSConfigTelemetryCleanup(void)
+void TelemetryCleanup(const OsConfigLogHandle log)
 {
-    if (NULL != g_telemetryFile)
+    if (NULL != g_tmpFile)
     {
-        fclose(g_telemetryFile);
-        g_telemetryFile = NULL;
+        char* fileName = NULL;
+        char* command = NULL;
+
+        if (NULL != g_moduleDirectory)
+        {
+            fileName = FormatAllocateString("%s/%s", g_moduleDirectory, TELEMETRY_BINARY_NAME);
+
+            if (NULL != fileName)
+            {
+                if (0 == SetFileAccess(fileName, 0, 0, 0700, log))
+                {
+                    command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_COMMAND_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
+
+                    if (NULL != command)
+                    {
+                        ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log);
+                        FREE_MEMORY(command);
+                    }
+                }
+
+                FREE_MEMORY(fileName);
+            }
+
+            FREE_MEMORY(g_moduleDirectory);
+        }
+
+        fclose(g_tmpFile);
+        g_tmpFile = NULL;
     }
 
-    FREE_MEMORY(g_moduleDirectory);
-    FREE_MEMORY(g_cachedOsName);
+    FREE_MEMORY(g_distroName);
 }
 
-void OSConfigTelemetrySetLogger(const OsConfigLogHandle log)
+void TelemetryAppendJson(const char* jsonString)
 {
-    g_telemetryLog = log;
-}
-
-void OSConfigTelemetryAppendJSON(const char* jsonString)
-{
-    if (NULL == jsonString)
+    if ((NULL != jsonString) && (NULL != g_tmpFile))
     {
-        return;
+        fprintf(g_tmpFile, "%s\n", jsonString);
+        fflush(g_tmpFile);
     }
-
-    if (NULL == g_telemetryFile)
-    {
-        OSConfigTelemetryInit();
-    }
-
-    if (NULL != g_telemetryFile)
-    {
-        fprintf(g_telemetryFile, "%s\n", jsonString);
-        fflush(g_telemetryFile);
-    }
-}
-
-const char* OSConfigTelemetryGetCachedOsName(void)
-{
-    if (NULL == g_cachedOsName)
-    {
-        g_cachedOsName = GetOsPrettyName(g_telemetryLog);
-    }
-    return g_cachedOsName;
 }
 
 #endif // BUILD_TELEMETRY

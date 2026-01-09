@@ -25,14 +25,23 @@ protected:
 
     void CleanupState()
     {
-        OSConfigTelemetryCleanup();
+        TelemetryCleanup(NULL);
         remove(TELEMETRY_TMP_FILE_NAME);
     }
 };
 
 TEST_F(TelemetryTest, InitCreatesTelemetryFile)
 {
-    OSConfigTelemetryInit();
+    TelemetryInitialize(NULL);
+
+    struct stat fileInfo;
+    EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
+}
+
+TEST_F(TelemetryTest, InitIsIdempotent)
+{
+    TelemetryInitialize(NULL);
+    TelemetryInitialize(NULL);
 
     struct stat fileInfo;
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
@@ -42,7 +51,7 @@ TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 {
     const char* sampleJson = "{\"EventName\":\"UnitTest\"}";
 
-    OSConfigTelemetryAppendJSON(sampleJson);
+    TelemetryAppendJson(sampleJson);
 
     std::ifstream input(TELEMETRY_TMP_FILE_NAME);
     ASSERT_TRUE(input.is_open());
@@ -54,8 +63,8 @@ TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 
 TEST_F(TelemetryTest, CleanupResetsTelemetryState)
 {
-    OSConfigTelemetryInit();
-    OSConfigTelemetryCleanup();
+    TelemetryInitialize(NULL);
+    TelemetryCleanup(NULL);
 
     struct stat fileInfo;
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));

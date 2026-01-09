@@ -43,34 +43,36 @@ extern "C"
 #endif
 
 #ifdef BUILD_TELEMETRY
-void OSConfigTelemetryInit(void);
-void OSConfigTelemetryCleanup(void);
-void OSConfigTelemetrySetLogger(const OsConfigLogHandle log);
-void OSConfigTelemetryAppendJSON(const char* jsonString);
-const char* OSConfigTelemetryGetModuleDirectory(void);
-const char* OSConfigTelemetryGetCachedOsName(void);
+char* GetModuleDirectory(void);
+char* GetCachedDistroName(void);
+
+void TelemetryInitialize(const OsConfigLogHandle log);
+void TelemetryCleanup(const OsConfigLogHandle log);
+void TelemetryAppendJson(const char* jsonString);
 #else
-static inline void OSConfigTelemetryInit(void)
-{
-}
-static inline void OSConfigTelemetryCleanup(void)
-{
-}
-static inline void OSConfigTelemetrySetLogger(const OsConfigLogHandle log)
-{
-    (void)log;
-}
-static inline void OSConfigTelemetryAppendJSON(const char* jsonString)
-{
-    (void)jsonString;
-}
-static inline const char* OSConfigTelemetryGetModuleDirectory(void)
+static char* GetModuleDirectory(void)
 {
     return NULL;
 }
-static inline const char* OSConfigTelemetryGetCachedOsName(void)
+
+static char* GetCachedDistroName(void)
 {
-    return TELEMETRY_NOTFOUND_STRING;
+    return NULL;
+}
+
+static inline void TelemetryInitialize(const OsConfigLogHandle log)
+{
+    (void)log;
+}
+
+static inline void TelemetryCleanup(const OsConfigLogHandle log)
+{
+    (void)log;
+}
+
+static inline void TelemetryAppendJson(const char* jsonString)
+{
+    (void)jsonString;
 }
 #endif
 
@@ -90,7 +92,6 @@ static inline int64_t TsToUs(struct timespec ts)
 }
 
 #ifdef BUILD_TELEMETRY
-
 static inline void OSConfigTimeStampSave(void)
 {
     struct timespec start;
@@ -123,32 +124,6 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
     }
 }
 
-#define OSConfigProcessTelemetryFile()                                                                                                                                  \
-    {                                                                                                                                                                   \
-        const char* _directoryName = NULL;                                                                                                                              \
-        char* _fileName = NULL;                                                                                                                                         \
-        char* _command = NULL;                                                                                                                                          \
-        _directoryName = OSConfigTelemetryGetModuleDirectory();                                                                                                         \
-        if (NULL != _directoryName)                                                                                                                                     \
-        {                                                                                                                                                               \
-            _fileName = FormatAllocateString("%s/%s", _directoryName, TELEMETRY_BINARY_NAME);                                                                           \
-            if (NULL != _fileName)                                                                                                                                      \
-            {                                                                                                                                                           \
-                if (0 == SetFileAccess(_fileName, 0, 0, 0700, log))                                                                                                     \
-                {                                                                                                                                                       \
-                    _command = FormatAllocateString("%s -f %s -t %d %s", _fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_COMMAND_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG); \
-                    if (NULL != _command)                                                                                                                               \
-                    {                                                                                                                                                   \
-                        ExecuteCommand(NULL, _command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log);                                            \
-                        FREE_MEMORY(_command);                                                                                                                          \
-                    }                                                                                                                                                   \
-                }                                                                                                                                                       \
-                FREE_MEMORY(_fileName);                                                                                                                                 \
-            }                                                                                                                                                           \
-        }                                                                                                                                                               \
-        OSConfigTelemetryCleanup();                                                                                                                                     \
-    }
-
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status)                                                                                      \
     {                                                                                                                                                  \
         OSConfigTelemetryStatusTraceImpl((callingFunctionName), (status), __LINE__);                                                                   \
@@ -161,7 +136,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         const char* _scenarioName = getenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR);                                                                    \
         const char* _timestamp = GetFormattedTime();                                                                                                   \
         int64_t _elapsed_us = 0;                                                                                                                       \
-        const char* _distroName = OSConfigTelemetryGetCachedOsName();                                                                                  \
+        const char* _distroName = GetCachedDistroName();                                                                                               \
         const char* _resultString = strerror(status);                                                                                                  \
         OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
         telemetry_json = FormatAllocateString(                                                                                                         \
@@ -187,7 +162,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
+            TelemetryAppendJson(telemetry_json);                                                                                                       \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
@@ -197,7 +172,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         char* telemetry_json = NULL;                                                                                                                   \
         const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                   \
         const char* timestamp = GetFormattedTime();                                                                                                    \
-        const char* distroName = OSConfigTelemetryGetCachedOsName();                                                                                   \
+        const char* distroName = GetCachedDistroName();                                                                                                \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"BaselineRun\","                                                                                                           \
@@ -214,7 +189,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
+            TelemetryAppendJson(telemetry_json);                                                                                                       \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
@@ -224,7 +199,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         char* telemetry_json = NULL;                                                                                                                   \
         const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                   \
         const char* timestamp = GetFormattedTime();                                                                                                    \
-        const char* distroName = OSConfigTelemetryGetCachedOsName();                                                                                   \
+        const char* distroName = GetCachedDistroName();                                                                                                \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"RuleComplete\","                                                                                                          \
@@ -242,7 +217,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             correlationId ? correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);                                                              \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
-            OSConfigTelemetryAppendJSON(telemetry_json);                                                                                               \
+            TelemetryAppendJson(telemetry_json);                                                                                                       \
             FREE_MEMORY(telemetry_json);                                                                                                               \
         }                                                                                                                                              \
     }
@@ -258,9 +233,10 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
     {                                                                                                                                                  \
         (elapsed_us_var) = 0;                                                                                                                          \
     } while (0)
-#define OSConfigProcessTelemetryFile()                                                                                                                 \
+#define OSConfigGetElapsedTime(elapsed_us_var)                                                                                                         \
     do                                                                                                                                                 \
     {                                                                                                                                                  \
+        (elapsed_us_var) = 0;                                                                                                                          \
     } while (0)
 #define OSConfigTelemetryStatusTrace(callingFunctionName, status)                                                                                      \
     do                                                                                                                                                 \
