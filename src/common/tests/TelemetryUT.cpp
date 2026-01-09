@@ -51,6 +51,7 @@ TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
 {
     const char* sampleJson = "{\"EventName\":\"UnitTest\"}";
 
+    TelemetryInitialize(NULL);
     TelemetryAppendJson(sampleJson);
 
     std::ifstream input(TELEMETRY_TMP_FILE_NAME);
