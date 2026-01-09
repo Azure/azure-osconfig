@@ -94,7 +94,7 @@ void TelemetryCleanup(const OsConfigLogHandle log)
             {
                 if (0 == SetFileAccess(fileName, 0, 0, 0700, log))
                 {
-                    command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_COMMAND_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
+                    command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_TEARDOWN_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
 
                     if (NULL != command)
                     {
