@@ -26,12 +26,16 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
     , m_logManager(nullptr)
     , m_logger(nullptr)
 {
-    m_logConfig["name"] = "TelemetryModule";
+    m_logConfig["name"] = TELEMETRY_NAME;
     m_logConfig["version"] = TELEMETRY_VERSION;
     m_logConfig["config"]["host"] = "*";
     m_logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
     m_logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
     m_logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime.count();
+    m_logConfig[CFG_STR_CACHE_FILE_PATH] = TELEMETRY_CACHE_FILE_NAME;
+    m_logConfig[CFG_INT_CACHE_FILE_SIZE] = TELEMETRY_CACHE_FILE_SIZE;
+    m_logConfig[CFG_INT_RAM_QUEUE_SIZE] = TELEMETRY_RAM_QUEUE_SIZE;
+    m_logConfig[CFG_BOOL_ENABLE_DB_DROP_IF_FULL] = true;
 
     status_t status = STATUS_SUCCESS;
     m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
@@ -39,20 +43,6 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
     {
         OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
         throw std::runtime_error("Telemetry initialization failed");
-    }
-
-    status = m_logManager->LoadTransmitProfiles(TRANSMIT_PROFILE);
-    if (STATUS_SUCCESS != status)
-    {
-        OsConfigLogError(m_log, "Failed to load transmit profile. status=%d", status);
-        throw std::runtime_error("Failed to load transmit profile");
-    }
-
-    status = m_logManager->SetTransmitProfile("Telemetry_NoAutoUpload_CustomProfile");
-    if (STATUS_SUCCESS != status)
-    {
-        OsConfigLogError(m_log, "Failed to set transmit profile. status=%d", status);
-        throw std::runtime_error("Failed to set transmit profile");
     }
 
     m_logger = m_logManager->GetLogger(API_KEY, "logger_direct");
@@ -69,14 +59,6 @@ TelemetryManager::~TelemetryManager() noexcept
 {
     try
     {
-        status_t status = m_logManager->UploadNow();
-        if (STATUS_SUCCESS != status)
-        {
-            OsConfigLogError(m_log, "Telemetry upload during shutdown failed. status=%d", status);
-        }
-        // TODO: Minimal sleep required for upload to be triggered properly due to UploadNow being async
-        // See https://github.com/microsoft/cpp_client_telemetry/issues/1391
-        std::this_thread::sleep_for(std::chrono::seconds(1));
         m_logManager->FlushAndTeardown();
     }
     catch(...)
@@ -93,6 +75,9 @@ void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperti
 
 bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 {
+    // Pause transmission while processing the file to batch upload later
+    m_logManager->PauseTransmission();
+
     std::ifstream file(filePath);
     if (!file.is_open())
     {
@@ -112,6 +97,13 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
             allSucceeded = false;
         }
     }
+
+    // Flush events before resuming transmission due to known issue: https://github.com/microsoft/cpp_client_telemetry/issues/1189
+    m_logManager->Flush();
+
+    // Resume transmission and upload events manually (asynchronous action) due to another known issue: https://github.com/microsoft/cpp_client_telemetry/issues/1120
+    m_logManager->ResumeTransmission();
+    m_logManager->UploadNow();
 
     return allSucceeded;
 }
@@ -261,6 +253,10 @@ bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
                 break;
         }
     }
+
+    // Remove dependency on built-in timers by configuring priority and latency accordingly
+    event.SetPriority(EventPriority_Immediate);
+    event.SetLatency(EventLatency_Max);
 
     // Log the event with all properties
     m_logger->LogEvent(event);
