@@ -23,8 +23,8 @@ void __attribute__((constructor)) InitModule(void)
 
 void __attribute__((destructor)) DestroyModule(void)
 {
-    CloseLog(&gLog);
     ComplianceEngineShutdown();
+    CloseLog(&gLog);
 }
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)

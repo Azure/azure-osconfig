@@ -46,6 +46,8 @@ void ComplianceEngineInitialize(OsConfigLogHandle log)
     UNUSED(log);
     g_log = log;
 
+    TelemetryInitialize(g_log);
+
     std::ifstream configStream(g_configurationFile);
     if (configStream)
     {
@@ -68,6 +70,7 @@ void ComplianceEngineInitialize(OsConfigLogHandle log)
 // This function is called in library destructor by BaselineInitialize
 void ComplianceEngineShutdown(void)
 {
+    TelemetryCleanup(g_log);
 }
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
