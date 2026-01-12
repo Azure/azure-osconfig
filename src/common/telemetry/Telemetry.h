@@ -39,6 +39,8 @@
 // Buffer sizes for string conversion of numeric values
 #define MAX_NUM_STRING_LENGTH 32 // Accommodates 64-bit int/long values
 
+#define ATTRIB_UNUSED __attribute__((unused))
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -52,27 +54,27 @@ void TelemetryInitialize(const OsConfigLogHandle log);
 void TelemetryCleanup(const OsConfigLogHandle log);
 void TelemetryAppendPayloadToFile(const char* jsonString);
 #else
-static char* GetModuleDirectory(void)
+ATTRIB_UNUSED static char* GetModuleDirectory(void)
 {
     return NULL;
 }
 
-static char* GetCachedDistroName(void)
+ATTRIB_UNUSED static char* GetCachedDistroName(void)
 {
     return NULL;
 }
 
-static void TelemetryInitialize(const OsConfigLogHandle log)
+ATTRIB_UNUSED static void TelemetryInitialize(const OsConfigLogHandle log)
 {
     (void)log;
 }
 
-static void TelemetryCleanup(const OsConfigLogHandle log)
+ATTRIB_UNUSED static void TelemetryCleanup(const OsConfigLogHandle log)
 {
     (void)log;
 }
 
-static void TelemetryAppendPayloadToFile(const char* jsonString)
+ATTRIB_UNUSED static void TelemetryAppendPayloadToFile(const char* jsonString)
 {
     (void)jsonString;
 }
