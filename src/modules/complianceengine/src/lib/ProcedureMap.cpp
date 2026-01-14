@@ -59,6 +59,12 @@ const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op"
 // EnsureSysctl.h:21
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
 
+// EnsureSystemdParameter.h:25
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
+
+// EnsureSystemdParameter.h:66
+const char* Bindings<EnsureSystemdParameterV4Params>::names[] = {"file", "section", "option", "expression", "value"};
+
 // EnsureUserIsOnlyAccountWith.h:26
 const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
 
@@ -76,9 +82,6 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
-
-// SystemdConfig.h:25
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
@@ -131,6 +134,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureSshdOption", {MakeHandler(AuditEnsureSshdOption), nullptr}},
     {"EnsureSysctl", {MakeHandler(AuditEnsureSysctl), nullptr}},
     {"EnsureSystemAccountsDoNotHaveValidShell", {MakeHandler(AuditEnsureSystemAccountsDoNotHaveValidShell), nullptr}},
+    {"EnsureSystemdParameterV4", {MakeHandler(AuditEnsureSystemdParameterV4), nullptr}},
     {"EnsureUfwOpenPorts", {MakeHandler(AuditEnsureUfwOpenPorts), nullptr}},
     {"EnsureUserIsOnlyAccountWith", {MakeHandler(AuditEnsureUserIsOnlyAccountWith), nullptr}},
     {"EnsureWirelessIsDisabled", {MakeHandler(AuditEnsureWirelessIsDisabled), nullptr}},
@@ -237,6 +241,18 @@ string to_string(const ComplianceEngine::EnsureSshdOptionOperation value) noexce
 string to_string(const ComplianceEngine::EnsureSshdOptionMode value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::EnsureSshdOptionMode>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::SystemdParameterExpression value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SystemdParameterExpression>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

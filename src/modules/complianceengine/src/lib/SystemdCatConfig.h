@@ -9,7 +9,7 @@
 
 namespace ComplianceEngine
 {
-Result<std::string> SystemdCatConfig(const std::string& filename, ContextInterface& context);
+Result<std::string> SystemdCatConfig(const std::string& filename, const ContextInterface& context);
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_SYSTEMD_CAT_CONFIG_H
