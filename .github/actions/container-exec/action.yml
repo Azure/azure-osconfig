@@ -18,5 +18,8 @@ runs:
   steps:
     - id: execute
       run: |
-        docker exec ${{ inputs.container }} bash -c "cd ${{ inputs.working-directory }}; ${{ inputs.cmd }}"
+        docker exec -i ${{ inputs.container }} bash -s -- "${{ inputs.working-directory }}" <<'EOFSCRIPT'
+        cd "$1"
+        ${{ inputs.cmd }}
+        EOFSCRIPT
       shell: bash

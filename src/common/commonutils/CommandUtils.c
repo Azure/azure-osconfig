@@ -70,6 +70,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
     {
         OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
+        OSConfigTelemetryStatusTrace("strlen", E2BIG);
         return E2BIG;
     }
 
@@ -106,12 +107,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if (startTime < 0)
     {
         OsConfigLogError(log, "Cannot get time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
+        OSConfigTelemetryStatusTrace("startTime", errno);
         return errno;
     }
 
     if (0 != pipe(pipefd))
     {
         OsConfigLogError(log, "Cannot create pipe for command '%s', pipe() failed with %d (%s)", command, errno, strerror(errno));
+        OSConfigTelemetryStatusTrace("pipe", errno);
         return errno;
     }
 
@@ -119,6 +122,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if (workerPid < 0)
     {
         OsConfigLogError(log, "Cannot fork for command '%s', fork() failed with %d (%s)", command, errno, strerror(errno));
+        OSConfigTelemetryStatusTrace("fork", errno);
         close(pipefd[0]);
         close(pipefd[1]);
         return errno;
@@ -182,6 +186,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                     continue;
                 }
                 OsConfigLogError(log, "Error doing select for command '%s', select() failed with %d (%s)", command, errno, strerror(errno));
+                OSConfigTelemetryStatusTrace("select", errno);
                 status = errno;
                 break;
             }
@@ -190,12 +195,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             if (currentTime < 0)
             {
                 OsConfigLogError(log, "Error getting time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
+                OSConfigTelemetryStatusTrace("currentTime", errno);
                 status = errno;
                 break;
             }
             if ((timeoutSeconds > 0) && (currentTime - startTime >= timeoutSeconds))
             {
                 OsConfigLogError(log, "Timeout reading from pipe for command '%s', %d seconds", command, (int)(currentTime - startTime));
+                OSConfigTelemetryStatusTrace("timeoutSeconds", ETIME);
                 status = ETIME;
                 break;
             }
@@ -204,6 +211,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 if (0 != callback(context))
                 {
                     OsConfigLogError(log, "Canceled reading from pipe for command '%s'", command);
+                    OSConfigTelemetryStatusTrace("callback", ECANCELED);
                     status = ECANCELED;
                     break;
                 }
@@ -230,6 +238,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                     continue;
                 }
                 OsConfigLogError(log, "Error reading from pipe for command '%s', read() failed with %d (%s)", command, errno, strerror(errno));
+                OSConfigTelemetryStatusTrace("read", errno);
                 status = errno;
                 break;
             }
@@ -250,6 +259,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             if (NULL == tmp)
             {
                 OsConfigLogError(log, "Cannot allocate buffer for command '%s'", command);
+                OSConfigTelemetryStatusTrace("realloc", ENOMEM);
                 status = ENOMEM;
                 FREE_MEMORY(*textResult);
                 break;
@@ -334,6 +344,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "HashCommand: out of memory");
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
     }
 
     FREE_MEMORY(command);

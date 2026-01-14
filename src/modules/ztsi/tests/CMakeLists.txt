@@ -5,10 +5,10 @@ project(ztsitests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
-include(CTest)
-find_package(GTest REQUIRED)
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(ztsitests ZtsiTests.cpp)
-target_link_libraries(ztsitests gtest gtest_main pthread ztsilib commonutils logging)
+target_link_libraries(ztsitests GTest::gtest GTest::gtest_main pthread ztsilib commonutils logging)
 
 gtest_discover_tests(ztsitests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

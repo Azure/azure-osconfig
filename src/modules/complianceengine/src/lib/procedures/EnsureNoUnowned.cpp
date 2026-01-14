@@ -10,16 +10,20 @@
 #include <EnsureNoUnowned.h>
 #include <Evaluator.h>
 #include <FilesystemScanner.h>
+#include <GroupsIterator.h>
 #include <UsersIterator.h>
+#include <fnmatch.h>
 #include <set>
 #include <sys/stat.h>
 
 namespace ComplianceEngine
 {
+static constexpr int maxUnowned = 3;
 
 Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface& context)
 {
-    // Build set of known user IDs
+    const std::vector<std::string> ommited_paths = {"/run/*", "/proc/*", "*/containerd/*", "*/kubelet/*", "/sys/fs/cgroup/memory/*", "/var/*/private/*"};
+    // Build set of known uids and gids
     std::set<uid_t> knownUids;
     auto usersRange = UsersRange::Make(context.GetSpecialFilePath("/etc/passwd"), context.GetLogHandle());
     if (!usersRange.HasValue())
@@ -29,6 +33,16 @@ Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface
     for (const auto& pw : usersRange.Value())
     {
         knownUids.insert(pw.pw_uid);
+    }
+    std::set<uid_t> knownGids;
+    auto groupsRange = GroupsRange::Make(context.GetSpecialFilePath("/etc/group"), context.GetLogHandle());
+    if (!groupsRange.HasValue())
+    {
+        return groupsRange.Error();
+    }
+    for (const auto& gr : groupsRange.Value())
+    {
+        knownGids.insert(gr.gr_gid);
     }
 
     // Get filesystem snapshot
@@ -40,31 +54,43 @@ Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface
     }
     const auto& entries = fsRes.Value()->entries;
 
-    std::vector<std::string> unowned;
-    unowned.reserve(3);
+    int unowned = 0;
     for (const auto& kv : entries)
     {
-        if (unowned.size() >= 3)
+        if (unowned >= maxUnowned)
         {
             break;
         }
         const auto& path = kv.first;
         const auto& st = kv.second.st;
+        bool omit = false;
+        for (const auto& pattern : ommited_paths)
+        {
+            if (fnmatch(pattern.c_str(), path.c_str(), 0) == 0)
+            {
+                OsConfigLogDebug(context.GetLogHandle(), "Skipping path %s matching omit pattern %s", path.c_str(), pattern.c_str());
+                omit = true;
+                break;
+            }
+        }
+        if (omit)
+        {
+            continue;
+        }
         if (knownUids.find(st.st_uid) == knownUids.end())
         {
-            unowned.push_back("uid=" + std::to_string(static_cast<long long>(st.st_uid)) + " path=" + path);
+            indicators.NonCompliant("Unowned file '" + path + "' with uid " + std::to_string(static_cast<long long>(st.st_uid)));
+            unowned++;
+        }
+        if (knownGids.find(st.st_gid) == knownGids.end())
+        {
+            indicators.NonCompliant("Unowned file '" + path + "' with gid " + std::to_string(static_cast<long long>(st.st_gid)));
+            unowned++;
         }
     }
-    if (!unowned.empty())
+    if (unowned > 0)
     {
-        std::string msg = "Unowned files (up to 3): ";
-        for (size_t i = 0; i < unowned.size(); ++i)
-        {
-            if (i)
-                msg += "; ";
-            msg += unowned[i];
-        }
-        return indicators.NonCompliant(msg);
+        return indicators.NonCompliant("Unowned files found in the filesystem (up to " + std::to_string(maxUnowned) + " listed)");
     }
     return indicators.Compliant("All files owned by known users");
 }

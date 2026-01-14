@@ -4,6 +4,7 @@
 #include <EnsureSysctl.h>
 #include <Regex.h>
 #include <StringTools.h>
+#include <Telemetry.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -33,9 +34,10 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
         sysctlOutput.erase(sysctlOutput.size() - 1);
     }
 
-    if (regex_search(sysctlOutput, params.value) == false)
+    if (regex_search(sysctlOutput, params.value.GetRegex()) == false)
     {
-        return indicators.NonCompliant("Expected '" + params.sysctlName + "' got '" + sysctlOutput + "' in runtime configuration");
+        return indicators.NonCompliant("Expected '" + params.sysctlName + "' value '" + std::to_string(params.value) + "' got '" + sysctlOutput +
+                                       "' in runtime configuration");
     }
     else
     {
@@ -65,6 +67,7 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
     if (!execResult.HasValue())
     {
         OsConfigLogError(log, "Failed to execute systemd-sysctl command");
+        OSConfigTelemetryStatusTrace("ExecuteCommand", execResult.Error().code);
         return execResult.Error();
     }
 
@@ -115,7 +118,7 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
             if (name == params.sysctlName)
             {
                 found = true;
-                if (not regex_search(runSysctlValue, params.value))
+                if (not regex_search(runSysctlValue, params.value.GetRegex()))
                 {
                     invalid = true;
                 }
@@ -191,7 +194,7 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
         if (line.find(sysctlPath + "=", 0) == 0)
         {
             auto value = line.substr(params.sysctlName.size() + 1);
-            if (regex_search(value, params.value))
+            if (regex_search(value, params.value.GetRegex()))
             {
                 return indicators.Compliant("Correct value for '" + params.sysctlName + "' in UFW configuration");
             }

@@ -18,14 +18,34 @@ OSConfig's C/C++ code currently targets compliance with C11.
 
 ### Prerequisites
 
-Make sure all dependencies are installed. For example, on Ubuntu:
+Build environments have many dependencies required, the easiest way to get started is to use our pre-defined container environments in [devops/docker](devops/docker/).
+
+Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
+
+**Common build dependencies across distributions:**
+- vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
+    - git
+    - curl
+    - autoconf
+    - unzip
+    - zip
+- cmake (>= 3.21)
+- build-essential (gcc >= 4.4.7, g++, make)
+- perl (perl-core, perl-IPC-Cmd)
+- tar
+- python3
+
+Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example. The environments do also contain tools used in our CI which are not required for building (bc, jq, libubsan1, libasan8, clang, clang-tools, file).
+
+#### Example prerequisite install on Ubuntu 24.04
+Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y git cmake build-essential curl libcurl4-openssl-dev libssl-dev uuid-dev libgtest-dev libgmock-dev rapidjson-dev
+sudo apt -y update && sudo apt-get -y install software-properties-common
+sudo apt -y update && sudo apt-get -y install build-essential cmake git curl pkg-config tar unzip wget zip
 ```
 
-Verify that CMake is at least version 3.2.0 and gcc is at least version 4.4.7.
+Verify that CMake is at least version 3.21 and gcc is at least version 4.4.7.
 
 ```bash
 cmake --version

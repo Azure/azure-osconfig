@@ -3,8 +3,8 @@
 
 project(compliancetests)
 
-include(CTest)
-find_package(GTest REQUIRED)
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
 
 set(PROCEDURES
     procedures/AuditdRulesCheckTest.cpp
@@ -13,6 +13,7 @@ set(PROCEDURES
     procedures/EnsureDconfTest.cpp
     procedures/EnsureDefaultShellTimeoutIsConfiguredTest.cpp
     procedures/EnsureDefaultUserUmaskIsConfiguredTest.cpp
+    procedures/EnsureFileExistsTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
@@ -25,7 +26,7 @@ set(PROCEDURES
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
     procedures/EnsureNoWritablesTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
-        procedures/EnsureNoUnownedTest.cpp
+    procedures/EnsureNoUnownedTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshKeyPermsTest.cpp
     procedures/EnsureSshdOptionTest.cpp
@@ -62,6 +63,7 @@ add_executable(complianceenginetests
     EngineTest.cpp
     EvaluatorTest.cpp
     LuaEvaluatorTest.cpp
+    LuaProceduresTest.cpp
     NetworkToolsTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
@@ -76,8 +78,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(complianceenginetests
     GTest::gtest
     GTest::gtest_main
-    gmock
-    gmock_main
+    GTest::gmock
+    GTest::gmock_main
     pthread
     complianceenginelib
     logging

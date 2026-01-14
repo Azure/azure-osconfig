@@ -19,6 +19,7 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     securitybaselinelib
     complianceenginelib
     parsonlib
+    $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
 )
 
 target_compile_definitions(osconfig-fuzzer PRIVATE

@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 project(complianceenginelib)
-if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
 endif()
 
@@ -17,6 +17,7 @@ set(PROCEDURES
     procedures/EnsureDconf.cpp
     procedures/EnsureDefaultShellTimeoutIsConfigured.cpp
     procedures/EnsureDefaultUserUmaskIsConfigured.cpp
+    procedures/EnsureFileExists.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
@@ -59,6 +60,7 @@ set(SCHEMAS
     procedures/EnsureDconf.schema.json
     procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json
     procedures/EnsureDefaultUserUmaskIsConfigured.schema.json
+    procedures/EnsureFileExists.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
@@ -144,6 +146,7 @@ add_library(complianceenginelib STATIC
     KernelModuleTools.cpp
     ListValidShells.cpp
     LuaEvaluator.cpp
+    LuaProcedures.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
     Pattern.cpp
@@ -151,6 +154,7 @@ add_library(complianceenginelib STATIC
     ProcedureMap.cpp
     Result.cpp
     StringTools.cpp
+    SystemdCatConfig.cpp
     UsersIterator.cpp
     ${PROCEDURES}
     )

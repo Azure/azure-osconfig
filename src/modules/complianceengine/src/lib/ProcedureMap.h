@@ -9,6 +9,7 @@
 #include <EnsureDconf.h>
 #include <EnsureDefaultShellTimeoutIsConfigured.h>
 #include <EnsureDefaultUserUmaskIsConfigured.h>
+#include <EnsureFileExists.h>
 #include <EnsureFilePermissions.h>
 #include <EnsureFilesystemOption.h>
 #include <EnsureFirewallOpenPorts.h>
@@ -169,6 +170,8 @@ inline const std::map<std::string, RegexType>& MapEnum<RegexType>()
     static const std::map<std::string, RegexType> map = {
         {"P", RegexType::Perl},
         {"E", RegexType::Extended},
+        {"Pv", RegexType::PerlInverted},
+        {"Ev", RegexType::ExtendedInverted},
     };
     return map;
 }
@@ -249,6 +252,16 @@ struct Bindings<AuditEnsureDconfParams>
     static constexpr size_t size = 3;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::key, &T::value, &T::operation);
+};
+
+// Defines the bindings for the AuditEnsureFileExistsParams structure.
+template <>
+struct Bindings<AuditEnsureFileExistsParams>
+{
+    using T = AuditEnsureFileExistsParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::filename);
 };
 
 // Defines the bindings for the EnsureFilePermissionsParams structure.

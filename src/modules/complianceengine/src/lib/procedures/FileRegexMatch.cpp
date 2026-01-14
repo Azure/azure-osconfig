@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FileRegexMatch.h>
 #include <Optional.h>
 #include <ProcedureMap.h>
 #include <Regex.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <dirent.h>
 #include <fstream>
 
@@ -53,8 +53,11 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
     }
 
     int lineNumber = 0;
+
     string line;
-    while (getline(input, line))
+
+    // Special case for empty files, read empty line then
+    while (getline(input, line) || lineNumber == 0)
     {
         lineNumber++;
         OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: '%s', pattern: '%s'", lineNumber, line.c_str(), matchPattern.c_str());
@@ -144,9 +147,26 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
-        if (entry->d_type != DT_REG)
+        if (entry->d_type != DT_REG && entry->d_type != DT_LNK)
         {
             continue;
+        }
+
+        if (entry->d_type == DT_LNK)
+        {
+            struct stat st;
+            if (0 != stat((params.path + "/" + entry->d_name).c_str(), &st))
+            {
+                const int status = errno;
+                OsConfigLogInfo(context.GetLogHandle(), "Failed to stat file '%s/%s': %s", params.path.c_str(), entry->d_name, strerror(status));
+                errorCount++;
+                continue;
+            }
+
+            if (!S_ISREG(st.st_mode))
+            {
+                continue;
+            }
         }
 
         if (!regex_match(entry->d_name, params.filenamePattern))
@@ -172,10 +192,11 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
         }
     }
 
-    if (nullptr == entry && errno != 0)
+    if (errno != 0)
     {
         int status = errno;
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", params.path.c_str(), strerror(status));
+        OSConfigTelemetryStatusTrace("readdir", status);
         return Error("Failed to read directory '" + params.path + "': " + strerror(status), status);
     }
 

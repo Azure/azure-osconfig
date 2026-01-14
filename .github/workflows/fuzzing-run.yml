@@ -39,6 +39,7 @@ jobs:
       artifact: ${{ inputs.target }}-fuzzer
       package-type: ${{ inputs.package-type }}
       build-fuzzers: true
+      container-tag: ${{ inputs.container-tag }}
 
   fuzzer-execution:
     if: ${{ inputs.execute }}
@@ -73,7 +74,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/tests/fuzzer
-          cmd: set -o pipefail && ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
+          cmd: set -o pipefail && LSAN_OPTIONS=suppressions=${{ env.MOUNT }}/src/tests/fuzzer/lsan.suppressions ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()

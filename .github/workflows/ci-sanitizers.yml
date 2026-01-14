@@ -23,7 +23,7 @@ jobs:
         run: |
           matrix="$(cat <<'EOL'
           [
-            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e" }
           ]
           EOL
           )"
@@ -75,7 +75,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
@@ -100,7 +100,7 @@ jobs:
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-sanitizer.xml
 
   report:
-    name: Report
+    name: Report CI Sanitizers Test Results
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:

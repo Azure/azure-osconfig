@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <Bindings.h>
-#include <CommonUtils.h>
 #include <PackageInstalled.h>
 #include <ProcedureMap.h>
 #include <Result.h>
+#include <Telemetry.h>
 #include <cstdio>
 #include <fstream>
 #include <functional>
@@ -61,13 +61,13 @@ Result<PackageManagerType> DetectPackageManager(ContextInterface& context)
     {
         return PackageManagerType::DPKG;
     }
-    output = context.ExecuteCommand("rpm -qa rpm");
+    output = context.ExecuteCommand("rpm -q rpm");
     if (output.HasValue())
     {
         return PackageManagerType::RPM;
     }
     // For SLES 15
-    output = context.ExecuteCommand("rpm -qa rpm-ndb");
+    output = context.ExecuteCommand("rpm -q rpm-ndb");
     if (output.HasValue())
     {
         return PackageManagerType::RPM;
@@ -452,8 +452,36 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
     assert(params.packageManager.HasValue());
     assert(params.test_cachePath.HasValue());
     auto log = context.GetLogHandle();
+
+    PackageCache cache;
+    auto cacheResult = LoadPackageCache(params.test_cachePath.Value());
+    bool cacheValid = true;
+    bool cacheStale = false;
+    if (cacheResult.HasValue())
+    {
+        cache = cacheResult.Value();
+    }
+    else
+    {
+        cacheValid = false;
+        OsConfigLogInfo(log, "Failed to load package cache: %s", cacheResult.Error().message.c_str());
+    }
+
     auto packageManager = params.packageManager.Value();
-    if (packageManager == PackageManagerType::Autodetect)
+    if (cacheValid)
+    {
+        if (packageManager == PackageManagerType::Autodetect)
+        {
+            packageManager = cache.packageManager;
+        }
+        else if (cache.packageManager != packageManager)
+        {
+            cacheValid = false;
+            OsConfigLogInfo(log, "Package manager mismatch: expected %s, found %s", std::to_string(cache.packageManager).c_str(),
+                std::to_string(packageManager).c_str());
+        }
+    }
+    else if (packageManager == PackageManagerType::Autodetect)
     {
         auto result = DetectPackageManager(context);
         if (!result.HasValue())
@@ -472,26 +500,6 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
     else
     {
         OsConfigLogInfo(log, "Checking if package %s is installed using package manager %s", params.packageName.c_str(), std::to_string(packageManager).c_str());
-    }
-
-    PackageCache cache;
-    auto cacheResult = LoadPackageCache(params.test_cachePath.Value());
-    bool cacheValid = true;
-    bool cacheStale = false;
-    if (cacheResult.HasValue())
-    {
-        cache = cacheResult.Value();
-    }
-    else
-    {
-        cacheValid = false;
-        OsConfigLogInfo(log, "Failed to load package cache: %s", cacheResult.Error().message.c_str());
-    }
-    if (cacheValid && (cache.packageManager != packageManager))
-    {
-        cacheValid = false;
-        OsConfigLogInfo(log, "Package manager mismatch: expected %s, found %s", std::to_string(cache.packageManager).c_str(),
-            std::to_string(packageManager).c_str());
     }
 
     if (cacheValid)
@@ -523,6 +531,7 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
             else
             {
                 OsConfigLogError(log, "Failed to save package cache: %s", saveResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("SavePackageCache", saveResult.Error().code);
             }
         }
         else
@@ -530,10 +539,12 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
             if (cacheStale)
             {
                 OsConfigLogError(log, "Failed to get installed packages: %s, reusing stale cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
             }
             else
             {
                 OsConfigLogError(log, "Failed to get installed packages: %s, cannot use cache", cacheResult.Error().message.c_str());
+                OSConfigTelemetryStatusTrace("GetInstalledPackages", cacheResult.Error().code);
                 return Error("Failed to get installed packages: " + cacheResult.Error().message);
             }
         }

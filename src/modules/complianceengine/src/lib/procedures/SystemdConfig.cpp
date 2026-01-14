@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <CommonUtils.h>
 #include <SystemdConfig.h>
+#include <Telemetry.h>
 #include <algorithm>
 #include <fts.h>
 #include <iostream>
@@ -25,6 +25,7 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to execute systemd-analyze command: %s", result.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ExecuteCommand", result.Error().code);
         return result.Error();
     }
     std::istringstream stream(result.Value());
@@ -48,6 +49,7 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
         if (eqSign == std::string::npos)
         {
             OsConfigLogError(context.GetLogHandle(), "Invalid line in systemd config: %s", line.c_str());
+            OSConfigTelemetryStatusTrace("getline", EINVAL);
             continue;
         }
         std::string key = line.substr(0, eqSign);
@@ -65,11 +67,13 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
     if (!params.dir.HasValue() && !params.file.HasValue())
     {
         OsConfigLogError(log, "Error: SystemdParameter: neither 'file' nor 'dir' argument is provided");
+        OSConfigTelemetryStatusTrace("dir.empty && filename.empty", EINVAL);
         return Error("Neither 'file' nor 'dir' argument is provided");
     }
     if (params.dir.HasValue() && params.file.HasValue())
     {
         OsConfigLogError(log, "Error: SystemdParameter: both 'file' and 'dir' arguments are provided, only one is allowed");
+        OSConfigTelemetryStatusTrace("one dir or file only", EINVAL);
         return Error("Both 'file' and 'dir' arguments are provided, only one is allowed");
     }
 
@@ -81,6 +85,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         if (!result.HasValue())
         {
             OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", params.file->c_str(), result.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("GetSystemdConfig", result.Error().code);
             return result.Error();
         }
     }
@@ -93,6 +98,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         if (!file_system)
         {
             OsConfigLogError(log, "Failed to open directory '%s' with fts", params.dir->c_str());
+            OSConfigTelemetryStatusTrace("fts_open", EINVAL);
             return Error("Failed to open directory '" + params.dir.Value() + "'");
         }
 
@@ -109,6 +115,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
                     if (!result.HasValue())
                     {
                         OsConfigLogError(log, "Failed to get systemd config for file '%s' - %s", filePath.c_str(), result.Error().message.c_str());
+                        OSConfigTelemetryStatusTrace("GetSystemdConfig", result.Error().code);
                     }
                     else
                     {
@@ -122,6 +129,7 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         if (!anySuccess)
         {
             OsConfigLogError(log, "No valid systemd config files found in directory '%s'", params.dir->c_str());
+            OSConfigTelemetryStatusTrace("fts_close", EINVAL);
             return Error("No valid systemd config files found in directory '" + params.dir.Value() + "'");
         }
     }

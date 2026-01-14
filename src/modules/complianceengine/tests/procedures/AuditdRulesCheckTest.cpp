@@ -165,7 +165,7 @@ TEST_F(AuditdRulesCheckTest, InvalidOverridePathReturnsNonCompliant)
 TEST_F(AuditdRulesCheckTest, SyscallSearchCompliantWithOverridePath)
 {
     EXPECT_CALL(mContext, ExecuteCommand("auditctl -l"))
-        .WillOnce(Return(Result<std::string>(std::string("-S mount -F arch=b64 -a always,exit -F auid>=1000 -F auid!=4294967295\n"))));
+        .WillOnce(Return(Result<std::string>(std::string("-S chattr,mount -F arch=b64 -a always,exit -F auid>=1000 -F auid!=4294967295\n"))));
 
     std::string dir = MakeTempDir();
     ASSERT_FALSE(dir.empty());
@@ -416,8 +416,8 @@ TEST_F(AuditdRulesCheckTest, RunningRulesEmptyButFileMatchesIsNonCompliant)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-// Test: SUDOLOGFILE not found in sudoers or sudoers.d -> returns Error
-TEST_F(AuditdRulesCheckTest, SudoLogfileNotFoundReturnsError)
+// Test: SUDOLOGFILE not found in sudoers or sudoers.d -> returns NonCompliant
+TEST_F(AuditdRulesCheckTest, SudoLogfileNotFoundReturnsFailure)
 {
     EXPECT_CALL(mContext, ExecuteCommand("grep -E '^[[:space:]]*[Dd]efaults.*logfile' /etc/sudoers 2>/dev/null | tail -1"))
         .WillOnce(Return(Result<std::string>(std::string(""))));
@@ -437,5 +437,6 @@ TEST_F(AuditdRulesCheckTest, SudoLogfileNotFoundReturnsError)
 
     RemoveDir(dir);
 
-    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }

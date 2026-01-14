@@ -14,6 +14,9 @@ const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
 // EnsureDconf.h:31
 const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operation"};
 
+// EnsureFileExists.h:15
+const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
+
 // EnsureFilePermissions.h:31
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
 
@@ -53,7 +56,7 @@ const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 // EnsureSshdOption.h:61
 const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode"};
 
-// EnsureSysctl.h:20
+// EnsureSysctl.h:21
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
 
 // EnsureUserIsOnlyAccountWith.h:26
@@ -62,7 +65,7 @@ const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", 
 // EnsureWirelessIsDisabled.h:15
 const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_class_net"};
 
-// ExecuteCommandGrep.h:35
+// ExecuteCommandGrep.h:43
 const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
 
 // FileRegexMatch.h:83
@@ -103,6 +106,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureDconf", {MakeHandler(AuditEnsureDconf), nullptr}},
     {"EnsureDefaultShellTimeoutIsConfigured", {MakeHandler(AuditEnsureDefaultShellTimeoutIsConfigured), nullptr}},
     {"EnsureDefaultUserUmaskIsConfigured", {MakeHandler(AuditEnsureDefaultUserUmaskIsConfigured), nullptr}},
+    {"EnsureFileExists", {MakeHandler(AuditEnsureFileExists), nullptr}},
     {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
     {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
     {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},

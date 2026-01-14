@@ -2,6 +2,7 @@
 #include <Evaluator.h>
 #include <KernelModuleTools.h>
 #include <Regex.h>
+#include <Telemetry.h>
 #include <dirent.h>
 #include <fts.h>
 #include <iostream>
@@ -59,6 +60,7 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
         if (!fts)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to open %s - errno %d", modulesVersionDir.c_str(), errno);
+            OSConfigTelemetryStatusTrace("fts_open", errno);
             continue;
         }
         auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(fts, fts_close);
@@ -90,6 +92,18 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
     return moduleFound;
 }
 
+static std::string UnderscoreForRegex(std::string input)
+{
+    std::string result = input;
+    size_t pos = 0;
+    while ((pos = result.find('-', pos)) != std::string::npos)
+    {
+        result.replace(pos, 1, "[-_]");
+        pos += 4;
+    }
+    return result;
+}
+
 Result<bool> IsKernelModuleLoaded(std::string moduleName, ContextInterface& context)
 {
     Result<std::string> procModules = context.GetFileContents("/proc/modules");
@@ -98,11 +112,10 @@ Result<bool> IsKernelModuleLoaded(std::string moduleName, ContextInterface& cont
     {
         return procModules.Error();
     }
-
     regex procModulesRegex;
     try
     {
-        procModulesRegex = regex("^" + moduleName + "\\s+");
+        procModulesRegex = regex("^" + UnderscoreForRegex(moduleName) + "\\s+");
     }
     catch (regex_error& e)
     {
@@ -125,7 +138,7 @@ Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& ind
         regex modprobeBlacklistRegex;
         try
         {
-            modprobeBlacklistRegex = regex("^blacklist\\s+" + moduleName + "$");
+            modprobeBlacklistRegex = regex("^blacklist\\s+" + UnderscoreForRegex(moduleName) + "$");
         }
         catch (std::exception& e)
         {
@@ -140,7 +153,7 @@ Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& ind
         regex modprobeInstallRegex;
         try
         {
-            modprobeInstallRegex = regex("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
+            modprobeInstallRegex = regex("^install\\s+" + UnderscoreForRegex(moduleName) + "\\s+(/usr)?/bin/(true|false)");
         }
         catch (std::exception& e)
         {

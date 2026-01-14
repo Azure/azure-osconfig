@@ -3,11 +3,11 @@ name: Static analysis
 on: [push, pull_request]
 
 jobs:
-  analyze:
-    name: Analyze
+  analyze-static:
+    name: Analyze Static Code
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64
+      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e
 
     steps:
     - uses: actions/checkout@v4
