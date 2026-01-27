@@ -38,6 +38,9 @@ struct EnsureFilePermissionsCollectionParams
     /// Directory path
     std::string directory;
 
+    /// Whether to recurse
+    Optional<bool> recurse = true;
+
     /// File pattern
     std::string ext;
 
