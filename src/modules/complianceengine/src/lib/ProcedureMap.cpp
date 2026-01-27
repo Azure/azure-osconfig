@@ -20,8 +20,8 @@ const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 // EnsureFilePermissions.h:31
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
 
-// EnsureFilePermissions.h:57
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "ext", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:60
+const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask"};
 
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
@@ -53,8 +53,8 @@ const char* Bindings<EnsureShadowContainsParams>::names[] = {"username", "userna
 // EnsureSshKeyPerms.h:24
 const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 
-// EnsureSshdOption.h:61
-const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode"};
+// EnsureSshdOption.h:64
+const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
 
 // EnsureSysctl.h:21
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};

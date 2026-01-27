@@ -53,11 +53,14 @@ protected:
 
     void TearDown() override
     {
+        // Remove all tracked files; some may be in nested directories. Remove directories afterwards.
         for (auto& file : files)
         {
             unlink(file.c_str());
         }
-        rmdir(testDir.c_str());
+        // Attempt recursive removal of any nested directories created during tests.
+        std::string cmd = std::string("rm -rf ") + testDir;
+        system(cmd.c_str());
     }
 
     void CreateFile(std::string& filename, int owner, int group, short permissions)
@@ -550,6 +553,68 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFiles)
     auto group = Pattern::Make("root");
     ASSERT_TRUE(group.HasValue());
     params.permissions = 0644;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+// New tests to validate recurse flag behavior.
+// When recurse is default (true), nested non-compliant files should trigger NonCompliant.
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseDefaultTrue)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+    std::string nestedFile = nestedDir + "/bad.txt";
+    std::ofstream nf(nestedFile);
+    nf << "content";
+    nf.close();
+    ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+    // Set owner to uid 1 (bin) so it differs if expecting root
+    ASSERT_EQ(chown(nestedFile.c_str(), 1, 0), 0);
+    files.push_back(nestedFile);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    // Do not set recurse explicitly; default should be true
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+// When recurse is false, nested non-compliant files should be ignored and result remain Compliant.
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseFalse)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested2";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+    std::string nestedFile = nestedDir + "/bad.txt";
+    std::ofstream nf(nestedFile);
+    nf << "content";
+    nf.close();
+    ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+    ASSERT_EQ(chown(nestedFile.c_str(), 1, 0), 0);
+    files.push_back(nestedFile);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files but recurse false should skip nested
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.recurse = false;
 
     auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
