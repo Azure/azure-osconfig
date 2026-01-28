@@ -26,9 +26,10 @@ static const char hostnameCommand[] = "hostname";
 static const char hostAddressCommand[] = "hostname -I | cut -d ' ' -f1";
 static const char sshdSimpleCommand[] = "sshd -T";
 static const char sshdComplexCommand[] = "sshd -T -C user=root -C host=testhost -C addr=1.2.3.4";
-static const char sshdMaxStartupsOutput[] =
+static const char sshdSpecialOptionsOutput[] =
     "port 22\n"
-    "maxstartups 10:30:60\n"; // Using space-separated triplet to match current special-case parser
+    "maxstartups 10:30:60\n"
+    "rekeylimit 10 123\n";
 
 static const char sshdWithoutMatchGroupOutput[] =
     "port 22\n"
@@ -364,8 +365,8 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_NonCompliant)
 
 TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
 {
-    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
-    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
 
     EnsureSshdOptionParams params;
     params.option = {{"maxstartups"}}; // special case
@@ -382,8 +383,8 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
 
 TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
 {
-    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
-    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
 
     EnsureSshdOptionParams params;
     params.option = {{"maxstartups"}};
@@ -396,6 +397,41 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
     ASSERT_TRUE(formatted.find("Option 'maxstartups' has value '10:30:60' which exceeds limits '15:25:70'") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, RekeyLimit_Compliant)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"rekeylimit"}};             // special case expects actual '10 123'
+    params.op = EnsureSshdOptionOperation::Match; // special-case numeric limits comparison
+    // Provide thresholds higher than actual values (10 123) using colon format
+    params.value = "15:150"; // limits: first>=10 second>=123
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'rekeylimit' has a value '10 123' compliant with limits '15:150'") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, RekeyLimit_NonCompliant)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"rekeylimit"}};             // actual value '10 123'
+    params.op = EnsureSshdOptionOperation::Match; // numeric limits compare
+    params.value = "5:150";                       // first threshold lower than actual first value (10 > 5) triggers non-compliance
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'rekeylimit' has value '10 123' which exceeds limits '5:150'") != std::string::npos);
 }
 
 // ========================= Adapted legacy NoOption scenarios using EnsureSshdOption (op=not_match) =========================
@@ -683,4 +719,35 @@ TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
     ASSERT_TRUE(result.HasValue());
     // No matches => loop skipped => Compliant per current implementation
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+// ========================= Tests for readExtraConfigs parameter =========================
+TEST_F(EnsureSshdOptionTest, ReadExtraConfigs_AppendsExtraOptionsToSshdCommand)
+{
+    using ::testing::InSequence;
+    InSequence seq;
+
+    // Mock sourcing of extra config files returning option flags
+    EXPECT_CALL(mContext, ExecuteCommand("source /etc/sysconfig/sshd 2>/dev/null && echo -n $OPTIONS")).WillOnce(Return(Result<std::string>("-oX")));
+
+    EXPECT_CALL(mContext, ExecuteCommand("source /etc/crypto-policies/back-ends/opensshserver.config 2>/dev/null && echo -n $CRYPTO_POLICY"))
+        .WillOnce(Return(Result<std::string>("-Y")));
+
+    // Initial probe command with 2>&1 (to detect match group logic) should include aggregated extra config flags
+    EXPECT_CALL(mContext, ExecuteCommand("sshd -T -oX -Y 2>&1")).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    // Final command (without 2>&1) to collect options also includes flags
+    EXPECT_CALL(mContext, ExecuteCommand("sshd -T -oX -Y")).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    params.value = "no";
+    params.readExtraConfigs = true;
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'permitrootlogin' has a compliant value 'no'") != std::string::npos);
+    ASSERT_TRUE(formatted.find("All options are compliant") != std::string::npos);
 }

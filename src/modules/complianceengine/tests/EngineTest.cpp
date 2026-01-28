@@ -225,15 +225,15 @@ TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_2)
     EXPECT_EQ(result.Error().message, std::string("Rule name is empty"));
 }
 
-TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_3)
+TEST_F(EngineTest, MmiSet_executeRemediation_AuditFallback)
 {
-    std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
+    // '{"audit":{"allOf":[]}}' in base64
+    std::string payload = "eyJhdWRpdCI6eyJhbGxPZiI6W119fQ==";
     auto result = mEngine.MmiSet("procedureX", payload);
     ASSERT_TRUE(result && result.Value() == Status::Compliant);
 
     result = mEngine.MmiSet("remediateX", "");
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Failed to get 'remediate' object"));
+    ASSERT_TRUE(result && result.Value() == Status::Compliant);
 }
 
 TEST_F(EngineTest, MmiSet_executeRemediation_InvalidArgument_4)

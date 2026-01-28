@@ -58,6 +58,9 @@ struct EnsureSshdOptionParams
     /// Mode, one of (regular|all_matches). Optional, defaults to 'regular'
     /// pattern: ^(regular|all_matches)$
     Optional<EnsureSshdOptionMode> mode = EnsureSshdOptionMode::Regular;
+
+    ///
+    Optional<bool> readExtraConfigs = false;
 };
 
 Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, IndicatorsTree& indicators, ContextInterface& context);
