@@ -92,6 +92,7 @@ Source | Destination | Description
 [src/modules/commandrunner/](src/modules/commandrunner/) | /usr/lib/osconfig/commandrunner.so | The CommandRunner module binary
 [src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
+[src/modules/complianceengine/](src/modules/complianceengine/) | /usr/lib/osconfig/complianceengine.so | The ComplianceEngine module binary
 
 ### Enable and start OSConfig for the first time
 
