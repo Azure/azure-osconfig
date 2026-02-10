@@ -110,6 +110,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
     {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
     {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},
+    {"EnsureFirewalldActiveZoneTargets", {MakeHandler(AuditEnsureFirewalldActiveZoneTargets), nullptr}},
     {"EnsureGroupIsOnlyGroupWith", {MakeHandler(AuditEnsureGroupIsOnlyGroupWith), nullptr}},
     {"EnsureGsettings", {MakeHandler(AuditEnsureGsettings), nullptr}},
     {"EnsureInteractiveUsersDotFilesAccessIsConfigured", {MakeHandler(AuditEnsureInteractiveUsersDotFilesAccessIsConfigured), MakeHandler(RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured)}},

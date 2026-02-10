@@ -13,6 +13,7 @@
 #include <EnsureFilePermissions.h>
 #include <EnsureFilesystemOption.h>
 #include <EnsureFirewallOpenPorts.h>
+#include <EnsureFirewalldActiveZoneTargets.h>
 #include <EnsureGroupIsOnlyGroupWith.h>
 #include <EnsureGsettings.h>
 #include <EnsureInteractiveUsersDotFilesAccessIsConfigured.h>
