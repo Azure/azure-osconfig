@@ -224,6 +224,20 @@ inline const std::map<std::string, PackageManagerType>& MapEnum<PackageManagerTy
     return map;
 }
 
+// Maps the SystemdParameterOperator enum labels to the enum values.
+template <>
+inline const std::map<std::string, SystemdParameterOperator>& MapEnum<SystemdParameterOperator>()
+{
+    static const std::map<std::string, SystemdParameterOperator> map = {
+        {"lt", SystemdParameterOperator::LessThan},
+        {"le", SystemdParameterOperator::LessOrEqual},
+        {"gt", SystemdParameterOperator::GreaterThan},
+        {"ge", SystemdParameterOperator::GreaterOrEqual},
+        {"eq", SystemdParameterOperator::Equal},
+    };
+    return map;
+}
+
 // Defines the bindings for the AuditAuditdRulesCheckParams structure.
 template <>
 struct Bindings<AuditAuditdRulesCheckParams>
@@ -469,9 +483,9 @@ template <>
 struct Bindings<SystemdParameterParams>
 {
     using T = SystemdParameterParams;
-    static constexpr size_t size = 4;
+    static constexpr size_t size = 7;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::file, &T::dir);
+    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir);
 };
 
 // Defines the bindings for the SystemdUnitStateParams structure.
@@ -566,6 +580,9 @@ string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(
 
 // Returns a string representation of the PackageManagerType enum value.
 string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the SystemdParameterOperator enum value.
+string to_string(ComplianceEngine::SystemdParameterOperator value) noexcept(false); // NOLINT(*-identifier-naming)
 
 } // namespace std
 #endif // COMPLIANCEENGINE_PROCEDURE_MAP_H
