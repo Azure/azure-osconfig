@@ -25,5 +25,9 @@
 			]
 		}
 	},
+	"workspaceFolder": "/workspaces/azure-osconfig",
+	"mounts": [
+		"source=${localWorkspaceFolder}/../azcorelinux-Compliance-AugmentationEngine,target=/workspaces/azcorelinux-Compliance-AugmentationEngine,type=bind,consistency=cached"
+	],
 	"remoteUser": "root"
 }

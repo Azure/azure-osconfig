@@ -106,17 +106,21 @@ Result<std::vector<std::string>> GetAllMatches(ContextInterface& context)
 
     return allMatches;
 }
-Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& context, const std::string& matchContext = "")
+Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& context, const std::string& extraConfig, const std::string& matchContext)
 {
-    std::string sshdCommand;
+    std::string sshdCommand = "sshd -T";
+    if (!extraConfig.empty())
+    {
+        sshdCommand = sshdCommand + " " + extraConfig;
+    }
 
     if (!matchContext.empty())
     {
-        sshdCommand = "sshd -T -C " + matchContext;
+        sshdCommand = sshdCommand + " -C " + matchContext;
     }
     else
     {
-        auto sshdTestOutput = context.ExecuteCommand("sshd -T 2>&1");
+        auto sshdTestOutput = context.ExecuteCommand(sshdCommand + " 2>&1");
         if (!sshdTestOutput.HasValue())
         {
             return Error("Failed to execute sshd -T command: " + sshdTestOutput.Error().message, sshdTestOutput.Error().code);
@@ -139,11 +143,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             hostnameStr.erase(hostnameStr.find_last_not_of(" \n\r\t") + 1);
             hostAddrStr.erase(hostAddrStr.find_last_not_of(" \n\r\t") + 1);
 
-            sshdCommand = "sshd -T -C user=root -C host=" + hostnameStr + " -C addr=" + hostAddrStr;
-        }
-        else
-        {
-            sshdCommand = "sshd -T";
+            sshdCommand = sshdCommand + " -C user=root -C host=" + hostnameStr + " -C addr=" + hostAddrStr;
         }
     }
 
@@ -176,6 +176,62 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
     return options;
 }
 
+// Helper for evaluating delimited numeric limits such as MaxStartups style values.
+static Result<Status> EvaluateDelimitedNumericLimits(const std::string& option, const std::string& value, const std::string& realValue,
+    const char delimiter, size_t numFields, IndicatorsTree& indicators)
+{
+    // Parse realValue using provided delimiter, value always uses ':' per specification.
+    std::vector<long long> realParts(numFields, 0);
+    std::vector<long long> limitParts(numFields, 0);
+
+    try
+    {
+        std::istringstream realStream(realValue);
+        std::string token;
+        size_t idx = 0;
+        while ((idx < numFields) && std::getline(realStream, token, delimiter))
+        {
+            if (!token.empty())
+            {
+                realParts[idx] = std::stoll(token);
+            }
+            ++idx;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        return Error("Failed to parse " + option + " value '" + realValue + "': " + e.what(), EINVAL);
+    }
+
+    try
+    {
+        std::istringstream limitStream(value);
+        std::string token;
+        size_t idx = 0;
+        while ((idx < numFields) && std::getline(limitStream, token, ':'))
+        {
+            if (!token.empty())
+            {
+                limitParts[idx] = std::stoll(token);
+            }
+            ++idx;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        return Error("Failed to parse " + option + " limit '" + value + "': " + e.what(), EINVAL);
+    }
+
+    for (size_t i = 0; i < numFields; ++i)
+    {
+        if (realParts[i] > limitParts[i])
+        {
+            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
+        }
+    }
+    return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
+}
+
 // Helper that evaluates a single sshd option against the provided operation/value.
 // valueRegexes are only used (and must be valid) when op is regex, match, or not_match.
 static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string>& sshdConfig, const std::string& option, const std::string& value,
@@ -196,45 +252,12 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 
     if (("maxstartups" == option) && ("match" == op))
     {
-        // special case
-        int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
-        try
-        {
-            std::istringstream valueStream(realValue);
-            std::string token;
-            if (std::getline(valueStream, token, ':'))
-                val1 = std::stoi(token);
-            if (std::getline(valueStream, token, ':'))
-                val2 = std::stoi(token);
-            if (std::getline(valueStream, token, ':'))
-                val3 = std::stoi(token);
-        }
-        catch (const std::exception& e)
-        {
-            return Error("Failed to parse maxstartups value '" + realValue + "': " + e.what(), EINVAL);
-        }
+        return EvaluateDelimitedNumericLimits(option, value, realValue, ':', 3, indicators);
+    }
 
-        try
-        {
-            std::istringstream limitStream(value);
-            std::string token;
-            if (std::getline(limitStream, token, ':'))
-                lim1 = std::stoi(token);
-            if (std::getline(limitStream, token, ':'))
-                lim2 = std::stoi(token);
-            if (std::getline(limitStream, token, ':'))
-                lim3 = std::stoi(token);
-        }
-        catch (const std::exception& e)
-        {
-            return Error("Failed to parse maxstartups limit '" + value + "': " + e.what(), EINVAL);
-        }
-
-        if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
-        {
-            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
-        }
-        return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
+    if (("rekeylimit" == option) && ("match" == op))
+    {
+        return EvaluateDelimitedNumericLimits(option, value, realValue, ' ', 2, indicators);
     }
 
     if (op == "match" || op == "regex") // The only difference is in the valueRegexes preparation
@@ -387,9 +410,24 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
         matchModes.push_back(""); // regular
     }
 
+    std::string extraConfig;
+    if (params.readExtraConfigs.HasValue() && params.readExtraConfigs.Value())
+    {
+        auto result = context.ExecuteCommand("source /etc/sysconfig/sshd 2>/dev/null && echo -n $OPTIONS");
+        if (result.HasValue() && result.Value() != "")
+        {
+            extraConfig += result.Value();
+        }
+        result = context.ExecuteCommand("source /etc/crypto-policies/back-ends/opensshserver.config 2>/dev/null && echo -n $CRYPTO_POLICY");
+        if (result.HasValue() && result.Value() != "")
+        {
+            extraConfig += " " + result.Value();
+        }
+    }
+
     for (auto const& matchMode : matchModes)
     {
-        auto sshdConfig = GetSshdOptions(context, matchMode);
+        auto sshdConfig = GetSshdOptions(context, extraConfig, matchMode);
         if (!sshdConfig.HasValue())
         {
             return indicators.NonCompliant("Failed to get sshd options: " + sshdConfig.Error().message);
