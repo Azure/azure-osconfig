@@ -37,6 +37,7 @@
 #include <EnsureXdmcp.h>
 #include <ExecuteCommandGrep.h>
 #include <FileRegexMatch.h>
+#include <LoginDefsOption.h>
 #include <PackageInstalled.h>
 #include <SCE.h>
 #include <SystemdConfig.h>
@@ -442,6 +443,16 @@ struct Bindings<AuditFileRegexMatchParams>
     static constexpr size_t size = 8;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::path, &T::filenamePattern, &T::matchOperation, &T::matchPattern, &T::stateOperation, &T::statePattern, &T::ignoreCase, &T::behavior);
+};
+
+// Defines the bindings for the LoginDefsOptionParams structure.
+template <>
+struct Bindings<LoginDefsOptionParams>
+{
+    using T = LoginDefsOptionParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::comparison, &T::test_loginDefsPath);
 };
 
 // Defines the bindings for the PackageInstalledParams structure.

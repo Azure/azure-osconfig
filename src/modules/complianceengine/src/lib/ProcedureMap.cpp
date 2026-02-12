@@ -71,6 +71,9 @@ const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "re
 // FileRegexMatch.h:83
 const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
+// LoginDefsOption.h:26
+const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comparison", "test_loginDefsPath"};
+
 // PackageInstalled.h:37
 const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPackageVersion", "packageManager", "test_cachePath"};
 
@@ -137,6 +140,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureXdmcp", {MakeHandler(AuditEnsureXdmcp), nullptr}},
     {"ExecuteCommandGrep", {MakeHandler(AuditExecuteCommandGrep), nullptr}},
     {"FileRegexMatch", {MakeHandler(AuditFileRegexMatch), nullptr}},
+    {"LoginDefsOption", {MakeHandler(AuditLoginDefsOption), nullptr}},
     {"PackageInstalled", {MakeHandler(AuditPackageInstalled), nullptr}},
     {"RemediationFailure", {nullptr, MakeHandler(RemediateRemediationFailure)}},
     {"RemediationParametrized", {nullptr, MakeHandler(RemediateRemediationParametrized)}},

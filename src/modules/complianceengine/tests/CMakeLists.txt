@@ -19,6 +19,7 @@ set(PROCEDURES
     procedures/EnsureFirewallOpenPortsTest.cpp
     procedures/EnsureKernelModuleTest.cpp
     procedures/EnsureLogfileAccessTest.cpp
+    procedures/LoginDefsOptionTest.cpp
     procedures/EnsureGroupIsOnlyGroupWithTest.cpp
     procedures/EnsureGsettingsTest.cpp
     procedures/EnsureMountPointExistsTest.cpp

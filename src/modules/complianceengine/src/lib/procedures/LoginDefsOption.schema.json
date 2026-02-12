@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "LoginDefsOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "LoginDefsOption": {
+              "type": "object",
+              "required": [
+                "option",
+                "value",
+                "comparison"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "description": "The login.defs option name to check (e.g., PASS_MAX_DAYS, PASS_MIN_DAYS, PASS_WARN_AGE, ENCRYPT_METHOD)"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "The expected value to compare against"
+                },
+                "comparison": {
+                  "type": "string",
+                  "description": "The comparison operation to apply",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|le|gt|ge))$|(^(eq|ne|lt|le|gt|ge)$))"
+                },
+                "test_loginDefsPath": {
+                  "type": "string",
+                  "description": "Path to the login.defs file"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
