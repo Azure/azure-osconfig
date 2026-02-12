@@ -16,6 +16,7 @@ set(PROCEDURES
     procedures/EnsureFileExistsTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
+    procedures/EnsureFirewalldActiveZoneTargetsTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
     procedures/EnsureKernelModuleTest.cpp
     procedures/EnsureLogfileAccessTest.cpp
