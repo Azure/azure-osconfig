@@ -227,12 +227,16 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
         const auto* paramsObj = json_value_get_object(jsonValue);
         if (nullptr == paramsObj)
         {
+            OsConfigLogError(Log(), "Failed to parse 'parameters' object");
+            OSConfigTelemetryStatusTrace("json_value_get_object", EINVAL);
             return Error("The 'parameters' object is null");
         }
 
         auto parameters = ProcedureParameters::Parse(*paramsObj);
         if (!parameters.HasValue())
         {
+            OsConfigLogError(Log(), "Failed to parse procedure parameters: %s", parameters.Error().message.c_str());
+            OSConfigTelemetryStatusTrace("ProcedureParameters::Parse", EINVAL);
             return parameters.Error();
         }
 
