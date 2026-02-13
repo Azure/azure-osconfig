@@ -77,8 +77,8 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
 
-// SystemdConfig.h:25
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
+// SystemdConfig.h:52
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
@@ -110,6 +110,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
     {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
     {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},
+    {"EnsureFirewalldActiveZoneTargets", {MakeHandler(AuditEnsureFirewalldActiveZoneTargets), nullptr}},
     {"EnsureGroupIsOnlyGroupWith", {MakeHandler(AuditEnsureGroupIsOnlyGroupWith), nullptr}},
     {"EnsureGsettings", {MakeHandler(AuditEnsureGsettings), nullptr}},
     {"EnsureInteractiveUsersDotFilesAccessIsConfigured", {MakeHandler(AuditEnsureInteractiveUsersDotFilesAccessIsConfigured), MakeHandler(RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured)}},
@@ -297,6 +298,18 @@ string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
 string to_string(const ComplianceEngine::PackageManagerType value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::PackageManagerType>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::SystemdParameterOperator value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SystemdParameterOperator>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

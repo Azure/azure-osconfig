@@ -13,8 +13,7 @@
             "SystemdParameter": {
               "type": "object",
               "required": [
-                "parameter",
-                "valueRegex"
+                "parameter"
               ],
               "additionalProperties": false,
               "properties": {
@@ -24,11 +23,23 @@
                 },
                 "valueRegex": {
                   "type": "string",
-                  "description": "Regex for the value"
+                  "description": "Regex for the value, can be used instead of operator + value comparison"
+                },
+                "op": {
+                  "type": "string",
+                  "description": "Operator for the value"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Value to compare with"
                 },
                 "file": {
                   "type": "string",
                   "description": "Config filename"
+                },
+                "block": {
+                  "type": "string",
+                  "description": "Block in which the parameter is expected to be (e.g. [Unit], [Service], etc.)"
                 },
                 "dir": {
                   "type": "string",
