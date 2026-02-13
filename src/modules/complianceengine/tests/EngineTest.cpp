@@ -551,34 +551,34 @@ TEST_F(EngineTest, MmiSet_externalParams_value_16)
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1="'x'"KEY2='"y"')"));
 }
 
-TEST_F(EngineTest, MmiSet_externalParams_base64_json_1)
+TEST_F(EngineTest, MmiSet_externalParams_stringified_json_1)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    // Invalid base64 value
+    // Invalid JSON and invalid key=value - should fail
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(foobarbaz)"));
 }
 
-TEST_F(EngineTest, MmiSet_externalParams_base64_json_2)
+TEST_F(EngineTest, MmiSet_externalParams_stringified_json_2)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    // Input: {"KEY1":"x", "KEY2":"y"}
-    ASSERT_TRUE(mEngine.MmiSet("initX", R"(eyJLRVkxIjoieCIsICJLRVkyIjoieSJ9Cg==)"));
+    // Input: stringified JSON {"KEY1":"x", "KEY2":"y"}
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"({"KEY1":"x", "KEY2":"y"})"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=x, KEY2=y } == TRUE)");
 }
 
-TEST_F(EngineTest, MmiSet_externalParams_base64_json_3)
+TEST_F(EngineTest, MmiSet_externalParams_stringified_json_3)
 {
     std::string payload = R"({"audit":{"AuditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    // Input: {"KEY1":"test", "KEY2":""}
-    ASSERT_TRUE(mEngine.MmiSet("initX", R"(eyJLRVkxIjoidGVzdCIsICJLRVkyIjoiIn0K)"));
+    // Input: stringified JSON {"KEY1":"test", "KEY2":""}
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"({"KEY1":"test", "KEY2":""})"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"({ AuditGetParamValues: KEY1=test, KEY2= } == TRUE)");

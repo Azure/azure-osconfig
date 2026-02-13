@@ -201,8 +201,8 @@ void Procedure::SetParameters(ProcedureParameters value)
 
 Optional<Error> Procedure::UpdateUserParameters(const std::string& userParameters)
 {
-    // Attempt to parse the input as base64-encoded JSON first
-    auto json = JsonWrapper::FromBase64(userParameters);
+    // Attempt to parse the input as stringified JSON first
+    auto json = JsonWrapper::FromString(userParameters);
     if (json.HasValue())
     {
         const auto* object = json_value_get_object(json->get());
