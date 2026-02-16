@@ -346,7 +346,7 @@ TEST_F(EngineTest, MmiSet_externalParams_3)
     // - "1st=value" is interpreted by parson as a JSON number with value "1"
     // - Since we expect a JSON object (not a number), this fails appropriately
     // - Error message: "A JSON object expected"
-    // 
+    //
     // I think this is the most reasonable to modify the test in this scenario.
     EXPECT_EQ(result.Error().message, std::string("A JSON object expected"));
 }
