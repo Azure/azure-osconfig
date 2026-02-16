@@ -51,6 +51,16 @@ Result<JsonWrapper> JsonWrapper::FromJsonString(const std::string& input)
     return JsonWrapper(std::move(result));
 }
 
+Result<JsonWrapper> JsonWrapper::FromRawValue(json_value_t* value)
+{
+    if (nullptr == value)
+    {
+        return Error("Failed to create JSON wrapper: null value", EINVAL);
+    }
+
+    return JsonWrapper(JsonWrapperPointerType(value, &json_value_free));
+}
+
 JsonWrapper::JsonWrapper()
     : JsonWrapperPointerType(nullptr, &json_value_free)
 {
