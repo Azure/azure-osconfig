@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
-#include <LoginDefsOption.h>
 #include <Evaluator.h>
-
+#include <LoginDefsOption.h>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -170,11 +169,11 @@ Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, Indicat
         if (result.Value())
         {
             return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + ComparisonName(params.comparison) + " " + params.value +
-                ")");
+                                        ")");
         }
 
-        return indicators.NonCompliant(
-            params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " + params.value + ")");
+        return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " +
+                                       params.value + ")");
     }
 
     // Fall back to string comparison
@@ -189,7 +188,7 @@ Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, Indicat
         return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + ComparisonName(params.comparison) + " " + params.value + ")");
     }
 
-    return indicators.NonCompliant(
-        params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " + params.value + ")");
+    return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " + params.value +
+                                   ")");
 }
 } // namespace ComplianceEngine
