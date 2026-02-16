@@ -1163,7 +1163,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
     { "Base64Decode.", Base64Decode_target },
-    {  "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
+    { "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
 #ifdef BUILD_TELEMETRY
     { "ProcessJsonFile.", ProcessJsonFile_target },
 #endif
