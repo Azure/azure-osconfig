@@ -23,7 +23,7 @@ Result<JsonWrapper> GetModuleInfo()
 
 Optional<Error> JsonFormatter::Begin(const Action action)
 {
-    auto json = JsonWrapper::FromRawValue(json_value_init_object());
+    auto json = JsonWrapper::MakeObject();
     if (!json.HasValue())
     {
         return Error("Failed to initialize JSON object", ENOMEM);
@@ -80,7 +80,7 @@ Optional<Error> JsonFormatter::Begin(const Action action)
 
 Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload)
 {
-    auto resultWrapper = JsonWrapper::FromRawValue(json_value_init_object());
+    auto resultWrapper = JsonWrapper::MakeObject();
     if (!resultWrapper.HasValue())
     {
         return Error("Failed to initialize JSON object", ENOMEM);

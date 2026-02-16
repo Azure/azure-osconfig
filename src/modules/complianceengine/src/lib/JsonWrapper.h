@@ -27,8 +27,8 @@ struct JsonWrapper : public JsonWrapperPointerType
     // the stored JSON value is a JSON string.
     static Result<JsonWrapper> FromJsonString(const std::string& input);
 
-    // Take ownership of an existing json_value_t pointer
-    static Result<JsonWrapper> FromRawValue(json_value_t* value);
+    // Create a new empty JSON object
+    static Result<JsonWrapper> MakeObject();
 
     JsonWrapper();
     JsonWrapper(const JsonWrapper&) = delete;
@@ -38,6 +38,10 @@ struct JsonWrapper : public JsonWrapperPointerType
     ~JsonWrapper() = default;
 
 private:
+    // Take ownership of an existing json_value_t pointer.
+    // The pointed-to pointer is set to nullptr after ownership is taken.
+    static Result<JsonWrapper> FromRawValue(json_value_t** value);
+
     // Construct the wrapper from an existing json_value_t pointer
     explicit JsonWrapper(JsonWrapperPointerType&& value);
 };
