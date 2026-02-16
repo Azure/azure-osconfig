@@ -58,9 +58,9 @@ Result<JsonWrapper> JsonWrapper::FromRawValue(json_value_t** value)
         return Error("Failed to create JSON wrapper: null value", EINVAL);
     }
 
-    auto wrapper = JsonWrapper(JsonWrapperPointerType(*value, &json_value_free));
+    auto result = Result<JsonWrapper>(JsonWrapper(JsonWrapperPointerType(*value, &json_value_free)));
     *value = nullptr;
-    return wrapper;
+    return result;
 }
 
 Result<JsonWrapper> JsonWrapper::MakeObject()
