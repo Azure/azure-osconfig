@@ -271,12 +271,6 @@ TEST_F(SystemdConfigTest, FileParameterWithSpecialCharacters)
 
 TEST_F(SystemdConfigTest, NeitherValueNorValueRegexProvided)
 {
-    std::string systemdOutput =
-        "# /etc/systemd/test.conf\n"
-        "TestParam=42\n";
-
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
-
     SystemdParameterParams params;
     params.parameter = "TestParam";
     params.file = "test.conf";
@@ -289,12 +283,6 @@ TEST_F(SystemdConfigTest, NeitherValueNorValueRegexProvided)
 
 TEST_F(SystemdConfigTest, OpWithoutValueProvided)
 {
-    std::string systemdOutput =
-        "# /etc/systemd/test.conf\n"
-        "TestParam=42\n";
-
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
-
     SystemdParameterParams params;
     params.parameter = "TestParam";
     params.file = "test.conf";
@@ -308,12 +296,6 @@ TEST_F(SystemdConfigTest, OpWithoutValueProvided)
 
 TEST_F(SystemdConfigTest, OpWithValueRegexNotAllowed)
 {
-    std::string systemdOutput =
-        "# /etc/systemd/test.conf\n"
-        "TestParam=42\n";
-
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
-
     SystemdParameterParams params;
     params.parameter = "TestParam";
     params.file = "test.conf";
@@ -328,12 +310,6 @@ TEST_F(SystemdConfigTest, OpWithValueRegexNotAllowed)
 
 TEST_F(SystemdConfigTest, BothValueAndValueRegexProvided)
 {
-    std::string systemdOutput =
-        "# /etc/systemd/test.conf\n"
-        "TestParam=42\n";
-
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
-
     SystemdParameterParams params;
     params.parameter = "TestParam";
     params.file = "test.conf";
