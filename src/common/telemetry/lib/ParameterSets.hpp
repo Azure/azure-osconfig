@@ -39,11 +39,19 @@ const std::set<std::string> STATUS_TRACE_OPTIONAL_PARAMS = {
     // No optional params for now
 };
 
+// CommandExecuted
+const std::set<std::string> COMMAND_EXECUTED_REQUIRED_PARAMS = {
+    "CorrelationGroup", "IsTestMode", "Subcommand", "Success", "Duration", "ErrorResourceName", "ErrorResourceType", "ErrorLocation", "ErrorCode"};
+const std::set<std::string> COMMAND_EXECUTED_OPTIONAL_PARAMS = {
+    // No optional params for now
+};
+
 // Event parameter validation map
 const std::unordered_map<std::string, std::pair<std::set<std::string>, std::set<std::string>>> EVENT_PARAMETER_SETS = {
     {"BaselineRun", {AddCommonParams(BASELINE_RUN_REQUIRED_PARAMS), BASELINE_RUN_OPTIONAL_PARAMS}},
     {"RuleComplete", {AddCommonParams(RULE_COMPLETE_REQUIRED_PARAMS), RULE_COMPLETE_OPTIONAL_PARAMS}},
-    {"StatusTrace", {AddCommonParams(STATUS_TRACE_REQUIRED_PARAMS), STATUS_TRACE_OPTIONAL_PARAMS}}};
+    {"StatusTrace", {AddCommonParams(STATUS_TRACE_REQUIRED_PARAMS), STATUS_TRACE_OPTIONAL_PARAMS}},
+    {"CommandExecuted", {AddCommonParams(COMMAND_EXECUTED_REQUIRED_PARAMS), COMMAND_EXECUTED_OPTIONAL_PARAMS}}};
 
 } // namespace Telemetry
 #endif // PARAMETER_SETS_HPP
