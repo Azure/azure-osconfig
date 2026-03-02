@@ -117,17 +117,7 @@ PRs trigger these GitHub Actions workflows (all must pass):
 
 ## Coding Conventions
 
-- **C standard:** C11. **C++ standard:** C++11.
-- **Naming:** PascalCase for files, functions, types, namespaces. camelCase for variables/parameters. UPPER_CASE for macros. `g_` prefix for globals.
-- **Braces:** Allman style (opening brace on new line).
-- **Comparisons:** Constant on the left: `if (0 == result)` not `if (result == 0)`.
-- **Boolean expressions:** Always use explicit parentheses: `((a != b) && (c != d))`.
-- **Error handling (C):** Return integer status codes (errno values), 0 for success. Use `goto cleanup` for resource cleanup.
-- **Error handling (C++):** Prefer complex/optional error types. Avoid throwing exceptions.
-- **Memory:** Always check allocations. Use `FREE_MEMORY()` macro. In C++ use smart pointers.
-- **Logging:** Use `OsConfigLogError`, `OsConfigLogWarning`, `OsConfigLogInfo`, `OsConfigLogDebug`.
-- **Testing:** All new code requires unit tests. Tests must not depend on each other, must not require root unless necessary (skip if not root), and must not interfere with the system.
-- **Copyright:** Every source file starts with: `// Copyright (c) Microsoft Corporation. All rights reserved.` + `// Licensed under the MIT License.`
+See [`docs/style.md`](../docs/style.md) for coding style. ALWAYS load the style guide before suggesting code. The style guide is the ultimate authority on code formatting and conventions.
 
 ## Module Development
 
@@ -217,7 +207,9 @@ Functions return `Status::Compliant` or `Status::NonCompliant` via `indicators.C
 
 ### How to Add a New Procedure
 
-1. **Create the header** `procedures/<Name>.h`: Define a params struct and declare audit/remediate functions.
+**Important:** A single file can contain multiple related procedures (e.g., `EnsureFilePermissions.h` defines both `EnsureFilePermissions` and `EnsureFilePermissionsCollection`). The filename does not need to match any individual procedure name — group related procedures together when it makes sense. When adding a new procedure, consider whether it logically belongs in an existing file before creating a new one.
+
+1. **Add the procedure to a header** in `procedures/` (new or existing `.h` file): Define a params struct and declare audit/remediate functions.
    - Struct fields use types: `std::string`, `int`, `bool`, `mode_t`, `regex`, `Pattern`, `Optional<T>`, `Separated<T, char>`, or enum types.
    - Document each field with `///` comments (used by GenInterface.py). Add `/// pattern: <regex>` for validation.
 
@@ -234,9 +226,9 @@ Functions return `Status::Compliant` or `Status::NonCompliant` via `indicators.C
    Result<Status> Audit<Name>(const Audit<Name>Params& params, IndicatorsTree& indicators, ContextInterface& context);
    ```
 
-2. **Create the implementation** `procedures/<Name>.cpp`.
+2. **Add the implementation** to a `.cpp` file in `procedures/` (matching the header file, not necessarily the procedure name).
 
-3. **Create the schema** `procedures/<Name>.schema.json`: JSON Schema fragment with `definitions.audit` and `definitions.remediation` sections.
+3. **Add or update the schema** in a `.schema.json` file in `procedures/` with `definitions.audit` and `definitions.remediation` sections for the new procedure.
 
 4. **Run `GenInterface.py`** (or `pre-commit`): The script parses all procedure headers and **auto-generates** `ProcedureMap.h` and `ProcedureMap.cpp`. These files:
    - Include all procedure headers.
@@ -265,10 +257,40 @@ Functions return `Status::Compliant` or `Status::NonCompliant` via `indicators.C
 
 ### Enum Parameters
 
-To add an enum parameter to a procedure:
-1. Define the enum in the header with `/// label: <json_label>` comments on each value.
-2. `GenInterface.py` auto-generates the `MapEnum<E>()` specialization in `ProcedureMap.h`.
-3. Use the enum type in the params struct.
+Enum types allow procedure parameters to accept a fixed set of string labels from JSON. To add an enum parameter:
+
+1. **Define the enum** in the procedure header file, placing it **before** the params struct that uses it. Each enum value must have a `/// label: <json_label>` comment specifying the string used in JSON rule payloads:
+
+   ```cpp
+   enum class PackageManagerType
+   {
+       /// label: autodetect
+       Autodetect,
+
+       /// label: rpm
+       RPM,
+
+       /// label: dpkg
+       DPKG,
+   };
+   ```
+
+2. **Use the enum type** in the params struct:
+
+   ```cpp
+   struct PackageInstalledParams
+   {
+       /// Package name
+       std::string packageName;
+
+       /// Package manager, autodetected by default
+       Optional<PackageManagerType> packageManager;
+   };
+   ```
+
+3. **Run `GenInterface.py`** (or `pre-commit`): It parses the `/// label:` comments and auto-generates a `MapEnum<PackageManagerType>()` specialization in `ProcedureMap.h` that maps JSON string labels to C++ enum values. **Do not write this mapping manually.**
+
+In rule payloads, the enum value is specified by its label string: `{ "PackageInstalled": { "packageName": "nftables", "packageManager": "rpm" } }`.
 
 ### Testing ComplianceEngine
 
