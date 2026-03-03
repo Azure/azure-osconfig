@@ -20,6 +20,7 @@ set(PROCEDURES
     procedures/EnsureFileExists.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
+    procedures/EnsureFirewalldActiveZoneTargets.cpp
     procedures/EnsureFirewallOpenPorts.cpp
     procedures/EnsureGroupIsOnlyGroupWith.cpp
     procedures/EnsureGsettings.cpp
@@ -64,6 +65,7 @@ set(SCHEMAS
     procedures/EnsureFileExists.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
+    procedures/EnsureFirewalldActiveZoneTargets.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
     procedures/EnsureGroupIsOnlyGroupWith.schema.json
     procedures/EnsureGsettings.schema.json

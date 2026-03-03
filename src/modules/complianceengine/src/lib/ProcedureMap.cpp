@@ -20,8 +20,8 @@ const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 // EnsureFilePermissions.h:31
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
 
-// EnsureFilePermissions.h:57
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "ext", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:60
+const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask"};
 
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
@@ -53,8 +53,8 @@ const char* Bindings<EnsureShadowContainsParams>::names[] = {"username", "userna
 // EnsureSshKeyPerms.h:24
 const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 
-// EnsureSshdOption.h:61
-const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode"};
+// EnsureSshdOption.h:64
+const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
 
 // EnsureSysctl.h:21
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
@@ -80,8 +80,8 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
 
-// SystemdConfig.h:25
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "file", "dir"};
+// SystemdConfig.h:52
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
@@ -113,6 +113,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
     {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
     {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},
+    {"EnsureFirewalldActiveZoneTargets", {MakeHandler(AuditEnsureFirewalldActiveZoneTargets), nullptr}},
     {"EnsureGroupIsOnlyGroupWith", {MakeHandler(AuditEnsureGroupIsOnlyGroupWith), nullptr}},
     {"EnsureGsettings", {MakeHandler(AuditEnsureGsettings), nullptr}},
     {"EnsureInteractiveUsersDotFilesAccessIsConfigured", {MakeHandler(AuditEnsureInteractiveUsersDotFilesAccessIsConfigured), MakeHandler(RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured)}},
@@ -301,6 +302,18 @@ string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
 string to_string(const ComplianceEngine::PackageManagerType value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::PackageManagerType>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::SystemdParameterOperator value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SystemdParameterOperator>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

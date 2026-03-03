@@ -186,6 +186,9 @@
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureFirewalldActiveZoneTargets.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/audit"
         },
         {
@@ -314,6 +317,9 @@
         },
         {
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureFirewalldActiveZoneTargets.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/remediation"
