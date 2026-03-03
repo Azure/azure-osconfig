@@ -201,15 +201,15 @@ Each source file consists of up to three parts:
 | `.cpp` | Implementation(s) |
 | `.schema.json` | JSON Schema fragment(s) with `definitions.audit` and `definitions.remediation` sections for each procedure in the file |
 
-Each procedure implements one or both of:
-- `Result<Status> Audit<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)`
-- `Result<Status> Remediate<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)`
+Each procedure must implement an Audit function and may optionally implement a Remediate function:
+- `Result<Status> Audit<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)` — **required**
+- `Result<Status> Remediate<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)` — **optional**
 
 Functions return `Status::Compliant` or `Status::NonCompliant` via `indicators.Compliant("msg")` / `indicators.NonCompliant("msg")`, or `Error(...)` on failure.
 
-### How to Add a New Procedure
-
 **Important:** A single file can contain multiple related procedures (e.g., `EnsureFilePermissions.h` defines both `EnsureFilePermissions` and `EnsureFilePermissionsCollection`). The filename does not need to match any individual procedure name — group related procedures together when it makes sense. When adding a new procedure, consider whether it logically belongs in an existing file before creating a new one.
+
+### How to Add a New Procedure
 
 1. **Add the procedure to a header** in `procedures/` (new or existing `.h` file): Define a params struct and declare audit/remediate functions.
    - Struct fields use types: `std::string`, `int`, `bool`, `mode_t`, `regex`, `Pattern`, `Optional<T>`, `Separated<T, char>`, or enum types.
