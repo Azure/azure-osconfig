@@ -191,15 +191,17 @@ Procedure arguments support **parameter substitution**: a value starting with `$
 
 ### Built-in Procedures
 
-Each procedure consists of a **triad of files** in `src/modules/complianceengine/src/lib/procedures/`:
+Built-in procedure source files live in `src/modules/complianceengine/src/lib/procedures/`. A single file can contain multiple related procedures — for example, `EnsureFilePermissions.h/.cpp` defines both `EnsureFilePermissions` and `EnsureFilePermissionsCollection`. The file naming reflects the logical grouping, not a 1:1 mapping to procedure names.
+
+Each source file consists of up to three parts:
 
 | File | Purpose |
 |------|---------|
-| `<Name>.h` | Params struct + audit/remediate function declarations |
-| `<Name>.cpp` | Implementation |
-| `<Name>.schema.json` | JSON Schema fragment for this procedure's arguments |
+| `.h` | Params struct(s) + audit/remediate function declarations for one or more procedures |
+| `.cpp` | Implementation(s) |
+| `.schema.json` | JSON Schema fragment(s) with `definitions.audit` and `definitions.remediation` sections for each procedure in the file |
 
-A procedure implements one or both of:
+Each procedure implements one or both of:
 - `Result<Status> Audit<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)`
 - `Result<Status> Remediate<Name>(const <Name>Params& params, IndicatorsTree& indicators, ContextInterface& context)`
 
