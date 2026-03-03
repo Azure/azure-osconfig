@@ -31,10 +31,6 @@
                   "type": "string",
                   "description": "The comparison operation to apply",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|le|gt|ge))$|(^(eq|ne|lt|le|gt|ge)$))"
-                },
-                "test_loginDefsPath": {
-                  "type": "string",
-                  "description": "Path to the login.defs file"
                 }
               }
             }

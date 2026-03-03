@@ -5,8 +5,6 @@
 #include "MockContext.h"
 
 #include <LoginDefsOption.h>
-#include <Optional.h>
-#include <fstream>
 
 using ComplianceEngine::AuditLoginDefsOption;
 using ComplianceEngine::ComparisonOperation;
@@ -14,10 +12,12 @@ using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::LoginDefsOptionParams;
 using ComplianceEngine::NestedListFormatter;
-using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using std::string;
+using testing::Return;
+
+static const char* cLoginDefsPath = "/etc/login.defs";
 
 class LoginDefsOptionTest : public ::testing::Test
 {
@@ -25,42 +25,26 @@ protected:
     MockContext mContext;
     IndicatorsTree mIndicators;
     NestedListFormatter mFormatter;
-    string mTempDir;
 
     void SetUp() override
     {
         mIndicators.Push("LoginDefsOption");
-        char tempDirTemplate[] = "/tmp/LoginDefsOptionTestXXXXXX";
-        char* tempDir = mkdtemp(tempDirTemplate);
-        ASSERT_NE(tempDir, nullptr);
-        mTempDir = tempDir;
     }
 
-    void TearDown() override
+    void SetLoginDefsContent(const string& content)
     {
-        if (!mTempDir.empty())
-        {
-            // Remove all files in temp dir, then the dir itself
-            string cmd = "rm -rf " + mTempDir;
-            system(cmd.c_str());
-            mTempDir.clear();
-        }
+        EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(content)));
     }
 
-    string CreateLoginDefsFile(const string& content)
+    void SetLoginDefsError()
     {
-        string filePath = mTempDir + "/login.defs";
-        std::ofstream file(filePath);
-        EXPECT_TRUE(file.is_open());
-        file << content;
-        file.close();
-        return filePath;
+        EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(Error("Failed to load file contents"))));
     }
 };
 
 TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_Compliant)
 {
-    string filePath = CreateLoginDefsFile(
+    SetLoginDefsContent(
         "# This is a comment\n"
         "PASS_MAX_DAYS\t365\n"
         "PASS_MIN_DAYS\t7\n");
@@ -69,7 +53,6 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_Compliant)
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -78,13 +61,12 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_Compliant)
 
 TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_CompliantWhenLess)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 180\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 180\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -93,13 +75,12 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_CompliantWhenLess)
 
 TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_NonCompliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 99999\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 99999\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -108,13 +89,12 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_LessOrEqual_NonCompliant)
 
 TEST_F(LoginDefsOptionTest, PassMaxDays_GreaterOrEqual_Compliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 365\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 365\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "1";
     params.comparison = ComparisonOperation::GreaterOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -123,13 +103,12 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_GreaterOrEqual_Compliant)
 
 TEST_F(LoginDefsOptionTest, PassMaxDays_GreaterOrEqual_NonCompliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 0\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 0\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "1";
     params.comparison = ComparisonOperation::GreaterOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -138,7 +117,7 @@ TEST_F(LoginDefsOptionTest, PassMaxDays_GreaterOrEqual_NonCompliant)
 
 TEST_F(LoginDefsOptionTest, PassMinDays_GreaterOrEqual_Compliant)
 {
-    string filePath = CreateLoginDefsFile(
+    SetLoginDefsContent(
         "PASS_MAX_DAYS 365\n"
         "PASS_MIN_DAYS 7\n");
 
@@ -146,7 +125,6 @@ TEST_F(LoginDefsOptionTest, PassMinDays_GreaterOrEqual_Compliant)
     params.option = "PASS_MIN_DAYS";
     params.value = "1";
     params.comparison = ComparisonOperation::GreaterOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -155,13 +133,12 @@ TEST_F(LoginDefsOptionTest, PassMinDays_GreaterOrEqual_Compliant)
 
 TEST_F(LoginDefsOptionTest, PassWarnAge_GreaterOrEqual_Compliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_WARN_AGE 7\n");
+    SetLoginDefsContent("PASS_WARN_AGE 7\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_WARN_AGE";
     params.value = "7";
     params.comparison = ComparisonOperation::GreaterOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -170,13 +147,12 @@ TEST_F(LoginDefsOptionTest, PassWarnAge_GreaterOrEqual_Compliant)
 
 TEST_F(LoginDefsOptionTest, EncryptMethod_Equal_Compliant)
 {
-    string filePath = CreateLoginDefsFile("ENCRYPT_METHOD SHA512\n");
+    SetLoginDefsContent("ENCRYPT_METHOD SHA512\n");
 
     LoginDefsOptionParams params;
     params.option = "ENCRYPT_METHOD";
     params.value = "SHA512";
     params.comparison = ComparisonOperation::Equal;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -185,13 +161,12 @@ TEST_F(LoginDefsOptionTest, EncryptMethod_Equal_Compliant)
 
 TEST_F(LoginDefsOptionTest, EncryptMethod_Equal_NonCompliant)
 {
-    string filePath = CreateLoginDefsFile("ENCRYPT_METHOD MD5\n");
+    SetLoginDefsContent("ENCRYPT_METHOD MD5\n");
 
     LoginDefsOptionParams params;
     params.option = "ENCRYPT_METHOD";
     params.value = "SHA512";
     params.comparison = ComparisonOperation::Equal;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -200,7 +175,7 @@ TEST_F(LoginDefsOptionTest, EncryptMethod_Equal_NonCompliant)
 
 TEST_F(LoginDefsOptionTest, OptionNotFound_NonCompliant)
 {
-    string filePath = CreateLoginDefsFile(
+    SetLoginDefsContent(
         "# Only comments\n"
         "SOME_OTHER_OPTION 42\n");
 
@@ -208,29 +183,28 @@ TEST_F(LoginDefsOptionTest, OptionNotFound_NonCompliant)
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(LoginDefsOptionTest, FileNotFound_NonCompliant)
+TEST_F(LoginDefsOptionTest, FileNotFound_ReturnsError)
 {
+    SetLoginDefsError();
+
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = mTempDir + "/nonexistent";
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    EXPECT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_FALSE(result.HasValue());
 }
 
 TEST_F(LoginDefsOptionTest, CommentSkipped)
 {
-    string filePath = CreateLoginDefsFile(
+    SetLoginDefsContent(
         "# PASS_MAX_DAYS 99999\n"
         "PASS_MAX_DAYS 180\n");
 
@@ -238,7 +212,6 @@ TEST_F(LoginDefsOptionTest, CommentSkipped)
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -247,7 +220,7 @@ TEST_F(LoginDefsOptionTest, CommentSkipped)
 
 TEST_F(LoginDefsOptionTest, LastOccurrenceWins)
 {
-    string filePath = CreateLoginDefsFile(
+    SetLoginDefsContent(
         "PASS_MAX_DAYS 99999\n"
         "PASS_MAX_DAYS 180\n");
 
@@ -255,7 +228,6 @@ TEST_F(LoginDefsOptionTest, LastOccurrenceWins)
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -264,13 +236,12 @@ TEST_F(LoginDefsOptionTest, LastOccurrenceWins)
 
 TEST_F(LoginDefsOptionTest, TabSeparated)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS\t\t365\n");
+    SetLoginDefsContent("PASS_MAX_DAYS\t\t365\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::Equal;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -279,13 +250,12 @@ TEST_F(LoginDefsOptionTest, TabSeparated)
 
 TEST_F(LoginDefsOptionTest, LeadingWhitespace)
 {
-    string filePath = CreateLoginDefsFile("   PASS_MAX_DAYS 365\n");
+    SetLoginDefsContent("   PASS_MAX_DAYS 365\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::Equal;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -294,13 +264,12 @@ TEST_F(LoginDefsOptionTest, LeadingWhitespace)
 
 TEST_F(LoginDefsOptionTest, EmptyFile)
 {
-    string filePath = CreateLoginDefsFile("");
+    SetLoginDefsContent("");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessOrEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -309,13 +278,12 @@ TEST_F(LoginDefsOptionTest, EmptyFile)
 
 TEST_F(LoginDefsOptionTest, LessThan_Compliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 364\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 364\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessThan;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -324,13 +292,12 @@ TEST_F(LoginDefsOptionTest, LessThan_Compliant)
 
 TEST_F(LoginDefsOptionTest, LessThan_NonCompliant_WhenEqual)
 {
-    string filePath = CreateLoginDefsFile("PASS_MAX_DAYS 365\n");
+    SetLoginDefsContent("PASS_MAX_DAYS 365\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MAX_DAYS";
     params.value = "365";
     params.comparison = ComparisonOperation::LessThan;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -339,13 +306,12 @@ TEST_F(LoginDefsOptionTest, LessThan_NonCompliant_WhenEqual)
 
 TEST_F(LoginDefsOptionTest, GreaterThan_Compliant)
 {
-    string filePath = CreateLoginDefsFile("PASS_MIN_DAYS 2\n");
+    SetLoginDefsContent("PASS_MIN_DAYS 2\n");
 
     LoginDefsOptionParams params;
     params.option = "PASS_MIN_DAYS";
     params.value = "1";
     params.comparison = ComparisonOperation::GreaterThan;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -354,13 +320,12 @@ TEST_F(LoginDefsOptionTest, GreaterThan_Compliant)
 
 TEST_F(LoginDefsOptionTest, NotEqual_Compliant)
 {
-    string filePath = CreateLoginDefsFile("ENCRYPT_METHOD SHA512\n");
+    SetLoginDefsContent("ENCRYPT_METHOD SHA512\n");
 
     LoginDefsOptionParams params;
     params.option = "ENCRYPT_METHOD";
     params.value = "MD5";
     params.comparison = ComparisonOperation::NotEqual;
-    params.test_loginDefsPath = filePath;
 
     auto result = AuditLoginDefsOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -369,7 +334,7 @@ TEST_F(LoginDefsOptionTest, NotEqual_Compliant)
 
 TEST_F(LoginDefsOptionTest, RealisticLoginDefs)
 {
-    string filePath = CreateLoginDefsFile(
+    const string content =
         "#\n"
         "# /etc/login.defs - Configuration control definitions for the login package.\n"
         "#\n"
@@ -388,15 +353,16 @@ TEST_F(LoginDefsOptionTest, RealisticLoginDefs)
         "UID_MIN                  1000\n"
         "UID_MAX                 60000\n"
         "\n"
-        "ENCRYPT_METHOD SHA512\n");
+        "ENCRYPT_METHOD SHA512\n";
 
     // Check PASS_MAX_DAYS <= 365
     {
+        EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(content)));
+
         LoginDefsOptionParams params;
         params.option = "PASS_MAX_DAYS";
         params.value = "365";
         params.comparison = ComparisonOperation::LessOrEqual;
-        params.test_loginDefsPath = filePath;
 
         auto result = AuditLoginDefsOption(params, mIndicators, mContext);
         ASSERT_TRUE(result.HasValue());
@@ -405,11 +371,12 @@ TEST_F(LoginDefsOptionTest, RealisticLoginDefs)
 
     // Check PASS_MAX_DAYS >= 1
     {
+        EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(content)));
+
         LoginDefsOptionParams params;
         params.option = "PASS_MAX_DAYS";
         params.value = "1";
         params.comparison = ComparisonOperation::GreaterOrEqual;
-        params.test_loginDefsPath = filePath;
 
         auto result = AuditLoginDefsOption(params, mIndicators, mContext);
         ASSERT_TRUE(result.HasValue());
@@ -418,11 +385,12 @@ TEST_F(LoginDefsOptionTest, RealisticLoginDefs)
 
     // Check ENCRYPT_METHOD == SHA512
     {
+        EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(content)));
+
         LoginDefsOptionParams params;
         params.option = "ENCRYPT_METHOD";
         params.value = "SHA512";
         params.comparison = ComparisonOperation::Equal;
-        params.test_loginDefsPath = filePath;
 
         auto result = AuditLoginDefsOption(params, mIndicators, mContext);
         ASSERT_TRUE(result.HasValue());

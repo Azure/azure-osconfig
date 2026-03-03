@@ -4,7 +4,6 @@
 #ifndef COMPLIANCEENGINE_PROCEDURES_LOGIN_DEFS_OPTION_H
 #define COMPLIANCEENGINE_PROCEDURES_LOGIN_DEFS_OPTION_H
 
-#include <EnsureShadowContains.h>
 #include <Evaluator.h>
 
 namespace ComplianceEngine
@@ -20,9 +19,6 @@ struct LoginDefsOptionParams
     /// The comparison operation to apply
     /// pattern: ^(eq|ne|lt|le|gt|ge)$
     ComparisonOperation comparison = ComparisonOperation::Equal;
-
-    /// Path to the login.defs file
-    Optional<std::string> test_loginDefsPath = std::string("/etc/login.defs");
 };
 
 Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, IndicatorsTree& indicators, ContextInterface& context);

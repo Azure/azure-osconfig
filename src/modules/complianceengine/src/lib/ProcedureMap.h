@@ -450,9 +450,9 @@ template <>
 struct Bindings<LoginDefsOptionParams>
 {
     using T = LoginDefsOptionParams;
-    static constexpr size_t size = 4;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::comparison, &T::test_loginDefsPath);
+    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::comparison);
 };
 
 // Defines the bindings for the PackageInstalledParams structure.

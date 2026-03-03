@@ -4,7 +4,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <LoginDefsOption.h>
-#include <fstream>
+#include <StringTools.h>
 #include <sstream>
 #include <string>
 
@@ -14,22 +14,6 @@ namespace ComplianceEngine
 {
 namespace
 {
-Result<int> ParseInt(const string& value)
-{
-    try
-    {
-        return std::stoi(value);
-    }
-    catch (const std::invalid_argument&)
-    {
-        return Error("Invalid integer value: '" + value + "'", EINVAL);
-    }
-    catch (const std::out_of_range&)
-    {
-        return Error("Integer value out of range: '" + value + "'", ERANGE);
-    }
-}
-
 Result<bool> NumericComparison(int lhs, int rhs, ComparisonOperation operation)
 {
     switch (operation)
@@ -68,54 +52,22 @@ Result<bool> StringComparison(const string& lhs, const string& rhs, ComparisonOp
     return Error("Unsupported comparison operation for string value (only eq and ne are supported)", EINVAL);
 }
 
-static const char* ComparisonName(ComparisonOperation op)
+Optional<string> FindLoginDefsValue(const string& fileContents, const string& optionName, OsConfigLogHandle logHandle)
 {
-    switch (op)
-    {
-        case ComparisonOperation::Equal:
-            return "eq";
-        case ComparisonOperation::NotEqual:
-            return "ne";
-        case ComparisonOperation::LessThan:
-            return "lt";
-        case ComparisonOperation::LessOrEqual:
-            return "le";
-        case ComparisonOperation::GreaterThan:
-            return "gt";
-        case ComparisonOperation::GreaterOrEqual:
-            return "ge";
-        default:
-            return "unknown";
-    }
-}
-
-Result<string> FindLoginDefsValue(const string& filePath, const string& optionName, OsConfigLogHandle logHandle)
-{
-    std::ifstream file(filePath);
-    if (!file.is_open())
-    {
-        return Error("Failed to open login.defs file: " + filePath, errno);
-    }
-
+    std::istringstream stream(fileContents);
     string line;
-    string foundValue;
-    bool found = false;
+    Optional<string> foundValue;
 
-    while (std::getline(file, line))
+    while (std::getline(stream, line))
     {
-        // Skip empty lines and comments
-        size_t firstNonSpace = line.find_first_not_of(" \t");
-        if (firstNonSpace == string::npos)
-        {
-            continue;
-        }
-        if (line[firstNonSpace] == '#')
+        auto trimmedLine = TrimWhiteSpaces(line);
+        if (trimmedLine.empty() || trimmedLine[0] == '#')
         {
             continue;
         }
 
         // Parse KEY VALUE format
-        std::istringstream iss(line.substr(firstNonSpace));
+        std::istringstream iss(trimmedLine);
         string key;
         string value;
         iss >> key >> value;
@@ -123,15 +75,9 @@ Result<string> FindLoginDefsValue(const string& filePath, const string& optionNa
         if (key == optionName)
         {
             foundValue = value;
-            found = true;
-            OsConfigLogDebug(logHandle, "LoginDefsOption: found '%s' = '%s' in %s", optionName.c_str(), value.c_str(), filePath.c_str());
+            OsConfigLogDebug(logHandle, "LoginDefsOption: found '%s' = '%s'", optionName.c_str(), value.c_str());
             // Don't break — last occurrence wins (login.defs standard behavior)
         }
-    }
-
-    if (!found)
-    {
-        return Error("Option '" + optionName + "' not found in " + filePath, ENOENT);
     }
 
     return foundValue;
@@ -140,22 +86,26 @@ Result<string> FindLoginDefsValue(const string& filePath, const string& optionNa
 
 Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_loginDefsPath.HasValue());
+    const string filePath = context.GetSpecialFilePath("/etc/login.defs");
 
-    const string& filePath = params.test_loginDefsPath.Value();
+    OsConfigLogDebug(context.GetLogHandle(), "LoginDefsOption: checking option '%s' %s '%s' in %s", params.option.c_str(),
+        std::to_string(params.comparison).c_str(), params.value.c_str(), filePath.c_str());
 
-    OsConfigLogInfo(context.GetLogHandle(), "LoginDefsOption: checking option '%s' %s '%s' in %s", params.option.c_str(),
-        ComparisonName(params.comparison), params.value.c_str(), filePath.c_str());
+    auto fileContents = context.GetFileContents(filePath);
+    if (!fileContents.HasValue())
+    {
+        return fileContents.Error();
+    }
 
-    auto foundValue = FindLoginDefsValue(filePath, params.option, context.GetLogHandle());
+    auto foundValue = FindLoginDefsValue(fileContents.Value(), params.option, context.GetLogHandle());
     if (!foundValue.HasValue())
     {
         return indicators.NonCompliant("Option '" + params.option + "' is not set in " + filePath);
     }
 
     // Try numeric comparison first
-    auto lhsInt = ParseInt(foundValue.Value());
-    auto rhsInt = ParseInt(params.value);
+    auto lhsInt = TryStringToInt(foundValue.Value());
+    auto rhsInt = TryStringToInt(params.value);
 
     if (lhsInt.HasValue() && rhsInt.HasValue())
     {
@@ -168,11 +118,11 @@ Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, Indicat
 
         if (result.Value())
         {
-            return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + ComparisonName(params.comparison) + " " + params.value +
+            return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + std::to_string(params.comparison) + " " + params.value +
                                         ")");
         }
 
-        return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " +
+        return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + std::to_string(params.comparison) + " " +
                                        params.value + ")");
     }
 
@@ -185,10 +135,10 @@ Result<Status> AuditLoginDefsOption(const LoginDefsOptionParams& params, Indicat
 
     if (result.Value())
     {
-        return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + ComparisonName(params.comparison) + " " + params.value + ")");
+        return indicators.Compliant(params.option + " = " + foundValue.Value() + " (" + std::to_string(params.comparison) + " " + params.value + ")");
     }
 
-    return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + ComparisonName(params.comparison) + " " + params.value +
+    return indicators.NonCompliant(params.option + " = " + foundValue.Value() + " (expected " + std::to_string(params.comparison) + " " + params.value +
                                    ")");
 }
 } // namespace ComplianceEngine
