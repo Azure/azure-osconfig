@@ -150,3 +150,19 @@ TEST_F(TelemetryTest, ProcessStatusTraceMissingScenarioNameEvent)
     Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
     EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));
 }
+
+TEST_F(TelemetryTest, ProcessCommandExecutedEvent)
+{
+    std::string realEvent = R"({"EventName":"CommandExecuted","DistroName":"CentOS","Version":"1.3.0-preview123","CorrelationId":"{00000000-0000-0000-0000-000000000000}","CorrelationGroup":"TestGroup","Timestamp":"2025-10-17 22:52:56+0000","IsTestMode":true,"Subcommand":"get resource","Duration":1234.5678,"Success":true,"ErrorResourceName":"Test Resource","ErrorResourceType":"Microsoft.OSConfig/Test","ErrorLocation":"utils/test.rs:123","ErrorCode":1})";
+    ASSERT_TRUE(CreateTestJsonFile(realEvent));
+    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
+    EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
+}
+
+TEST_F(TelemetryTest, ProcessCommandExecutedMissingSubcommandEvent)
+{
+    std::string realEvent = R"({"EventName":"CommandExecuted","DistroName":"CentOS","Version":"1.3.0-preview123","CorrelationId":"{00000000-0000-0000-0000-000000000000}","CorrelationGroup":"TestGroup","Timestamp":"2025-10-17 22:52:56+0000","IsTestMode":true,"Duration":1234.5678,"Success":true,"ErrorResourceName":"Test Resource","ErrorResourceType":"Microsoft.OSConfig/Test","ErrorLocation":"utils/test.rs:123","ErrorCode":1})";
+    ASSERT_TRUE(CreateTestJsonFile(realEvent));
+    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
+    EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));
+}
