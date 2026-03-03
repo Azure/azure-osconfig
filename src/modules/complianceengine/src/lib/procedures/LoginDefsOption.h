@@ -4,6 +4,7 @@
 #ifndef COMPLIANCEENGINE_PROCEDURES_LOGIN_DEFS_OPTION_H
 #define COMPLIANCEENGINE_PROCEDURES_LOGIN_DEFS_OPTION_H
 
+#include <EnsureShadowContains.h> // For ComparisonOperation enum
 #include <Evaluator.h>
 
 namespace ComplianceEngine

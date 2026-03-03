@@ -4,6 +4,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <LoginDefsOption.h>
+#include <ProcedureMap.h>
 #include <StringTools.h>
 #include <sstream>
 #include <string>
