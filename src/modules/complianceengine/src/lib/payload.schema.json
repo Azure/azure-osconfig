@@ -261,6 +261,9 @@
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/LoginDefsOption.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/PackageInstalled.schema.json#/definitions/audit"
         },
         {
@@ -389,6 +392,9 @@
         },
         {
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/LoginDefsOption.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/PackageInstalled.schema.json#/definitions/remediation"
