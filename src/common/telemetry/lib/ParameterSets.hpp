@@ -41,7 +41,7 @@ const std::set<std::string> STATUS_TRACE_OPTIONAL_PARAMS = {
 
 // CommandExecuted
 const std::set<std::string> COMMAND_EXECUTED_REQUIRED_PARAMS = {
-    "CorrelationGroup", "IsTestMode", "Subcommand", "Success", "Duration", "ErrorResourceName", "ErrorResourceType", "ErrorLocation", "ErrorCode"};
+    "CorrelationGroup", "IsTestMode", "Subcommand", "Success", "Duration", "ErrorKind", "ErrorResourceName", "ErrorResourceType", "ErrorLocation", "ErrorCode"};
 const std::set<std::string> COMMAND_EXECUTED_OPTIONAL_PARAMS = {
     // No optional params for now
 };
