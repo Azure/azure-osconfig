@@ -71,7 +71,7 @@ const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "re
 // FileRegexMatch.h:83
 const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
-// LoginDefsOption.h:22
+// LoginDefsOption.h:23
 const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comparison"};
 
 // PackageInstalled.h:37
