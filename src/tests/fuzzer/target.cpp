@@ -1069,8 +1069,10 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
         }
     }
     ComplianceEngine::Procedure proc;
-    proc.SetParameter("X", "1");
-    proc.SetParameter("Y", "2");
+    ComplianceEngine::ProcedureParameters params;
+    params["X"] = "1";
+    params["Y"] = "2";
+    proc.SetParameters(std::move(params));
     Optional<Error> error = proc.UpdateUserParameters(input);
     if (error)
     {
