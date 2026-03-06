@@ -4,15 +4,14 @@
 
 namespace ComplianceEngine
 {
-int GetUidMin(ContextInterface& context)
+Result<int> GetUidMin(ContextInterface& context)
 {
-    const int defaultUidMin = 1000;
     const std::string prefix = "UID_MIN ";
     auto loginDefsResult = context.GetFileContents("/etc/login.defs");
     if (!loginDefsResult.HasValue() || loginDefsResult.Value().empty())
     {
-        OsConfigLogWarning(context.GetLogHandle(), "Failed to read /etc/login.defs, using default UID_MIN");
-        return defaultUidMin;
+        OsConfigLogWarning(context.GetLogHandle(), "Failed to read /etc/login.defs");
+        return Error("Failed to read /etc/login.defs");
     }
     std::stringstream ss(loginDefsResult.Value());
     std::string line;
@@ -23,18 +22,14 @@ int GetUidMin(ContextInterface& context)
         {
             auto value = line.substr(prefix.length());
             value = TrimWhiteSpaces(value);
-            try
+            auto result = TryStringToInt(value);
+            if (!result.HasValue())
             {
-                return std::stoi(value);
+                OsConfigLogWarning(context.GetLogHandle(), "Invalid UID_MIN value in /etc/login.defs %s", result.Error().message.c_str());
             }
-            catch (const std::exception&)
-            {
-                OsConfigLogWarning(context.GetLogHandle(), "Invalid UID_MIN value in /etc/login.defs, using default");
-                return defaultUidMin;
-            }
+            return result;
         }
     }
-    OsConfigLogWarning(context.GetLogHandle(), "UID_MIN not found in /etc/login.defs, using default");
-    return defaultUidMin;
+    return Error("Could not get UID_MIN find value");
 }
 } // namespace ComplianceEngine

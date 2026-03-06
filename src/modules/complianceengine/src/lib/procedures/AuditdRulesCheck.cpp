@@ -227,13 +227,20 @@ Result<Status> AuditAuditdRulesCheck(const AuditAuditdRulesCheckParams& params, 
         }
     }
     auto uidMin = GetUidMin(context);
+    if (!uidMin.HasValue())
+    {
+        const int defaultUidMin = 1000;
+        uidMin = defaultUidMin;
+        OsConfigLogWarning(context.GetLogHandle(), "UID_MIN not found in /etc/login.defs, using default ");
+    }
+
     std::vector<std::pair<regex, std::string>> requiredOptions;
     for (auto option : params.requiredOptions.items)
     {
         option = TrimWhiteSpaces(option);
         if (!option.empty())
         {
-            option = ReplaceAuidPlaceholder(option, uidMin);
+            option = ReplaceAuidPlaceholder(option, uidMin.Value());
             try
             {
                 requiredOptions.push_back(std::make_pair(regex(option, std::regex_constants::icase | std::regex_constants::extended), option));
