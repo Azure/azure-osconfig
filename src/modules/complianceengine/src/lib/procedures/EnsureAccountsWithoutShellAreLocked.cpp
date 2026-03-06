@@ -16,8 +16,10 @@ namespace ComplianceEngine
 using std::set;
 using std::string;
 
-Result<Status> AuditEnsureAccountsWithoutShellAreLocked(IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccountsWithoutShellAreLockedParams& params, IndicatorsTree& indicators,
+    ContextInterface& context)
 {
+    (void)params;
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
