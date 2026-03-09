@@ -1509,7 +1509,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 == strcmp(userList[i].username, g_root)) && (0 == userList[i].userId) && (0 != userList[i].groupId))
+            if ((userList[i].username && (0 == strcmp(userList[i].username, g_root))) && (0 == userList[i].userId) && (0 != userList[i].groupId))
             {
                 OsConfigLogInfo(log, "CheckDefaultRootAccountuserIsGidZero: root user '%s' (%u) has default gid %u instead of gid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
