@@ -4,7 +4,7 @@
 
 namespace ComplianceEngine
 {
-Result<int> GetUidMin(ContextInterface& context)
+Result<unsigned int> GetUidMin(ContextInterface& context)
 {
     const std::string prefix = "UID_MIN ";
     auto loginDefsResult = context.GetFileContents("/etc/login.defs");
@@ -22,7 +22,7 @@ Result<int> GetUidMin(ContextInterface& context)
         {
             auto value = line.substr(prefix.length());
             value = TrimWhiteSpaces(value);
-            auto result = TryStringToInt(value);
+            auto result = TryStringToUint(value);
             if (!result.HasValue())
             {
                 OsConfigLogWarning(context.GetLogHandle(), "Invalid UID_MIN value in /etc/login.defs %s", result.Error().message.c_str());

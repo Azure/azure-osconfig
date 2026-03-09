@@ -53,4 +53,18 @@ Result<int> TryStringToInt(const std::string& str, int base)
         return Error("Integer value out of range: " + str, ERANGE);
     }
 }
+Result<unsigned int> TryStringToUint(const std::string& str, int base)
+{
+    auto try_int = TryStringToInt(str, base);
+    if (!try_int.HasValue())
+    {
+        return try_int.Error();
+    }
+    if (try_int.Value() < 0)
+    {
+        return Error("Invalid integer value (should be positive): " + try_int.Value());
+    }
+
+    return Result<unsigned int>(try_int.Value());
+}
 } // namespace ComplianceEngine

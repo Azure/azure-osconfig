@@ -11,6 +11,7 @@ namespace ComplianceEngine
 std::string EscapeForShell(const std::string& str);
 std::string TrimWhiteSpaces(const std::string& str);
 Result<int> TryStringToInt(const std::string& str, int base = 10);
+Result<unsigned int> TryStringToUint(const std::string& str, int base = 10);
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_STRING_TOOLS_H

@@ -1,8 +1,7 @@
-#include "Result.h"
-
 #include <ContextInterface.h>
+#include <Result.h>
 
 namespace ComplianceEngine
 {
-Result<int> GetUidMin(ContextInterface& context);
+Result<unsigned int> GetUidMin(ContextInterface& context);
 } // namespace ComplianceEngine
