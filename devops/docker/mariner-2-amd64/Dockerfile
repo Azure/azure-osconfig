@@ -23,3 +23,12 @@ RUN tdnf install -y \
 
 RUN tdnf upgrade -y && \
     tdnf clean all
+
+COPY .  /src
+WORKDIR /src
+RUN ls -al
+RUN ls -al external || true
+RUN ls -al external/vcpkg || true
+RUN cd external/vcpkg && sed -e "s/\"2\\.7\\.4\"/\"1\\.0\\.0\"/g" -i scripts/vcpkg-tools.json && ./bootstrap-vcpkg.sh
+RUN cd src && ../external/vcpkg/vcpkg install
+
