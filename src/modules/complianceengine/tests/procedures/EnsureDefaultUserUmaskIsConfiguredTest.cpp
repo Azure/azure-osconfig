@@ -290,7 +290,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, Precedence_1)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 2);
+    ASSERT_EQ(root->indicators.size(), (size_t)2);
     EXPECT_EQ(root->indicators[0].message, string("umask is incorrectly set in ") + filename1);
     EXPECT_EQ(root->indicators[1].message, string("umask is correctly set in ") + filename2);
 }
@@ -306,7 +306,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, Precedence_2)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 1);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("umask is correctly set in ") + filename1);
 }
 
@@ -320,7 +320,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_PAM_1)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 1);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("umask is correctly set in ") + filename);
 }
 
@@ -334,7 +334,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, CorrectValue_PAM_2)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 1);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("umask is correctly set in ") + filename);
 }
 
@@ -348,7 +348,7 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_PAM_1)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 1);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("umask is incorrectly set in ") + filename);
 }
 
@@ -362,6 +362,6 @@ TEST_F(EnsureDefaultUserUmaskIsConfiguredTest, IncorrectValue_PAM_2)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 1);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("umask is incorrectly set in ") + filename);
 }

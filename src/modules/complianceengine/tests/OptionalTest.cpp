@@ -113,7 +113,7 @@ TEST_F(OptionalTest, ArrowOperator)
 {
     auto opt = Optional<std::string>("foo");
     ASSERT_TRUE(opt.HasValue());
-    ASSERT_EQ(opt->size(), 3);
+    ASSERT_EQ(opt->size(), (size_t)3);
     opt->append("bar");
-    ASSERT_EQ(opt->size(), 6);
+    ASSERT_EQ(opt->size(), (size_t)6);
 }

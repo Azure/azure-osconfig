@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+add_compile_options("-Wno-unused-const-variable")
+
 project(compliancetests)
 
 include(GoogleTest)
