@@ -47,7 +47,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoSpecialFiles)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)(size_t)1);
+    ASSERT_GE(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is not set"));
 }

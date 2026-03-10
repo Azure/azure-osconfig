@@ -55,7 +55,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_ValidTCPPorts_ReturnsCorrectPorts)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), (size_t)(size_t)2);
+    ASSERT_EQ(ports.size(), (size_t)2);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_STREAM, "127.0.0.1", 3306);
