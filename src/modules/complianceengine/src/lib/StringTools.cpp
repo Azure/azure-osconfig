@@ -62,7 +62,7 @@ Result<unsigned int> TryStringToUint(const std::string& str, int base)
     }
     if (try_int.Value() < 0)
     {
-        return Error("Invalid integer value (should be positive): " + try_int.Value());
+        return Error("Invalid integer value (should be positive): " + std::to_string(try_int.Value()));
     }
 
     return Result<unsigned int>(try_int.Value());
