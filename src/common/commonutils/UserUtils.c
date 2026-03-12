@@ -409,6 +409,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
             }
 
             endpwent();
+
+            *size = i;
         }
         else
         {
@@ -889,7 +891,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     char* command = NULL;
     int status = 0;
 
-    if (NULL == user)
+    if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "RemoveUser: invalid argument");
         OSConfigTelemetryStatusTrace("user", EINVAL);
