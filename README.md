@@ -93,6 +93,7 @@ Source | Destination | Description
 [src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
 [src/modules/complianceengine/](src/modules/complianceengine/) | /usr/lib/osconfig/complianceengine.so | The ComplianceEngine module binary
+[src/common/telemetry/](src/common/telemetry/) | /var/lib/osconfig/telemetry | The OSConfig telemetry directory
 
 ### Enable and start OSConfig for the first time
 
