@@ -22,7 +22,7 @@ TEST_F(RegexFallbackTest, NoMatch)
     bool result = regex_search(target, match, r);
     EXPECT_FALSE(result);
     ASSERT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
 }
 
 TEST_F(RegexFallbackTest, Match)
@@ -36,9 +36,9 @@ TEST_F(RegexFallbackTest, Match)
     bool result = regex_search(target, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)1);
+    ASSERT_EQ(match.size(), 1u);
     EXPECT_EQ(match[0].matched, true);
-    EXPECT_EQ(match[0].length(), (size_t)4);
+    EXPECT_EQ(match[0].length(), 4u);
 }
 
 TEST_F(RegexFallbackTest, MatchWithSubMatches_1)
@@ -50,7 +50,7 @@ TEST_F(RegexFallbackTest, MatchWithSubMatches_1)
     bool result = regex_search(target, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)2);
+    ASSERT_EQ(match.size(), 2u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), std::strlen("test"));
     EXPECT_EQ(match[1].matched, true);
@@ -66,7 +66,7 @@ TEST_F(RegexFallbackTest, MatchWithSubMatches_2)
     bool result = regex_search(target, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)3);
+    ASSERT_EQ(match.size(), 3u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), std::strlen("test string"));
     EXPECT_EQ(match[1].matched, true);
@@ -84,7 +84,7 @@ TEST_F(RegexFallbackTest, MatchWithSubMatches_3)
     bool result = regex_search(target, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)4);
+    ASSERT_EQ(match.size(), 4u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), std::strlen("test string"));
     EXPECT_EQ(match[1].matched, true);
@@ -94,7 +94,7 @@ TEST_F(RegexFallbackTest, MatchWithSubMatches_3)
     EXPECT_EQ(match[3].matched, true);
     EXPECT_EQ(match[3].length(), std::strlen("string"));
     EXPECT_EQ(match[100].matched, false);
-    EXPECT_EQ(match[100].length(), (size_t)0);
+    EXPECT_EQ(match[100].length(), 0u);
 }
 
 TEST_F(RegexFallbackTest, RangeLoop)
@@ -136,7 +136,7 @@ TEST_F(RegexFallbackTest, RegexMatch_1)
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
     EXPECT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
     EXPECT_TRUE(match.empty());
 }
 
@@ -149,7 +149,7 @@ TEST_F(RegexFallbackTest, RegexMatch_2)
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
     EXPECT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
     EXPECT_TRUE(match.empty());
 }
 

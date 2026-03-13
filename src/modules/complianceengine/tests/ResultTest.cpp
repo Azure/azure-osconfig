@@ -112,7 +112,7 @@ TEST_F(ResultTest, ArrowOperator)
 {
     auto result = Result<std::string>("foo");
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result->size(), (size_t)3);
+    ASSERT_EQ(result->size(), 3u);
     result->append("bar");
-    ASSERT_EQ(result->size(), (size_t)6);
+    ASSERT_EQ(result->size(), 6u);
 }

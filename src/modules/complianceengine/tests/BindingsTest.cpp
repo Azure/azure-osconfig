@@ -68,7 +68,7 @@ TEST_F(BindingsTest, ValidInput_1)
     EXPECT_EQ(params.patternValue.GetPattern(), string("te.*"));
     EXPECT_TRUE(regex_match("test", params.patternValue.GetRegex()));
     EXPECT_EQ(params.octalValue, 0755u);
-    ASSERT_EQ(params.separatedValue.items.size(), (size_t)3);
+    ASSERT_EQ(params.separatedValue.items.size(), 3u);
     EXPECT_EQ(params.separatedValue.items[0], "foo");
     EXPECT_EQ(params.separatedValue.items[1], "bar");
     EXPECT_EQ(params.separatedValue.items[2], "baz");
@@ -117,7 +117,7 @@ TEST_F(BindingsTest, MissingValues_1)
     EXPECT_EQ(params.patternValue.GetPattern(), string("te.*"));
     EXPECT_TRUE(regex_match("test", params.patternValue.GetRegex()));
     EXPECT_EQ(params.octalValue, 0755u);
-    ASSERT_EQ(params.separatedValue.items.size(), (size_t)3);
+    ASSERT_EQ(params.separatedValue.items.size(), 3u);
     EXPECT_EQ(params.separatedValue.items[0], "foo");
     EXPECT_EQ(params.separatedValue.items[1], "bar");
     EXPECT_EQ(params.separatedValue.items[2], "baz");
@@ -176,7 +176,7 @@ TEST_F(BindingsTest, InvalidValues_1)
     EXPECT_EQ(params.patternValue.GetPattern(), string("te.*"));
     EXPECT_TRUE(regex_match("test", params.patternValue.GetRegex()));
     EXPECT_EQ(params.octalValue, 0755u);
-    ASSERT_EQ(params.separatedValue.items.size(), (size_t)3);
+    ASSERT_EQ(params.separatedValue.items.size(), 3u);
     EXPECT_EQ(params.separatedValue.items[0], "foo");
     EXPECT_EQ(params.separatedValue.items[1], "bar");
     EXPECT_EQ(params.separatedValue.items[2], "baz");

@@ -47,7 +47,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoSpecialFiles)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is not set"));
 }
@@ -62,7 +62,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, IncorrectValue)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is set to an incorrect value in ") + path);
 }
@@ -77,7 +77,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoReadonly)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is not readonly in ") + path);
 }
@@ -92,7 +92,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, NoExport)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is not exported in ") + path);
 }
@@ -107,7 +107,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, ProperlyConfigured)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::Compliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT variable is properly defined"));
 }
@@ -122,7 +122,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, MultipleEntries)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is set multiple times in ") + path);
 }
@@ -139,7 +139,7 @@ TEST_F(EnsureDefaultShellTimeoutIsConfiguredTest, MultipleEntriesInDifferentFile
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_GE(root->indicators.size(), (size_t)1);
+    ASSERT_GE(root->indicators.size(), 1u);
     EXPECT_EQ(root->indicators.back().status, Status::NonCompliant);
     EXPECT_EQ(root->indicators.back().message, string("TMOUT is set in multiple locations"));
 }

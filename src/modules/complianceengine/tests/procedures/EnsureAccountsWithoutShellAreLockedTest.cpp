@@ -156,7 +156,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_1)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 2);
+    ASSERT_EQ(root->indicators.size(), 2u);
     EXPECT_EQ(root->indicators[0].message, string("User 9999 does not have a valid shell, but the account is locked"));
     EXPECT_EQ(root->indicators[1].message, string("All non-root users without a login shell are locked"));
 }
@@ -173,7 +173,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_2)
 
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
-    ASSERT_EQ(root->indicators.size(), 2);
+    ASSERT_EQ(root->indicators.size(), 2u);
     EXPECT_EQ(root->indicators[0].message, string("User 9999 does not have a valid shell, but the account is locked"));
     EXPECT_EQ(root->indicators[1].message, string("All non-root users without a login shell are locked"));
 }

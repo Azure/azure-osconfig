@@ -21,7 +21,7 @@ TEST_F(RegexTest, NoMatch)
     bool result = regex_search(input, match, r);
     EXPECT_FALSE(result);
     ASSERT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
 }
 
 TEST_F(RegexTest, Match)
@@ -35,9 +35,9 @@ TEST_F(RegexTest, Match)
     bool result = regex_search(input, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)1);
+    ASSERT_EQ(match.size(), 1u);
     EXPECT_EQ(match[0].matched, true);
-    EXPECT_EQ(match[0].length(), (ssize_t)4);
+    EXPECT_EQ(match[0].length(), 4u);
 }
 
 TEST_F(RegexTest, MatchWithSubMatches_1)
@@ -49,7 +49,7 @@ TEST_F(RegexTest, MatchWithSubMatches_1)
     bool result = regex_search(input, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)2);
+    ASSERT_EQ(match.size(), 2u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), (ssize_t)std::strlen("test"));
     EXPECT_EQ(match[1].matched, true);
@@ -65,7 +65,7 @@ TEST_F(RegexTest, MatchWithSubMatches_2)
     bool result = regex_search(input, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)3);
+    ASSERT_EQ(match.size(), 3u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), (ssize_t)std::strlen("test string"));
     EXPECT_EQ(match[1].matched, true);
@@ -83,7 +83,7 @@ TEST_F(RegexTest, MatchWithSubMatches_3)
     bool result = regex_search(input, match, r);
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
-    ASSERT_EQ(match.size(), (size_t)4);
+    ASSERT_EQ(match.size(), 4u);
     EXPECT_EQ(match[0].matched, true);
     EXPECT_EQ(match[0].length(), (ssize_t)std::strlen("test string"));
     EXPECT_EQ(match[1].matched, true);
@@ -135,7 +135,7 @@ TEST_F(RegexTest, RegexMatch_1)
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
     EXPECT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
     EXPECT_TRUE(match.empty());
 }
 
@@ -148,7 +148,7 @@ TEST_F(RegexTest, RegexMatch_2)
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
     EXPECT_TRUE(match.ready());
-    EXPECT_EQ(match.size(), (size_t)0);
+    EXPECT_EQ(match.size(), 0u);
     EXPECT_TRUE(match.empty());
 }
 
