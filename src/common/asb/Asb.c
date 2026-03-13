@@ -5033,7 +5033,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         // For telemetry:
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
-        OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
+
+        if (0 != status)
+        {
+            OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
+        }
     }
 
     return status;
@@ -6022,7 +6026,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             // For telemetry:
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
-            OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
+
+            if (0 != status)
+            {
+                OSConfigTelemetryRuleComplete(componentName, objectName, status, GetPerfClockTime(&perfClock, log));
+            }
         }
     }
 
