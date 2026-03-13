@@ -274,7 +274,7 @@ TEST_F(EnsureLogfileAccessTest, RemediateIncorrectPermissions)
     ASSERT_EQ(stat(filePath.c_str(), &statInfo), 0);
 
     // Check that mask is now 640
-    EXPECT_EQ(statInfo.st_mode & 0777, 0640);
+    EXPECT_EQ(statInfo.st_mode & 0777, 0640u);
     // Owner should be root(0) or syslog(101)
     EXPECT_TRUE(statInfo.st_uid == 0 || statInfo.st_uid == 101);
     // Group should be root(0) or adm(4)
@@ -335,7 +335,7 @@ TEST_F(EnsureLogfileAccessTest, RemediateMultipleFiles)
         std::string filePath = testDir + "/" + file;
         struct stat statInfo;
         ASSERT_EQ(stat(filePath.c_str(), &statInfo), 0);
-        EXPECT_EQ(statInfo.st_mode & 0777, 0640);
+        EXPECT_EQ(statInfo.st_mode & 0777, 0640u);
     }
 }
 
@@ -362,7 +362,7 @@ TEST_F(EnsureLogfileAccessTest, RemediateIgnoresSpecialFiles)
     // Group should be root(0) or adm(4)
     EXPECT_TRUE(statInfo.st_gid == 0 || statInfo.st_gid == 4);
     // Mask should be 640
-    EXPECT_EQ(statInfo.st_mode & 0777, 0640);
+    EXPECT_EQ(statInfo.st_mode & 0777, 0640u);
 
     // Verify symlink and directory are unchanged
     std::string linkPath = testDir + "/link.log";
