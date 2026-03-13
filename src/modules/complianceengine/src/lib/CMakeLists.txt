@@ -159,6 +159,7 @@ add_library(complianceenginelib STATIC
     Result.cpp
     StringTools.cpp
     SystemdCatConfig.cpp
+    Users.cpp
     UsersIterator.cpp
     ${PROCEDURES}
     )

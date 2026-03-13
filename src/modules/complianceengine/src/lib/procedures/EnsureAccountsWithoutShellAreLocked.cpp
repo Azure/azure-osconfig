@@ -7,6 +7,7 @@
 #include <PasswordEntriesIterator.h>
 #include <Result.h>
 #include <Telemetry.h>
+#include <Users.h>
 #include <UsersIterator.h>
 #include <set>
 #include <shadow.h>
@@ -16,8 +17,15 @@ namespace ComplianceEngine
 using std::set;
 using std::string;
 
-Result<Status> AuditEnsureAccountsWithoutShellAreLocked(IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccountsWithoutShellAreLockedParams& params, IndicatorsTree& indicators,
+    ContextInterface& context)
 {
+    Result<unsigned int> uidMin = Error("Uninitialised UID_MIN");
+    if (params.skip_below_uid_min.HasValue() && params.skip_below_uid_min.Value())
+    {
+        uidMin = GetUidMin(context);
+    }
+
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -66,6 +74,31 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(IndicatorsTree& indicato
         if (0 == strcmp(user.pw_name, "root"))
         {
             continue;
+        }
+        bool shouldSkip = false;
+        if (params.excludeUsers.HasValue())
+        {
+            for (const auto& excludeUser : params.excludeUsers->items)
+            {
+                if (0 == strcmp(user.pw_name, excludeUser.c_str()))
+                {
+                    OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's on exclude list ", user.pw_name);
+                    shouldSkip = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSkip)
+        {
+            continue;
+        }
+        if (params.skip_below_uid_min && uidMin.HasValue())
+        {
+            if (user.pw_uid < uidMin.Value())
+            {
+                OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's id %d is lower than UID_MIN %d", user.pw_name, user.pw_uid, uidMin.Value());
+                continue;
+            }
         }
 
         if (lockedUsers.find(user.pw_name) == lockedUsers.end())
