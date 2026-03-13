@@ -12,7 +12,6 @@ namespace ComplianceEngine
 
 struct AuditEnsureAccountsWithoutShellAreLockedParams
 {
-
     /// List of users to be excluded from check
     Optional<Separated<std::string, ','>> excludeUsers;
     /// Parse /etc/login.defs and skip users with uid below UID_MIN
