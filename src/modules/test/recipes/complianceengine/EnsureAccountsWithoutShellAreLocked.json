@@ -10,7 +10,6 @@
     "Payload": {
       "audit": {
         "EnsureAccountsWithoutShellAreLocked": {
-            "skip_below_uid_min": "false"
         }
       }
     }

@@ -21,7 +21,7 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccount
     ContextInterface& context)
 {
     Result<unsigned int> uidMin = Error("Uninitazlied UID_MIN");
-    if (params.skip_below_uid_min)
+    if (params.skip_below_uid_min.HasValue() && params.skip_below_uid_min)
     {
         uidMin = GetUidMin(context);
     }

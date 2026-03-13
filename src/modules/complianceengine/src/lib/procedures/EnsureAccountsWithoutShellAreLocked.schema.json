@@ -12,9 +12,7 @@
           "properties": {
             "EnsureAccountsWithoutShellAreLocked": {
               "type": "object",
-              "required": [
-                "skip_below_uid_min"
-              ],
+              "required": [],
               "additionalProperties": false,
               "properties": {
                 "excludeUsers": {
