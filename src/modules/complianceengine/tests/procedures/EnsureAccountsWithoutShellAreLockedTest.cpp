@@ -44,15 +44,21 @@ protected:
     {
     }
 
-    string CreateTestShadowFile(string username, string password)
+    string CreateShadowEntry(string username, string password)
     {
         auto content = std::move(username);
         content += ":" + password;
         content += ":::::::";
+        return content;
+    }
+
+    string CreateTestShadowFile(string username, string password)
+    {
+        auto content = CreateShadowEntry(username, password);
         return mContext.MakeTempfile(std::move(content));
     }
 
-    string CreateTestPasswdFile(string username, string password, string shell)
+    string CreatePasswordEntry(string username, string password, string shell)
     {
         auto content = std::move(username);
         content += ":" + password;
@@ -60,6 +66,11 @@ protected:
         content += ":" + std::to_string(9999);
         content += ":::";
         content += shell;
+        return content;
+    }
+    string CreateTestPasswdFile(string username, string password, string shell)
+    {
+        auto content = CreatePasswordEntry(username, password, shell);
         return mContext.MakeTempfile(std::move(content));
     }
 };
@@ -83,6 +94,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, NoEtcPasswdFile)
 
 TEST_F(EnsureAccountsWithoutShellAreLockedTest, ValidShell_RegularPassword)
 {
+
     auto filename = CreateTestShadowFile("testuser", "$y$");
     mContext.SetSpecialFilePath("/etc/shadow", filename);
     AuditEnsureAccountsWithoutShellAreLockedParams params;
@@ -267,5 +279,33 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, SkipTestUser)
     const auto* root = mIndicators.GetRootNode();
     ASSERT_NE(nullptr, root);
     ASSERT_EQ(root->indicators.size(), 1u);
+    EXPECT_EQ(root->indicators[0].message, string("All non-root users without a login shell are locked"));
+}
+
+TEST_F(EnsureAccountsWithoutShellAreLockedTest, ExcludeTwoUsers)
+{
+    // auto filename = CreateTestShadowFile("testuser", "$y$");
+    auto user1 = CreateShadowEntry("u,ser1", "$y$");
+    auto user2 = CreateShadowEntry("us,er2", "$y$");
+    auto content = user1 + "\n" + user2;
+    auto filename = mContext.MakeTempfile(std::move(content));
+    mContext.SetSpecialFilePath("/etc/shadow", filename);
+
+    // filename = CreateTestPasswdFile("user1", "$y$", "/bin/x");
+    user1 = CreatePasswordEntry("u,ser1", "$y$", "/bin/x");
+    user2 = CreatePasswordEntry("us,er2", "$y$", "/bin/x");
+    content = user1 + "\n" + user2;
+    filename = mContext.MakeTempfile(std::move(content));
+    mContext.SetSpecialFilePath("/etc/passwd", filename);
+
+    AuditEnsureAccountsWithoutShellAreLockedParams params;
+    params.excludeUsers = {{"u,ser1", "us,er2"}};
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    const auto* root = mIndicators.GetRootNode();
+    ASSERT_NE(nullptr, root);
+    ASSERT_EQ(root->indicators.size(), (size_t)1);
     EXPECT_EQ(root->indicators[0].message, string("All non-root users without a login shell are locked"));
 }
