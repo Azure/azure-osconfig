@@ -1,15 +1,15 @@
-ARG CMAKE_VERSION=v3.21.7
+ARG CMAKE_VERSION=v3.30.1
 ARG GIT_VERSION=2.14.0
 
 # ubi7 images are missing RPM devtools, copy from centos7
 FROM centos:centos7 AS centos
 
 RUN rm /etc/yum.repos.d/*.repo
-COPY ./centos.repo /etc/yum.repos.d/centos.repo
+COPY --from=dockerfiledir ./centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-COPY ./centos.repo /etc/yum.repos.d/centos.repo
+COPY --from=dockerfiledir ./centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yumdownloader rpm-build elfutils
 
@@ -73,3 +73,8 @@ RUN yum install -y /elfutils.rpm && rm -f /elfutils.rpm
 
 # rpm-build
 RUN yum install -y /rpm-build.rpm && rm -f /rpm-build.rpm
+
+
+COPY .  /src
+WORKDIR /src
+RUN (cd external/vcpkg && ./bootstrap-vcpkg.sh) && (cd src && ../external/vcpkg/vcpkg install) && rm -rf /src

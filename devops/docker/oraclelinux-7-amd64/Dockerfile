@@ -1,7 +1,7 @@
 # TODO: Add mcr.io retagged images
 FROM oraclelinux:7
 
-ARG CMAKE_VERSION=v3.21.7
+ARG CMAKE_VERSION=v3.30.1
 ARG GIT_VERSION=2.14.0
 
 # Install dev repos
@@ -40,3 +40,7 @@ RUN cd git-${GIT_VERSION} && \
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b ${CMAKE_VERSION}
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
+
+COPY .  /src
+WORKDIR /src
+RUN (cd external/vcpkg && ./bootstrap-vcpkg.sh) && (cd src && ../external/vcpkg/vcpkg install) && rm -rf /src
