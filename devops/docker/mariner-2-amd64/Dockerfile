@@ -26,6 +26,4 @@ RUN tdnf upgrade -y && \
 
 COPY .  /src
 WORKDIR /src
-RUN cd external/vcpkg && ./bootstrap-vcpkg.sh
-RUN cd src && ../external/vcpkg/vcpkg install
-
+RUN (cd external/vcpkg && ./bootstrap-vcpkg.sh) && (cd src && ../external/vcpkg/vcpkg install) && rm -rf /src

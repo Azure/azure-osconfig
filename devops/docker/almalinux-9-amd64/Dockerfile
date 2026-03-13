@@ -25,8 +25,8 @@ WORKDIR /git
 RUN git clone https://github.com/Kitware/CMake --recursive -b ${CMAKE_VERSION}
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
 
+
+# Run vcpkg to install build depends
 COPY .  /src
 WORKDIR /src
-RUN cd external/vcpkg && ./bootstrap-vcpkg.sh
-RUN cd src && ../external/vcpkg/vcpkg install
-
+RUN (cd external/vcpkg && ./bootstrap-vcpkg.sh) && (cd src && ../external/vcpkg/vcpkg install) && rm -rf /src

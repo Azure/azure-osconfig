@@ -27,6 +27,4 @@ RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm 
 
 COPY .  /src
 WORKDIR /src
-RUN cd external/vcpkg && ./bootstrap-vcpkg.sh
-RUN cd src && ../external/vcpkg/vcpkg install
-
+RUN (cd external/vcpkg && ./bootstrap-vcpkg.sh) && (cd src && ../external/vcpkg/vcpkg install) && rm -rf /src
