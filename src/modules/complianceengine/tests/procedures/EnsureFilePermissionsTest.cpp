@@ -145,9 +145,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
@@ -187,9 +187,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
@@ -229,9 +229,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
@@ -271,9 +271,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
@@ -311,9 +311,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditAllOk)
@@ -350,9 +350,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
-    ASSERT_EQ(st.st_uid, 0);
-    ASSERT_EQ(st.st_gid, 0);
-    ASSERT_EQ(st.st_mode & 0777, 0610);
+    ASSERT_EQ(st.st_uid, 0u);
+    ASSERT_EQ(st.st_gid, 0u);
+    ASSERT_EQ(st.st_mode & 0777, 0610u);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
@@ -533,9 +533,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateCollectionNonCompliantFile)
     for (const auto& file : files)
     {
         ASSERT_EQ(stat(file.c_str(), &st), 0);
-        ASSERT_EQ(st.st_uid, 0);
-        ASSERT_EQ(st.st_gid, 0);
-        ASSERT_EQ(st.st_mode & 0777, 0644);
+        ASSERT_EQ(st.st_uid, 0u);
+        ASSERT_EQ(st.st_gid, 0u);
+        ASSERT_EQ(st.st_mode & 0777, 0644u);
     }
 }
 

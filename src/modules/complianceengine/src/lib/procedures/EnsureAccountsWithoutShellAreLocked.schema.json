@@ -14,7 +14,16 @@
               "type": "object",
               "required": [],
               "additionalProperties": false,
-              "properties": {}
+              "properties": {
+                "excludeUsers": {
+                  "type": "string",
+                  "description": "List of users to be excluded from check"
+                },
+                "skip_below_uid_min": {
+                  "type": "string",
+                  "description": "Parse /etc/login.defs and skip users with uid below UID_MIN"
+                }
+              }
             }
           }
         }
