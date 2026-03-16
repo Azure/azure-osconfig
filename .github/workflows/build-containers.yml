@@ -94,7 +94,7 @@ jobs:
           tags: |
             type=sha,enable=true,priority=900,prefix=sha256-,suffix=,format=long
             type=schedule,enable=true,priority=10,prefix=date-,suffix=,pattern=nightly
-            type=raw,value=git-${{ github.event.pull_request.head.sha }}
+            type=raw,value=git-${{ github.sha }}
             type=raw,value=run-${{ github.run_number }}
 
       - name: Build and push
@@ -114,7 +114,6 @@ jobs:
           DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
           DIGEST_SHA=$(echo ${DIGEST_SHA} |  sed -e 's#^sha256:\(.*\)#@sha256:\1#')
           GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
-          GIT_LABEL=$(echo '${{ steps.build_and_push.outputs.digest }}' | jq -r '.tags [] |select (contains(":git-"))')
           jq --null-input \
           --arg distibution "${{ steps.image.outputs.distro }}" \
           --arg digest_sha "${DIGEST_SHA}" \
