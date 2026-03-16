@@ -32,6 +32,8 @@ jobs:
       containers: ${{ steps.matrix.outputs.containers }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Create build matrix
         id: matrix
@@ -54,6 +56,8 @@ jobs:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Setup image
         id: image
         run: |
@@ -97,7 +101,9 @@ jobs:
         id: build_and_push
         uses: docker/build-push-action@v3
         with:
-          context: ${{ steps.image.outputs.path }}
+          context: .
+          file: ${{ steps.image.outputs.path }}/Dockerfile
+          build-contexts: dockerfiledir=${{ steps.image.outputs.path }}
           # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
           push: true
           tags: ${{ steps.meta.outputs.tags }}
