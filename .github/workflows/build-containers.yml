@@ -111,10 +111,8 @@ jobs:
 
       - name: Save digest
         run: |
-          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":sha256-"))')
-          DIGEST_SHA=$(echo ${DIGEST_SHA} | sed -e 's#.*:sha256-\(.*\)#@sha256:\1#')
-          echo $DIGEST_SHA
           DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
+          DIGEST_SHA=$(echo ${DIGEST_SHA} |  sed -e 's#^sha256:\(.*\)#@sha256:\1#')
           GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
           jq --null-input \
           --arg distibution "${{ steps.image.outputs.distro }}" \
