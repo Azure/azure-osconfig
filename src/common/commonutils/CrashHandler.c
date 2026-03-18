@@ -77,7 +77,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
     fd = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK);
 
     // Step 3: write diagnostics if open succeeded
-    if (fd > 0)
+    if (fd >= 0)
     {
         // 3a. Human-readable crash line
         CrashWrite(fd, errorMessage);
