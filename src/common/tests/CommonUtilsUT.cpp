@@ -3265,6 +3265,12 @@ TEST_F(CommonUtilsTest, CrashHandler)
     char* contents = NULL;
     char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, true, nullptr));
+    
+    if (contents)
+    {
+        printf("=== LOG CONTENTS ===\n%s\n====================\n", contents);
+    }
+
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP last operation: TestAuditRule"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP stack trace:"));
