@@ -82,7 +82,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         struct sigaction* prev = &g_previousHandlers[sig];
         if (prev->sa_flags & SA_SIGINFO)
         {
-            if (prev->sa_sigaction && (prev->sa_sigaction != (void*)SIG_DFL) && (prev->sa_sigaction != (void*)SIG_IGN))
+            if (prev->sa_sigaction && (prev->sa_sigaction != OsConfigCrashHandler) && (prev->sa_sigaction != (void*)SIG_DFL) && (prev->sa_sigaction != (void*)SIG_IGN))
             {
                 prev->sa_sigaction(sig, info, ctx);
                 return;
@@ -104,8 +104,6 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 
 void InstallCrashHandler(const char* logFileName)
 {
-    memset(g_previousHandlers, 0, sizeof(g_previousHandlers));
-
     // Plain assignment of string constant, no memory allocation for copy
     g_logFileName = logFileName ? logFileName : DEFAULT_LOG_FILE;
 
