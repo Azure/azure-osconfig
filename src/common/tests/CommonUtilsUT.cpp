@@ -3261,7 +3261,7 @@ TEST_F(CommonUtilsTest, CrashHandler)
     // Verify [ERROR] lines appear in the log
     char* contents = NULL;
     char* result = NULL;
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
     
     if (contents)
     {
@@ -3271,5 +3271,5 @@ TEST_F(CommonUtilsTest, CrashHandler)
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
-    //unlink(m_path);
+    unlink(m_path);
 }
