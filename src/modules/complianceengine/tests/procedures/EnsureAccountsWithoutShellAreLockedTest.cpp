@@ -187,6 +187,24 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_1)
     EXPECT_EQ(root->indicators[1].message, string("All non-root users without a login shell are locked"));
 }
 
+TEST_F(EnsureAccountsWithoutShellAreLockedTest, IngnoreInvalidShellUnlockedUser)
+{
+    auto filename = CreateTestShadowFile("testuser", "*");
+    mContext.SetSpecialFilePath("/etc/shadow", filename);
+    filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
+    mContext.SetSpecialFilePath("/etc/passwd", filename);
+    AuditEnsureAccountsWithoutShellAreLockedParams params;
+    params.skip_not_valid_shells = true;
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    const auto* root = mIndicators.GetRootNode();
+    ASSERT_NE(nullptr, root);
+    ASSERT_EQ(root->indicators.size(), 1u);
+    EXPECT_EQ(root->indicators[1].message, string("All non-root users without a login shell are locked"));
+}
+
 TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_2)
 {
     auto filename = CreateTestShadowFile("testuser", "*");
