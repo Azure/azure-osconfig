@@ -643,7 +643,7 @@ TEST_F(SystemdConfigTest, BlockParameterFoundInCorrectBlock)
     params.parameter = "Restart";
     params.valueRegex = regex("^always$");
     params.file = "test.conf";
-    params.block = std::string("[Service]");
+    params.block = std::string("Service");
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -666,7 +666,7 @@ TEST_F(SystemdConfigTest, BlockParameterNotFoundInWrongBlock)
     params.parameter = "Restart";
     params.valueRegex = regex("^always$");
     params.file = "test.conf";
-    params.block = std::string("[Unit]");
+    params.block = std::string("Unit");
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -686,7 +686,7 @@ TEST_F(SystemdConfigTest, BlockParameterNotFoundInNonexistentBlock)
     params.parameter = "ExecStart";
     params.valueRegex = regex(".*");
     params.file = "test.conf";
-    params.block = std::string("[Install]");
+    params.block = std::string("Install");
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -709,7 +709,7 @@ TEST_F(SystemdConfigTest, SameParameterInDifferentBlocksWithBlockFilter)
     params.op = SystemdParameterOperator::Equal;
     params.value = std::string("stream");
     params.file = "test.conf";
-    params.block = std::string("[Socket]");
+    params.block = std::string("Socket");
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -755,7 +755,7 @@ TEST_F(SystemdConfigTest, BlockWithOperatorComparison)
     params.op = SystemdParameterOperator::GreaterOrEqual;
     params.value = std::string("1024");
     params.file = "test.conf";
-    params.block = std::string("[Service]");
+    params.block = std::string("Service");
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -778,6 +778,86 @@ TEST_F(SystemdConfigTest, ParameterWithoutBlockHeaderFoundWithoutBlockFilter)
     params.valueRegex = regex("^globalvalue$");
     params.file = "test.conf";
     // No block filter
+
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SystemdConfigTest, JournalCompressUsesPassOnNotFoundWhenOutputHasNoJournalSection)
+{
+    std::string systemdOutput = "# /etc/systemd/journald.conf\n";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+
+    SystemdParameterParams params;
+    params.parameter = "Compress";
+    params.valueRegex = regex("^yes$");
+    params.file = "journald.conf";
+    params.block = std::string("Journal");
+    params.passOnNotFound = true;
+
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SystemdConfigTest, JournalCompressUsesPassOnNotFoundWhenJournalSectionHasNoCompressLine)
+{
+    std::string systemdOutput =
+        "# /etc/systemd/journald.conf\n"
+        "[Journal]\n"
+        "Storage=auto\n";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+
+    SystemdParameterParams params;
+    params.parameter = "Compress";
+    params.valueRegex = regex("^yes$");
+    params.file = "journald.conf";
+    params.block = std::string("Journal");
+    params.passOnNotFound = true;
+
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SystemdConfigTest, JournalCompressWinsOverPassOnNotFound)
+{
+    std::string systemdOutput =
+        "# /etc/systemd/journald.conf\n"
+        "[Journal]\n"
+        "Compress=no\n";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+
+    SystemdParameterParams params;
+    params.parameter = "Compress";
+    params.valueRegex = regex("^yes$");
+    params.file = "journald.conf";
+    params.block = std::string("Journal");
+    params.passOnNotFound = true;
+
+    auto result = AuditSystemdParameter(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(SystemdConfigTest, FileParameterNotFoundButPassOnNotFound)
+{
+    std::string systemdOutput =
+        "# /etc/systemd/test.conf\n"
+        "OtherParam=value1\n"
+        "AnotherParam=value2\n";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+
+    SystemdParameterParams params;
+    params.parameter = "TestParam";
+    params.valueRegex = regex(".*");
+    params.file = "test.conf";
+    params.passOnNotFound = true;
 
     auto result = AuditSystemdParameter(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
