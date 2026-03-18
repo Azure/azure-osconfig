@@ -74,7 +74,7 @@ static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
         write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
         write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
-        backtrace_symbols_logDescriptor(frames, nFrames, logDescriptor);
+        backtrace_symbols_fd(frames, nFrames, logDescriptor);
         close(logDescriptor);
     }
 
