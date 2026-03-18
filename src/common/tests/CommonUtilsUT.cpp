@@ -3263,10 +3263,11 @@ TEST_F(CommonUtilsTest, CrashHandler)
 
     // Verify [ERROR] lines appear in the log
     char* contents = NULL;
+    char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, true, nullptr));
-    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP last operation: TestAuditRule"));
-    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP stack trace:"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP last operation: TestAuditRule"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP stack trace:"));
 
     unlink(m_path);
 }
