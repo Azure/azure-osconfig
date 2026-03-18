@@ -6,6 +6,7 @@ project(commonutils)
 add_library(commonutils STATIC
     CommandUtils.c
     ConfigUtils.c
+    CrashHandler.c
     DaemonUtils.c
     DeviceInfoUtils.c
     FileUtils.c
