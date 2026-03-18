@@ -247,7 +247,6 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     if (NULL == g_installedPackagesCache)
     {
         OsConfigLogError(log, "IsPackageInstalled: cannot check for '%s' presence without cache", packageName);
-        OSConfigTelemetryStatusTrace("g_installedPackagesCache", ENOENT);
         status = ENOENT;
     }
     else if (0 == status)
