@@ -13,10 +13,10 @@
 //    b. Write last operation line "[ERROR] OSConfig NRP last operation: <g_lastOperation>"
 //    c. Write stack trace header  "[ERROR] OSConfig NRP stack trace:"
 //    d. backtrace() into stack-allocated buffer
-//    e. backtrace_symbols_fd() -- writes frames to log fd, no malloc
-//    f. close(fd)
+//    e. backtrace_symbols_logDescriptor() -- writes frames to log logDescriptor, no malloc
+//    f. close(logDescriptor)
 // 4. Chain to previously registered handler if one exists, otherwise:
-//    signal(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
+//    signal(signal, SIG_DFL) + raise(signal) preserves core dump, never suppresses crash
 #include "Internal.h"
 
 #define EOL_TERMINATOR "\n"
@@ -28,7 +28,6 @@
 #define MSG_SIGBUS CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
 #define MSG_DEFAULT "<unknown>"
 #define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
-#define MSG_LAST_OP "[ERROR] Last operation: "
 #define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
 
 #define OSCONFIG_MAX_FRAMES 32
@@ -36,30 +35,30 @@ static struct sigaction g_previousHandlers[NSIG];
 
 static const char* g_logFileName = NULL;
 
-static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
+static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
 {
     void* frames[OSCONFIG_MAX_FRAMES] = {0};
     int nFrames = 0;
-    int fd = -1;
+    int logDescriptor = -1;
     const char* errorMessage = NULL;
 
-    if (SIGSEGV == sig)
+    if (SIGSEGV == signal)
     {
         errorMessage = MSG_SIGSEGV;
     }
-    else if (SIGFPE == sig)
+    else if (SIGFPE == signal)
     {
         errorMessage = MSG_SIGFPE;
     }
-    else if (SIGILL == sig)
+    else if (SIGILL == signal)
     {
         errorMessage = MSG_SIGILL;
     }
-    else if (SIGABRT == sig)
+    else if (SIGABRT == signal)
     {
         errorMessage = MSG_SIGABRT;
     }
-    else if (SIGBUS == sig)
+    else if (SIGBUS == signal)
     {
         errorMessage = MSG_SIGBUS;
     }
@@ -68,28 +67,25 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         errorMessage = MSG_DEFAULT;
     }
 
-    fd = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK);
+    logDescriptor = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK);
 
-    if (fd >= 0)
+    if (logDescriptor >= 0)
     {
-        write(fd, errorMessage, sizeof(errorMessage) - 1);
-        write(fd, MSG_LAST_OP, sizeof(MSG_LAST_OP) - 1);
-        write(fd, EOL_TERMINATOR, sizeof(EOL_TERMINATOR) - 1);
-        write(fd, MSG_STACK_HDR, sizeof(MSG_STACK_HDR) - 1);
+        write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+        write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
-        backtrace_symbols_fd(frames, nFrames, fd);
-        close(fd);
+        backtrace_symbols_logDescriptor(frames, nFrames, logDescriptor);
+        close(logDescriptor);
     }
 
-    if (sig < NSIG)
+    if (signal < NSIG)
     {
-        struct sigaction* prev = &g_previousHandlers[sig];
-
+        struct sigaction* prev = &g_previousHandlers[signal];
         if (prev->sa_flags & SA_SIGINFO)
         {
             if (prev->sa_sigaction && (prev->sa_sigaction != (void*)SIG_DFL) && (prev->sa_sigaction != (void*)SIG_IGN))
             {
-                prev->sa_sigaction(sig, info, ctx);
+                prev->sa_sigaction(signal, info, ctx);
                 return;
             }
         }
@@ -97,14 +93,14 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         {
             if (prev->sa_handler && (prev->sa_handler != SIG_DFL) && (prev->sa_handler != SIG_IGN))
             {
-                prev->sa_handler(sig);
+                prev->sa_handler(signal);
                 return;
             }
         }
     }
 
-    signal(sig, SIG_DFL);
-    raise(sig);
+    signal(signal, SIG_DFL);
+    raise(signal);
 }
 
 void InstallCrashHandler(const char* logFileName)
