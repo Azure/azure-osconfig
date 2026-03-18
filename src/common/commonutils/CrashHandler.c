@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 //
-// Chaining: if a previous signal handler was registered before this one, it will be invoked after this handler writes its diagnostics.
-// This allows multiple OSConfig components (each with their own log path) to all receive the crash signal and each write to their own
+// Chaining: if a previous sig handler was registered before this one, it will be invoked after this handler writes its diagnostics.
+// This allows multiple OSConfig components (each with their own log path) to all receive the crash sig and each write to their own
 // log (in chain order) before the process dies.
 //
 // On fatal signals the handler executes these steps:
-// 1. Select human-readable crash message string for the signal (compile-time literal)
+// 1. Select human-readable crash message string for the sig (compile-time literal)
 // 2. Open the component log by known path: O_APPEND | O_WRONLY | O_NONBLOCK
 // 3. If open succeeded:
 //    a. Write crash message line  e.g. "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"
@@ -16,7 +16,7 @@
 //    e. backtrace_symbols_logDescriptor() -- writes frames to log logDescriptor, no malloc
 //    f. close(logDescriptor)
 // 4. Chain to previously registered handler if one exists, otherwise:
-//    signal(signal, SIG_DFL) + raise(signal) preserves core dump, never suppresses crash
+//    sig(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
 #include "Internal.h"
 
 #define EOL_TERMINATOR "\n"
@@ -31,34 +31,34 @@
 #define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
 
 #define OSCONFIG_MAX_FRAMES 32
-static struct sigaction g_previousHandlers[NSIG];
 
+static struct sigaction g_previousHandlers[NSIG];
 static const char* g_logFileName = NULL;
 
-static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
+static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
     void* frames[OSCONFIG_MAX_FRAMES] = {0};
     int nFrames = 0;
     int logDescriptor = -1;
     const char* errorMessage = NULL;
 
-    if (SIGSEGV == signal)
+    if (SIGSEGV == sig)
     {
         errorMessage = MSG_SIGSEGV;
     }
-    else if (SIGFPE == signal)
+    else if (SIGFPE == sig)
     {
         errorMessage = MSG_SIGFPE;
     }
-    else if (SIGILL == signal)
+    else if (SIGILL == sig)
     {
         errorMessage = MSG_SIGILL;
     }
-    else if (SIGABRT == signal)
+    else if (SIGABRT == sig)
     {
         errorMessage = MSG_SIGABRT;
     }
-    else if (SIGBUS == signal)
+    else if (SIGBUS == sig)
     {
         errorMessage = MSG_SIGBUS;
     }
@@ -78,14 +78,14 @@ static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
         close(logDescriptor);
     }
 
-    if (signal < NSIG)
+    if (sig < NSIG)
     {
-        struct sigaction* prev = &g_previousHandlers[signal];
+        struct sigaction* prev = &g_previousHandlers[sig];
         if (prev->sa_flags & SA_SIGINFO)
         {
             if (prev->sa_sigaction && (prev->sa_sigaction != (void*)SIG_DFL) && (prev->sa_sigaction != (void*)SIG_IGN))
             {
-                prev->sa_sigaction(signal, info, ctx);
+                prev->sa_sigaction(sig, info, ctx);
                 return;
             }
         }
@@ -93,14 +93,14 @@ static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
         {
             if (prev->sa_handler && (prev->sa_handler != SIG_DFL) && (prev->sa_handler != SIG_IGN))
             {
-                prev->sa_handler(signal);
+                prev->sa_handler(sig);
                 return;
             }
         }
     }
 
-    sig(signal, SIG_DFL);
-    raise(signal);
+    signal(sig, SIG_DFL);
+    raise(sig);
 }
 
 void InstallCrashHandler(const char* logFileName)
@@ -115,7 +115,7 @@ void InstallCrashHandler(const char* logFileName)
     sa.sa_sigaction = OsConfigCrashHandler;
     // SA_SIGINFO provides siginfo_t (fault address) to handler
     // SA_RESETHAND is intentionally omitted as it would collapse the handler chain after the first link
-    // Re-entry is prevented naturally: the chain always terminates at signal(SIG_DFL) + raise()
+    // Re-entry is prevented naturally: the chain always terminates at sig(SIG_DFL) + raise()
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
 
