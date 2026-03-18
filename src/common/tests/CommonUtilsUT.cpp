@@ -3243,17 +3243,14 @@ TEST_F(CommonUtilsTest, CrashHandler)
         close(testFile);
     }
 
-    // Explicitly register the handler (constructor does not run in unit test context)
     InstallCrashHandler(m_path);
-
-    // Set a known operation marker
-    TraceOperation("TestAuditRule");
 
     // Fork: child causes a real crash, parent inspects the log
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
     {
+        TraceOperation("TestAuditRule");
         // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
         volatile int* null_ptr = NULL;
         *null_ptr = 0;
@@ -3271,9 +3268,9 @@ TEST_F(CommonUtilsTest, CrashHandler)
         printf("=== LOG CONTENTS ===\n%s\n====================\n", contents);
     }
 
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP last operation: TestAuditRule"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] OSConfig NRP stack trace:"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Last operation: TestAuditRule"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
     unlink(m_path);
 }

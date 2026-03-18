@@ -6,35 +6,32 @@
 // log (in chain order) before the process dies.
 //
 // On fatal signals the handler executes these steps:
-//   1. Select human-readable crash message string for the signal (compile-time literal)
-//   2. Open the component log by known path: O_APPEND | O_WRONLY | O_NONBLOCK
-//   3. If open succeeded:
-//      a. Write crash message line  e.g. "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"
-//      b. Write last operation line "[ERROR] OSConfig NRP last operation: <g_lastOperation>"
-//      c. Write stack trace header  "[ERROR] OSConfig NRP stack trace:"
-//      d. backtrace() into stack-allocated buffer
-//      e. backtrace_symbols_fd() -- writes frames to log fd, no malloc
-//      f. close(fd)
-//   4. Chain to previously registered handler if one exists, otherwise:
-//      signal(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
-
+// 1. Select human-readable crash message string for the signal (compile-time literal)
+// 2. Open the component log by known path: O_APPEND | O_WRONLY | O_NONBLOCK
+// 3. If open succeeded:
+//    a. Write crash message line  e.g. "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"
+//    b. Write last operation line "[ERROR] OSConfig NRP last operation: <g_lastOperation>"
+//    c. Write stack trace header  "[ERROR] OSConfig NRP stack trace:"
+//    d. backtrace() into stack-allocated buffer
+//    e. backtrace_symbols_fd() -- writes frames to log fd, no malloc
+//    f. close(fd)
+// 4. Chain to previously registered handler if one exists, otherwise:
+//    signal(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
 #include "Internal.h"
 
-#define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
-#define DEFAULT_OPERATION  "<unknown>"
-
 #define EOL_TERMINATOR "\n"
-#define CRASH_PREFIX "[ERROR] OSConfig NRP crash due to "
+#define CRASH_PREFIX "[ERROR] Crash due to "
 #define MSG_SIGSEGV CRASH_PREFIX "segmentation fault (SIGSEGV)"  EOL_TERMINATOR
 #define MSG_SIGFPE CRASH_PREFIX "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
 #define MSG_SIGILL CRASH_PREFIX "illegal instruction (SIGILL)" EOL_TERMINATOR
 #define MSG_SIGABRT CRASH_PREFIX "abnormal termination (SIGABRT)" EOL_TERMINATOR
 #define MSG_SIGBUS CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
+#define MSG_DEFAULT "<unknown>"
+#define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
+#define MSG_LAST_OP "[ERROR] Last operation: "
+#define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
 
-#define MSG_LAST_OP "[ERROR] OSConfig NRP last operation: "
-#define MSG_STACK_HDR "[ERROR] OSConfig NRP stack trace:" EOL_TERMINATOR
-
-#define OSCONFIG_MAX_FRAMES  32
+#define OSCONFIG_MAX_FRAMES 32
 static struct sigaction g_previousHandlers[NSIG];
 
 static const char* g_logFileName = NULL;
@@ -43,17 +40,17 @@ static const char* g_lastOperation = NULL;
 void TraceOperation(const char* operation)
 {
     // Plain assignment of string constant, no memory allocation for copy
-    g_lastOperation = operation ? operation : DEFAULT_OPERATION;
+    g_lastOperation = operation ? operation : MSG_DEFAULT;
 }
 
 static int CrashWrite(int fd, const char* s)
 {
-    return (s ? write(fd, s, strlen(s)) : write(fd, DEFAULT_OPERATION, strlen(DEFAULT_OPERATION)));
+    return (s ? write(fd, s, strlen(s)) : write(fd, MSG_DEFAULT, strlen(MSG_DEFAULT)));
 }
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
-    void* frames[OSCONFIG_MAX_FRAMES] = { 0 };
+    void* frames[OSCONFIG_MAX_FRAMES] = {0};
     int nFrames = 0;
     int fd = -1;
     const char* errorMessage = NULL;
@@ -80,7 +77,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
     }
     else
     {
-        errorMessage = DEFAULT_OPERATION;
+        errorMessage = MSG_DEFAULT;
     }
 
     fd = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK);
@@ -89,7 +86,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
     {
         CrashWrite(fd, errorMessage);
         CrashWrite(fd, MSG_LAST_OP);
-        CrashWrite(fd, g_lastOperation ? g_lastOperation : DEFAULT_OPERATION);
+        CrashWrite(fd, g_lastOperation ? g_lastOperation : MSG_DEFAULT);
         CrashWrite(fd, EOL_TERMINATOR);
         CrashWrite(fd, MSG_STACK_HDR);
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
