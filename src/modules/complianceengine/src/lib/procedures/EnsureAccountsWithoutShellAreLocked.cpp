@@ -75,7 +75,14 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccount
         {
             continue;
         }
+
         bool shouldSkip = false;
+        if (params.skip_not_valid_shells.HasValue() && params.skip_not_valid_shells.Value())
+        {
+            OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's does not have valid shell %s", user.pw_name, user.pw_shell);
+            shouldSkip = true;
+        }
+
         if (params.excludeUsers.HasValue())
         {
             for (const auto& excludeUser : params.excludeUsers->items)

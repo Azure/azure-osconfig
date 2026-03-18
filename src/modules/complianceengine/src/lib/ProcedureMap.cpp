@@ -8,8 +8,8 @@ namespace ComplianceEngine
 // AuditdRulesCheck.h:22
 const char* Bindings<AuditAuditdRulesCheckParams>::names[] = {"searchItem", "excludeOption", "requiredOptions"};
 
-// EnsureAccountsWithoutShellAreLocked.h:19
-const char* Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min"};
+// EnsureAccountsWithoutShellAreLocked.h:21
+const char* Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min", "skip_not_valid_shells"};
 
 // EnsureApparmorProfiles.h:15
 const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
