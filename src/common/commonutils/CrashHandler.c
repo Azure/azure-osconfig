@@ -69,8 +69,9 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 
     if (0 < (logDescriptor = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
     {
-        write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
-        //write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
+        ssize_t writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+        //writeResult = write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
+        UNUSED(writeResult);
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
         backtrace_symbols_fd(frames, nFrames, logDescriptor);
         close(logDescriptor);
