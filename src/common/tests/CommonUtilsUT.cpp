@@ -3244,10 +3244,10 @@ TEST_F(CommonUtilsTest, CrashHandler)
     }
 
     // Explicitly register the handler (constructor does not run in unit test context)
-    OsConfigInstallCrashHandler(m_path);
+    InstallCrashHandler(m_path);
 
     // Set a known operation marker
-    OsConfigTraceOperation("TestAuditRule");
+    TraceOperation("TestAuditRule");
 
     // Fork: child causes a real crash, parent inspects the log
     pid_t pid = fork();

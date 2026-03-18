@@ -55,7 +55,7 @@ OsConfigLogHandle GetLog(void)
 
 void __attribute__((constructor(65535))) Initialize()
 {
-    OsConfigInstallCrashHandler(LOG_FILE);
+    InstallCrashHandler(LOG_FILE);
 
     g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);
