@@ -53,8 +53,10 @@ OsConfigLogHandle GetLog(void)
     return g_log;
 }
 
-void __attribute__((constructor)) Initialize()
+void __attribute__((constructor(65535))) Initialize()
 {
+    OsConfigInstallCrashHandler(LOG_FILE);
+
     g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);
     g_payloadKey = DuplicateString(g_defaultValue);

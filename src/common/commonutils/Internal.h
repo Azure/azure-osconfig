@@ -26,6 +26,10 @@
 #include <math.h>
 #include <libgen.h>
 #include <shadow.h>
+#include <fcntl.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdint.h>
 #include <parson.h>
 #include <Logging.h>
 #include <Reasons.h>

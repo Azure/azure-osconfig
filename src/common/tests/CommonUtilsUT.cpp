@@ -3230,3 +3230,44 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
     EXPECT_FALSE(IsDaemon());
 }
+
+TEST_F(CommonUtilsTest, CrashHandler)
+{
+    // Pre-create the log file so the handler can open it
+    int testFile = -1
+
+    EXPECT_TRUE(0 < (testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644)));
+
+    if (testFile > 0)
+    {
+        close(testFile);
+    }
+
+    // Explicitly register the handler (constructor does not run in unit test context)
+    OsConfigInstallCrashHandler(m_path);
+
+    // Set a known operation marker
+    OsConfigTraceOperation("TestAuditRule");
+
+    // Fork: child causes a real crash, parent inspects the log
+    pid_t pid = fork();
+    EXPECT_EQ(0, pid);
+
+    if (0 == pid)
+    {
+        // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
+        volatile int* null_ptr = NULL;
+        *null_ptr = 0;
+        _exit(0); // never reached
+    }
+    waitpid(pid, NULL, 0);
+
+    // Verify [ERROR] lines appear in the log
+    char* contents = NULL;
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP last operation: TestAuditRule"));
+    EXPECT_NE(nullptr, strstr(contents, "[ERROR] OSConfig NRP stack trace:"));
+
+    unlink(m_path);
+}
