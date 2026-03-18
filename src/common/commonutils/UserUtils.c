@@ -481,7 +481,6 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     else if (NULL == user->username)
     {
         OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
-        OSConfigTelemetryStatusTrace("username", ENOENT);
         return ENOENT;
     }
 
