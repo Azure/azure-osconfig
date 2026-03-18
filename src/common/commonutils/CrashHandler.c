@@ -35,18 +35,6 @@
 static struct sigaction g_previousHandlers[NSIG];
 
 static const char* g_logFileName = NULL;
-static const char* g_lastOperation = NULL;
-
-void TraceOperation(const char* operation)
-{
-    // Plain assignment of string constant, no memory allocation for copy
-    g_lastOperation = operation ? operation : MSG_DEFAULT;
-}
-
-static int CrashWrite(int fd, const char* s)
-{
-    return (s ? write(fd, s, strlen(s)) : write(fd, MSG_DEFAULT, strlen(MSG_DEFAULT)));
-}
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
@@ -84,11 +72,10 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 
     if (fd >= 0)
     {
-        CrashWrite(fd, errorMessage);
-        CrashWrite(fd, MSG_LAST_OP);
-        CrashWrite(fd, g_lastOperation ? g_lastOperation : MSG_DEFAULT);
-        CrashWrite(fd, EOL_TERMINATOR);
-        CrashWrite(fd, MSG_STACK_HDR);
+        write(fd, errorMessage, sizeof(errorMessage) - 1);
+        write(fd, MSG_LAST_OP, sizeof(MSG_LAST_OP) - 1);
+        write(fd, EOL_TERMINATOR, sizeof(EOL_TERMINATOR) - 1);
+        write(fd, MSG_STACK_HDR, sizeof(MSG_STACK_HDR) - 1);
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
         backtrace_symbols_fd(frames, nFrames, fd);
         close(fd);

@@ -3250,7 +3250,6 @@ TEST_F(CommonUtilsTest, CrashHandler)
     EXPECT_NE(-1, pid);
     if (0 == pid)
     {
-        TraceOperation("TestAuditRule");
         // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
         volatile int* null_ptr = NULL;
         *null_ptr = 0;
