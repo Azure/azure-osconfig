@@ -411,7 +411,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
             else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
-                OSConfigTelemetryStatusTrace("mkdir", errno);
+                OSConfigTelemetryStatusTrace("Failed to create directory for the configuration file", errno);
                 result = result ? result : (errno ? errno : ENOENT);
             }
             else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
