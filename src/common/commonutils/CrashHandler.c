@@ -99,7 +99,7 @@ static void OsConfigCrashHandler(int signal, siginfo_t* info, void* ctx)
         }
     }
 
-    signal(signal, SIG_DFL);
+    sig(signal, SIG_DFL);
     raise(signal);
 }
 
