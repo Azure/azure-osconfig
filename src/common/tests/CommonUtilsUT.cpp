@@ -3236,7 +3236,7 @@ TEST_F(CommonUtilsTest, CrashHandler)
     // Pre-create the log file so the handler can open it
     int testFile = -1
 
-    EXPECT_TRUE(0 < (testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644)));
+    EXPECT_TRUE((0 < (testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644))) ? true : false);
 
     if (testFile > 0)
     {
