@@ -44,7 +44,7 @@ static struct sigaction g_previousHandlers[NSIG];
 static const char* g_logFileName = NULL;
 static const char* g_lastOperation = NULL;
 
-void OsConfigTraceOperation(const char* operation)
+void TraceOperation(const char* operation)
 {
     // Plain assignment of string constant, no memory allocation for copy
     g_lastOperation = operation ? operation : DEFAULT_OPERATION;
@@ -131,7 +131,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 
 // Each component that registers its own handler passes its own known log path, enabling the chain,
 // each handler writes to its own log before passing to the next.
-void OsConfigInstallCrashHandler(const char* logFileName)
+void InstallCrashHandler(const char* logFileName)
 {
     memset(g_previousHandlers, 0, sizeof(g_previousHandlers));
 
