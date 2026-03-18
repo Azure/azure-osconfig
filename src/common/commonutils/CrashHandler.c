@@ -37,7 +37,7 @@ static const char* g_logFileName = NULL;
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
-    void* frames[OSCONFIG_MAX_FRAMES] = {0};
+    void* frames[OSCONFIG_MAX_FRAMES] = {NULL};
     int nFrames = 0;
     int logDescriptor = -1;
     const char* errorMessage = NULL;
@@ -67,12 +67,10 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         errorMessage = MSG_DEFAULT;
     }
 
-    logDescriptor = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK);
-
-    if (logDescriptor >= 0)
+    if (0 < (logDescriptor = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
     {
         write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
-        write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
+        //write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
         nFrames = backtrace(frames, OSCONFIG_MAX_FRAMES);
         backtrace_symbols_fd(frames, nFrames, logDescriptor);
         close(logDescriptor);
