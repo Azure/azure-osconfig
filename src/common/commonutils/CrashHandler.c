@@ -32,8 +32,13 @@
 
 #define OSCONFIG_MAX_FRAMES 32
 
-static struct sigaction g_previousHandlers[NSIG];
-static const char* g_logFileName = NULL;
+typedef struct
+{
+    struct sigaction action;
+    const char* logFileName;
+} HandlerSlot;
+static HandlerSlot g_previousHandlers[NSIG];
+static const char* g_logFileNames[NSIG] = {NULL};
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
@@ -67,7 +72,10 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         errorMessage = MSG_DEFAULT;
     }
 
-    if (0 < (logDescriptor = open(g_logFileName ? g_logFileName : DEFAULT_LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
+    // Use the log file name stored in this signal's slot
+    const char* logFile = (sig < NSIG && g_handlerSlots[sig].logFileName) ? g_handlerSlots[sig].logFileName : DEFAULT_LOG_FILE;
+
+    if (0 < (logDescriptor = open(logFile, O_APPEND | O_WRONLY | O_NONBLOCK)))
     {
         ssize_t writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
         writeResult = write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
@@ -77,12 +85,16 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         close(logDescriptor);
     }
 
+    // Chain to previously registered handler if one exists
     if (sig < NSIG)
     {
-        struct sigaction* prev = &g_previousHandlers[sig];
+        struct sigaction* prev = &g_handlerSlots[sig].action;
         if (prev->sa_flags & SA_SIGINFO)
         {
-            if (prev->sa_sigaction && (prev->sa_sigaction != OsConfigCrashHandler) && (prev->sa_sigaction != (void*)SIG_DFL) && (prev->sa_sigaction != (void*)SIG_IGN))
+            if (prev->sa_sigaction &&
+                (prev->sa_sigaction != OsConfigCrashHandler) && //self-chain guard
+                (prev->sa_sigaction != (void*)SIG_DFL) &&
+                (prev->sa_sigaction != (void*)SIG_IGN))
             {
                 prev->sa_sigaction(sig, info, ctx);
                 return;
@@ -90,7 +102,9 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         }
         else
         {
-            if (prev->sa_handler && (prev->sa_handler != SIG_DFL) && (prev->sa_handler != SIG_IGN))
+            if (prev->sa_handler &&
+                (prev->sa_handler != SIG_DFL) &&
+                (prev->sa_handler != SIG_IGN))
             {
                 prev->sa_handler(sig);
                 return;
@@ -98,27 +112,33 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         }
     }
 
+    // No previous handler -- restore default and re-raise for core dump
     signal(sig, SIG_DFL);
     raise(sig);
 }
 
 void InstallCrashHandler(const char* logFileName)
 {
-    // Plain assignment of string constant, no memory allocation for copy
-    g_logFileName = logFileName ? logFileName : DEFAULT_LOG_FILE;
+    const char* name = logFileName ? logFileName : DEFAULT_LOG_FILE;
 
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_sigaction = OsConfigCrashHandler;
     // SA_SIGINFO provides siginfo_t (fault address) to handler
-    // SA_RESETHAND is intentionally omitted as it would collapse the handler chain after the first link
-    // Re-entry is prevented naturally: the chain always terminates at sig(SIG_DFL) + raise()
+    // SA_RESETHAND intentionally omitted -- would collapse the handler chain
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
 
-    sigaction(SIGSEGV, &sa, &g_previousHandlers[SIGSEGV]);
-    sigaction(SIGABRT, &sa, &g_previousHandlers[SIGABRT]);
-    sigaction(SIGBUS, &sa, &g_previousHandlers[SIGBUS]);
-    sigaction(SIGFPE, &sa, &g_previousHandlers[SIGFPE]);
-    sigaction(SIGILL, &sa, &g_previousHandlers[SIGILL]);
+    // For each signal: save the current log file name into the slot that is
+    // about to be displaced, then install ourselves and save the previous handler
+    g_handlerSlots[SIGSEGV].logFileName = name;
+    sigaction(SIGSEGV, &sa, &g_handlerSlots[SIGSEGV].action);
+    g_handlerSlots[SIGABRT].logFileName = name;
+    sigaction(SIGABRT, &sa, &g_handlerSlots[SIGABRT].action);
+    g_handlerSlots[SIGBUS].logFileName = name;
+    sigaction(SIGBUS, &sa, &g_handlerSlots[SIGBUS].action);
+    g_handlerSlots[SIGFPE].logFileName = name;
+    sigaction(SIGFPE, &sa, &g_handlerSlots[SIGFPE].action);
+    g_handlerSlots[SIGILL].logFileName = name;
+    sigaction(SIGILL, &sa, &g_handlerSlots[SIGILL].action);
 }
