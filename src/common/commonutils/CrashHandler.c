@@ -32,7 +32,6 @@
 
 #define OSCONFIG_MAX_FRAMES 32
 
-static struct sigaction g_previousHandlers[NSIG];
 static const char* g_logFileName = DEFAULT_LOG_FILE;
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
@@ -41,6 +40,9 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
     int nFrames = 0;
     int logDescriptor = -1;
     const char* errorMessage = NULL;
+
+    UNUSED(info);
+    UNUSED(ctx);
 
     if (SIGSEGV == sig)
     {
