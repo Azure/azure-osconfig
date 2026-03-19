@@ -3234,8 +3234,8 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 TEST_F(CommonUtilsTest, CrashHandler)
 {
     // Create the log file where the crash handler will append to
-    OsConfigLogHandle* log = nullptr;
-    EXPECT_NE(nullptr, OpenLog(m_path, nullptr);
+    OsConfigLogHandle log = nullptr;
+    EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
 
     /*
     int testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -3245,20 +3245,23 @@ TEST_F(CommonUtilsTest, CrashHandler)
         close(testFile);
     }
     */
-    // Install the crash handler for this (the parent) process
+
+    OsConfigLogInfo(log, "Installing crash handler")
     InstallCrashHandler(m_path);
 
-    // Fork: child process causes a crash, parent process inspects the log
+    OsConfigLogInfo(log, "Forking a child process that will crash")
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
     {
         // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
+        OsConfigLogInfo(log, "Forcing the crash")
         volatile int* null_ptr = NULL;
         *null_ptr = 0;
         _exit(0); // never reached
     }
     waitpid(pid, NULL, 0);
+    OsConfigLogInfo(log, "Done!")
 
     // Verify the crash handler [ERROR] lines appear in the handler log
     char* contents = NULL;
@@ -3272,6 +3275,5 @@ TEST_F(CommonUtilsTest, CrashHandler)
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
     CloseLog(&log);
-
     EXPECT_TRUE(Cleanup(m_path));
 }
