@@ -3236,10 +3236,10 @@ TEST_F(CommonUtilsTest, CrashHandler)
     OsConfigLogHandle log = nullptr;
     EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
 
-    OsConfigLogInfo(log, "Installing crash handler")
+    OsConfigLogInfo(log, "Installing the crash handler in the parent process")
     InstallCrashHandler(m_path);
 
-    OsConfigLogInfo(log, "Forking child process that will crash")
+    OsConfigLogInfo(log, "Forking the child process that will crash")
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
