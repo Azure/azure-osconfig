@@ -3257,10 +3257,7 @@ TEST_F(CommonUtilsTest, CrashHandler)
     char* contents = NULL;
     char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    if (contents)
-    {
-        printf("%s", contents);
-    }
+    printf("%s", contents);
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
