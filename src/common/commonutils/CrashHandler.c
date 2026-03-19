@@ -1,22 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-//
-// Chaining: if a previous sig handler was registered before this one, it will be invoked after this handler writes its diagnostics.
-// This allows multiple OSConfig components (each with their own log path) to all receive the crash sig and each write to their own
-// log (in chain order) before the process dies.
-//
-// On fatal signals the handler executes these steps:
-// 1. Select human-readable crash message string for the sig (compile-time literal)
-// 2. Open the component log by known path: O_APPEND | O_WRONLY | O_NONBLOCK
-// 3. If open succeeded:
-//    a. Write crash message line  e.g. "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"
-//    b. Write last operation line "[ERROR] OSConfig NRP last operation: <g_lastOperation>"
-//    c. Write stack trace header  "[ERROR] OSConfig NRP stack trace:"
-//    d. backtrace() into stack-allocated buffer
-//    e. backtrace_symbols_logDescriptor() -- writes frames to log logDescriptor, no malloc
-//    f. close(logDescriptor)
-// 4. Chain to previously registered handler if one exists, otherwise:
-//    sig(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
 #include "Internal.h"
 
 #define EOL_TERMINATOR "\n"

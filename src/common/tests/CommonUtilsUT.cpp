@@ -62,7 +62,6 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
-#if 0
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
@@ -3231,11 +3230,11 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
     EXPECT_FALSE(IsDaemon());
 }
-#endif
+
 TEST_F(CommonUtilsTest, CrashHandler)
 {
     int testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    
+
     EXPECT_TRUE(testFile > 0);
 
     if (testFile > 0)
