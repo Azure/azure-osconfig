@@ -3233,18 +3233,22 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
 TEST_F(CommonUtilsTest, CrashHandler)
 {
+    // Create the log file where the crash handler will append to
+    OsConfigLogHandle* log = nullptr;
+    EXPECT_NE(nullptr, OpenLog(m_path, nullptr);
+
+    /*
     int testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
     EXPECT_TRUE(testFile > 0);
-
     if (testFile > 0)
     {
         close(testFile);
     }
-
+    */
+    // Install the crash handler for this (the parent) process
     InstallCrashHandler(m_path);
 
-    // Fork: child causes a real crash, parent inspects the log
+    // Fork: child process causes a crash, parent process inspects the log
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
@@ -3256,7 +3260,7 @@ TEST_F(CommonUtilsTest, CrashHandler)
     }
     waitpid(pid, NULL, 0);
 
-    // Verify [ERROR] lines appear in the handler log
+    // Verify the crash handler [ERROR] lines appear in the handler log
     char* contents = NULL;
     char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
@@ -3266,5 +3270,8 @@ TEST_F(CommonUtilsTest, CrashHandler)
     }
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
-    unlink(m_path);
+
+    CloseLog(&log);
+
+    EXPECT_TRUE(Cleanup(m_path));
 }
