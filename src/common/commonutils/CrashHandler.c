@@ -77,34 +77,6 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         close(logDescriptor);
     }
 
-    // Chain to previously registered handler if one exists
-    if (sig < NSIG)
-    {
-        struct sigaction* prev = &g_previousHandlers[sig];
-        if (prev->sa_flags & SA_SIGINFO)
-        {
-            if (prev->sa_sigaction &&
-                (prev->sa_sigaction != OsConfigCrashHandler) &&
-                (prev->sa_sigaction != (void*)SIG_DFL) &&
-                (prev->sa_sigaction != (void*)SIG_IGN))
-            {
-                prev->sa_sigaction(sig, info, ctx);
-                return;
-            }
-        }
-        else
-        {
-            if (prev->sa_handler &&
-                (prev->sa_handler != SIG_DFL) &&
-                (prev->sa_handler != SIG_IGN))
-            {
-                prev->sa_handler(sig);
-                return;
-            }
-        }
-    }
-
-    // No previous handler: restore default and re-raise for core dump
     signal(sig, SIG_DFL);
     raise(sig);
 }
@@ -117,13 +89,13 @@ void InstallCrashHandler(const char* logFileName)
     memset(&sa, 0, sizeof(sa));
     sa.sa_sigaction = OsConfigCrashHandler;
     // SA_SIGINFO provides siginfo_t (fault address) to handler
-    // SA_RESETHAND intentionally omitted -- would collapse the handler chain
+    // SA_RESETHAND intentionally omitted as it would collapse the handler chain
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
 
-    sigaction(SIGSEGV, &sa, &g_previousHandlers[SIGSEGV]);
-    sigaction(SIGABRT, &sa, &g_previousHandlers[SIGABRT]);
-    sigaction(SIGBUS, &sa, &g_previousHandlers[SIGBUS]);
-    sigaction(SIGFPE, &sa, &g_previousHandlers[SIGFPE]);
-    sigaction(SIGILL, &sa, &g_previousHandlers[SIGILL]);
+    sigaction(SIGSEGV, &sa, NULL);
+    sigaction(SIGABRT, &sa, NULL);
+    sigaction(SIGBUS, &sa, NULL);
+    sigaction(SIGFPE, &sa, NULL);
+    sigaction(SIGILL, &sa, NULL);
 }

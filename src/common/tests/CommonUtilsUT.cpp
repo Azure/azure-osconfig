@@ -3234,25 +3234,16 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 #endif
 TEST_F(CommonUtilsTest, CrashHandler)
 {
-    // Pre-create the log files so the crach handlers can open them
     int testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    int testFile2 = open(m_path2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     
     EXPECT_TRUE(testFile > 0);
-    EXPECT_TRUE(testFile2 > 0);
 
     if (testFile > 0)
     {
         close(testFile);
     }
 
-    if (testFile2 > 0)
-    {
-        close(testFile2);
-    }
-
     InstallCrashHandler(m_path);
-    InstallCrashHandler(m_path2);
 
     // Fork: child causes a real crash, parent inspects the log
     pid_t pid = fork();
@@ -3266,25 +3257,15 @@ TEST_F(CommonUtilsTest, CrashHandler)
     }
     waitpid(pid, NULL, 0);
 
-    // Verify [ERROR] lines appear in the first handler log
+    // Verify [ERROR] lines appear in the handler log
     char* contents = NULL;
     char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
     if (contents)
     {
-        printf("First crash handler: %s", contents);
+        printf("%s", contents);
     }
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
     unlink(m_path);
-
-    // Verify [ERROR] lines appear in the second handler log
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
-    if (contents)
-    {
-        printf("Second crash handler: %s", contents);
-    }
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
-    unlink(m_path2);
 }
