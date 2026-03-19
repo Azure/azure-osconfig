@@ -3233,23 +3233,13 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
 TEST_F(CommonUtilsTest, CrashHandler)
 {
-    // Create the log file where the crash handler will append to
     OsConfigLogHandle log = nullptr;
     EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
-
-    /*
-    int testFile = open(m_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    EXPECT_TRUE(testFile > 0);
-    if (testFile > 0)
-    {
-        close(testFile);
-    }
-    */
 
     OsConfigLogInfo(log, "Installing crash handler")
     InstallCrashHandler(m_path);
 
-    OsConfigLogInfo(log, "Forking a child process that will crash")
+    OsConfigLogInfo(log, "Forking child process that will crash")
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
