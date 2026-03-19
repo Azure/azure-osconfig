@@ -9,38 +9,35 @@
 // 1. Select human-readable crash message string for the sig (compile-time literal)
 // 2. Open the component log by known path: O_APPEND | O_WRONLY | O_NONBLOCK
 // 3. If open succeeded:
-//    a. Write crash message line e.g. "[ERROR] Crash due to segmentation fault (SIGSEGV)"
-//    b. Write stack trace header "[ERROR] Stack trace:"
-//    c. backtrace() into stack-allocated buffer
-//    d. backtrace_symbols_fd() -- writes frames to log logDescriptor, no malloc
-//    e. close(logDescriptor)
+//    a. Write crash message line  e.g. "[ERROR] OSConfig NRP crash due to segmentation fault (SIGSEGV)"
+//    b. Write last operation line "[ERROR] OSConfig NRP last operation: <g_lastOperation>"
+//    c. Write stack trace header  "[ERROR] OSConfig NRP stack trace:"
+//    d. backtrace() into stack-allocated buffer
+//    e. backtrace_symbols_logDescriptor() -- writes frames to log logDescriptor, no malloc
+//    f. close(logDescriptor)
 // 4. Chain to previously registered handler if one exists, otherwise:
-//    signal(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
-
+//    sig(sig, SIG_DFL) + raise(sig) preserves core dump, never suppresses crash
 #include "Internal.h"
 
 #define EOL_TERMINATOR "\n"
 #define CRASH_PREFIX "[ERROR] Crash due to "
-#define MSG_SIGSEGV CRASH_PREFIX "segmentation fault (SIGSEGV)" EOL_TERMINATOR
-#define MSG_SIGFPE  CRASH_PREFIX "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
-#define MSG_SIGILL  CRASH_PREFIX "illegal instruction (SIGILL)" EOL_TERMINATOR
+#define MSG_SIGSEGV CRASH_PREFIX "segmentation fault (SIGSEGV)"  EOL_TERMINATOR
+#define MSG_SIGFPE CRASH_PREFIX "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
+#define MSG_SIGILL CRASH_PREFIX "illegal instruction (SIGILL)" EOL_TERMINATOR
 #define MSG_SIGABRT CRASH_PREFIX "abnormal termination (SIGABRT)" EOL_TERMINATOR
-#define MSG_SIGBUS  CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
+#define MSG_SIGBUS CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
 #define MSG_DEFAULT "<unknown>"
-#define DEFAULT_LOG_FILE "/var/log/osconfig_nrp.log"
+#define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
 #define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
+
 #define OSCONFIG_MAX_FRAMES 32
 
-typedef struct
-{
-    struct sigaction action;
-    const char*      logFileName;
-} HandlerSlot;
-static HandlerSlot g_previousHandlers[NSIG];
+static struct sigaction g_previousHandlers[NSIG];
+static const char* g_logFileName = DEFAULT_LOG_FILE;
 
 static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
-    void* frames[OSCONFIG_MAX_FRAMES] = { NULL };
+    void* frames[OSCONFIG_MAX_FRAMES] = {NUL };
     int nFrames = 0;
     int logDescriptor = -1;
     const char* errorMessage = NULL;
@@ -70,10 +67,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         errorMessage = MSG_DEFAULT;
     }
 
-    // Use the log file name stored in this signal's slot
-    const char* logFile = (sig < NSIG && g_previousHandlers[sig].logFileName) ? g_previousHandlers[sig].logFileName : DEFAULT_LOG_FILE;
-
-    if (0 < (logDescriptor = open(logFile, O_APPEND | O_WRONLY | O_NONBLOCK)))
+    if (0 < (logDescriptor = open(g_logFileName, O_APPEND | O_WRONLY | O_NONBLOCK)))
     {
         ssize_t writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
         writeResult = write(logDescriptor, (const void*)MSG_STACK_HDR, strlen(MSG_STACK_HDR));
@@ -86,11 +80,10 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
     // Chain to previously registered handler if one exists
     if (sig < NSIG)
     {
-        struct sigaction* prev = &g_previousHandlers[sig].action;
+        struct sigaction* prev = &g_previousHandlers[sig];
         if (prev->sa_flags & SA_SIGINFO)
         {
             if (prev->sa_sigaction &&
-                (prev->sa_sigaction != OsConfigCrashHandler) &&
                 (prev->sa_sigaction != (void*)SIG_DFL) &&
                 (prev->sa_sigaction != (void*)SIG_IGN))
             {
@@ -110,14 +103,14 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         }
     }
 
-    // No previous handler -- restore default and re-raise for core dump
+    // No previous handler: restore default and re-raise for core dump
     signal(sig, SIG_DFL);
     raise(sig);
 }
 
 void InstallCrashHandler(const char* logFileName)
 {
-    const char* name = logFileName ? logFileName : DEFAULT_LOG_FILE;
+    g_logFileName = logFileName ? logFileName : DEFAULT_LOG_FILE;
 
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
@@ -127,21 +120,9 @@ void InstallCrashHandler(const char* logFileName)
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
 
-    // Save current log file name into slot before installing new handler,
-    // then install ourselves saving the previous handler into the slot
-
-    g_previousHandlers[SIGSEGV].logFileName = name;
-    sigaction(SIGSEGV, &sa, &g_previousHandlers[SIGSEGV].action);
-
-    g_previousHandlers[SIGABRT].logFileName = name;
-    sigaction(SIGABRT, &sa, &g_previousHandlers[SIGABRT].action);
-
-    g_previousHandlers[SIGBUS].logFileName = name;
-    sigaction(SIGBUS, &sa, &g_previousHandlers[SIGBUS].action);
-
-    g_previousHandlers[SIGFPE].logFileName = name;
-    sigaction(SIGFPE, &sa, &g_previousHandlers[SIGFPE].action);
-
-    g_previousHandlers[SIGILL].logFileName = name;
-    sigaction(SIGILL, &sa, &g_previousHandlers[SIGILL].action);
+    sigaction(SIGSEGV, &sa, &g_previousHandlers[SIGSEGV]);
+    sigaction(SIGABRT, &sa, &g_previousHandlers[SIGABRT]);
+    sigaction(SIGBUS, &sa, &g_previousHandlers[SIGBUS]);
+    sigaction(SIGFPE, &sa, &g_previousHandlers[SIGFPE]);
+    sigaction(SIGILL, &sa, &g_previousHandlers[SIGILL]);
 }
