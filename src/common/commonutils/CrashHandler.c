@@ -84,6 +84,7 @@ static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
         if (prev->sa_flags & SA_SIGINFO)
         {
             if (prev->sa_sigaction &&
+                (prev->sa_sigaction != OsConfigCrashHandler) &&
                 (prev->sa_sigaction != (void*)SIG_DFL) &&
                 (prev->sa_sigaction != (void*)SIG_IGN))
             {
