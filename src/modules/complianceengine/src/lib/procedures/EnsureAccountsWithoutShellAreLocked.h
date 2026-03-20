@@ -19,6 +19,7 @@ struct AuditEnsureAccountsWithoutShellAreLockedParams
     /// Parse /etc/shells and if user does not have valid shell skip it
     Optional<bool> skip_invalid_shells = false;
 };
+
 Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccountsWithoutShellAreLockedParams& params, IndicatorsTree& indicators,
     ContextInterface& context);
 } // namespace ComplianceEngine
