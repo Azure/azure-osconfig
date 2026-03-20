@@ -27,6 +27,7 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccount
     }
 
     const auto validShells = ListValidShells(context);
+
     if (!validShells.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to get valid shells: %s", validShells.Error().message.c_str());
@@ -79,10 +80,10 @@ Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccount
         bool shouldSkip = false;
         assert(params.skip_not_valid_shells.HasValue());
         if (params.skip_not_valid_shells.Value()))
-        {
-            OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's does not have valid shell %s", user.pw_name, user.pw_shell);
-            shouldSkip = true;
-        }
+            {
+                OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's does not have valid shell %s", user.pw_name, user.pw_shell);
+                shouldSkip = true;
+            }
 
         if (params.excludeUsers.HasValue())
         {
