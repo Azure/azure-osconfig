@@ -362,7 +362,8 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
     {
         try
         {
-            valueRegexes.push_back(regex(params.value));
+            // Use case-insensitive matching because GetSshdOptions() lowercases all values from sshd -T output
+            valueRegexes.push_back(regex(params.value, std::regex_constants::icase));
         }
         catch (const regex_error& e)
         {
