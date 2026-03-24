@@ -22,6 +22,10 @@
                 "skip_below_uid_min": {
                   "type": "string",
                   "description": "Parse /etc/login.defs and skip users with uid below UID_MIN"
+                },
+                "skip_invalid_shells": {
+                  "type": "string",
+                  "description": "Parse /etc/shells and if user does not have valid shell skip it"
                 }
               }
             }
