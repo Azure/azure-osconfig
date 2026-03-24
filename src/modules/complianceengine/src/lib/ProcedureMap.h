@@ -255,9 +255,9 @@ template <>
 struct Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>
 {
     using T = AuditEnsureAccountsWithoutShellAreLockedParams;
-    static constexpr size_t size = 2;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min);
+    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min, &T::skip_invalid_shells);
 };
 
 // Defines the bindings for the AuditEnsureApparmorProfilesParams structure.
