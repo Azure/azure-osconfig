@@ -40,22 +40,22 @@ fi
 
 if [ -z "$DISTRO" ]; then
     shopt -s globstar nullglob
-    DISTROS=( "$BASEDIR"/devops/docker/**/Dockerfile )
+    DOCKERFILES=( "$BASEDIR"/devops/docker/**/Dockerfile )
 else
-    if [ ! -f "$BASEDIR/devops/docker/$DISTRO" ] ; then
-      echo "Unabel to read $BASEDIR/devops/docker/$DISTRO "
+    if [ ! -f "$BASEDIR/devops/docker/$DISTRO/Dockerfile" ] ; then
+      echo "Unabel to read $BASEDIR/devops/docker/$DISTRO/Dockerfile "
       exit 1
     fi
-    DISTROS=( "$BASEDIR/devops/docker/$DISTRO" )
+    DOCKERFILES=( "$BASEDIR/devops/docker/$DISTRO/Dockerfile" )
 fi
 
 
-for DISTRO in "${DISTROS[@]}"; do
-  DISTRO_NAME=${DISTRO%/Dockerfile}
+for DOCKERFILE in "${DOCKERFILES[@]}"; do
+  DISTRO_NAME=${DOCKERFILE%/Dockerfile}
   DISTRO_NAME=${DISTRO_NAME##${BASEDIR}/devops/docker/}
   IMGNAME=moduletest-$DISTRO_NAME:latest
   if [ -z "$NODOCKERBUIILD" ]; then
-  	docker build -t "$IMGNAME" -f "$DISTRO"  $PWD
+    docker build -t "$IMGNAME" -f "$DOCKERFILE"  $PWD
   fi
   if [ -z "$BUILDDIR" ]; then
   	BDIR="build-$DISTRO_NAME"

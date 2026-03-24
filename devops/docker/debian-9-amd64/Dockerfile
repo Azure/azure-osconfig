@@ -4,11 +4,11 @@ ARG CMAKE_VERSION=v3.30.1
 ARG DEBIAN_FRONTEND=noninteractive
 
 # debian-9 is EOL, update sources.list to use snapshot.debian.org mirrors
-RUN cat <<EOF > /etc/apt/sources.list
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20220622T000000Z stretch main
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20220622T000000Z stretch/updates main
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20220622T000000Z stretch-updates main
-EOF
+RUN printf '%s\n' \
+  'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20220622T000000Z stretch main' \
+  'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20220622T000000Z stretch/updates main' \
+  'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20220622T000000Z stretch-updates main' \
+  > /etc/apt/sources.list
 
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
