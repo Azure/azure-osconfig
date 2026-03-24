@@ -263,7 +263,6 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log);
 long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log);
 void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log);
 
-void TraceOperation(const char* operation);
 void InstallCrashHandler(const char* logFileName);
 
 #ifdef __cplusplus
