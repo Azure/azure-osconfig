@@ -16,7 +16,10 @@ struct AuditEnsureAccountsWithoutShellAreLockedParams
     Optional<Separated<std::string, ','>> excludeUsers;
     /// Parse /etc/login.defs and skip users with uid below UID_MIN
     Optional<bool> skip_below_uid_min = false;
+    /// Parse /etc/shells and if user does not have valid shell skip it
+    Optional<bool> skip_invalid_shells = false;
 };
+
 Result<Status> AuditEnsureAccountsWithoutShellAreLocked(const AuditEnsureAccountsWithoutShellAreLockedParams& params, IndicatorsTree& indicators,
     ContextInterface& context);
 } // namespace ComplianceEngine
