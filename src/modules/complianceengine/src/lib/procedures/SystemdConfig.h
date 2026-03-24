@@ -49,6 +49,9 @@ struct SystemdParameterParams
 
     /// Directory to search for config files
     Optional<std::string> dir;
+
+    /// If the value is not found return Compliant
+    Optional<bool> passOnNotFound = false;
 };
 
 Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, IndicatorsTree& indicators, ContextInterface& context);

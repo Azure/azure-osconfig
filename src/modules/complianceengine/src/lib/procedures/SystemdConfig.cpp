@@ -67,6 +67,7 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
         std::string value = line.substr(eqSign + 1);
         config[std::make_pair(currentBlock, key)] = std::make_pair(value, currentConfig);
     }
+
     return true;
 }
 } // namespace
@@ -160,7 +161,9 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
     SystemdConfigMap_t::const_iterator paramIt = config.end();
     if (params.block.HasValue())
     {
-        paramIt = config.find(std::make_pair(params.block.Value(), params.parameter));
+        auto block = params.block.Value();
+        block = "[" + block + "]";
+        paramIt = config.find(std::make_pair(block, params.parameter));
     }
     else
     {
@@ -176,10 +179,19 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
 
     if (paramIt == config.end())
     {
+
+        assert(params.passOnNotFound.HasValue());
+        if (params.passOnNotFound.Value())
+        {
+            OsConfigLogInfo(log, "Parameter '%s' not found but Compliant due to passOnNotFound==true", params.parameter.c_str());
+            return indicators.Compliant("Parameter '" + params.parameter + "' not found but Compliant due to passOnNotFound==true");
+        }
         if (params.block.HasValue())
         {
-            OsConfigLogInfo(log, "Parameter '%s' not found in block '%s'", params.parameter.c_str(), params.block->c_str());
-            return indicators.NonCompliant("Parameter '" + params.parameter + "' not found in block '" + params.block.Value() + "'");
+            auto block = params.block.Value();
+            block = "[" + block + "]";
+            OsConfigLogInfo(log, "Parameter '%s' not found in block '%s'", params.parameter.c_str(), block.c_str());
+            return indicators.NonCompliant("Parameter '" + params.parameter + "' not found in block '" + block + "'");
         }
         else
         {

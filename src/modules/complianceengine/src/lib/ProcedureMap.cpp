@@ -83,8 +83,8 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
 
-// SystemdConfig.h:52
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir"};
+// SystemdConfig.h:55
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};

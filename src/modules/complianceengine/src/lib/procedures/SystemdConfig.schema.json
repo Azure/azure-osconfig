@@ -44,6 +44,10 @@
                 "dir": {
                   "type": "string",
                   "description": "Directory to search for config files"
+                },
+                "passOnNotFound": {
+                  "type": "string",
+                  "description": "If the value is not found return Compliant"
                 }
               }
             }
