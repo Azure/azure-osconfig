@@ -505,9 +505,9 @@ template <>
 struct Bindings<SystemdParameterParams>
 {
     using T = SystemdParameterParams;
-    static constexpr size_t size = 7;
+    static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir);
+    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir, &T::passOnNotFound);
 };
 
 // Defines the bindings for the SystemdUnitStateParams structure.
