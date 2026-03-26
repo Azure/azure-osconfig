@@ -3236,22 +3236,22 @@ TEST_F(CommonUtilsTest, CrashHandler)
     OsConfigLogHandle log = nullptr;
     EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
 
-    OsConfigLogInfo(log, "Installing the crash handler in the parent process")
+    OsConfigLogInfo(log, "Installing the crash handler in the parent process");
     InstallCrashHandler(m_path);
 
-    OsConfigLogInfo(log, "Forking the child process that will crash")
+    OsConfigLogInfo(log, "Forking the child process that will crash");
     pid_t pid = fork();
     EXPECT_NE(-1, pid);
     if (0 == pid)
     {
         // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
-        OsConfigLogInfo(log, "Forcing the crash")
+        OsConfigLogInfo(log, "Forcing the crash");
         volatile int* null_ptr = NULL;
         *null_ptr = 0;
         _exit(0); // never reached
     }
     waitpid(pid, NULL, 0);
-    OsConfigLogInfo(log, "Done!")
+    OsConfigLogInfo(log, "Done!");
 
     // Verify the crash handler [ERROR] lines appear in the handler log
     char* contents = NULL;
