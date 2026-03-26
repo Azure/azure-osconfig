@@ -5,11 +5,11 @@ ARG GIT_VERSION=2.14.0
 FROM centos:centos7 AS centos
 
 RUN rm /etc/yum.repos.d/*.repo
-COPY --from=dockerfiledir ./centos.repo /etc/yum.repos.d/centos.repo
+COPY  devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-COPY --from=dockerfiledir ./centos.repo /etc/yum.repos.d/centos.repo
+COPY devops/docker/rhel-7-amd64//centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yumdownloader rpm-build elfutils
 

@@ -6,7 +6,7 @@ ARG GIT_VERSION=2.14.0
 
 RUN rm /etc/yum.repos.d/*.repo
 # Docker context is at the root of the project
-COPY --from=dockerfiledir ./centos.repo /etc/yum.repos.d/centos.repo
+COPY devops/docker/centos-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 # Install dependencies needed for Git compilation and general build
 RUN yum install -y \
