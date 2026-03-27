@@ -48,6 +48,12 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 hasFiles = true;
                 const char* fileName = entry->fts_path;
 
+                if (params.checkExistence.HasValue() && (FileExistenceCheck::NoneExist == params.checkExistence.Value()))
+                {
+                    OsConfigLogDebug(log, "File '%s' exists but should not", fileName);
+                    return indicators.NonCompliant("File '" + std::string(fileName) + "' exists but should not");
+                }
+
                 EnsureFilePermissionsParams subParams;
                 subParams.filename = fileName;
                 subParams.owner = params.owner;
@@ -105,6 +111,12 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
         OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
+    }
+
+    if (params.checkExistence.HasValue() && (FileExistenceCheck::NoneExist == params.checkExistence.Value()))
+    {
+        OsConfigLogDebug(log, "File '%s' exists but should not", params.filename.c_str());
+        return indicators.NonCompliant("File '" + params.filename + "' exists but should not");
     }
 
     if (params.owner.HasValue())

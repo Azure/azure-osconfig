@@ -10,6 +10,15 @@
 
 namespace ComplianceEngine
 {
+enum class FileExistenceCheck
+{
+    /// label: at_least_one_exists
+    AtLeastOneExists,
+
+    /// label: none_exist
+    NoneExist,
+};
+
 struct EnsureFilePermissionsParams
 {
     /// Path to the file
@@ -28,6 +37,9 @@ struct EnsureFilePermissionsParams
     /// Required octal permissions of the file - mask
     /// pattern: ^[0-7]{3,4}$
     Optional<mode_t> mask;
+
+    /// Behavior when checking file existence
+    Optional<FileExistenceCheck> checkExistence;
 };
 
 Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context);
@@ -57,6 +69,9 @@ struct EnsureFilePermissionsCollectionParams
     /// Required octal permissions of the file - mask
     /// pattern: ^[0-7]{3,4}$
     Optional<mode_t> mask;
+
+    /// Behavior when checking file existence
+    Optional<FileExistenceCheck> checkExistence;
 };
 
 Result<Status> AuditEnsureFilePermissionsCollection(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators, ContextInterface& context);

@@ -67,6 +67,17 @@ inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
     return map;
 }
 
+// Maps the FileExistenceCheck enum labels to the enum values.
+template <>
+inline const std::map<std::string, FileExistenceCheck>& MapEnum<FileExistenceCheck>()
+{
+    static const std::map<std::string, FileExistenceCheck> map = {
+        {"at_least_one_exists", FileExistenceCheck::AtLeastOneExists},
+        {"none_exist", FileExistenceCheck::NoneExist},
+    };
+    return map;
+}
+
 // Maps the GsettingsKeyType enum labels to the enum values.
 template <>
 inline const std::map<std::string, GsettingsKeyType>& MapEnum<GsettingsKeyType>()
@@ -295,9 +306,9 @@ template <>
 struct Bindings<EnsureFilePermissionsParams>
 {
     using T = EnsureFilePermissionsParams;
-    static constexpr size_t size = 5;
+    static constexpr size_t size = 6;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask);
+    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::checkExistence);
 };
 
 // Defines the bindings for the EnsureFilePermissionsCollectionParams structure.
@@ -305,9 +316,9 @@ template <>
 struct Bindings<EnsureFilePermissionsCollectionParams>
 {
     using T = EnsureFilePermissionsCollectionParams;
-    static constexpr size_t size = 7;
+    static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask);
+    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::checkExistence);
 };
 
 // Defines the bindings for the EnsureFilesystemOptionParams structure.
@@ -566,6 +577,9 @@ namespace std
 {
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the FileExistenceCheck enum value.
+string to_string(ComplianceEngine::FileExistenceCheck value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the GsettingsKeyType enum value.
 string to_string(ComplianceEngine::GsettingsKeyType value) noexcept(false); // NOLINT(*-identifier-naming)

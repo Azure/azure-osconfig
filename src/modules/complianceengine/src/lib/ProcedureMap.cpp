@@ -20,11 +20,11 @@ const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operat
 // EnsureFileExists.h:15
 const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 
-// EnsureFilePermissions.h:31
-const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:43
+const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "checkExistence"};
 
-// EnsureFilePermissions.h:60
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:75
+const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "checkExistence"};
 
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
@@ -161,6 +161,18 @@ namespace std
 string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::FileExistenceCheck value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::FileExistenceCheck>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

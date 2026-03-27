@@ -17,6 +17,7 @@ using ComplianceEngine::AuditEnsureFilePermissionsCollection;
 using ComplianceEngine::EnsureFilePermissionsCollectionParams;
 using ComplianceEngine::EnsureFilePermissionsParams;
 using ComplianceEngine::Error;
+using ComplianceEngine::FileExistenceCheck;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Optional;
 using ComplianceEngine::Pattern;
@@ -108,6 +109,28 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
+{
+    EnsureFilePermissionsParams params;
+    params.filename = "/this_doesnt_exist_for_sure";
+    params.checkExistence = FileExistenceCheck::NoneExist;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.checkExistence = FileExistenceCheck::NoneExist;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)

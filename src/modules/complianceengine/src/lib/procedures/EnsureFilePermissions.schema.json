@@ -38,6 +38,10 @@
                   "type": "string",
                   "description": "Required octal permissions of the file - mask",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "checkExistence": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
                 }
               }
             }
@@ -87,6 +91,10 @@
                   "type": "string",
                   "description": "Required octal permissions of the file - mask",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "checkExistence": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
                 }
               }
             }
@@ -131,6 +139,10 @@
                   "type": "string",
                   "description": "Required octal permissions of the file - mask",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "checkExistence": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
                 }
               }
             }
@@ -180,6 +192,10 @@
                   "type": "string",
                   "description": "Required octal permissions of the file - mask",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "checkExistence": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
                 }
               }
             }
