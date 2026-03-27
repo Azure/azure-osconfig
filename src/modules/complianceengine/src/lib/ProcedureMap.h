@@ -67,13 +67,16 @@ inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
     return map;
 }
 
-// Maps the FileExistenceCheck enum labels to the enum values.
+// Maps the FileExistenceBehavior enum labels to the enum values.
 template <>
-inline const std::map<std::string, FileExistenceCheck>& MapEnum<FileExistenceCheck>()
+inline const std::map<std::string, FileExistenceBehavior>& MapEnum<FileExistenceBehavior>()
 {
-    static const std::map<std::string, FileExistenceCheck> map = {
-        {"at_least_one_exists", FileExistenceCheck::AtLeastOneExists},
-        {"none_exist", FileExistenceCheck::NoneExist},
+    static const std::map<std::string, FileExistenceBehavior> map = {
+        {"at_least_one_exists", FileExistenceBehavior::AtLeastOneExists},
+        {"all_exist", FileExistenceBehavior::AllExist},
+        {"any_exist", FileExistenceBehavior::AnyExist},
+        {"none_exist", FileExistenceBehavior::NoneExist},
+        {"only_one_exists", FileExistenceBehavior::OnlyOneExists},
     };
     return map;
 }
@@ -308,7 +311,7 @@ struct Bindings<EnsureFilePermissionsParams>
     using T = EnsureFilePermissionsParams;
     static constexpr size_t size = 6;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::checkExistence);
+    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
 // Defines the bindings for the EnsureFilePermissionsCollectionParams structure.
@@ -318,7 +321,7 @@ struct Bindings<EnsureFilePermissionsCollectionParams>
     using T = EnsureFilePermissionsCollectionParams;
     static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::checkExistence);
+    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
 // Defines the bindings for the EnsureFilesystemOptionParams structure.
@@ -578,8 +581,8 @@ namespace std
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the FileExistenceCheck enum value.
-string to_string(ComplianceEngine::FileExistenceCheck value) noexcept(false); // NOLINT(*-identifier-naming)
+// Returns a string representation of the FileExistenceBehavior enum value.
+string to_string(ComplianceEngine::FileExistenceBehavior value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the GsettingsKeyType enum value.
 string to_string(ComplianceEngine::GsettingsKeyType value) noexcept(false); // NOLINT(*-identifier-naming)
