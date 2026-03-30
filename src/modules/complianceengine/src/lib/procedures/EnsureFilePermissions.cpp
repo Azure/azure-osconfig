@@ -23,6 +23,9 @@ const unsigned short displayMask = 0xFFF;
 Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators,
     ContextInterface& context, bool isRemediation)
 {
+
+    assert(params.behavior.HasValue());
+    const auto behavior = params.behavior.Value();
     auto log = context.GetLogHandle();
     auto directory = params.directory;
     // Respect explicit false; default behavior when unset is true
@@ -48,7 +51,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 hasFiles = true;
                 const char* fileName = entry->fts_path;
 
-                if (params.behavior.HasValue() && (FileExistenceBehavior::NoneExist == params.behavior.Value()))
+                if (params.behavior.HasValue() && (Behavior::NoneExist == params.behavior.Value()))
                 {
                     OsConfigLogDebug(log, "File '%s' exists but should not", fileName);
                     return indicators.NonCompliant("File '" + std::string(fileName) + "' exists but should not");
@@ -90,20 +93,21 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else
     {
-        bool mustExist = params.behavior.HasValue() &&
-                         (FileExistenceBehavior::AllExist == params.behavior.Value() || FileExistenceBehavior::OnlyOneExists == params.behavior.Value());
-        if (mustExist)
+        if (behavior == Behavior::NoneExist)
         {
-            OsConfigLogDebug(log, "No files in '%s' match the pattern but files are required", directory.c_str());
-            return indicators.NonCompliant("No matching files found in '" + directory + "'");
+            OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior).c_str());
+            return indicators.Compliant("No files in '" + directory + "' match the pattern, behavior " + std::to_string(params.behavior));
         }
-        OsConfigLogDebug(log, "No files in '%s' match the pattern", directory.c_str());
-        return indicators.Compliant("No files in '" + directory + "' match the pattern");
+
+        OsConfigLogDebug(log, "No files in '%s' match the pattern but files are required, behavior %s", directory.c_str(),
+            std::to_string(params.behavior).c_str());
+        return indicators.NonCompliant("No matching files found in '" + directory + "', behavior " + std::to_string(params.behavior));
     }
 }
 
 Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.behavior.HasValue());
     auto log = context.GetLogHandle();
     struct stat statbuf;
     if (0 != stat(params.filename.c_str(), &statbuf))
@@ -111,15 +115,13 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         const int status = errno;
         if (ENOENT == status)
         {
-            bool mustExist = params.behavior.HasValue() &&
-                             (FileExistenceBehavior::AllExist == params.behavior.Value() || FileExistenceBehavior::OnlyOneExists == params.behavior.Value());
-            if (mustExist)
+            if (params.behavior.Value() == Behavior::NoneExist)
             {
-                OsConfigLogDebug(log, "File '%s' does not exist but is required", params.filename.c_str());
-                return indicators.NonCompliant("File '" + params.filename + "' does not exist");
+                OsConfigLogDebug(log, "File '%s' does not exist, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
+                return indicators.Compliant("File '" + params.filename + "' does not exist, behavior" + std::to_string(params.behavior).c_str());
             }
-            OsConfigLogDebug(log, "File '%s' does not exist", params.filename.c_str());
-            return indicators.Compliant("File '" + params.filename + "' does not exist");
+            OsConfigLogDebug(log, "File '%s' does not exist but is required, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
+            return indicators.NonCompliant("File '" + params.filename + "' does not exist, behavior" + std::to_string(params.behavior).c_str());
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
@@ -127,10 +129,10 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
-    if (params.behavior.HasValue() && (FileExistenceBehavior::NoneExist == params.behavior.Value()))
+    if (Behavior::NoneExist == params.behavior.Value())
     {
-        OsConfigLogDebug(log, "File '%s' exists but should not", params.filename.c_str());
-        return indicators.NonCompliant("File '" + params.filename + "' exists but should not");
+        OsConfigLogDebug(log, "File '%s' exists but should not, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
+        return indicators.NonCompliant("File '" + params.filename + "' exists but should not behavior " + std::to_string(params.behavior).c_str());
     }
 
     if (params.owner.HasValue())

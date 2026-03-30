@@ -14,10 +14,10 @@
 
 using ComplianceEngine::AuditEnsureFilePermissions;
 using ComplianceEngine::AuditEnsureFilePermissionsCollection;
+using ComplianceEngine::Behavior;
 using ComplianceEngine::EnsureFilePermissionsCollectionParams;
 using ComplianceEngine::EnsureFilePermissionsParams;
 using ComplianceEngine::Error;
-using ComplianceEngine::FileExistenceBehavior;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Optional;
 using ComplianceEngine::Pattern;
@@ -115,7 +115,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
 {
     EnsureFilePermissionsParams params;
     params.filename = "/this_doesnt_exist_for_sure";
-    params.behavior = FileExistenceBehavior::NoneExist;
+    params.behavior = Behavior::NoneExist;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -126,7 +126,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
 {
     EnsureFilePermissionsParams params;
     CreateFile(params.filename, 0, 0, 0600);
-    params.behavior = FileExistenceBehavior::NoneExist;
+    params.behavior = Behavior::NoneExist;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -137,7 +137,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAllExist)
 {
     EnsureFilePermissionsParams params;
     params.filename = "/this_doesnt_exist_for_sure";
-    params.behavior = FileExistenceBehavior::AllExist;
+    params.behavior = Behavior::AllExist;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -148,7 +148,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingOnlyOneExists)
 {
     EnsureFilePermissionsParams params;
     params.filename = "/this_doesnt_exist_for_sure";
-    params.behavior = FileExistenceBehavior::OnlyOneExists;
+    params.behavior = Behavior::OnlyOneExists;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -159,7 +159,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAnyExist)
 {
     EnsureFilePermissionsParams params;
     params.filename = "/this_doesnt_exist_for_sure";
-    params.behavior = FileExistenceBehavior::AnyExist;
+    params.behavior = Behavior::AnyExist;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -170,7 +170,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsAllExist)
 {
     EnsureFilePermissionsParams params;
     CreateFile(params.filename, 0, 0, 0600);
-    params.behavior = FileExistenceBehavior::AllExist;
+    params.behavior = Behavior::AllExist;
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());

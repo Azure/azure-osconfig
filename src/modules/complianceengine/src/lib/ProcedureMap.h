@@ -67,20 +67,6 @@ inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
     return map;
 }
 
-// Maps the FileExistenceBehavior enum labels to the enum values.
-template <>
-inline const std::map<std::string, FileExistenceBehavior>& MapEnum<FileExistenceBehavior>()
-{
-    static const std::map<std::string, FileExistenceBehavior> map = {
-        {"at_least_one_exists", FileExistenceBehavior::AtLeastOneExists},
-        {"all_exist", FileExistenceBehavior::AllExist},
-        {"any_exist", FileExistenceBehavior::AnyExist},
-        {"none_exist", FileExistenceBehavior::NoneExist},
-        {"only_one_exists", FileExistenceBehavior::OnlyOneExists},
-    };
-    return map;
-}
-
 // Maps the GsettingsKeyType enum labels to the enum values.
 template <>
 inline const std::map<std::string, GsettingsKeyType>& MapEnum<GsettingsKeyType>()
@@ -202,20 +188,6 @@ inline const std::map<std::string, Operation>& MapEnum<Operation>()
     return map;
 }
 
-// Maps the Behavior enum labels to the enum values.
-template <>
-inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
-{
-    static const std::map<std::string, Behavior> map = {
-        {"all_exist", Behavior::AllExist},
-        {"any_exist", Behavior::AnyExist},
-        {"at_least_one_exists", Behavior::AtLeastOneExists},
-        {"none_exist", Behavior::NoneExist},
-        {"only_one_exists", Behavior::OnlyOneExists},
-    };
-    return map;
-}
-
 // Maps the IgnoreCase enum labels to the enum values.
 template <>
 inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
@@ -224,6 +196,20 @@ inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
         {"matchPattern statePattern", IgnoreCase::Both},
         {"matchPattern", IgnoreCase::MatchPattern},
         {"statePattern", IgnoreCase::StatePattern},
+    };
+    return map;
+}
+
+// Maps the Behavior enum labels to the enum values.
+template <>
+inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
+{
+    static const std::map<std::string, Behavior> map = {
+        {"at_least_one_exists", Behavior::AtLeastOneExists},
+        {"all_exist", Behavior::AllExist},
+        {"any_exist", Behavior::AnyExist},
+        {"none_exist", Behavior::NoneExist},
+        {"only_one_exists", Behavior::OnlyOneExists},
     };
     return map;
 }
@@ -581,9 +567,6 @@ namespace std
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the FileExistenceBehavior enum value.
-string to_string(ComplianceEngine::FileExistenceBehavior value) noexcept(false); // NOLINT(*-identifier-naming)
-
 // Returns a string representation of the GsettingsKeyType enum value.
 string to_string(ComplianceEngine::GsettingsKeyType value) noexcept(false); // NOLINT(*-identifier-naming)
 
@@ -611,11 +594,11 @@ string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*
 // Returns a string representation of the Operation enum value.
 string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the Behavior enum value.
-string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
-
 // Returns a string representation of the IgnoreCase enum value.
 string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the Behavior enum value.
+string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the PackageManagerType enum value.
 string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)

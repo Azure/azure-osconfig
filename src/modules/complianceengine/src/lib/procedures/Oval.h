@@ -1,0 +1,26 @@
+#ifndef COMPLIANCEENGINE_PROCEDURES_OVAL_H
+#define COMPLIANCEENGINE_PROCEDURES_OVAL_H
+
+// Used by EnsureFilePermissions, FileRegexMatch procedure to determine how the function should
+// interpret results.
+namespace ComplianceEngine
+{
+enum class Behavior
+{
+    /// label: at_least_one_exists
+    AtLeastOneExists,
+
+    /// label: all_exist
+    AllExist,
+
+    /// label: any_exist
+    AnyExist,
+
+    /// label: none_exist
+    NoneExist,
+
+    /// label: only_one_exists
+    OnlyOneExists,
+};
+} // namespace ComplianceEngine
+#endif // COMPLIANCEENGINE_PROCEDURES_OVAL_H

@@ -4,6 +4,7 @@
 #define COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
 
 #include <Evaluator.h>
+#include <Oval.h>
 #include <Regex.h>
 
 namespace ComplianceEngine
@@ -14,26 +15,6 @@ enum class Operation
 {
     /// label: pattern match
     Match,
-};
-
-// Used by FileRegexMatch procedure to determine how the function should
-// interpret matching results.
-enum class Behavior
-{
-    /// label: all_exist
-    AllExist,
-
-    /// label: any_exist
-    AnyExist,
-
-    /// label: at_least_one_exists
-    AtLeastOneExists,
-
-    /// label: none_exist
-    NoneExist,
-
-    /// label: only_one_exists
-    OnlyOneExists,
 };
 
 // Used by FileRegexMatch procedure to determine case sensitivity

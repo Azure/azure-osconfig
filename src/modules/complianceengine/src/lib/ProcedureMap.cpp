@@ -20,10 +20,10 @@ const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operat
 // EnsureFileExists.h:15
 const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 
-// EnsureFilePermissions.h:52
+// EnsureFilePermissions.h:36
 const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "behavior"};
 
-// EnsureFilePermissions.h:84
+// EnsureFilePermissions.h:68
 const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "behavior"};
 
 // EnsureFilesystemOption.h:31
@@ -71,7 +71,7 @@ const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_cla
 // ExecuteCommandGrep.h:43
 const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
 
-// FileRegexMatch.h:83
+// FileRegexMatch.h:64
 const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
 // LoginDefsOption.h:23
@@ -161,18 +161,6 @@ namespace std
 string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::FileExistenceBehavior value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::FileExistenceBehavior>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -290,9 +278,9 @@ string to_string(const ComplianceEngine::Operation value) noexcept(false)
     return it->second;
 }
 
-string to_string(const ComplianceEngine::Behavior value) noexcept(false)
+string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::IgnoreCase>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -302,9 +290,9 @@ string to_string(const ComplianceEngine::Behavior value) noexcept(false)
     return it->second;
 }
 
-string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
+string to_string(const ComplianceEngine::Behavior value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::IgnoreCase>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

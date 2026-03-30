@@ -5,28 +5,12 @@
 #define COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_PERMISSIONS_H
 
 #include <Evaluator.h>
+#include <Oval.h>
 #include <Pattern.h>
 #include <Separated.h>
 
 namespace ComplianceEngine
 {
-enum class FileExistenceBehavior
-{
-    /// label: at_least_one_exists
-    AtLeastOneExists,
-
-    /// label: all_exist
-    AllExist,
-
-    /// label: any_exist
-    AnyExist,
-
-    /// label: none_exist
-    NoneExist,
-
-    /// label: only_one_exists
-    OnlyOneExists,
-};
 
 struct EnsureFilePermissionsParams
 {
@@ -48,7 +32,7 @@ struct EnsureFilePermissionsParams
     Optional<mode_t> mask;
 
     /// Behavior when checking file existence
-    Optional<FileExistenceBehavior> behavior;
+    Optional<Behavior> behavior = Behavior::AtLeastOneExists;
 };
 
 Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context);
@@ -80,7 +64,7 @@ struct EnsureFilePermissionsCollectionParams
     Optional<mode_t> mask;
 
     /// Behavior when checking file existence
-    Optional<FileExistenceBehavior> behavior;
+    Optional<Behavior> behavior = Behavior::AtLeastOneExists;
 };
 
 Result<Status> AuditEnsureFilePermissionsCollection(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators, ContextInterface& context);
