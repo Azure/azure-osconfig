@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <Mmi.h>
-#include <CommonUtils.h>
+#include <SecurityBaseline.h>
 
 void __attribute__((constructor)) InitModule(void)
 {
