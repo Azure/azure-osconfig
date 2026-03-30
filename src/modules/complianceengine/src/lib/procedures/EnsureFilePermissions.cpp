@@ -25,7 +25,6 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 {
 
     assert(params.behavior.HasValue());
-    const auto behavior = params.behavior.Value();
     auto log = context.GetLogHandle();
     auto directory = params.directory;
     // Respect explicit false; default behavior when unset is true
@@ -50,12 +49,6 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
             {
                 hasFiles = true;
                 const char* fileName = entry->fts_path;
-
-                if (params.behavior.HasValue() && (Behavior::NoneExist == params.behavior.Value()))
-                {
-                    OsConfigLogDebug(log, "File '%s' exists but should not", fileName);
-                    return indicators.NonCompliant("File '" + std::string(fileName) + "' exists but should not");
-                }
 
                 EnsureFilePermissionsParams subParams;
                 subParams.filename = fileName;
@@ -93,15 +86,8 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else
     {
-        if (behavior == Behavior::NoneExist)
-        {
-            OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior).c_str());
-            return indicators.Compliant("No files in '" + directory + "' match the pattern, behavior " + std::to_string(params.behavior));
-        }
-
-        OsConfigLogDebug(log, "No files in '%s' match the pattern but files are required, behavior %s", directory.c_str(),
-            std::to_string(params.behavior).c_str());
-        return indicators.NonCompliant("No matching files found in '" + directory + "', behavior " + std::to_string(params.behavior));
+        OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
+        return indicators.Compliant("No matching files found in '" + directory + "', behavior " + std::to_string(params.behavior.Value()));
     }
 }
 
