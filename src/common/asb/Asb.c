@@ -959,6 +959,8 @@ void AsbInitialize(OsConfigLogHandle log)
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
     }
 
+    OsConfigLogInfo(log, "######################### Crash simulation in EnumerateUsers #########################");
+
     if (IsConsoleLoggingEnabled())
     {
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
