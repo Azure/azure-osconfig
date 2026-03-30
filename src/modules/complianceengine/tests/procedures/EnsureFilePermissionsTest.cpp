@@ -108,7 +108,8 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("does not exist, behavior at_least_one_exists") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
@@ -120,6 +121,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("does not exist, behavior none_exist") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
@@ -131,6 +133,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("exists but should not, behavior none_exist") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingAllExist)
@@ -142,6 +145,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAllExist)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("does not exist, behavior all_exist") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingOnlyOneExists)
@@ -153,6 +157,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingOnlyOneExists)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("does not exist, behavior only_one_exists") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingAnyExist)
@@ -163,7 +168,8 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAnyExist)
 
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("does not exist, behavior any_exist") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsAllExist)
@@ -175,6 +181,27 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsAllExist)
     auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior all_exist") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("correct permissions and ownership") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermssionsBehaviorNoneExist)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 0, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group.Value())}};
+    params.permissions = 0400;
+    params.mask = 0066;
+    params.behavior = Behavior::NoneExist;
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)

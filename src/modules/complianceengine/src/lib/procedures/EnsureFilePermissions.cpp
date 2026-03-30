@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <Bindings.h>
 #include <CommonUtils.h>
 #include <EnsureFilePermissions.h>
 #include <Evaluator.h>
@@ -103,11 +104,12 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         {
             if (params.behavior.Value() == Behavior::NoneExist)
             {
-                OsConfigLogDebug(log, "File '%s' does not exist, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
-                return indicators.Compliant("File '" + params.filename + "' does not exist, behavior" + std::to_string(params.behavior).c_str());
+                OsConfigLogDebug(log, "File '%s' does not exist, behavior %s", params.filename.c_str(), std::to_string(params.behavior.Value()).c_str());
+                return indicators.Compliant("File '" + params.filename + "' does not exist, behavior " + std::to_string(params.behavior.Value()));
             }
-            OsConfigLogDebug(log, "File '%s' does not exist but is required, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
-            return indicators.NonCompliant("File '" + params.filename + "' does not exist, behavior" + std::to_string(params.behavior).c_str());
+            OsConfigLogDebug(log, "File '%s' does not exist but is required, behavior %s", params.filename.c_str(),
+                std::to_string(params.behavior.Value()).c_str());
+            return indicators.NonCompliant("File '" + params.filename + "' does not exist, behavior " + std::to_string(params.behavior.Value()));
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
@@ -117,8 +119,8 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
 
     if (Behavior::NoneExist == params.behavior.Value())
     {
-        OsConfigLogDebug(log, "File '%s' exists but should not, behavior %s", params.filename.c_str(), std::to_string(params.behavior).c_str());
-        return indicators.NonCompliant("File '" + params.filename + "' exists but should not behavior " + std::to_string(params.behavior).c_str());
+        OsConfigLogDebug(log, "File '%s' exists but should not, behavior %s", params.filename.c_str(), std::to_string(params.behavior.Value()).c_str());
+        return indicators.NonCompliant("File '" + params.filename + "' exists but should not, behavior " + std::to_string(params.behavior.Value()));
     }
 
     if (params.owner.HasValue())
@@ -222,8 +224,8 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         indicators.Compliant(oss.str());
     }
 
-    OsConfigLogDebug(log, "File '%s' has correct permissions", params.filename.c_str());
-    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership");
+    OsConfigLogDebug(log, "File '%s' has correct permissions, behavior %s", params.filename.c_str(), std::to_string(params.behavior.Value()).c_str());
+    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership, behavior " + std::to_string(params.behavior.Value()));
 }
 
 Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
