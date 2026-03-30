@@ -26,6 +26,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 {
 
     assert(params.behavior.HasValue());
+    const auto behavior = params.behavior.Value();
     auto log = context.GetLogHandle();
     auto directory = params.directory;
     // Respect explicit false; default behavior when unset is true
@@ -35,8 +36,14 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     if (!ftsp)
     {
-        OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
-        return indicators.Compliant("Directory '" + directory + "' does not exist");
+        if (params.behavior.Value() == Behavior::NoneExist)
+        {
+            OsConfigLogDebug(log, "Directory '%s' does not exists and it should not, behavior %s", directory.c_str(),
+                std::to_string(params.behavior.Value()).c_str());
+            return indicators.Compliant("Directory '" + directory + "' does not exists and it should not, behavior " + std::to_string(params.behavior.Value()));
+        }
+        OsConfigLogInfo(log, "Directory '%s' does not exist, and it should behavior %s ", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
+        return indicators.NonCompliant("Directory '" + directory + "' does not exis, and it shound, behavior " + std::to_string(params.behavior.Value()));
     }
     auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
     bool hasFiles = false;
@@ -57,6 +64,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 subParams.group = params.group;
                 subParams.permissions = params.permissions;
                 subParams.mask = params.mask;
+                subParams.behavior = params.behavior;
                 Result<Status> result = isRemediation ? RemediateEnsureFilePermissions(subParams, indicators, context) :
                                                         AuditEnsureFilePermissions(subParams, indicators, context);
                 if (!result.HasValue())
@@ -74,7 +82,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
             }
         }
-        if (FTS_D == entry->fts_info && !recurse)
+        if (FTS_D == entry->fts_info && !recurse && (strcmp(entry->fts_path, directory.c_str()) != 0))
         {
             fts_set(ftsp, entry, FTS_SKIP);
         }
@@ -87,8 +95,15 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else
     {
-        OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
-        return indicators.Compliant("No matching files found in '" + directory + "', behavior " + std::to_string(params.behavior.Value()));
+        if (behavior == Behavior::NoneExist)
+        {
+            OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
+            return indicators.Compliant("No files in '" + directory + "' match the pattern, behavior " + std::to_string(params.behavior.Value()));
+        }
+
+        OsConfigLogDebug(log, "No files in '%s' match the pattern but files are required, behavior %s", directory.c_str(),
+            std::to_string(params.behavior.Value()).c_str());
+        return indicators.NonCompliant("No matching files found in '" + directory + "', behavior " + std::to_string(params.behavior.Value()));
     }
 }
 
