@@ -849,3 +849,377 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueNoneExists)
 
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find(", behavior none_exist") != std::string::npos);
 }
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueOnlyOneExists)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested2";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+
+    {
+        std::string nestedFile = nestedDir + "/good1.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+
+    {
+        std::string nestedFile = nestedDir + "/good2.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.recurse = true;
+    params.behavior = Behavior::OnlyOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find(", behavior only_one_exists") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueOnlyOneExistsOneBad)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested2";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+
+    {
+        std::string nestedFile = nestedDir + "/good1.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+
+    {
+        std::string nestedFile = nestedDir + "/bad.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 1, 0), 0);
+        files.push_back(nestedFile);
+    }
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.recurse = true;
+    params.behavior = Behavior::OnlyOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find(", behavior only_one_exists") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAtLeastOneExists)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested2";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+
+    {
+        std::string nestedFile = nestedDir + "/good1.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+
+    {
+        std::string nestedFile = nestedDir + "/good2.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.recurse = true;
+    params.behavior = Behavior::AtLeastOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find(", behavior at_least_one_exists") != std::string::npos);
+}
+TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAtLeastOneExistsOneBad)
+{
+    // Create top-level compliant file
+    CreateFileInDir("top.txt", 0, 0, 0644);
+    // Create nested directory and a non-compliant file inside it (wrong owner)
+    std::string nestedDir = testDir + "/nested2";
+    ASSERT_EQ(mkdir(nestedDir.c_str(), 0755), 0);
+
+    {
+        std::string nestedFile = nestedDir + "/good1.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 0, 0), 0);
+        files.push_back(nestedFile);
+    }
+
+    {
+        std::string nestedFile = nestedDir + "/bad.txt";
+        std::ofstream nf(nestedFile);
+        nf << "content";
+        nf.close();
+        ASSERT_EQ(chmod(nestedFile.c_str(), 0644), 0);
+        ASSERT_EQ(chown(nestedFile.c_str(), 1, 0), 0);
+        files.push_back(nestedFile);
+    }
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.recurse = true;
+    params.behavior = Behavior::AtLeastOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find(", behavior at_least_one_exists") != std::string::npos);
+}
+
+// ── Single-file: file exists, all Behavior values that are not NoneExist ──────
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsAnyExist)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.behavior = Behavior::AnyExist;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("correct permissions and ownership, behavior any_exist") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsOnlyOneExists)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.behavior = Behavior::OnlyOneExists;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("correct permissions and ownership, behavior only_one_exists") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsAtLeastOneExistsExplicit)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.behavior = Behavior::AtLeastOneExists;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("correct permissions and ownership, behavior at_least_one_exists") != std::string::npos);
+}
+
+// ── Single-file: file exists with wrong owner — behavior must not skip perms ──
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermsAnyExist)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 0, 0600); // owner=bin, not root
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.behavior = Behavior::AnyExist;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("owner") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermsOnlyOneExists)
+{
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 0, 0600); // owner=bin, not root
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.behavior = Behavior::OnlyOneExists;
+
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("owner") != std::string::npos);
+}
+
+// ── Collection: no matching files, all Behavior values ────────────────────────
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesNoneExist)
+{
+    CreateFileInDir("file1.log", 0, 0, 0644);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt"; // no txt files exist
+    params.behavior = Behavior::NoneExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior none_exist") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesAllExist)
+{
+    CreateFileInDir("file1.log", 0, 0, 0644);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    params.behavior = Behavior::AllExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior all_exist") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesOnlyOneExists)
+{
+    CreateFileInDir("file1.log", 0, 0, 0644);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    params.behavior = Behavior::OnlyOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior only_one_exists") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesAnyExist)
+{
+    CreateFileInDir("file1.log", 0, 0, 0644);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    params.behavior = Behavior::AnyExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior any_exist") != std::string::npos);
+}
+
+// ── Collection: AnyExist with matching files ──────────────────────────────────
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionAnyExistAllGood)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+    CreateFileInDir("file2.txt", 0, 0, 0644);
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.behavior = Behavior::AnyExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionAnyExistOneBad)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644); // compliant
+    CreateFileInDir("file2.txt", 1, 0, 0644); // wrong owner
+
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    params.permissions = 0644;
+    params.behavior = Behavior::AnyExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("owner") != std::string::npos);
+}
+
+// ── Collection: missing directory, NoneExist vs AtLeastOneExists ──────────────
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionMissingDirectoryNoneExist)
+{
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = "/tmp/this_dir_does_not_exist_efp_test_noneexist";
+    params.ext = "*.conf";
+    params.behavior = Behavior::NoneExist;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior none_exist") != std::string::npos);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionMissingDirectoryAtLeastOneExists)
+{
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = "/tmp/this_dir_does_not_exist_efp_test_atleastone";
+    params.ext = "*.conf";
+    params.behavior = Behavior::AtLeastOneExists;
+
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("behavior at_least_one_exists") != std::string::npos);
+}
