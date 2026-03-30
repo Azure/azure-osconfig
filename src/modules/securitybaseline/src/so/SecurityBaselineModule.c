@@ -3,11 +3,9 @@
 
 #include <Mmi.h>
 #include <CommonUtils.h>
-#include <SecurityBaseline.h>
 
 void __attribute__((constructor)) InitModule(void)
 {
-    InstallCrashHandler("/var/log/osconfig_securitybaseline.log");
     SecurityBaselineInitialize();
 }
 
