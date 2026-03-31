@@ -89,7 +89,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
     char* crashStart = NULL;
-    size_t lenght = 0;
+    size_t length = 0;
     char* p = NULL;
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
