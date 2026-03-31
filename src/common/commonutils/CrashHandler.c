@@ -168,7 +168,7 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle lo
     }
     else
     {
-        OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: could not open '%s' (%n, %s)", logFileName, errno, strerror(errno));
+        OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: could not open '%s' (%d, %s)", logFileName, errno, strerror(errno));
     }
 
     FREE_MEMORY(endOfFile);
