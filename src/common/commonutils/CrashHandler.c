@@ -91,12 +91,12 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
     char* crashStart = NULL;
     char* p = NULL;
 
-    if ((NULL == logFileName) || (false == FileExists(logFileName)) || (NULL == marker) || (NULL == stack))
+    if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
         return;
     }
 
-    if (NULL != (endOfFile = ReadEndOfFile(logFileName, log)))
+    if (NULL != (endOfFile = ReadEndOfFile(logFileName, 2048, log)))
     {
         if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
