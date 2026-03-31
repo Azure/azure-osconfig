@@ -168,7 +168,7 @@ bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
 
 char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHandle log)
 {
-    int size = 0;
+    unsigned int size = 0;
     long offset = 0;
     size_t sizeRead = 0;
     FILE* file = NULL;
@@ -184,7 +184,7 @@ char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHa
         if (LockFile(file, log))
         {
             fseek(file, 0, SEEK_END);
-            size = (int)ftell(file);
+            size = (unsigned int)ftell(file);
 
             if (size > maxSize)
             {
