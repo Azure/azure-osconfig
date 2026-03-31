@@ -136,18 +136,6 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
     return string;
 }
 
-static char* GetCrashString(const char* content, const char* marker)
-{
-    char* found = NULL;
-
-    if ((NULL == content) || (NULL == marker))
-    {
-        return found;
-    }
-
-    return (found = strstr(content, marker));
-}
-
 void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle log)
 {
     const char* crashDueToMarker = "[ERROR] Crash due to";
@@ -159,10 +147,10 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle lo
 
     if (NULL != (endOfFile = LoadEndOfFile(logFileName, log)))
     {
-        if (NULL != (crashStart = GetCrashString(endOfFile, crashDueToMarker)))
+        if (NULL != (crashStart = strstr(endOfFile, crashDueToMarker)))
         {
             // Search for stack trace before mutating crashStart
-            stackStart = GetCrashString(endOfFile, stackTraceMarker);
+            stackStart = strstr(endOfFile, stackTraceMarker);
 
             // Null-terminate the crash header line
             if (NULL != (endOfLine = strchr(crashStart, '\n')))
@@ -173,6 +161,14 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle lo
             OsConfigLogInfo(log, "### Crash start: '%s'", crashStart);
             OsConfigLogInfo(log, "### Stack start: '%s'", stackStart);
         }
+        else
+        {
+            OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: '%s' not found in '%s'", crashDueToMarker, logFileName);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: could not open '%s' (%n, %s)", logFileName, errno, strerror(errno));
     }
 
     FREE_MEMORY(endOfFile);
