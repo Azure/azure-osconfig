@@ -118,7 +118,7 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
             {
                 memset(string, 0, size + 1);
                 sizeRead = fread(string, sizeof(char), size, file);
-                UNUSED(sizeRed);
+                UNUSED(sizeRead);
             }
             else
             {
