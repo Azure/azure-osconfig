@@ -36,7 +36,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     if (!ftsp)
     {
-        if (params.behavior.Value() == Behavior::NoneExist)
+        if (Behavior::NoneExist == params.behavior.Value())
         {
             OsConfigLogDebug(log, "Directory '%s' does not exists and it should not, behavior %s", directory.c_str(),
                 std::to_string(params.behavior.Value()).c_str());
@@ -95,7 +95,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else
     {
-        if (behavior == Behavior::NoneExist)
+        if (Behavior::NoneExist == behavior)
         {
             OsConfigLogDebug(log, "No files in '%s' match the pattern, behavior %s", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
             return indicators.Compliant("No files in '" + directory + "' match the pattern, behavior " + std::to_string(params.behavior.Value()));
@@ -117,7 +117,7 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         const int status = errno;
         if (ENOENT == status)
         {
-            if (params.behavior.Value() == Behavior::NoneExist)
+            if (Behavior::NoneExist == params.behavior.Value())
             {
                 OsConfigLogDebug(log, "File '%s' does not exist, behavior %s", params.filename.c_str(), std::to_string(params.behavior.Value()).c_str());
                 return indicators.Compliant("File '" + params.filename + "' does not exist, behavior " + std::to_string(params.behavior.Value()));
