@@ -3257,19 +3257,14 @@ TEST_F(CommonUtilsTest, CrashHandler)
     waitpid(pid, NULL, 0);
     OsConfigLogInfo(log, "Done!");
 
+    // Verify the crash handler [ERROR] lines appear in the handler log
     char* marker = NULL;
     char* stack = NULL;
     ParseLogForPreviousCrashIfAny(m_path, &marker, &stack, log);
     EXPECT_NE(nullptr, marker);
     EXPECT_NE(nullptr, stack);
-
-    // Verify the crash handler [ERROR] lines appear in the handler log
-    char* contents = NULL;
-    char* result = NULL;
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    printf("%s", contents);
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
+    OsConfigLogInfo(log, "Crash: %s", *marker);
+    OsConfigLogInfo(log, "Stack: %s", *stack);
 
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));

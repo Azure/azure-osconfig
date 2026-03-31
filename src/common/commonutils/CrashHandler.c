@@ -168,9 +168,6 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, char** marker, char*
 
             *marker = DuplicateString(crashStart);
             *stack = DuplicateString(stackStart);
-            
-            OsConfigLogInfo(log, "### Crash ### %s ###", *marker);
-            OsConfigLogInfo(log, "### Stack ### %s ###", *stack);
         }
         else
         {
