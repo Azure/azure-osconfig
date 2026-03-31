@@ -89,6 +89,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
     char* crashStart = NULL;
+    size_t lenght = 0;
     char* p = NULL;
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
@@ -101,6 +102,8 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
         if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
             OsConfigLogError(log, "Previous crash detected:");
+            lenhth = strlen(crashStart);
+            crashStart[length - 1] = 0;
             OsConfigLogError(log, "%s", crashStart);
 
             p = crashStart;
