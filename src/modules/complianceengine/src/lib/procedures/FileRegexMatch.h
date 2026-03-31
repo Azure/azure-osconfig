@@ -3,8 +3,8 @@
 #ifndef COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
 #define COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
 
+#include <Behavior.h>
 #include <Evaluator.h>
-#include <Oval.h>
 #include <Regex.h>
 
 namespace ComplianceEngine

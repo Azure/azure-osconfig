@@ -158,6 +158,18 @@ const ProcedureMap Evaluator::mProcedureMap = {
 
 namespace std
 {
+string to_string(const ComplianceEngine::Behavior value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
 string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
@@ -281,18 +293,6 @@ string to_string(const ComplianceEngine::Operation value) noexcept(false)
 string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::IgnoreCase>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::Behavior value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

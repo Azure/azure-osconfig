@@ -1,5 +1,5 @@
-#ifndef COMPLIANCEENGINE_PROCEDURES_OVAL_H
-#define COMPLIANCEENGINE_PROCEDURES_OVAL_H
+#ifndef COMPLIANCEENGINE_PROCEDURES_BEHAVIOR_H
+#define COMPLIANCEENGINE_PROCEDURES_BEHAVIOR_H
 
 // Used by EnsureFilePermissions, FileRegexMatch procedure to determine how the function should
 // interpret results.
@@ -23,4 +23,4 @@ enum class Behavior
     OnlyOneExists,
 };
 } // namespace ComplianceEngine
-#endif // COMPLIANCEENGINE_PROCEDURES_OVAL_H
+#endif // COMPLIANCEENGINE_PROCEDURES_BEHAVIOR_H

@@ -4,8 +4,8 @@
 #ifndef COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_PERMISSIONS_H
 #define COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_PERMISSIONS_H
 
+#include <Behavior.h>
 #include <Evaluator.h>
-#include <Oval.h>
 #include <Pattern.h>
 #include <Separated.h>
 

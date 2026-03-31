@@ -56,6 +56,20 @@ struct Bindings;
 template <typename Enum>
 const std::map<std::string, Enum>& MapEnum();
 
+// Maps the Behavior enum labels to the enum values.
+template <>
+inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
+{
+    static const std::map<std::string, Behavior> map = {
+        {"at_least_one_exists", Behavior::AtLeastOneExists},
+        {"all_exist", Behavior::AllExist},
+        {"any_exist", Behavior::AnyExist},
+        {"none_exist", Behavior::NoneExist},
+        {"only_one_exists", Behavior::OnlyOneExists},
+    };
+    return map;
+}
+
 // Maps the DConfOperation enum labels to the enum values.
 template <>
 inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
@@ -196,20 +210,6 @@ inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
         {"matchPattern statePattern", IgnoreCase::Both},
         {"matchPattern", IgnoreCase::MatchPattern},
         {"statePattern", IgnoreCase::StatePattern},
-    };
-    return map;
-}
-
-// Maps the Behavior enum labels to the enum values.
-template <>
-inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
-{
-    static const std::map<std::string, Behavior> map = {
-        {"at_least_one_exists", Behavior::AtLeastOneExists},
-        {"all_exist", Behavior::AllExist},
-        {"any_exist", Behavior::AnyExist},
-        {"none_exist", Behavior::NoneExist},
-        {"only_one_exists", Behavior::OnlyOneExists},
     };
     return map;
 }
@@ -564,6 +564,9 @@ struct Bindings<AuditUfwStatusParams>
 
 namespace std
 {
+// Returns a string representation of the Behavior enum value.
+string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
+
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
@@ -596,9 +599,6 @@ string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*
 
 // Returns a string representation of the IgnoreCase enum value.
 string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the Behavior enum value.
-string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the PackageManagerType enum value.
 string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)
