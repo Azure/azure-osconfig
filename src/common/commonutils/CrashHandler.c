@@ -85,98 +85,38 @@ void InstallCrashHandler(const char* logFileName)
     sigaction(SIGILL, &sa, NULL);
 }
 
-static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
+void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
-    const int maxSize = 2048;
-    int size = 0;
-    long offset = 0;
-    size_t sizeRead = 0;
-    FILE* file = NULL;
-    char* string = NULL;
-
-    if (false == FileExists(logFileName))
-    {
-        return string;
-    }
-
-    if (NULL != (file = fopen(logFileName, "r")))
-    {
-        if (LockFile(file, log))
-        {
-            fseek(file, 0, SEEK_END);
-            size = (int)ftell(file);
-
-            if (size > maxSize)
-            {
-                size = maxSize;
-            }
-
-            offset = (long)(ftell(file) - size);
-            fseek(file, offset, SEEK_SET);
-
-            if (NULL != (string = (char*)malloc(size + 1)))
-            {
-                memset(string, 0, size + 1);
-                sizeRead = fread(string, sizeof(char), size, file);
-                UNUSED(sizeRead);
-            }
-            else
-            {
-                OsConfigLogError(log, "LoadEndOfFile: unable to allocate memory");
-            }
-
-            UnlockFile(file, log);
-        }
-
-        fclose(file);
-    }
-
-    OsConfigLogDebug(log, "LoadEndOfFile: '%s' ends in '%s'", logFileName, string);
-
-    return string;
-}
-
-void ParseLogForPreviousCrashIfAny(const char* logFileName, char** marker, char** stack, OsConfigLogHandle log)
-{
-    const char* crashDueToMarker = "[ERROR] Crash due to";
-    const char* stackTraceMarker = "[ERROR] Stack trace:";
     char* endOfFile = NULL;
     char* crashStart = NULL;
-    char* stackStart = NULL;
     char* endOfLine = NULL;
+    char* p = NULL;
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)) || (NULL == marker) || (NULL == stack))
     {
         return;
     }
 
-    *marker = NULL;
-    *stack = NULL;
-
-    if (NULL != (endOfFile = LoadEndOfFile(logFileName, log)))
+    if (NULL != (endOfFile = ReadEndOfFile(logFileName, log)))
     {
-        if (NULL != (crashStart = strstr(endOfFile, crashDueToMarker)))
+        if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
-            // Search for stack trace before mutating crashStart
-            stackStart = strstr(endOfFile, stackTraceMarker);
+            OsConfigLogError(log, "Previous crash detected:");
+            OsConfigLogError(log, "%s", crashStart);
 
-            // Null-terminate the crash header line
-            if (NULL != (endOfLine = strchr(crashStart, '\n')))
+            p = crashStart;
+            while (*p)
             {
-                endOfLine[0] = 0;
+                if (EOL == *p)
+                {
+                    *p = ';';
+                }
+                p++;
             }
 
-            *marker = DuplicateString(crashStart);
-            *stack = DuplicateString(stackStart);
+
+            OSConfigTelemetryStatusTrace(crashStart, EFAULT);
         }
-        else
-        {
-            OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: '%s' not found in '%s'", crashDueToMarker, logFileName);
-        }
-    }
-    else
-    {
-        OsConfigLogError(log, "ParseLogForPreviousCrashIfAny: could not open '%s' (%d, %s)", logFileName, errno, strerror(errno));
     }
 
     FREE_MEMORY(endOfFile);

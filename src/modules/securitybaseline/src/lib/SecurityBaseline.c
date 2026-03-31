@@ -51,6 +51,7 @@ static OsConfigLogHandle SecurityBaselineGetLog(void)
 
 void SecurityBaselineInitialize(void)
 {
+    CheckForPreviousCrash(g_securityBaselineLogFile, SecurityBaselineGetLog());
     InstallCrashHandler(g_securityBaselineLogFile);
     g_log = OpenLog(g_securityBaselineLogFile, g_securityBaselineRolledLogFile);
     AsbInitialize(SecurityBaselineGetLog());

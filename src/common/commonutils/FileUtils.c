@@ -166,6 +166,56 @@ bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
     return result;
 }
 
+char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHandle log)
+{
+    int size = 0;
+    long offset = 0;
+    size_t sizeRead = 0;
+    FILE* file = NULL;
+    char* string = NULL;
+
+    if ((0 == maxSize) || (false == FileExists(logFileName)))
+    {
+        return NULL;
+    }
+
+    if (NULL != (file = fopen(logFileName, "r")))
+    {
+        if (LockFile(file, log))
+        {
+            fseek(file, 0, SEEK_END);
+            size = (int)ftell(file);
+
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
+
+            offset = (long)(ftell(file) - size);
+            fseek(file, offset, SEEK_SET);
+
+            if (NULL != (string = (char*)malloc(size + 1)))
+            {
+                memset(string, 0, size + 1);
+                sizeRead = fread(string, sizeof(char), size, file);
+                UNUSED(sizeRead);
+            }
+            else
+            {
+                OsConfigLogError(log, "LoadEndOfFile: unable to allocate memory");
+            }
+
+            UnlockFile(file, log);
+        }
+
+        fclose(file);
+    }
+
+    OsConfigLogDebug(log, "LoadEndOfFile: '%s' ends in '%s'", logFileName, string);
+
+    return string;
+}
+
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     bool result = false;

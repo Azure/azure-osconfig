@@ -3235,6 +3235,30 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
 #endif //#ifdef(0) /////////////////////////////////////////////////////////////
 
+TEST_F(CommonUtilsTest, ReadEndOfFile)
+{
+    const char* testFileContents = "Line 1\nLine 2\nLine 3\nTestline 4\n";
+    char* contents = NULL;
+    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
+
+    EXPECT_STREQ("\n", contents = ReadEndOfFile(m_path, 1, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("4\n", contents = ReadEndOfFile(m_path, 2, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ(" 4\n", contents = ReadEndOfFile(m_path, 3, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Testline 4\n", contents = ReadEndOfFile(m_path, strlen("Testline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Line 2\nLine 3\nTestline 4\n", contents = ReadEndOfFile(m_path, strlen("Line 2\nLine 3\nTestline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, CrashHandler)
 {
     OsConfigLogHandle log = nullptr;
@@ -3258,15 +3282,12 @@ TEST_F(CommonUtilsTest, CrashHandler)
     OsConfigLogInfo(log, "Done!");
 
     // Verify the crash handler [ERROR] lines appear in the handler log
-    char* marker = NULL;
-    char* stack = NULL;
-    ParseLogForPreviousCrashIfAny(m_path, &marker, &stack, log);
-    EXPECT_NE(nullptr, marker);
-    EXPECT_NE(nullptr, stack);
-    OsConfigLogInfo(log, "Crash: %s", marker);
-    OsConfigLogInfo(log, "Stack: %s", stack);
-    FREE_MEMORY(marker);
-    FREE_MEMORY(stack);
+    char* contents = NULL;
+    char* result = NULL;
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    printf("%s", contents);
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));
