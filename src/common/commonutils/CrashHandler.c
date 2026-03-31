@@ -139,7 +139,7 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
 void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle log)
 {
     const char* crashDueToMarker = "[ERROR] Crash due to";
-    const char* stackTraceMarker = "[ERROR] Stack trace:\n";
+    const char* stackTraceMarker = "[ERROR] Stack trace:";
     char* endOfFile = NULL;
     char* crashStart = NULL;
     char* stackStart = NULL;
