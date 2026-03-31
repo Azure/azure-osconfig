@@ -90,6 +90,7 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
     const int maxSize = 2048;
     int size = 0;
     long offset = 0;
+    size_t sizeRead = 0;
     FILE* file = NULL;
     char* string = NULL;
 
@@ -116,7 +117,7 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
             if (NULL != (string = (char*)malloc(size + 1)))
             {
                 memset(string, 0, size + 1);
-                fread(string, sizeof(char), size, file);
+                sizeRead = fread(string, sizeof(char), size, file);
             }
             else
             {

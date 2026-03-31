@@ -444,9 +444,9 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
     }
 
     // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
-    OsConfigLogInfo(log, "Forcing a crash within EnumerateUsers");
+    /*OsConfigLogInfo(log, "Forcing a crash within EnumerateUsers");
     volatile int* null_ptr = NULL;
-    *null_ptr = 0;
+    *null_ptr = 0;*/
 
     return status;
 }
