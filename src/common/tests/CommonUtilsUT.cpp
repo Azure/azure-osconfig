@@ -3263,8 +3263,10 @@ TEST_F(CommonUtilsTest, CrashHandler)
     ParseLogForPreviousCrashIfAny(m_path, &marker, &stack, log);
     EXPECT_NE(nullptr, marker);
     EXPECT_NE(nullptr, stack);
-    OsConfigLogInfo(log, "Crash: %s", *marker);
-    OsConfigLogInfo(log, "Stack: %s", *stack);
+    OsConfigLogInfo(log, "Crash: %s", marker);
+    OsConfigLogInfo(log, "Stack: %s", stack);
+    FREE_MEMORY(marker);
+    FREE_MEMORY(stack);
 
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));
