@@ -13,7 +13,7 @@
 #define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
 #define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
 
-#define OSCONFIG_MAX_FRAMES 32
+#define OSCONFIG_MAX_FRAMES 10
 
 static const char* g_logFileName = DEFAULT_LOG_FILE;
 
@@ -83,4 +83,95 @@ void InstallCrashHandler(const char* logFileName)
     sigaction(SIGBUS, &sa, NULL);
     sigaction(SIGFPE, &sa, NULL);
     sigaction(SIGILL, &sa, NULL);
+}
+
+static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
+{
+    const int maxSize = 2048;
+    int size = 0;
+    long offset = 0;
+    FILE* file = NULL;
+    char* string = NULL;
+
+    if (false == FileExists(logFileName))
+    {
+        return string;
+    }
+
+    if (NULL != (file = fopen(logFileName, "r")))
+    {
+        if (LockFile(file, log))
+        {
+            fseek(file, 0, SEEK_END);
+            size = (int)ftell(file);
+
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
+
+            offset = (long)(ftell(file) - size);
+            fseek(file, offset, SEEK_SET);
+
+            if (NULL != (string = (char*)malloc(size + 1)))
+            {
+                memset(string, 0, size + 1);
+                fread(string, sizeof(char), size, file);
+            }
+            else
+            {
+                OsConfigLogError(log, "LoadEndOfFile: unable to allocate memory");
+            }
+
+            UnlockFile(file, log);
+        }
+
+        fclose(file);
+    }
+
+    OsConfigLogDebug(log, "LoadEndOfFile: '%s' ends in '%s'", logFileName, string);
+
+    return string;
+}
+
+static char* GetCrashString(const char* content, const char* marker)
+{
+    char* found = NULL;
+
+    if ((NULL == content) || (NULL == marker))
+    {
+        return found;
+    }
+
+    return (found = strstr(content, marker));
+}
+
+void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle log)
+{
+    const char* crashDueToMarker = "[ERROR] Crash due to";
+    const char* stackTraceMarker = "[ERROR] Stack trace:\n";
+    char* endOfFile = NULL;
+    char* crashStart = NULL;
+    char* stackStart = NULL;
+    char* endOfLine = NULL;
+
+    if (NULL != (endOfFile = LoadEndOfFile(logFileName, log)))
+    {
+        if (NULL != (crashStart = GetCrashString(endOfFile, crashDueToMarker)))
+        {
+            // Search for stack trace before mutating crashStart
+            stackStart = GetCrashString(endOfFile, stackTraceMarker);
+
+            // Null-terminate the crash header line
+            if (NULL != (endOfLine = strchr(crashStart, '\n')))
+            {
+                endOfLine[0] = 0;
+            }
+
+            OsConfigLogInfo(log, "### Crash start: '%s'", crashStart);
+            OsConfigLogInfo(log, "### Stack start: '%s'", stackStart);
+        }
+    }
+
+    FREE_MEMORY(endOfFile);
 }

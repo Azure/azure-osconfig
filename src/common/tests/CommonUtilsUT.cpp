@@ -3261,6 +3261,8 @@ TEST_F(CommonUtilsTest, CrashHandler)
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
+    ParseLogForPreviousCrashIfAny(m_path, nullptr);
+
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));
 }
