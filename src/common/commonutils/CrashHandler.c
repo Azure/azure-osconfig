@@ -136,7 +136,7 @@ static char* LoadEndOfFile(const char* logFileName, OsConfigLogHandle log)
     return string;
 }
 
-void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle log)
+void ParseLogForPreviousCrashIfAny(const char* logFileName, char** marker, char** stack, OsConfigLogHandle log)
 {
     const char* crashDueToMarker = "[ERROR] Crash due to";
     const char* stackTraceMarker = "[ERROR] Stack trace:";
@@ -144,6 +144,14 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle lo
     char* crashStart = NULL;
     char* stackStart = NULL;
     char* endOfLine = NULL;
+
+    if ((NULL == logFileName) || (false == FileExists(logFileName)) || (NULL == marker) || (NULL == stack))
+    {
+        return;
+    }
+
+    *marker = NULL;
+    *stack = NULL;
 
     if (NULL != (endOfFile = LoadEndOfFile(logFileName, log)))
     {
@@ -158,8 +166,11 @@ void ParseLogForPreviousCrashIfAny(const char* logFileName, OsConfigLogHandle lo
                 endOfLine[0] = 0;
             }
 
-            OsConfigLogInfo(log, "### Crash start: '%s'", crashStart);
-            OsConfigLogInfo(log, "### Stack start: '%s'", stackStart);
+            *marker = DuplicateString(crashStart);
+            *stack = DuplicateString(stackStart);
+            
+            OsConfigLogInfo(log, "### Crash ### %s ###", *marker);
+            OsConfigLogInfo(log, "### Stack ### %s ###", *stack);
         }
         else
         {

@@ -3257,7 +3257,11 @@ TEST_F(CommonUtilsTest, CrashHandler)
     waitpid(pid, NULL, 0);
     OsConfigLogInfo(log, "Done!");
 
-    ParseLogForPreviousCrashIfAny(m_path, log);
+    char* marker = NULL;
+    char* stack = NULL;
+    ParseLogForPreviousCrashIfAny(m_path, &marker, &stack, log);
+    EXPECT_NE(nullptr, marker);
+    EXPECT_NE(nullptr, stack);
 
     // Verify the crash handler [ERROR] lines appear in the handler log
     char* contents = NULL;
