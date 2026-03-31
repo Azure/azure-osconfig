@@ -102,7 +102,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
         if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
             OsConfigLogError(log, "Previous crash detected:");
-            lenhth = strlen(crashStart);
+            length = strlen(crashStart);
             crashStart[length - 1] = 0;
             OsConfigLogError(log, "%s", crashStart);
 
