@@ -62,8 +62,6 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
-#if (0) /////////////////////////////////////////////////////////////
-
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
@@ -3159,6 +3157,64 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
+TEST_F(CommonUtilsTest, ReadEndOfFile)
+{
+    const char* testFileContents = "Line 1\nLine 2\nLine 3\nTestline 4\n";
+    char* contents = NULL;
+    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
+
+    EXPECT_STREQ("\n", contents = ReadEndOfFile(m_path, 1, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("4\n", contents = ReadEndOfFile(m_path, 2, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ(" 4\n", contents = ReadEndOfFile(m_path, 3, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Testline 4\n", contents = ReadEndOfFile(m_path, strlen("Testline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Line 2\nLine 3\nTestline 4\n", contents = ReadEndOfFile(m_path, strlen("Line 2\nLine 3\nTestline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, CrashHandler)
+{
+    OsConfigLogHandle log = nullptr;
+    EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
+
+    OsConfigLogInfo(log, "Installing the crash handler in the parent process");
+    InstallCrashHandler(m_path);
+
+    OsConfigLogInfo(log, "Forking the child process that will crash");
+    pid_t pid = fork();
+    EXPECT_NE(-1, pid);
+    if (0 == pid)
+    {
+        // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
+        OsConfigLogInfo(log, "Forcing the crash");
+        volatile int* null_ptr = NULL;
+        *null_ptr = 0;
+        _exit(0); // never reached
+    }
+    waitpid(pid, NULL, 0);
+    OsConfigLogInfo(log, "Done!");
+
+    // Verify the crash handler [ERROR] lines appear in the handler log
+    char* contents = NULL;
+    char* result = NULL;
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    printf("%s", contents);
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
+
+    CloseLog(&log);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
@@ -3231,64 +3287,4 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_FALSE(IsConsoleLoggingEnabled());
 
     EXPECT_FALSE(IsDaemon());
-}
-
-#endif //#ifdef(0) /////////////////////////////////////////////////////////////
-
-TEST_F(CommonUtilsTest, ReadEndOfFile)
-{
-    const char* testFileContents = "Line 1\nLine 2\nLine 3\nTestline 4\n";
-    char* contents = NULL;
-    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
-
-    EXPECT_STREQ("\n", contents = ReadEndOfFile(m_path, 1, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("4\n", contents = ReadEndOfFile(m_path, 2, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ(" 4\n", contents = ReadEndOfFile(m_path, 3, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("Testline 4\n", contents = ReadEndOfFile(m_path, strlen("Testline 4\n"), nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("Line 2\nLine 3\nTestline 4\n", contents = ReadEndOfFile(m_path, strlen("Line 2\nLine 3\nTestline 4\n"), nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
-TEST_F(CommonUtilsTest, CrashHandler)
-{
-    OsConfigLogHandle log = nullptr;
-    EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
-
-    OsConfigLogInfo(log, "Installing the crash handler in the parent process");
-    InstallCrashHandler(m_path);
-
-    OsConfigLogInfo(log, "Forking the child process that will crash");
-    pid_t pid = fork();
-    EXPECT_NE(-1, pid);
-    if (0 == pid)
-    {
-        // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
-        OsConfigLogInfo(log, "Forcing the crash");
-        volatile int* null_ptr = NULL;
-        *null_ptr = 0;
-        _exit(0); // never reached
-    }
-    waitpid(pid, NULL, 0);
-    OsConfigLogInfo(log, "Done!");
-
-    // Verify the crash handler [ERROR] lines appear in the handler log
-    char* contents = NULL;
-    char* result = NULL;
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    printf("%s", contents);
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
-
-    CloseLog(&log);
-    EXPECT_TRUE(Cleanup(m_path));
 }
