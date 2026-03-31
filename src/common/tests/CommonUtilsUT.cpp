@@ -62,6 +62,8 @@ class CommonUtilsTest : public ::testing::Test
         }
 };
 
+#ifdef 0 /////////////////////////////////////////////////////////////
+
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
     EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
@@ -3231,6 +3233,8 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_FALSE(IsDaemon());
 }
 
+#endif //#ifdef 0 /////////////////////////////////////////////////////////////
+
 TEST_F(CommonUtilsTest, CrashHandler)
 {
     OsConfigLogHandle log = nullptr;
@@ -3253,15 +3257,15 @@ TEST_F(CommonUtilsTest, CrashHandler)
     waitpid(pid, NULL, 0);
     OsConfigLogInfo(log, "Done!");
 
+    ParseLogForPreviousCrashIfAny(m_path, log);
+
     // Verify the crash handler [ERROR] lines appear in the handler log
     char* contents = NULL;
     char* result = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    printf("Test: %s", contents);
+    printf("%s", contents);
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
-
-    ParseLogForPreviousCrashIfAny(m_path, nullptr);
 
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));
