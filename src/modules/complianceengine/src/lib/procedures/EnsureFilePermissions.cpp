@@ -43,7 +43,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
             return indicators.Compliant("Directory '" + directory + "' does not exists and it should not, behavior " + std::to_string(params.behavior.Value()));
         }
         OsConfigLogInfo(log, "Directory '%s' does not exist, and it should behavior %s ", directory.c_str(), std::to_string(params.behavior.Value()).c_str());
-        return indicators.NonCompliant("Directory '" + directory + "' does not exis, and it shound, behavior " + std::to_string(params.behavior.Value()));
+        return indicators.NonCompliant("Directory '" + directory + "' does not exists, and it should, behavior " + std::to_string(params.behavior.Value()));
     }
     auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
     bool hasFiles = false;
