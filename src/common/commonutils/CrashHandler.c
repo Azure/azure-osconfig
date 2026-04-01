@@ -11,7 +11,7 @@
 #define MSG_SIGBUS CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
 #define MSG_DEFAULT "<unknown>"
 #define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
-#define MSG_STACK_HDR ("[ERROR] Stack trace (up to last 8 frames):" EOL_TERMINATOR)
+#define MSG_STACK_HDR ("[ERROR] Stack trace:" EOL_TERMINATOR)
 
 #define OSCONFIG_MAX_FRAMES 8
 
