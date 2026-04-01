@@ -103,7 +103,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
     {
         if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
-            OsConfigLogError(log, "Previous crash detected:");
+            OsConfigLogInfo(log, "Previous crash detected:");
             length = strlen(crashStart);
             if (EOL == crashStart[length - 1])
             {
@@ -121,7 +121,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
-            OsConfigLogDebug(log, "For telemetry: %s", crashStart);
+            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashStart);
             OSConfigTelemetryStatusTrace(crashStart, EFAULT);
         }
     }
