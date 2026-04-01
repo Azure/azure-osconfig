@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 #include "Internal.h"
 
+#define OSCONFIG_MAX_FRAMES 8
+
 #define EOL_TERMINATOR "\n"
 #define CRASH_PREFIX "[ERROR] Crash due to "
 #define MSG_SIGSEGV CRASH_PREFIX "segmentation fault (SIGSEGV)"  EOL_TERMINATOR
@@ -11,9 +13,7 @@
 #define MSG_SIGBUS CRASH_PREFIX "illegal memory access (SIGBUS)" EOL_TERMINATOR
 #define MSG_DEFAULT "<unknown>"
 #define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
-#define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
-
-#define OSCONFIG_MAX_FRAMES 8
+#define MSG_STACK_HDR "[ERROR] Stack trace (up to last " OSCONFIG_MAX_FRAMES "frames):" EOL_TERMINATOR
 
 #define OSCONFIG_MAX_STACK_SIZE 2048
 
