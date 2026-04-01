@@ -756,6 +756,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAllExistsFailOneBad)
     auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+    std::cout << "AuditCollectionRecurseTrueAllExistsFailOneBad " << mFormatter.Format(indicators).Value() << std::endl;
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid owner") != std::string::npos);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("bad.txt") != std::string::npos);
 }
@@ -802,6 +803,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAllExistsAllgood)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
+    std::cout << "AuditCollectionRecurseTrueAllExistsAllgood:" << mFormatter.Format(indicators).Value() << std::endl;
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("good1.txt") != std::string::npos);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("good2.txt") != std::string::npos);
 }
