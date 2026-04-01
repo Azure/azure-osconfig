@@ -1513,7 +1513,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
-    const char* testFileContents = "Line 123 1\nLine ABC 2\nLine 3\nA test line 4\nLine 5";
+    const char* testFileContents = "Line 123 1\nLine ABC 2\nLine 3\nA test line 4\nLine 5\n";
     EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
     EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
