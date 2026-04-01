@@ -36,7 +36,7 @@ protected:
     std::string testDir;
     MockContext mContext;
     IndicatorsTree indicators;
-    ComplianceEngine::NestedListFormatter mFormatter;
+    ComplianceEngine::CompactListFormatter mFormatter;
 
     void SetUp() override
     {
