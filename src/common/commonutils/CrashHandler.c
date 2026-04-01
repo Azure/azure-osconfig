@@ -13,7 +13,9 @@
 #define DEFAULT_LOG_FILE  "/var/log/osconfig_nrp.log"
 #define MSG_STACK_HDR "[ERROR] Stack trace:" EOL_TERMINATOR
 
-#define OSCONFIG_MAX_FRAMES 10
+#define OSCONFIG_MAX_FRAMES 8
+
+#define OSCONFIG_MAX_STACK_SIZE 2048
 
 static const char* g_logFileName = DEFAULT_LOG_FILE;
 
@@ -97,7 +99,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
         return;
     }
 
-    if (NULL != (endOfFile = ReadEndOfFile(logFileName, 2048, log)))
+    if (NULL != (endOfFile = ReadEndOfFile(logFileName, OSCONFIG_MAX_STACK_SIZE, log)))
     {
         if (NULL != (crashStart = strstr(endOfFile, CRASH_PREFIX)))
         {
