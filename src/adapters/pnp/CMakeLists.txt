@@ -12,9 +12,7 @@ SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(osconfig)
 
 set(osconfig_files
-    ./AisUtils.c
-    ./PnpAgent.c
-    ./PnpUtils.c
+    ./Agent.c
     ./Watcher.c)
 
 set(target_name osconfig)
