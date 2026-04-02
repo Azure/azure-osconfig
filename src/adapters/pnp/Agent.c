@@ -24,9 +24,6 @@
 
 static int g_iotHubProtocol = PROTOCOL_AUTO;
 
-static ReportedProperty* g_reportedProperties = NULL;
-static int g_numReportedProperties = 0;
-
 static unsigned int g_lastTime = 0;
 
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
@@ -304,8 +301,6 @@ void CloseAgent(void)
         g_mpiHandle = NULL;
     }
 
-    FREE_MEMORY(g_reportedProperties);
-
     OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
@@ -386,7 +381,6 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
     }
 
