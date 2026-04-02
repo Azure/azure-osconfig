@@ -207,7 +207,6 @@ set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
 set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
-    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/")
 
@@ -236,7 +235,6 @@ set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
-set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)
