@@ -121,7 +121,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
-            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashStart);
+            OsConfigLogDebug(log, "For telemetry (with EFAULT): '%s'", crashStart);
             OSConfigTelemetryStatusTrace(crashStart, EFAULT);
         }
     }
