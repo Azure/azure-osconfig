@@ -61,6 +61,7 @@ template <>
 inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
 {
     static const std::map<std::string, Behavior> map = {
+        {"check_if_exists", Behavior::CheckIfExists},
         {"at_least_one_exists", Behavior::AtLeastOneExists},
         {"all_exist", Behavior::AllExist},
         {"any_exist", Behavior::AnyExist},

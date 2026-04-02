@@ -7,6 +7,9 @@ namespace ComplianceEngine
 {
 enum class Behavior
 {
+    /// label: check_if_exists
+    CheckIfExists,
+
     /// label: at_least_one_exists
     AtLeastOneExists,
 

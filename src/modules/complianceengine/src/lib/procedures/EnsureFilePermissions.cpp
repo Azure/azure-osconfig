@@ -36,7 +36,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     if (!ftsp)
     {
-        if (Behavior::NoneExist == params.behavior.Value())
+        if (Behavior::NoneExist == params.behavior.Value() || Behavior::CheckIfExists == params.behavior.Value())
         {
             OsConfigLogDebug(log, "Directory '%s' does not exist as expected ", directory.c_str());
             return indicators.Compliant("Directory '" + directory + "' does not exist as expected");
@@ -91,7 +91,17 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
         }
     }
 
-    if (Behavior::NoneExist == behavior)
+    if (Behavior::CheckIfExists == behavior)
+    {
+        if (numberOfnonCompliantFiles == 0)
+        {
+            OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
+            return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
+        }
+        OsConfigLogDebug(log, "At least one file in '%s' did not match expected permissions", directory.c_str());
+        return indicators.NonCompliant("At least one file in '" + directory + "' did not match expected permissions");
+    }
+    else if (Behavior::NoneExist == behavior)
     {
         if ((numberOfComplinatFiles == 0) && (numberOfnonCompliantFiles == 0))
         {
@@ -153,7 +163,7 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         const int status = errno;
         if (ENOENT == status)
         {
-            if (Behavior::NoneExist == params.behavior.Value())
+            if (Behavior::NoneExist == params.behavior.Value() || Behavior::CheckIfExists == params.behavior.Value())
             {
                 OsConfigLogDebug(log, "File '%s' does not exist as it should", params.filename.c_str());
                 return indicators.Compliant("File '" + params.filename + "' does not exist as it should");
@@ -172,6 +182,7 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         OsConfigLogDebug(log, "File '%s' exist but it should not", params.filename.c_str());
         return indicators.NonCompliant("File '" + params.filename + "' exist but it should not");
     }
+    // Behavior::CheckIfExists: file exists, proceed to check permissions
 
     if (params.owner.HasValue())
     {
