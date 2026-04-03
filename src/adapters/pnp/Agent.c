@@ -22,11 +22,7 @@
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
 
-static int g_iotHubProtocol = PROTOCOL_AUTO;
-
 static unsigned int g_lastTime = 0;
-
-extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -56,9 +52,6 @@ static AgentExitState g_exitState = NoError;
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
-
-// HTTP proxy options read from environment variables
-static HTTP_PROXY_OPTIONS g_proxyOptions = {0};
 
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
@@ -290,11 +283,6 @@ static bool InitializeAgent(void)
 
 void CloseAgent(void)
 {
-    if (g_isIotHubEnabled)
-    {
-        IotHubDeInitialize();
-    }
-
     if (NULL != g_mpiHandle)
     {
         CallMpiClose(g_mpiHandle, GetLog());
@@ -306,8 +294,6 @@ void CloseAgent(void)
 
 static void AgentDoWork(void)
 {
-    char* connectionString = NULL;
-
     unsigned int currentTime = time(NULL);
     unsigned int timeInterval = g_reportingInterval;
 
@@ -322,13 +308,7 @@ static void AgentDoWork(void)
 
 int main(int argc, char *argv[])
 {
-    char* connectionString = NULL;
     char* jsonConfiguration = NULL;
-    char* proxyData = NULL;
-    char* proxyHostAddress = NULL;
-    int proxyPort = 0;
-    char* proxyUsername = NULL;
-    char* proxyPassword = NULL;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
     pid_t pid = 0;
