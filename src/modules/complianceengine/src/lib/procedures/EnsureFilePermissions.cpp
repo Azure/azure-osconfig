@@ -75,12 +75,12 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
                 if (Status::NonCompliant == result.Value())
                 {
-                    numberOfnonCompliantFiles++;
-                    OsConfigLogError(log, "File '%s' does not match required permissions", fileName);
+                    numberOfNonCompliantFiles++;
+                    OsConfigLogInfo(log, "File '%s' does not match required permissions", fileName);
                 }
                 else
                 {
-                    numberOfComplinatFiles++;
+                    numberOfCompliantFiles++;
                     OsConfigLogDebug(log, "File '%s' matches required permissions", fileName);
                 }
             }
@@ -93,7 +93,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     if (Behavior::CheckIfExists == behavior)
     {
-        if (numberOfnonCompliantFiles == 0)
+        if (numberOfNonCompliantFiles == 0)
         {
             OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
             return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
@@ -103,7 +103,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else if (Behavior::NoneExist == behavior)
     {
-        if ((numberOfComplinatFiles == 0) && (numberOfnonCompliantFiles == 0))
+        if ((numberOfCompliantFiles == 0) && (numberOfNonCompliantFiles == 0))
         {
             OsConfigLogDebug(log, "No files in '%s' match the pattern, as expected", directory.c_str());
             return indicators.Compliant("No files in '" + directory + "' match the pattern as expected");
@@ -114,7 +114,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else if (Behavior::AnyExist == behavior || Behavior::AtLeastOneExists == behavior)
     {
-        if ((numberOfComplinatFiles > 0) && (numberOfnonCompliantFiles == 0))
+        if ((numberOfCompliantFiles > 0) && (numberOfNonCompliantFiles == 0))
         {
             OsConfigLogDebug(log, "At least one file in '%s' matched required permissions as expected", directory.c_str());
             return indicators.Compliant("At least one file in '" + directory + "' matched required permissions as expected");
@@ -124,12 +124,12 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else if (Behavior::OnlyOneExists == behavior)
     {
-        if ((numberOfComplinatFiles == 1) && (numberOfnonCompliantFiles == 0))
+        if ((numberOfCompliantFiles == 1) && (numberOfNonCompliantFiles == 0))
         {
             OsConfigLogDebug(log, "Exactly one file in '%s' matched required permissions as expected", directory.c_str());
             return indicators.Compliant("Exactly one file in '" + directory + "' matched required permissions as expected");
         }
-        if (numberOfComplinatFiles > 1)
+        if (numberOfCompliantFiles > 1)
         {
             OsConfigLogDebug(log, "Expected exactly one file in '%s' but more matched required permissions", directory.c_str());
             return indicators.NonCompliant("Expected exactly one file in '" + directory + "' but more matched required permissions");
@@ -139,7 +139,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     }
     else if (Behavior::AllExist == behavior)
     {
-        if (numberOfnonCompliantFiles == 0 && (numberOfComplinatFiles > 0))
+        if (numberOfNonCompliantFiles == 0 && (numberOfCompliantFiles > 0))
         {
             OsConfigLogDebug(log, "All files in '%s' matched required permissions as expected", directory.c_str());
             return indicators.Compliant("All files in '" + directory + "' matched required permissions as expected");
