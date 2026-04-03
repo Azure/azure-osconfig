@@ -61,9 +61,6 @@ static OsConfigLogHandle g_agentLog = NULL;
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 
-static const char g_modelIdTemplate[] = "dtmi:osconfig:deviceosconfiguration;%d";
-static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
-
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
