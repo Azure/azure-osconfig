@@ -47,7 +47,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
     auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
 
     FTSENT* entry = nullptr;
-    int numberOfComplinatFiles = 0;
+    int numberOfCompliantFiles = 0;
     int numberOfnonCompliantFiles = 0;
     while (nullptr != (entry = fts_read(ftsp)))
     {
