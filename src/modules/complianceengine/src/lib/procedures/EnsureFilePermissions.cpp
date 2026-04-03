@@ -48,7 +48,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     FTSENT* entry = nullptr;
     int numberOfCompliantFiles = 0;
-    int numberOfnonCompliantFiles = 0;
+    int numberOfNonCompliantFiles = 0;
     while (nullptr != (entry = fts_read(ftsp)))
     {
         if (FTS_F == entry->fts_info && (recurse || entry->fts_level == 1))
