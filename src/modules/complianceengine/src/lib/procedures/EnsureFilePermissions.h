@@ -4,12 +4,14 @@
 #ifndef COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_PERMISSIONS_H
 #define COMPLIANCEENGINE_PROCEDURES_ENSURE_FILE_PERMISSIONS_H
 
+#include <Behavior.h>
 #include <Evaluator.h>
 #include <Pattern.h>
 #include <Separated.h>
 
 namespace ComplianceEngine
 {
+
 struct EnsureFilePermissionsParams
 {
     /// Path to the file
@@ -28,6 +30,9 @@ struct EnsureFilePermissionsParams
     /// Required octal permissions of the file - mask
     /// pattern: ^[0-7]{3,4}$
     Optional<mode_t> mask;
+
+    /// Behavior when checking file existence
+    Optional<Behavior> behavior = Behavior::AtLeastOneExists;
 };
 
 Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context);
@@ -57,6 +62,9 @@ struct EnsureFilePermissionsCollectionParams
     /// Required octal permissions of the file - mask
     /// pattern: ^[0-7]{3,4}$
     Optional<mode_t> mask;
+
+    /// Behavior when checking file existence
+    Optional<Behavior> behavior = Behavior::AtLeastOneExists;
 };
 
 Result<Status> AuditEnsureFilePermissionsCollection(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators, ContextInterface& context);

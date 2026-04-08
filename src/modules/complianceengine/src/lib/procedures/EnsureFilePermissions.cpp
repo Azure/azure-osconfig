@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <Bindings.h>
 #include <CommonUtils.h>
 #include <EnsureFilePermissions.h>
 #include <Evaluator.h>
@@ -23,6 +24,9 @@ const unsigned short displayMask = 0xFFF;
 Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissionsCollectionParams& params, IndicatorsTree& indicators,
     ContextInterface& context, bool isRemediation)
 {
+
+    assert(params.behavior.HasValue());
+    const auto behavior = params.behavior.Value();
     auto log = context.GetLogHandle();
     auto directory = params.directory;
     // Respect explicit false; default behavior when unset is true
@@ -32,20 +36,25 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
 
     if (!ftsp)
     {
-        OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
-        return indicators.Compliant("Directory '" + directory + "' does not exist");
+        if (Behavior::NoneExist == params.behavior.Value() || Behavior::CheckIfExists == params.behavior.Value())
+        {
+            OsConfigLogDebug(log, "Directory '%s' does not exist as expected ", directory.c_str());
+            return indicators.Compliant("Directory '" + directory + "' does not exist as expected");
+        }
+        OsConfigLogInfo(log, "Directory '%s' does not exist, but it should", directory.c_str());
+        return indicators.NonCompliant("Directory '" + directory + "' does not exist, but it should");
     }
     auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
-    bool hasFiles = false;
 
     FTSENT* entry = nullptr;
+    int numberOfCompliantFiles = 0;
+    int numberOfNonCompliantFiles = 0;
     while (nullptr != (entry = fts_read(ftsp)))
     {
         if (FTS_F == entry->fts_info && (recurse || entry->fts_level == 1))
         {
             if (0 == fnmatch(params.ext.c_str(), entry->fts_name, 0))
             {
-                hasFiles = true;
                 const char* fileName = entry->fts_path;
 
                 EnsureFilePermissionsParams subParams;
@@ -54,6 +63,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                 subParams.group = params.group;
                 subParams.permissions = params.permissions;
                 subParams.mask = params.mask;
+                subParams.behavior = params.behavior;
                 Result<Status> result = isRemediation ? RemediateEnsureFilePermissions(subParams, indicators, context) :
                                                         AuditEnsureFilePermissions(subParams, indicators, context);
                 if (!result.HasValue())
@@ -62,35 +72,90 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const EnsureFilePermissions
                     OSConfigTelemetryStatusTrace(isRemediation ? "RemediateEnsureFilePermissions" : "AuditEnsureFilePermissions", result.Error().code);
                     return result;
                 }
+
                 if (Status::NonCompliant == result.Value())
                 {
-                    OsConfigLogError(log, "File '%s' does not match expected permissions", fileName);
-                    OSConfigTelemetryStatusTrace("EnsureFilePermissionsCollectionHelper", EACCES);
-                    return result;
+                    numberOfNonCompliantFiles++;
+                    OsConfigLogInfo(log, "File '%s' does not match required permissions", fileName);
                 }
-                OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
+                else
+                {
+                    numberOfCompliantFiles++;
+                    OsConfigLogDebug(log, "File '%s' matches required permissions", fileName);
+                }
             }
         }
-        if (FTS_D == entry->fts_info && !recurse)
+        if (FTS_D == entry->fts_info && !recurse && (strcmp(entry->fts_path, directory.c_str()) != 0))
         {
             fts_set(ftsp, entry, FTS_SKIP);
         }
     }
 
-    if (hasFiles)
+    if (Behavior::CheckIfExists == behavior)
     {
-        OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
-        return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
+        if (numberOfNonCompliantFiles == 0)
+        {
+            OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
+            return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
+        }
+        OsConfigLogDebug(log, "At least one file in '%s' did not match expected permissions", directory.c_str());
+        return indicators.NonCompliant("At least one file in '" + directory + "' did not match expected permissions");
+    }
+    else if (Behavior::NoneExist == behavior)
+    {
+        if ((numberOfCompliantFiles == 0) && (numberOfNonCompliantFiles == 0))
+        {
+            OsConfigLogDebug(log, "No files in '%s' match the pattern, as expected", directory.c_str());
+            return indicators.Compliant("No files in '" + directory + "' match the pattern as expected");
+        }
+
+        OsConfigLogDebug(log, "No files in '%s' match the pattern but they shold", directory.c_str());
+        return indicators.NonCompliant("No matching files found in '" + directory + "' but they should");
+    }
+    else if (Behavior::AnyExist == behavior || Behavior::AtLeastOneExists == behavior)
+    {
+        if ((numberOfCompliantFiles > 0) && (numberOfNonCompliantFiles == 0))
+        {
+            OsConfigLogDebug(log, "At least one file in '%s' matched required permissions as expected", directory.c_str());
+            return indicators.Compliant("At least one file in '" + directory + "' matched required permissions as expected");
+        }
+        OsConfigLogDebug(log, "At least one file in '%s' did not match required permissions but it should", directory.c_str());
+        return indicators.NonCompliant("At least one file in '" + directory + "' did not match required permissions but it should");
+    }
+    else if (Behavior::OnlyOneExists == behavior)
+    {
+        if ((numberOfCompliantFiles == 1) && (numberOfNonCompliantFiles == 0))
+        {
+            OsConfigLogDebug(log, "Exactly one file in '%s' matched required permissions as expected", directory.c_str());
+            return indicators.Compliant("Exactly one file in '" + directory + "' matched required permissions as expected");
+        }
+        if (numberOfCompliantFiles > 1)
+        {
+            OsConfigLogDebug(log, "Expected exactly one file in '%s' but more matched required permissions", directory.c_str());
+            return indicators.NonCompliant("Expected exactly one file in '" + directory + "' but more matched required permissions");
+        }
+        OsConfigLogDebug(log, "Expected exactly one file in '%s' but more matched required permissions", directory.c_str());
+        return indicators.NonCompliant("Expected exactly one file in '" + directory + "' but more matched required permissions");
+    }
+    else if (Behavior::AllExist == behavior)
+    {
+        if (numberOfNonCompliantFiles == 0 && (numberOfCompliantFiles > 0))
+        {
+            OsConfigLogDebug(log, "All files in '%s' matched required permissions as expected", directory.c_str());
+            return indicators.Compliant("All files in '" + directory + "' matched required permissions as expected");
+        }
+        OsConfigLogDebug(log, "At least one file in '%s' did not match required permissions but they should", directory.c_str());
+        return indicators.NonCompliant("At least one file in '" + directory + "' did not match required permissions but they should");
     }
     else
     {
-        OsConfigLogDebug(log, "No files in '%s' match the pattern", directory.c_str());
-        return indicators.Compliant("No files in '" + directory + "' match the pattern");
+        return Error("Unknown behavior: " + std::to_string(params.behavior.Value()), EINVAL);
     }
 }
 
 Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.behavior.HasValue());
     auto log = context.GetLogHandle();
     struct stat statbuf;
     if (0 != stat(params.filename.c_str(), &statbuf))
@@ -98,14 +163,26 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         const int status = errno;
         if (ENOENT == status)
         {
-            OsConfigLogDebug(log, "File '%s' does not exist", params.filename.c_str());
-            return indicators.Compliant("File '" + params.filename + "' does not exist");
+            if (Behavior::NoneExist == params.behavior.Value() || Behavior::CheckIfExists == params.behavior.Value())
+            {
+                OsConfigLogDebug(log, "File '%s' does not exist as it should", params.filename.c_str());
+                return indicators.Compliant("File '" + params.filename + "' does not exist as it should");
+            }
+            OsConfigLogDebug(log, "File '%s' does not exist but it should", params.filename.c_str());
+            return indicators.NonCompliant("File '" + params.filename + "' does not exist but it should");
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
         OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
+
+    if (Behavior::NoneExist == params.behavior.Value())
+    {
+        OsConfigLogDebug(log, "File '%s' exist but it should not", params.filename.c_str());
+        return indicators.NonCompliant("File '" + params.filename + "' exist but it should not");
+    }
+    // Behavior::CheckIfExists: file exists, proceed to check permissions
 
     if (params.owner.HasValue())
     {
@@ -208,8 +285,8 @@ Result<Status> AuditEnsureFilePermissions(const EnsureFilePermissionsParams& par
         indicators.Compliant(oss.str());
     }
 
-    OsConfigLogDebug(log, "File '%s' has correct permissions", params.filename.c_str());
-    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership");
+    OsConfigLogDebug(log, "File '%s' has correct permissions and ownership, as expected", params.filename.c_str());
+    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership as expected");
 }
 
 Result<Status> RemediateEnsureFilePermissions(const EnsureFilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
