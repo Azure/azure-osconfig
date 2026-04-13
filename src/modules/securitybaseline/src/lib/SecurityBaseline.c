@@ -63,6 +63,7 @@ void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
     AsbShutdown(SecurityBaselineGetLog());
+    TelemetryCleanup(SecurityBaselineGetLog());
     CloseLog(&g_log);
 }
 
