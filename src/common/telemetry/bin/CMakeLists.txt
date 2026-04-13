@@ -7,6 +7,10 @@ set (CMAKE_CXX_STANDARD 11)
 
 add_executable(telemetrybin main.cpp args.cpp)
 
+target_include_directories(telemetrybin PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PLATFORM_INC_DIR})
+
 target_link_libraries(telemetrybin PRIVATE telemetrylib)
 target_include_directories(telemetrybin
     PRIVATE
