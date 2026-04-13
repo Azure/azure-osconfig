@@ -20,3 +20,5 @@ target_include_directories(telemetrybin
 if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
