@@ -125,7 +125,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
             }
 
             OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
-            PerfClock g_perfClock = {{0, 0}, {0, 0}};
+            PerfClock perfClock = {{0, 0}, {0, 0}};
 
             //OsConfigLogDebug(log, "For telemetry (with EFAULT): '%s'", crashStart);
             for (int i = 0; i < 1000; i++)
