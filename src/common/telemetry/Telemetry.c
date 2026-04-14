@@ -110,6 +110,7 @@ void TelemetryCleanup(const OsConfigLogHandle log)
 {
     if (NULL != g_tmpFile)
     {
+        int status = 0;
         char* fileName = NULL;
         char* command = NULL;
 
@@ -117,29 +118,33 @@ void TelemetryCleanup(const OsConfigLogHandle log)
         {
             fileName = FormatAllocateString("%s/%s", g_moduleDirectory, TELEMETRY_BINARY_NAME);
 
-            if (NULL != fileName)
+            if (false == FileExists(fileName))
             {
-                if (0 == SetFileAccess(fileName, 0, 0, 0700, log))
-                {
-                    command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_TEARDOWN_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
-
-                    if (NULL != command)
-                    {
-                        ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log);
-                        FREE_MEMORY(command);
-                    }
-                }
-
-                FREE_MEMORY(fileName);
+                OsConfigLogError(log, "TelemetryCleanup: '%s' does not exist, cannot invoke executable  to send telemetry", fileName);
             }
-
-            FREE_MEMORY(g_moduleDirectory);
+            else
+            {
+                SetFileAccess(fileName, 0, 0, 0700, log);
+                command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_TEARDOWN_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
+                if (0 != (status = ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log)))
+                {
+                    OsConfigLogError(log, "TelemetryCleanup: '%s' failed with %d (%s)", command, status, strerror(status));
+                }
+            }
         }
 
         fclose(g_tmpFile);
         g_tmpFile = NULL;
     }
+    else
+    {
+        OsConfigLogError(log, "TelemetryCleanup: no telemetry file, nothing to send");
+    }
 
+    FREE_MEMORY(command);
+    FREE_MEMORY(fileName);
+
+    FREE_MEMORY(g_moduleDirectory);
     FREE_MEMORY(g_distroName);
 }
 
