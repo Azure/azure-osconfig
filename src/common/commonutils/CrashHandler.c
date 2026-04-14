@@ -126,7 +126,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
             {
                 TelemetryInitialize(log);
                 OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashStart);
-                for (int j = 0; i < 1000; i++)
+                for (int j = 0; j < 1000; j++)
                 {
                     OSConfigTelemetryStatusTrace(crashStart, EFAULT);
                     OSConfigTelemetryStatusTrace("***EFAULT***", EFAULT);
