@@ -124,9 +124,9 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
-            OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
             PerfClock perfClock = {{0, 0}, {0, 0}};
-
+            OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+            
             //OsConfigLogDebug(log, "For telemetry (with EFAULT): '%s'", crashStart);
             for (int i = 0; i < 1000; i++)
             {
@@ -141,8 +141,9 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 TelemetryCleanup(log);
                 StopPerfClock(&perfClock, perfLog);
                 LogPerfClock(&perfClock, "TelemetryCleanup", NULL, 0, 10000, perfLog);
-                CloseLog(perfLog);
             }
+
+            CloseLog(&perfLog);
         }
     }
 
