@@ -87,6 +87,9 @@ void InstallCrashHandler(const char* logFileName)
     sigaction(SIGILL, &sa, NULL);
 }
 
+#define PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.log"
+#define ROLLED_PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.bak"
+
 void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
@@ -121,9 +124,14 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
+
+
+            OsConfigLogHandle g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+
             //OsConfigLogDebug(log, "For telemetry (with EFAULT): '%s'", crashStart);
             for (int i = 0; i < 1000; i++)
             {
+                StartPerfClock(&g_perfClock, GetPerfLog());
                 TelemetryInitialize(log);
                 OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashStart);
                 for (int j = 0; j < 1000; j++)
@@ -132,6 +140,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                     OSConfigTelemetryStatusTrace("***EFAULT***", EFAULT);
                 }
                 TelemetryCleanup(log);
+                CloseLog(&g_perfLog);
             }
         }
     }
