@@ -140,7 +140,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 }
                 TelemetryCleanup(log);
                 StopPerfClock(&perfClock, perfLog);
-                LogPerfClock(&perfClock, "TelemetryCleanup", NULL, 0, 10000, perfLog);
+                LogPerfClock(&perfClock, "TelemetryCleanup", NULL, 0, 10000000, perfLog);
             }
 
             CloseLog(&perfLog);
