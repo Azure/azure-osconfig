@@ -15,8 +15,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static FILE* g_tmpFile = NULL;
-static char* g_moduleDirectory = NULL;
+static FILE* g_telemetryFile = NULL;
+static char* g_executableDirectory = NULL;
 static char* g_distroName = NULL;
 
 char* GetModuleDirectory(void)
@@ -81,17 +81,17 @@ void TelemetryInitialize(const OsConfigLogHandle log)
         }
     }
 
-    g_tmpFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
+    g_telemetryFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
 
-    if (NULL != g_tmpFile)
+    if (NULL != g_telemetryFile)
     {
         OsConfigLogInfo(log, "TelemetryInitialize: Opened file: %s", TELEMETRY_TMP_FILE_NAME);
 
-        g_moduleDirectory = GetModuleDirectory();
+        g_executableDirectory = GetModuleDirectory();
 
-        if (NULL != g_moduleDirectory)
+        if (NULL != g_executableDirectory)
         {
-            OsConfigLogInfo(log, "TelemetryInitialize: Found module directory: %s", g_moduleDirectory);
+            OsConfigLogInfo(log, "TelemetryInitialize: Found module directory: %s", g_executableDirectory);
         }
         else
         {
@@ -112,11 +112,11 @@ void TelemetryCleanup(const OsConfigLogHandle log)
     char* fileName = NULL;
     char* command = NULL;
 
-    if (NULL != g_tmpFile)
+    if (NULL != g_telemetryFile)
     {
-        if (NULL != g_moduleDirectory)
+        if (NULL != g_executableDirectory)
         {
-            fileName = FormatAllocateString("%s/%s", g_moduleDirectory, TELEMETRY_BINARY_NAME);
+            fileName = FormatAllocateString("%s/%s", g_executableDirectory, TELEMETRY_BINARY_NAME);
 
             if (false == FileExists(fileName))
             {
@@ -133,8 +133,8 @@ void TelemetryCleanup(const OsConfigLogHandle log)
             }
         }
 
-        fclose(g_tmpFile);
-        g_tmpFile = NULL;
+        fclose(g_telemetryFile);
+        g_telemetryFile = NULL;
     }
     else
     {
@@ -144,16 +144,16 @@ void TelemetryCleanup(const OsConfigLogHandle log)
     FREE_MEMORY(command);
     FREE_MEMORY(fileName);
 
-    FREE_MEMORY(g_moduleDirectory);
+    FREE_MEMORY(g_executableDirectory);
     FREE_MEMORY(g_distroName);
 }
 
 void TelemetryAppendPayloadToFile(const char* jsonString)
 {
-    if ((NULL != jsonString) && (NULL != g_tmpFile))
+    if ((NULL != jsonString) && (NULL != g_telemetryFile))
     {
-        fprintf(g_tmpFile, "%s\n", jsonString);
-        fflush(g_tmpFile);
+        fprintf(g_telemetryFile, "%s\n", jsonString);
+        fflush(g_telemetryFile);
     }
 }
 
