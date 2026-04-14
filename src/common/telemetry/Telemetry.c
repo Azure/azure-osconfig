@@ -108,12 +108,12 @@ void TelemetryInitialize(const OsConfigLogHandle log)
 
 void TelemetryCleanup(const OsConfigLogHandle log)
 {
+    int status = 0;
+    char* fileName = NULL;
+    char* command = NULL;
+
     if (NULL != g_tmpFile)
     {
-        int status = 0;
-        char* fileName = NULL;
-        char* command = NULL;
-
         if (NULL != g_moduleDirectory)
         {
             fileName = FormatAllocateString("%s/%s", g_moduleDirectory, TELEMETRY_BINARY_NAME);
