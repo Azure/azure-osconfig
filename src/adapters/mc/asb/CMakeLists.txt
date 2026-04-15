@@ -55,7 +55,7 @@ add_custom_target(stage_create_asb_zip_set
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.mof" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/SetAzureLinuxBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceAsb> ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     ${STAGING_COMMANDS_SET}
-    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetrybin>)
 
 add_custom_target(create_asb_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetAzureLinuxBaseline.zip
