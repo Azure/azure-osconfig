@@ -252,3 +252,86 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(EnsureKernelModuleTest, DashModuleNameMatchesUnderscoreFilename)
+{
+    // Filesystem has underscore filename, module name uses dashes
+    CreateModulesTree(mContext, {"firewire_core.ko"});
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "firewire-core";
+
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    // Module found in filesystem => NonCompliant (not blocked by modprobe)
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureKernelModuleTest, DashModuleNameNoMatchWhenFilenameIsDifferent)
+{
+    // Filesystem has a different module, dash name should not match
+    CreateModulesTree(mContext, {"usb_storage.ko"});
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "firewire-core";
+
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    // Module not found in filesystem => Compliant
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureKernelModuleTest, DashOverlayModuleMatchesUnderscoreFilename)
+{
+    // Overlay module stored with underscores should be found when searching with dashes
+    CreateModulesTree(mContext, {"firewire_core_overlay.ko"});
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "firewire-core";
+
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    // Overlay module found => NonCompliant (not blocked)
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureKernelModuleTest, UnderscoreModuleNameStillMatchesUnderscoreFilename)
+{
+    // When module name already uses underscores, it should still match
+    CreateModulesTree(mContext, {"usb_storage.ko"});
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "usb-storage";
+
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureKernelModuleTest, ExactDashFilenameStillMatches)
+{
+    // When the .ko file itself uses dashes (unusual but possible), exact match still works
+    CreateModulesTree(mContext, {"firewire-core.ko"});
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
+    EnsureKernelModuleUnavailableParams params;
+    params.moduleName = "firewire-core";
+
+    auto result = AuditEnsureKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}

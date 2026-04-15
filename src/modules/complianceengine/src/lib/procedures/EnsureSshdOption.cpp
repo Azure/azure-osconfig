@@ -362,7 +362,9 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
     {
         try
         {
-            valueRegexes.push_back(regex(params.value));
+            // Use case-insensitive matching because GetSshdOptions() lowercases all values from sshd -T output
+            // Use extended to ensure POSIX ERE mode (grouping, alternation) in the regex fallback
+            valueRegexes.push_back(regex(params.value, std::regex_constants::icase | std::regex_constants::extended));
         }
         catch (const regex_error& e)
         {
@@ -379,7 +381,7 @@ Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, Indic
         {
             try
             {
-                valueRegexes.push_back(regex(valuePart, std::regex_constants::icase));
+                valueRegexes.push_back(regex(valuePart, std::regex_constants::icase | std::regex_constants::extended));
             }
             catch (const regex_error& e)
             {

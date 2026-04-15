@@ -3,6 +3,7 @@
 #include <KernelModuleTools.h>
 #include <Regex.h>
 #include <Telemetry.h>
+#include <algorithm>
 #include <dirent.h>
 #include <fts.h>
 #include <iostream>
@@ -75,12 +76,19 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
                 std::string target = moduleName + ".ko";
                 std::string overlayTarget = moduleName + "_overlay.ko";
 
-                if (baseName.find(target) == 0)
+                // Linux kernel uses underscores in .ko filenames, but module names may use dashes
+                // (e.g., "firewire-core" module is stored as "firewire_core.ko")
+                std::string targetUnderscore = target;
+                std::replace(targetUnderscore.begin(), targetUnderscore.end(), '-', '_');
+                std::string overlayTargetUnderscore = overlayTarget;
+                std::replace(overlayTargetUnderscore.begin(), overlayTargetUnderscore.end(), '-', '_');
+
+                if (baseName.find(target) == 0 || baseName.find(targetUnderscore) == 0)
                 {
                     moduleFound = true;
                     break;
                 }
-                if (baseName.find(overlayTarget) == 0)
+                if (baseName.find(overlayTarget) == 0 || baseName.find(overlayTargetUnderscore) == 0)
                 {
                     moduleFound = true;
                     moduleName += "_overlay"; // preserve original behavior of tracking overlay variant
