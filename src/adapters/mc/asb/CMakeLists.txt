@@ -26,9 +26,9 @@ set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigReso
 
 if(BUILD_TELEMETRY)
     list(APPEND STAGING_COMMANDS_GET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:telemetrybin>" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
     list(APPEND STAGING_COMMANDS_SET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/bin/telemetrybin" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:telemetrybin>" ${PROJECT_BINARY_DIR}/StagingSetAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
 endif()
 
 # For Audit (Get):
@@ -39,7 +39,7 @@ add_custom_target(stage_create_asb_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.mof" ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceAsb> ${PROJECT_BINARY_DIR}/StagingAzureLinuxBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     ${STAGING_COMMANDS_GET}
-    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceAsb $<$<BOOL:${BUILD_TELEMETRY}>:telemetrybin>)
 
 add_custom_target(create_asb_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/AzureLinuxBaseline.zip
