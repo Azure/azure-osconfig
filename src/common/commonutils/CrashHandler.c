@@ -96,6 +96,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
     char* crashStart = NULL;
     size_t length = 0;
     char* p = NULL;
+    bool atLineStart = true;
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
@@ -117,14 +118,20 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
             p = crashStart;
             while (*p)
             {
+                if (atLineStart)
+                {
+                    if ((NULL == strstr(p, "[ERROR]")) && (NULL == strstr(p, "[0x")) && ('/' != *p))
+                    {
+                        *p = 0;
+                        break;
+                    }
+
+                    atLineStart = false;
+                }
+
                 if (EOL == *p)
                 {
                     *p = (*(p + 1)) ? ';' : 0;
-                }
-                else if ((NULL == strstr(p, "[ERROR]")) && (NULL == strstr(p, "[0x")))
-                {
-                    *p = 0;
-                    break;
                 }
 
                 p++;
