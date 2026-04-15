@@ -55,7 +55,7 @@ add_custom_target(stage_create_ssh_zip_set
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     ${STAGING_COMMANDS_SET}
-    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetrybin>)
 
 add_custom_target(create_ssh_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip
