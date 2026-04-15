@@ -53,6 +53,10 @@ char* GetCachedDistroName(void)
     return g_distroName;
 }
 
+#ifndef API_KEY
+#define API_KEY "@OsConfigTelemetryApiKey@"
+#endif
+
 void TelemetryInitialize(const OsConfigLogHandle log)
 {
     if (false == DirectoryExists(OSCONFIG_DIRECTORY_NAME))

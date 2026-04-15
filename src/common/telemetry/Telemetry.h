@@ -22,7 +22,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <version.h>
-#include <Keys.h.in>
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 #define OSCONFIG_DIRECTORY_NAME "/var/lib/osconfig"
