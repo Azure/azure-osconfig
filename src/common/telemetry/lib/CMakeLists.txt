@@ -83,6 +83,9 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
+# 1DS SDK headers have unused parameters — suppress for this target only
+target_compile_options(telemetrylib PRIVATE -Wno-unused-parameter)
+
 if(BUILD_EXTERNAL)
     # commonutils is used which uses telemetry, create an alias to avoid name conflict
     add_library(telemetry ALIAS telemetrylib)
@@ -104,7 +107,7 @@ target_link_libraries(telemetrylib
 
 target_include_directories(telemetrylib
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}../
+        ${CMAKE_CURRENT_SOURCE_DIR}/../
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${MAT_SDK_INCLUDE}
