@@ -6,6 +6,6 @@ add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-
 add_subdirectory(ssh)
 add_subdirectory(asb)
 add_subdirectory(complianceengine)
-if (BUILD_TELEMETRY)
-    add_subdirectory(${COMMON_SRC_DIR}/telemetry)
+if(BUILD_TELEMETRY)
+    add_subdirectory(${COMMON_SRC_DIR}/telemetry ${CMAKE_BINARY_DIR}/telemetry)
 endif()
