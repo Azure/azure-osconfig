@@ -174,19 +174,20 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-if (BUILD_TELEMETRY)
-    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
-    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
-    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
-        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
-        @ONLY)
-
-    set_property(DIRECTORY APPEND PROPERTY
-        TEST_INCLUDE_FILES
-            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
-endif()
+# TODO: Refactor telemetry test discovery after ExternalProject removal
+# if (BUILD_TELEMETRY)
+#    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
+#    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
+#    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
+#    configure_file(
+#        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
+#        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
+#        @ONLY)
+#
+#    set_property(DIRECTORY APPEND PROPERTY
+#        TEST_INCLUDE_FILES
+#            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
+# endif()
 
 add_subdirectory(tests)
 
