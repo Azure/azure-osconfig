@@ -104,6 +104,8 @@ void TelemetryInitialize(const OsConfigLogHandle log)
     }
 
     g_distroName = GetOsPrettyName(log);
+
+    OsConfigLogInfo(log, "TelemetryInitialize: on '%s' and using API_KEY '%s'", g_distroName, API_KEY);
 }
 
 void TelemetryCleanup(const OsConfigLogHandle log)
@@ -111,6 +113,8 @@ void TelemetryCleanup(const OsConfigLogHandle log)
     int status = 0;
     char* fileName = NULL;
     char* command = NULL;
+
+    OsConfigLogInfo(log, "TelemetryCleanup: using API_KEY '%s'", API_KEY);
 
     if (NULL != g_telemetryFile)
     {
