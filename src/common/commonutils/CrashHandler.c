@@ -132,6 +132,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 if (EOL == *p)
                 {
                     *p = (*(p + 1)) ? ';' : 0;
+                    atLineStart = true;
                 }
 
                 p++;
