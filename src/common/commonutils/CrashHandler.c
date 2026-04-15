@@ -100,7 +100,7 @@ char* CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
-        return;
+        return NULL;
     }
 
     if (NULL != (endOfFile = ReadEndOfFile(logFileName, OSCONFIG_MAX_STACK_SIZE, log)))
