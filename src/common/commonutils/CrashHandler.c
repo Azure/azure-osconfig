@@ -90,12 +90,13 @@ void InstallCrashHandler(const char* logFileName)
 #define PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.bak"
 
-void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
+char* CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
     char* crashStart = NULL;
-    size_t length = 0;
     char* p = NULL;
+    char* toReturn = NULL;
+    size_t length = 0;
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
@@ -125,11 +126,14 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
-            PerfClock perfClock = {{0, 0}, {0, 0}};
-            OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+            //PerfClock perfClock = {{0, 0}, {0, 0}};
+            //OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashStart);
-            for (int i = 0; i < 100000; i++)
+            toReturn = DuplicateString(crashStart);
+
+            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", toReturn);
+
+            /*(for (int i = 0; i < 100000; i++)
             {
                 StartPerfClock(&perfClock, perfLog);
                 TelemetryInitialize(log);
@@ -143,8 +147,11 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
             }
 
             CloseLog(&perfLog);
+            */
         }
     }
 
     FREE_MEMORY(endOfFile);
+
+    return toReturn;
 }
