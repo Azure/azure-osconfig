@@ -53,6 +53,7 @@ TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardo
     }
 
     OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
+    OsConfigLogInfo(m_log, "############ API key: %s", API_KEY); /////////////////////////
 }
 
 TelemetryManager::~TelemetryManager() noexcept
