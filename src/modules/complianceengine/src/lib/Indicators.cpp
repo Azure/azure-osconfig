@@ -26,6 +26,11 @@ Status IndicatorsTree::NonCompliant(std::string message) &
     return AddIndicator(std::move(message), Status::NonCompliant);
 }
 
+Status IndicatorsTree::NotApplicable(std::string message) &
+{
+    return AddIndicator(std::move(message), Status::NotApplicable);
+}
+
 const IndicatorsTree::Node* IndicatorsTree::GetRootNode() const noexcept
 {
     return mTreeRoot.get();

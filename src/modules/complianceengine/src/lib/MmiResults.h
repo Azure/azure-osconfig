@@ -11,7 +11,8 @@ namespace ComplianceEngine
 enum class Status
 {
     Compliant,
-    NonCompliant
+    NonCompliant,
+    NotApplicable
 };
 
 struct AuditResult

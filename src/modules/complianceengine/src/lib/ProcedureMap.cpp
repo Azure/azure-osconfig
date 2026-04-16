@@ -92,10 +92,10 @@ const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveStat
 // TestingProcedures.h:15
 const char* Bindings<TestingProcedureParams>::names[] = {"message"};
 
-// TestingProcedures.h:27
+// TestingProcedures.h:29
 const char* Bindings<TestingProcedureParametrizedParams>::names[] = {"result"};
 
-// TestingProcedures.h:36
+// TestingProcedures.h:38
 const char* Bindings<TestingProcedureGetParamValuesParams>::names[] = {"KEY1", "KEY2", "KEY3"};
 
 // UfwStatus.h:16
@@ -104,6 +104,7 @@ const char* Bindings<AuditUfwStatusParams>::names[] = {"statusRegex"};
 const ProcedureMap Evaluator::mProcedureMap = {
     {"AuditFailure", {MakeHandler(AuditAuditFailure), nullptr}},
     {"AuditGetParamValues", {MakeHandler(AuditAuditGetParamValues), nullptr}},
+    {"AuditNotApplicable", {MakeHandler(AuditAuditNotApplicable), nullptr}},
     {"AuditSuccess", {MakeHandler(AuditAuditSuccess), nullptr}},
     {"AuditdRulesCheck", {MakeHandler(AuditAuditdRulesCheck), nullptr}},
     {"EnsureAccountsWithoutShellAreLocked", {MakeHandler(AuditEnsureAccountsWithoutShellAreLocked), nullptr}},
@@ -147,6 +148,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"LoginDefsOption", {MakeHandler(AuditLoginDefsOption), nullptr}},
     {"PackageInstalled", {MakeHandler(AuditPackageInstalled), nullptr}},
     {"RemediationFailure", {nullptr, MakeHandler(RemediateRemediationFailure)}},
+    {"RemediationNotApplicable", {nullptr, MakeHandler(RemediateRemediationNotApplicable)}},
     {"RemediationParametrized", {nullptr, MakeHandler(RemediateRemediationParametrized)}},
     {"RemediationSuccess", {nullptr, MakeHandler(RemediateRemediationSuccess)}},
     {"SCE", {MakeHandler(AuditSCE), MakeHandler(RemediateSCE)}},

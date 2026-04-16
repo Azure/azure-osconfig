@@ -16,8 +16,10 @@ struct TestingProcedureParams
 
 Result<Status> RemediateRemediationFailure(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
 Result<Status> RemediateRemediationSuccess(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> RemediateRemediationNotApplicable(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
 Result<Status> AuditAuditFailure(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
 Result<Status> AuditAuditSuccess(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> AuditAuditNotApplicable(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context);
 
 struct TestingProcedureParametrizedParams
 {

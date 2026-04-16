@@ -186,7 +186,7 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
 
         auto payloadString = result.Value().payload;
-        if (result.Value().status == Status::Compliant)
+        if ((result.Value().status == Status::Compliant) || (result.Value().status == Status::NotApplicable))
         {
             payloadString = "PASS" + payloadString;
         }
@@ -281,8 +281,22 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
 
+        std::string statusString;
+        switch (result.Value())
+        {
+            case Status::Compliant:
+                statusString = "compliant";
+                break;
+            case Status::NonCompliant:
+                statusString = "non-compliant";
+                break;
+            case Status::NotApplicable:
+                statusString = "not applicable";
+                break;
+        }
+
         OsConfigLogDebug(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
-            payloadSizeBytes, result.Value() == Status::Compliant ? "compliant" : "non-compliant");
+            payloadSizeBytes, statusString.c_str());
         return MMI_OK;
     }
     catch (const std::exception& e)

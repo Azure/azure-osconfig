@@ -51,6 +51,26 @@
         {
           "type": "object",
           "required": [
+            "AuditNotApplicable"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "AuditNotApplicable": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The message to be logged"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
             "AuditSuccess"
           ],
           "additionalProperties": false,
@@ -80,6 +100,26 @@
           "additionalProperties": false,
           "properties": {
             "RemediationFailure": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The message to be logged"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "RemediationNotApplicable"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "RemediationNotApplicable": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

@@ -41,7 +41,15 @@ public:
 
 class NestedListFormatter : public PayloadFormatter
 {
-    static void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, bool ignored);
+    enum class Ignored
+    {
+        No,
+        Yes
+    };
+    static const std::map<std::pair<Status, NestedListFormatter::Ignored>, const char*> sEmojiMap;
+    static constexpr std::size_t cMaxNodeIndicators = 5;
+
+    static void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, Ignored ignored);
 
 public:
     ~NestedListFormatter() override = default;
