@@ -102,7 +102,7 @@ void CheckForPreviousCrash(const char* logFileName, bool logTelemetry, OsConfigL
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
-        return NULL;
+        return;
     }
 
     if (NULL != (endOfFile = ReadEndOfFile(logFileName, OSCONFIG_MAX_STACK_SIZE, log)))
