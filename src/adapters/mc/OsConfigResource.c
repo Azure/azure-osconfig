@@ -55,14 +55,8 @@ OsConfigLogHandle GetLog(void)
 
 void __attribute__((constructor(65535))) Initialize()
 {
-    char* crashInfo = CheckForPreviousCrash(LOG_FILE, GetLog());
+    CheckForPreviousCrash(LOG_FILE, GetLog());
     InstallCrashHandler(LOG_FILE);
-    if (crashInfo)
-    {
-        TelemetryInitialize(GetLog());
-        OSConfigTelemetryStatusTrace(crashInfo, EFAULT);
-        TelemetryCleanup(GetLog());
-    }
 
     g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);

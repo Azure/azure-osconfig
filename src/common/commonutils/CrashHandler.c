@@ -90,13 +90,15 @@ void InstallCrashHandler(const char* logFileName)
 #define PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.bak"
 
-char* CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
+void CheckForPreviousCrash(const char* logFileName, bool logTelemetry, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
     char* crashStart = NULL;
     char* p = NULL;
-    char* toReturn = NULL;
+    char* crashInfo = NULL;
     size_t length = 0;
+    PerfClock perfClock = {{0, 0}, {0, 0}};
+    OsConfigLogHandle perfLog = {0};
 
     if ((NULL == logFileName) || (false == FileExists(logFileName)))
     {
@@ -126,32 +128,31 @@ char* CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 p++;
             }
 
-            //PerfClock perfClock = {{0, 0}, {0, 0}};
-            //OsConfigLogHandle perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+            perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-            toReturn = DuplicateString(crashStart);
+            crashInfo = DuplicateString(crashStart);
 
-            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", toReturn);
+            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashInfo);
 
-            /*(for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 10000; i++)
             {
-                StartPerfClock(&perfClock, perfLog);
-                TelemetryInitialize(log);
-                for (int j = 0; j < 3; j++)
+                if (logTelemetry)
                 {
-                    OSConfigTelemetryStatusTrace(crashStart, EFAULT);
+                    StartPerfClock(&perfClock, perfLog);
+                    TelemetryInitialize(log);
+                    for (int j = 0; j < 3; j++)
+                    {
+                        OSConfigTelemetryStatusTrace(crashInfo, EFAULT);
+                    }
+                    TelemetryCleanup(log);
+                    StopPerfClock(&perfClock, perfLog);
+                    LogPerfClock(&perfClock, "TelemetryCleanup", NULL, 0, 10000000, perfLog);
                 }
-                TelemetryCleanup(log);
-                StopPerfClock(&perfClock, perfLog);
-                LogPerfClock(&perfClock, "TelemetryCleanup", NULL, 0, 10000000, perfLog);
             }
-
             CloseLog(&perfLog);
-            */
         }
     }
 
     FREE_MEMORY(endOfFile);
-
-    return toReturn;
+    FREE_MEMORY(crashInfo);
 }
