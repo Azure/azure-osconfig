@@ -90,7 +90,7 @@ void InstallCrashHandler(const char* logFileName)
 #define PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_telemetry_perf.bak"
 
-void CheckForPreviousCrash(const char* logFileName, bool logTelemetry, OsConfigLogHandle log)
+void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 {
     char* endOfFile = NULL;
     char* crashStart = NULL;
