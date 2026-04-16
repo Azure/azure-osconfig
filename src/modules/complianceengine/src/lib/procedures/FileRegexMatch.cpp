@@ -158,8 +158,7 @@ Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, Indi
             if (0 != stat((params.path + "/" + entry->d_name).c_str(), &st))
             {
                 const int status = errno;
-                OsConfigLogInfo(context.GetLogHandle(), "Failed to stat file '%s/%s': %s", params.path.c_str(), entry->d_name, strerror(status));
-                errorCount++;
+                OsConfigLogInfo(context.GetLogHandle(), "Failed to stat symlink target '%s/%s': %s", params.path.c_str(), entry->d_name, strerror(status));
                 continue;
             }
 
