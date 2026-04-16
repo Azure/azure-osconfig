@@ -59,6 +59,9 @@ void SecurityBaselineInitialize(void)
     {
         OsConfigLogInfo(SecurityBaselineGetLog(), "SecurityBaselineInitialize: for telemetry (with EFAULT): '%s'", crashInfo);
         OSConfigTelemetryStatusTrace(crashInfo, EFAULT);
+        // Send it immediately:
+        TelemetryCleanup(SecurityBaselineGetLog());
+        TelemetryInitialize(SecurityBaselineGetLog());
     }
     
     InstallCrashHandler(g_securityBaselineLogFile);
