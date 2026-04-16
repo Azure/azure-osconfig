@@ -57,7 +57,7 @@ void SecurityBaselineInitialize(void)
 
     if (crashInfo)
     {
-        OsConfigLogInfo(log, "SecurityBaselineInitialize: for telemetry (with EFAULT): '%s'", crashInfo);
+        OsConfigLogInfo(SecurityBaselineGetLog(), "SecurityBaselineInitialize: for telemetry (with EFAULT): '%s'", crashInfo);
         OSConfigTelemetryStatusTrace(crashInfo, EFAULT);
     }
     
