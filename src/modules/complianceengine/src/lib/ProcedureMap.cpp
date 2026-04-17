@@ -8,6 +8,9 @@ namespace ComplianceEngine
 // AuditdRulesCheck.h:22
 const char* Bindings<AuditAuditdRulesCheckParams>::names[] = {"searchItem", "excludeOption", "requiredOptions"};
 
+// EnsureAccountsWithoutShellAreLocked.h:21
+const char* Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min", "skip_invalid_shells"};
+
 // EnsureApparmorProfiles.h:15
 const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
 
@@ -17,11 +20,11 @@ const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operat
 // EnsureFileExists.h:15
 const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
 
-// EnsureFilePermissions.h:31
-const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:36
+const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "behavior"};
 
-// EnsureFilePermissions.h:60
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask"};
+// EnsureFilePermissions.h:68
+const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "behavior"};
 
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
@@ -68,7 +71,7 @@ const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_cla
 // ExecuteCommandGrep.h:43
 const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
 
-// FileRegexMatch.h:83
+// FileRegexMatch.h:64
 const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
 // LoginDefsOption.h:23
@@ -80,8 +83,8 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
 
-// SystemdConfig.h:52
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir"};
+// SystemdConfig.h:55
+const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
@@ -155,6 +158,18 @@ const ProcedureMap Evaluator::mProcedureMap = {
 
 namespace std
 {
+string to_string(const ComplianceEngine::Behavior value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
 string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
@@ -266,18 +281,6 @@ string to_string(const ComplianceEngine::RegexType value) noexcept(false)
 string to_string(const ComplianceEngine::Operation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Operation>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::Behavior value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Behavior>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

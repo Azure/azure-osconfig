@@ -55,7 +55,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_ValidTCPPorts_ReturnsCorrectPorts)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_STREAM, "127.0.0.1", 3306);
@@ -72,7 +72,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_ValidUDPPorts_ReturnsCorrectPorts)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_DGRAM, "0.0.0.0", 53);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "127.0.0.1", 323);
@@ -90,7 +90,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_IPv6Addresses_ReturnsCorrectPorts)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     VerifyOpenPort(ports[0], AF_INET6, SOCK_STREAM, "::", 22);
     VerifyOpenPort(ports[1], AF_INET6, SOCK_STREAM, "::1", 3306);
@@ -110,7 +110,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_MixedIPv4AndIPv6_ReturnsAllPorts)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 4);
+    ASSERT_EQ(ports.size(), 4u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 80);
     VerifyOpenPort(ports[1], AF_INET6, SOCK_STREAM, "::", 80);
@@ -162,7 +162,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_MalformedLines_SkipsInvalidLines)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_STREAM, "127.0.0.1", 3306);
@@ -181,7 +181,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_UnsupportedProtocols_SkipsUnsupportedProto
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "0.0.0.0", 53);
@@ -200,7 +200,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_InvalidIPAddresses_SkipsInvalidAddresses)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "0.0.0.0", 53);
@@ -218,7 +218,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_PortsWithoutColon_SkipsInvalidFormat)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "127.0.0.1", 53);
@@ -235,7 +235,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_HighPortNumbers_HandlesCorrectly)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 2);
+    ASSERT_EQ(ports.size(), 2u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 65535);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "127.0.0.1", 32768);
@@ -257,7 +257,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_RealWorldSSOutput_ParsesCorrectly)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 5);
+    ASSERT_EQ(ports.size(), 5u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_DGRAM, "127.0.0.53", 53);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "127.0.0.1", 323);
@@ -278,7 +278,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_WildcardAddress_ConvertsToZeros)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 80);
     VerifyOpenPort(ports[1], AF_INET, SOCK_DGRAM, "0.0.0.0", 53);
@@ -297,7 +297,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_InterfaceSpecificIPv4_ParsesInterfaceCorre
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "192.168.1.100", 22);
     EXPECT_EQ(ports[0].interface, "eth0");
@@ -321,7 +321,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_InterfaceSpecificIPv6_ParsesInterfaceCorre
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     VerifyOpenPort(ports[0], AF_INET6, SOCK_STREAM, "fe80::1", 22);
     EXPECT_EQ(ports[0].interface, "eth0");
@@ -346,7 +346,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_MixedWildcardAndInterface_ParsesBoth)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 4);
+    ASSERT_EQ(ports.size(), 4u);
 
     // Wildcard addresses should have empty interface
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 80);
@@ -375,7 +375,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_IPv6WildcardWithInterface_ParsesCorrectly)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     // IPv6 wildcard
     VerifyOpenPort(ports[0], AF_INET6, SOCK_STREAM, "::", 22);
@@ -402,7 +402,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_ComplexInterfaceNames_ParsesCorrectly)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "192.168.1.1", 80);
     EXPECT_EQ(ports[0].interface, "br-docker0");
@@ -426,7 +426,7 @@ TEST_F(NetworkToolsTest, GetOpenPorts_NoInterfaceSpecified_InterfaceEmpty)
 
     ASSERT_TRUE(result.HasValue());
     auto ports = result.Value();
-    ASSERT_EQ(ports.size(), 3);
+    ASSERT_EQ(ports.size(), 3u);
 
     // All should have empty interface names
     VerifyOpenPort(ports[0], AF_INET, SOCK_STREAM, "0.0.0.0", 22);

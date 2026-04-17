@@ -32,7 +32,6 @@ private:
     std::unique_ptr<PayloadFormatter> mFormatter;
     Optional<DistributionInfo> mDistributionInfo;
 
-    Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
     Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
     Optional<Error> InitAudit(const std::string& ruleName, const std::string& payload);
     Result<Status> ExecuteRemediation(const std::string& ruleName, const std::string& payload);

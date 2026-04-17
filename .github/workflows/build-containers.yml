@@ -32,6 +32,8 @@ jobs:
       containers: ${{ steps.matrix.outputs.containers }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Create build matrix
         id: matrix
@@ -54,6 +56,8 @@ jobs:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Setup image
         id: image
         run: |
@@ -90,14 +94,15 @@ jobs:
           tags: |
             type=sha,enable=true,priority=900,prefix=sha256-,suffix=,format=long
             type=schedule,enable=true,priority=10,prefix=date-,suffix=,pattern=nightly
-            type=raw,value=git-${{ github.event.pull_request.head.sha }}
+            type=raw,value=git-${{ github.sha }}
             type=raw,value=run-${{ github.run_number }}
 
       - name: Build and push
         id: build_and_push
         uses: docker/build-push-action@v3
         with:
-          context: ${{ steps.image.outputs.path }}
+          context: .
+          file: ${{ steps.image.outputs.path }}/Dockerfile
           # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -105,10 +110,8 @@ jobs:
 
       - name: Save digest
         run: |
-          DIGEST_SHA=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":sha256-"))')
-          DIGEST_SHA=$(echo ${DIGEST_SHA} | sed -e 's#.*:sha256-\(.*\)#@sha256:\1#')
-          echo $DIGEST_SHA
           DIGEST_SHA=${{ steps.build_and_push.outputs.digest }}
+          DIGEST_SHA=$(echo ${DIGEST_SHA} |  sed -e 's#^sha256:\(.*\)#@sha256:\1#')
           GIT_LABEL=$(echo '${{ steps.meta.outputs.json }}' | jq -r '.tags [] |select (contains(":git-"))')
           jq --null-input \
           --arg distibution "${{ steps.image.outputs.distro }}" \

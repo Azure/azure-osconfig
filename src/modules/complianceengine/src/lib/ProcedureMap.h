@@ -56,6 +56,21 @@ struct Bindings;
 template <typename Enum>
 const std::map<std::string, Enum>& MapEnum();
 
+// Maps the Behavior enum labels to the enum values.
+template <>
+inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
+{
+    static const std::map<std::string, Behavior> map = {
+        {"check_if_exists", Behavior::CheckIfExists},
+        {"at_least_one_exists", Behavior::AtLeastOneExists},
+        {"all_exist", Behavior::AllExist},
+        {"any_exist", Behavior::AnyExist},
+        {"none_exist", Behavior::NoneExist},
+        {"only_one_exists", Behavior::OnlyOneExists},
+    };
+    return map;
+}
+
 // Maps the DConfOperation enum labels to the enum values.
 template <>
 inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
@@ -188,20 +203,6 @@ inline const std::map<std::string, Operation>& MapEnum<Operation>()
     return map;
 }
 
-// Maps the Behavior enum labels to the enum values.
-template <>
-inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
-{
-    static const std::map<std::string, Behavior> map = {
-        {"all_exist", Behavior::AllExist},
-        {"any_exist", Behavior::AnyExist},
-        {"at_least_one_exists", Behavior::AtLeastOneExists},
-        {"none_exist", Behavior::NoneExist},
-        {"only_one_exists", Behavior::OnlyOneExists},
-    };
-    return map;
-}
-
 // Maps the IgnoreCase enum labels to the enum values.
 template <>
 inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
@@ -250,6 +251,16 @@ struct Bindings<AuditAuditdRulesCheckParams>
     static constexpr auto members = std::make_tuple(&T::searchItem, &T::excludeOption, &T::requiredOptions);
 };
 
+// Defines the bindings for the AuditEnsureAccountsWithoutShellAreLockedParams structure.
+template <>
+struct Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>
+{
+    using T = AuditEnsureAccountsWithoutShellAreLockedParams;
+    static constexpr size_t size = 3;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min, &T::skip_invalid_shells);
+};
+
 // Defines the bindings for the AuditEnsureApparmorProfilesParams structure.
 template <>
 struct Bindings<AuditEnsureApparmorProfilesParams>
@@ -285,9 +296,9 @@ template <>
 struct Bindings<EnsureFilePermissionsParams>
 {
     using T = EnsureFilePermissionsParams;
-    static constexpr size_t size = 5;
+    static constexpr size_t size = 6;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask);
+    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
 // Defines the bindings for the EnsureFilePermissionsCollectionParams structure.
@@ -295,9 +306,9 @@ template <>
 struct Bindings<EnsureFilePermissionsCollectionParams>
 {
     using T = EnsureFilePermissionsCollectionParams;
-    static constexpr size_t size = 7;
+    static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask);
+    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
 // Defines the bindings for the EnsureFilesystemOptionParams structure.
@@ -495,9 +506,9 @@ template <>
 struct Bindings<SystemdParameterParams>
 {
     using T = SystemdParameterParams;
-    static constexpr size_t size = 7;
+    static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir);
+    static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir, &T::passOnNotFound);
 };
 
 // Defines the bindings for the SystemdUnitStateParams structure.
@@ -554,6 +565,9 @@ struct Bindings<AuditUfwStatusParams>
 
 namespace std
 {
+// Returns a string representation of the Behavior enum value.
+string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
+
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
@@ -583,9 +597,6 @@ string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*
 
 // Returns a string representation of the Operation enum value.
 string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the Behavior enum value.
-string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the IgnoreCase enum value.
 string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(*-identifier-naming)

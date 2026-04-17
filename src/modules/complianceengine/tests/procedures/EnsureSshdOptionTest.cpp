@@ -751,3 +751,98 @@ TEST_F(EnsureSshdOptionTest, ReadExtraConfigs_AppendsExtraOptionsToSshdCommand)
     ASSERT_TRUE(formatted.find("Option 'permitrootlogin' has a compliant value 'no'") != std::string::npos);
     ASSERT_TRUE(formatted.find("All options are compliant") != std::string::npos);
 }
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_UpperCaseValueRegexMatches)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    // Value pattern uses uppercase "No" but sshd -T output is lowercased to "no"
+    params.value = "No";
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_MixedCaseRegexPatternMatches)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    // Mixed-case regex pattern must match lowercased "no"
+    params.value = "^(No|Prohibit-Password)$";
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_FullUpperCaseRegexMatches)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"usepam"}};
+    // "YES" in value must match the lowercased "yes" from sshd -T
+    params.value = "YES";
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_MatchOp_MixedCaseCommaList)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    // Match op with comma-separated values, one uses uppercase
+    params.value = "Yes,No";
+    params.op = EnsureSshdOptionOperation::Match;
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    // "no" is lowercased from sshd -T, "No" pattern should match case-insensitively
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_NotMatchOp_UpperCaseForbiddenValue)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    // Forbidden pattern uses upper case "NO" — must still match the lowercased actual value "no"
+    params.value = "NO";
+    params.op = EnsureSshdOptionOperation::NotMatch;
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    // The value "no" matches forbidden pattern "NO" case-insensitively => NonCompliant
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureSshdOptionTest, CaseInsensitive_NotMatchOp_UpperCaseNonMatchingPattern)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EnsureSshdOptionParams params;
+    params.option = {{"permitrootlogin"}};
+    // Forbidden pattern "YES" does not match actual value "no" regardless of case
+    params.value = "YES";
+    params.op = EnsureSshdOptionOperation::NotMatch;
+
+    auto result = AuditEnsureSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}

@@ -25,7 +25,7 @@ public:
     static constexpr std::chrono::seconds CONFIG_DEFAULT_TEARDOWN_TIME{5};
     static constexpr const char* TELEMETRY_NAME = "OSConfigTelemetry";
     static constexpr const char* TELEMETRY_VERSION = "1.0.0";
-    static constexpr const char* TELEMETRY_CACHE_FILE_NAME = "/tmp/osconfig_telemetry.db";
+    static constexpr const char* TELEMETRY_CACHE_FILE_NAME = "/var/lib/osconfig/telemetry/cache.db";
     static constexpr const int TELEMETRY_CACHE_FILE_SIZE = 10 * 1024 * 1024;
     static constexpr const int TELEMETRY_RAM_QUEUE_SIZE = 2 * 1024 * 1024;
 

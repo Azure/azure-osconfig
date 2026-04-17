@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 static FILE* g_tmpFile = NULL;
@@ -54,6 +55,32 @@ char* GetCachedDistroName(void)
 
 void TelemetryInitialize(const OsConfigLogHandle log)
 {
+    if (false == DirectoryExists(OSCONFIG_DIRECTORY_NAME))
+    {
+        if (0 != mkdir(OSCONFIG_DIRECTORY_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
+        {
+            OsConfigLogError(log, "TelemetryInitialize: Failed to create directory: '%s' (%d, %s)", OSCONFIG_DIRECTORY_NAME, errno, strerror(errno));
+            return;
+        }
+        else
+        {
+            OsConfigLogInfo(log, "TelemetryInitialize: Created directory: %s", OSCONFIG_DIRECTORY_NAME);
+        }
+    }
+
+    if (false == DirectoryExists(TELEMETRY_DIRECTORY_NAME))
+    {
+        if (0 != mkdir(TELEMETRY_DIRECTORY_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
+        {
+            OsConfigLogError(log, "TelemetryInitialize: Failed to create directory: '%s' (%d, %s)", TELEMETRY_DIRECTORY_NAME, errno, strerror(errno));
+            return;
+        }
+        else
+        {
+            OsConfigLogInfo(log, "TelemetryInitialize: Created directory: %s", TELEMETRY_DIRECTORY_NAME);
+        }
+    }
+
     g_tmpFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
 
     if (NULL != g_tmpFile)

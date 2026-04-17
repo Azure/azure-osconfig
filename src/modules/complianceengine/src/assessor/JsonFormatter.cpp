@@ -17,25 +17,19 @@ namespace
 {
 Result<JsonWrapper> GetModuleInfo()
 {
-    auto* value = json_parse_string(Engine::GetModuleInfo());
-    if (nullptr == value)
-    {
-        return Error("Failed to parse JSON string", EINVAL);
-    }
-
-    return JsonWrapper(value, JsonWrapperDeleter());
+    return JsonWrapper::FromString(Engine::GetModuleInfo());
 }
 } // anonymous namespace
 
 Optional<Error> JsonFormatter::Begin(const Action action)
 {
-    auto* value = json_value_init_object();
-    if (nullptr == value)
+    auto json = JsonWrapper::MakeObject();
+    if (!json.HasValue())
     {
         return Error("Failed to initialize JSON object", ENOMEM);
     }
 
-    mJson = JsonWrapper(value, JsonWrapperDeleter());
+    mJson = std::move(json.Value());
     auto* object = json_value_get_object(mJson.get());
     if (nullptr == object)
     {
@@ -70,14 +64,14 @@ Optional<Error> JsonFormatter::Begin(const Action action)
         return Error("Failed to set action", ENOMEM);
     }
 
-    value = json_value_init_array();
-    if (nullptr == value)
+    auto* arrayValue = json_value_init_array();
+    if (nullptr == arrayValue)
     {
         return Error("Failed to initialize JSON array", ENOMEM);
     }
-    if (JSONSuccess != json_object_set_value(object, "rules", value))
+    if (JSONSuccess != json_object_set_value(object, "rules", arrayValue))
     {
-        json_value_free(value);
+        json_value_free(arrayValue);
         return Error("Failed to set rules", ENOMEM);
     }
 
@@ -86,32 +80,32 @@ Optional<Error> JsonFormatter::Begin(const Action action)
 
 Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload)
 {
-    auto* value = json_value_init_object();
-    if (nullptr == value)
+    auto resultWrapper = JsonWrapper::MakeObject();
+    if (!resultWrapper.HasValue())
     {
         return Error("Failed to initialize JSON object", ENOMEM);
     }
-    auto result = JsonWrapper(value, ComplianceEngine::JsonWrapperDeleter());
+    auto result = std::move(resultWrapper.Value());
     auto* object = json_value_get_object(result.get());
     if (nullptr == object)
     {
         return Error("Failed to get JSON object", ENOMEM);
     }
 
-    value = json_parse_string(payload.c_str());
-    if (nullptr == value)
+    auto* indicatorsValue = json_parse_string(payload.c_str());
+    if (nullptr == indicatorsValue)
     {
         return Error("Failed to parse JSON payload", ENOMEM);
     }
-    if (json_value_get_type(value) != JSONArray)
+    if (json_value_get_type(indicatorsValue) != JSONArray)
     {
-        json_value_free(value);
+        json_value_free(indicatorsValue);
         return Error("Invalid JSON payload", EINVAL);
     }
 
-    if (JSONSuccess != json_object_set_value(object, "indicators", value))
+    if (JSONSuccess != json_object_set_value(object, "indicators", indicatorsValue))
     {
-        json_value_free(value);
+        json_value_free(indicatorsValue);
         return Error("Failed to set JSON payload", ENOMEM);
     }
 

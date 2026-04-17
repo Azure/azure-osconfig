@@ -122,7 +122,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if (workerPid < 0)
     {
         OsConfigLogError(log, "Cannot fork for command '%s', fork() failed with %d (%s)", command, errno, strerror(errno));
-        OSConfigTelemetryStatusTrace("fork", errno);
+        OSConfigTelemetryStatusTrace("Cannot fork for command", errno);
         close(pipefd[0]);
         close(pipefd[1]);
         return errno;
@@ -202,7 +202,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             if ((timeoutSeconds > 0) && (currentTime - startTime >= timeoutSeconds))
             {
                 OsConfigLogError(log, "Timeout reading from pipe for command '%s', %d seconds", command, (int)(currentTime - startTime));
-                OSConfigTelemetryStatusTrace("timeoutSeconds", ETIME);
+                OSConfigTelemetryStatusTrace("Timeout reading from pipe for command", ETIME);
                 status = ETIME;
                 break;
             }

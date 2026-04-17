@@ -1,0 +1,19 @@
+
+.git
+.gitignore
+
+# common junk
+**/.cache
+**/build
+**/out
+**/.venv
+**/*.o
+**/*.a
+**/*.so
+**/*.log
+
+# vcpkg artifacts
+external/vcpkg/buildtrees
+external/vcpkg/packages
+external/vcpkg/downloads
+external/vcpkg/installed

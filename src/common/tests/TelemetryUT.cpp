@@ -10,6 +10,7 @@
 #include <string>
 #include <sys/stat.h>
 
+#ifdef BUILD_TELEMETRY
 class TelemetryTest : public ::testing::Test
 {
 protected:
@@ -27,6 +28,7 @@ protected:
     {
         TelemetryCleanup(NULL);
         remove(TELEMETRY_TMP_FILE_NAME);
+        rmdir(TELEMETRY_DIRECTORY_NAME);
     }
 };
 
@@ -36,6 +38,14 @@ TEST_F(TelemetryTest, InitCreatesTelemetryFile)
 
     struct stat fileInfo;
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
+}
+
+TEST_F(TelemetryTest, InitCreatesTelemetryDirectory)
+{
+    TelemetryInitialize(NULL);
+
+    struct stat dirInfo;
+    EXPECT_EQ(0, stat(TELEMETRY_DIRECTORY_NAME, &dirInfo));
 }
 
 TEST_F(TelemetryTest, AppendJsonWritesSingleLine)
@@ -62,3 +72,4 @@ TEST_F(TelemetryTest, CleanupResetsTelemetryState)
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
     EXPECT_EQ(0, remove(TELEMETRY_TMP_FILE_NAME));
 }
+#endif

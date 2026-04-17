@@ -409,6 +409,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
             }
 
             endpwent();
+
+            *size = i;
         }
         else
         {
@@ -479,7 +481,6 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     else if (NULL == user->username)
     {
         OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
-        OSConfigTelemetryStatusTrace("username", ENOENT);
         return ENOENT;
     }
 
@@ -889,7 +890,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     char* command = NULL;
     int status = 0;
 
-    if (NULL == user)
+    if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "RemoveUser: invalid argument");
         OSConfigTelemetryStatusTrace("user", EINVAL);
@@ -1509,7 +1510,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 == strcmp(userList[i].username, g_root)) && (0 == userList[i].userId) && (0 != userList[i].groupId))
+            if ((userList[i].username && (0 == strcmp(userList[i].username, g_root))) && (0 == userList[i].userId) && (0 != userList[i].groupId))
             {
                 OsConfigLogInfo(log, "CheckDefaultRootAccountuserIsGidZero: root user '%s' (%u) has default gid %u instead of gid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
