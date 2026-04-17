@@ -246,7 +246,7 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
             "}",                                                                                                                                       \
-            _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, _crashInfo ? _crashInfo : TELEMETRY_NOTFOUND_STRING,                                  \
+            _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, (crashInfo) ? (crashInfo) : TELEMETRY_NOTFOUND_STRING,                                  \
             _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
         if (NULL != telemetry_json)                                                                                                                    \
         {                                                                                                                                              \
