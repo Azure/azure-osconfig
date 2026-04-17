@@ -132,7 +132,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
 
             crashInfo = DuplicateString(crashStart);
 
-            OsConfigLogInfo(log, "For telemetry (with EFAULT): '%s'", crashInfo);
+            OsConfigLogInfo(log, "For telemetry: '%s'", crashInfo);
 
             for (int i = 0; i < 10000; i++)
             {
@@ -140,7 +140,7 @@ void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log)
                 TelemetryInitialize(log);
                 for (int j = 0; j < 3; j++)
                 {
-                    OSConfigTelemetryStatusTrace(crashInfo, EFAULT);
+                    OSConfigTelemetryCrashDetected(crashInfo);
                 }
                 TelemetryCleanup(log);
                 StopPerfClock(&perfClock, perfLog);

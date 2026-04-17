@@ -228,6 +228,36 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         }                                                                                                                                              \
     }
 
+#define OSConfigTelemetryCrashDetected(crashInfo)                                                                                                      \
+    {                                                                                                                                                  \
+        char* telemetry_json = NULL;                                                                                                                   \
+        const char* _correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                  \
+        const char* _ruleCodename = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR);                                                                    \
+        const char* _scenarioName = getenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR);                                                                    \
+        const char* _timestamp = GetFormattedTime();                                                                                                   \
+        int64_t _elapsed_us = 0;                                                                                                                       \
+        const char* _distroName = GetCachedDistroName();                                                                                               \
+        const char* _resultString = strerror(status);                                                                                                  \
+        OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
+        telemetry_json = FormatAllocateString(                                                                                                         \
+            "{"                                                                                                                                        \
+            "\"EventName\":\"CrashDetected\","                                                                                                         \
+            "\"Timestamp\":\"%s\","                                                                                                                    \
+            "\"CrashInfo\":\"%s\","                                                                                                                    \
+            "\","                                                                                                                                      \
+            "\"DistroName\":\"%s\","                                                                                                                   \
+            "\"CorrelationId\":\"%s\","                                                                                                                \
+            "\"Version\":\"%s\""                                                                                                                       \
+            "}",                                                                                                                                       \
+            _timestamp ? _timestamp : TELEMETRY_NOTFOUND_STRING, _crashInfo ? _crashInfo : TELEMETRY_NOTFOUND_STRING,                                  \
+            _distroName ? _distroName : TELEMETRY_NOTFOUND_STRING, _correlationId ? _correlationId : TELEMETRY_NOTFOUND_STRING, OSCONFIG_VERSION);     \
+        if (NULL != telemetry_json)                                                                                                                    \
+        {                                                                                                                                              \
+            TelemetryAppendPayloadToFile(telemetry_json);                                                                                              \
+            FREE_MEMORY(telemetry_json);                                                                                                               \
+        }                                                                                                                                              \
+    }
+
 #else // BUILD_TELEMETRY
 
 #define OSConfigTimeStampSave()                                                                                                                        \
@@ -271,6 +301,11 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         (void)(objectName);                                                                                                                            \
         (void)(objectResult);                                                                                                                          \
         (void)(microseconds);                                                                                                                          \
+    } while (0)
+#define OSConfigTelemetryCrashDetected(crashInfo)                                                                                                      \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        (void)(crashInfo);                                                                                                                             \
     } while (0)
 
 #endif // BUILD_TELEMETRY
