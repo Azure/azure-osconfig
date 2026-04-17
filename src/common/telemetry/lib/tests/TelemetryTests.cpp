@@ -145,10 +145,18 @@ TEST_F(TelemetryTest, ProcessStatusTraceEvent)
 
 TEST_F(TelemetryTest, ProcessCrashDetectedEvent)
 {
-    std::string realEvent = R"({"EventName":"CrashDetected","Timestamp":"2025-10-17 22:52:56+0000","CrashINfo":"Test","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
+    std::string realEvent = R"({"EventName":"CrashDetected","Timestamp":"2025-10-17 22:52:56+0000","CrashInfo":"Test","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
     ASSERT_TRUE(CreateTestJsonFile(realEvent));
     Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
     EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
+}
+
+TEST_F(TelemetryTest, ProcessCrashDetectedMissingCrashInfoEvent)
+{
+    std::string realEvent = R"({"EventName":"CrashDetected","Timestamp":"2025-10-17 22:52:56+0000","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
+    ASSERT_TRUE(CreateTestJsonFile(realEvent));
+    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
+    EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));
 }
 
 TEST_F(TelemetryTest, ProcessStatusTraceMissingScenarioNameEvent)

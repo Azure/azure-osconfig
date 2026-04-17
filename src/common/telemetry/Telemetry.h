@@ -233,15 +233,12 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
         char* telemetry_json = NULL;                                                                                                                   \
         const char* _correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);                                                                  \
         const char* _timestamp = GetFormattedTime();                                                                                                   \
-        int64_t _elapsed_us = 0;                                                                                                                       \
         const char* _distroName = GetCachedDistroName();                                                                                               \
-        OSConfigGetElapsedTime(&_elapsed_us);                                                                                                          \
         telemetry_json = FormatAllocateString(                                                                                                         \
             "{"                                                                                                                                        \
             "\"EventName\":\"CrashDetected\","                                                                                                         \
             "\"Timestamp\":\"%s\","                                                                                                                    \
             "\"CrashInfo\":\"%s\","                                                                                                                    \
-            "\","                                                                                                                                      \
             "\"DistroName\":\"%s\","                                                                                                                   \
             "\"CorrelationId\":\"%s\","                                                                                                                \
             "\"Version\":\"%s\""                                                                                                                       \
@@ -260,11 +257,6 @@ static inline void OSConfigGetElapsedTime(int64_t* elapsed_us_var)
 #define OSConfigTimeStampSave()                                                                                                                        \
     do                                                                                                                                                 \
     {                                                                                                                                                  \
-    } while (0)
-#define OSConfigGetElapsedTime(elapsed_us_var)                                                                                                         \
-    do                                                                                                                                                 \
-    {                                                                                                                                                  \
-        (elapsed_us_var) = 0;                                                                                                                          \
     } while (0)
 #define OSConfigGetElapsedTime(elapsed_us_var)                                                                                                         \
     do                                                                                                                                                 \
