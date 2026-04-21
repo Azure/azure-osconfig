@@ -65,7 +65,7 @@ TEST_F(StringToolsTest, EscapeForShell_MultipleSpecialCharacters)
     // Multiple special characters should all be escaped
     EXPECT_EQ("\\\"\\$HOME\\\"", EscapeForShell("\"$HOME\""));
     EXPECT_EQ("\\`echo \\$USER\\`", EscapeForShell("`echo $USER`"));
-    EXPECT_EQ("\\\\\\\"\\`\\$", EscapeForShell("\\\"\\`$"));
+    EXPECT_EQ("\\\\\\\"\\\\\\`\\$", EscapeForShell("\\\"\\`$"));
 }
 
 TEST_F(StringToolsTest, EscapeForShell_CommandInjectionPatterns)

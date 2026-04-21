@@ -12,7 +12,9 @@
 
 namespace ComplianceEngine
 {
-// Valid sysctl names contain only alphanumeric characters, dots, underscores, and hyphens
+// Valid sysctl names contain only alphanumeric characters, dots, underscores, hyphens, and forward slashes.
+// Forward slashes are valid in some sysctl naming conventions (e.g., fs.binfmt_misc.python3/10).
+// Path traversal is still prevented by the ".." check below.
 static bool IsValidSysctlName(const std::string& name)
 {
     if (name.empty())
@@ -26,8 +28,8 @@ static bool IsValidSysctlName(const std::string& name)
         return false;
     }
 
-    // Validate characters: only allow alphanumeric, dots, underscores, and hyphens
-    static const regex validPattern("^[a-zA-Z0-9._-]+$");
+    // Validate characters: only allow alphanumeric, dots, underscores, hyphens, and forward slashes
+    static const regex validPattern("^[a-zA-Z0-9._/-]+$");
     return regex_match(name, validPattern);
 }
 

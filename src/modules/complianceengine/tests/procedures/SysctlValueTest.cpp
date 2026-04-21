@@ -578,11 +578,12 @@ TEST_F(SysctlValueTest, SecurityRejectsEmptySysctlName)
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
-TEST_F(EnsureSysctlTest, SecurityRejectsSysctlNameWithSlash)
+TEST_F(SysctlValueTest, SecurityRejectsSysctlNameWithSlashAndDoubleDot)
 {
-    // Sysctl names should use dots, not slashes - slashes could indicate path injection
-    EnsureSysctlParams params;
-    params.sysctlName = "net/ipv4/ip_forward";
+    // Reject path traversal via slash + double dot (e.g. net/ipv4/../etc/passwd)
+    // Note: bare slashes alone are permitted for names like fs.binfmt_misc.python3/10
+    SysctlValueParams params;
+    params.sysctlName = "net/ipv4/../etc/passwd";
     params.value = Pattern::Make("0").Value();
 
     auto result = AuditSysctlValue(params, mIndicators, mContext);
