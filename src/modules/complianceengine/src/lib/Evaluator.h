@@ -47,7 +47,11 @@ class NestedListFormatter : public PayloadFormatter
         Yes
     };
     static const std::map<std::pair<Status, NestedListFormatter::Ignored>, const char*> sEmojiMap;
-    static constexpr std::size_t cMaxNodeIndicators = 5;
+    // To prevent excessively large payloads, we limit the number of
+    // compliant indicators shown for each node. The non-compliant indicators
+    // are not limited as they are more critical for understanding
+    // the compliance failures.
+    static constexpr std::size_t cMaxNodeCompliantIndicators = 5;
 
     static void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, Ignored ignored);
 

@@ -395,7 +395,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount > cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeCompliantIndicators)
         {
             continue;
         }
@@ -435,7 +435,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount > cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeCompliantIndicators)
         {
             continue;
         }
