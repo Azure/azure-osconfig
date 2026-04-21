@@ -18,6 +18,10 @@ namespace ComplianceEngine
 Result<Status> AuditGsettingsValue(const GsettingsValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
+
+    const auto escapedSchema = EscapeForShell(params.schema);
+    const auto escapedKey = EscapeForShell(params.key);
+
     std::map<GsettingsOperationType, std::pair<std::function<bool(const int&, const int&)>, std::function<bool(const std::string&, const std::string&)>>> operations{
         {GsettingsOperationType::LessThan,
             std::make_pair([](const int& x, const int& y) { return x < y; }, [](const std::string&, const std::string&) { return false; })},
@@ -58,7 +62,7 @@ Result<Status> AuditGsettingsValue(const GsettingsValueParams& params, Indicator
         }
     }
 
-    Result<std::string> gsettingsType = context.ExecuteCommand("gsettings range \"" + params.schema + "\" \"" + params.key + "\"");
+    Result<std::string> gsettingsType = context.ExecuteCommand("gsettings range \"" + escapedSchema + "\" \"" + escapedKey + "\"");
     if (!gsettingsType.HasValue() || gsettingsType.Value().empty())
     {
         return Error("Failed to execute gsettings range command " + params.key + " error: " + gsettingsType.Error().message, gsettingsType.Error().code);
@@ -91,10 +95,10 @@ Result<Status> AuditGsettingsValue(const GsettingsValueParams& params, Indicator
     {
         valuePrefixedByUint32 = true;
     }
-    auto gsettingsCmd = std::string("gsettings get \"") + params.schema + "\" \"" + params.key + "\"";
+    auto gsettingsCmd = std::string("gsettings get \"") + escapedSchema + "\" \"" + escapedKey + "\"";
     if (params.operation == GsettingsOperationType::IsUnlocked)
     {
-        gsettingsCmd = std::string("gsettings writable \"" + params.schema + "\" \"" + params.key + "\"");
+        gsettingsCmd = std::string("gsettings writable \"" + escapedSchema + "\" \"" + escapedKey + "\"");
     }
 
     Result<std::string> gsettingsOutput = context.ExecuteCommand(gsettingsCmd);

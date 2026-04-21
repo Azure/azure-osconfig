@@ -7,9 +7,15 @@
 
 namespace ComplianceEngine
 {
+
+// Security: Escapes characters that have special meaning inside double-quoted shell strings.
+// Characters escaped: \ " ` $
+// The result MUST be used inside double quotes in the shell command.
 std::string EscapeForShell(const std::string& str)
 {
     std::string escapedStr;
+    escapedStr.reserve(str.size() * 2); // Pre-allocate for worst case
+
     for (char c : str)
     {
         switch (c)
