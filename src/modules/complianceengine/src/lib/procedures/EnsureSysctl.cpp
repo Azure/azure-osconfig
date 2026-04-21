@@ -24,6 +24,11 @@ Result<Status> AuditEnsureSysctl(const EnsureSysctlParams& params, IndicatorsTre
     auto output = context.GetFileContents(procSysPath);
     if (!output.HasValue())
     {
+        if (output.Error().code == ENOENT)
+        {
+            return indicators.NotApplicable("Sysctl '" + params.sysctlName + "' not found in runtime configuration");
+        }
+
         return output.Error();
     }
     std::string sysctlOutput = output.Value();

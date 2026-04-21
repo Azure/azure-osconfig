@@ -27,6 +27,18 @@ Result<std::string> CommonContext::ExecuteCommand(const std::string& cmd) const
 
 Result<std::string> CommonContext::GetFileContents(const std::string& filePath) const
 {
+    struct stat st;
+    if (stat(filePath.c_str(), &st) != 0)
+    {
+        int status = errno;
+        if (ENOENT == status)
+        {
+            return Error("File not found: " + filePath, status);
+        }
+
+        return Error("Failed to stat file: " + std::string(strerror(status)), status);
+    }
+
     char* output = LoadStringFromFile(filePath.c_str(), false, mLog);
     if (output == nullptr)
     {

@@ -519,3 +519,149 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
+
+// ── Three-valued logic (3VL) tests ────────────────────────────────────────────
+
+// not(N/A) → N/A
+TEST_F(EvaluatorTest, ThreeValuedLogic_Not_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"not\":{\"AuditNotApplicable\":{}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// not(not(N/A)) → N/A  (double negation preserves N/A)
+TEST_F(EvaluatorTest, ThreeValuedLogic_Not_Not_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"not\":{\"not\":{\"AuditNotApplicable\":{}}}}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// allOf([N/A]) → N/A  (only N/A, no absorbing element)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AllOf_OnlyNotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// allOf([Compliant, N/A]) → N/A  (N/A contaminates a passing allOf)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AllOf_Compliant_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditSuccess\":{}},{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// allOf([N/A, Compliant]) → N/A  (order must not matter)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AllOf_NotApplicable_Compliant)
+{
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditNotApplicable\":{}},{\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// allOf([NonCompliant, N/A]) → NonCompliant  (NC absorbs N/A in allOf)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AllOf_NonCompliant_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditFailure\":{}},{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NonCompliant);
+}
+
+// allOf([N/A, NonCompliant]) → NonCompliant  (absorbing element reached after N/A)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AllOf_NotApplicable_NonCompliant)
+{
+    auto json = JsonWrapper::FromString("{\"allOf\":[{\"AuditNotApplicable\":{}},{\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NonCompliant);
+}
+
+// anyOf([N/A]) → N/A  (only N/A, no absorbing element)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AnyOf_OnlyNotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// anyOf([NonCompliant, N/A]) → N/A  (N/A contaminates a failing anyOf)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AnyOf_NonCompliant_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditFailure\":{}},{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// anyOf([N/A, NonCompliant]) → N/A  (order must not matter)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AnyOf_NotApplicable_NonCompliant)
+{
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditNotApplicable\":{}},{\"AuditFailure\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::NotApplicable);
+}
+
+// anyOf([Compliant, N/A]) → Compliant  (C absorbs N/A in anyOf)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AnyOf_Compliant_NotApplicable)
+{
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditSuccess\":{}},{\"AuditNotApplicable\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::Compliant);
+}
+
+// anyOf([N/A, Compliant]) → Compliant  (absorbing element reached after N/A)
+TEST_F(EvaluatorTest, ThreeValuedLogic_AnyOf_NotApplicable_Compliant)
+{
+    auto json = JsonWrapper::FromString("{\"anyOf\":[{\"AuditNotApplicable\":{}},{\"AuditSuccess\":{}}]}");
+    ASSERT_TRUE(json.HasValue());
+    Evaluator evaluator("test", json_value_get_object(json->get()), mParameters, mContext);
+
+    auto result = evaluator.ExecuteAudit(mFormatter);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().status, Status::Compliant);
+}

@@ -159,6 +159,7 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
 
     const auto* array = json_value_get_array(value);
     size_t count = json_array_get_count(array);
+    Status accumulated = (listAction == ListAction::AnyOf) ? Status::NonCompliant : Status::Compliant;
     for (size_t i = 0; i < count; ++i)
     {
         const auto* subObject = json_array_get_object(array, i);
@@ -180,9 +181,14 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
             OsConfigLogDebug(mContext.GetLogHandle(), "Evaluation returned non-compliant status at index %zu", i);
             return Status::NonCompliant;
         }
+
+        if (result.Value() == Status::NotApplicable)
+        {
+            accumulated = Status::NotApplicable;
+        }
     }
 
-    return ((listAction == ListAction::AnyOf) ? Status::NonCompliant : Status::Compliant);
+    return accumulated;
 }
 
 Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action action)
@@ -212,6 +218,12 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
     {
         OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
         return result;
+    }
+
+    if (result.Value() == Status::NotApplicable)
+    {
+        OsConfigLogDebug(mContext.GetLogHandle(), "not: inner result is not-applicable, propagating");
+        return Status::NotApplicable;
     }
 
     if (result.Value() == Status::Compliant)
@@ -367,14 +379,13 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     return result.Value();
 }
 
-static constexpr std::size_t cMaxNodeIndicators = 5;
-void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, const bool ignored)
-{
-    static const char* greenCompliant = "✅";
-    static const char* redNonCompliant = "❌";
-    static const char* greyCompliant = "✓";
-    static const char* greyNonCompliant = "🇽";
+const std::map<std::pair<Status, NestedListFormatter::Ignored>, const char*> NestedListFormatter::sEmojiMap = {
+    {{Status::Compliant, NestedListFormatter::Ignored::No}, "✅"}, {{Status::Compliant, NestedListFormatter::Ignored::Yes}, "✓"},
+    {{Status::NonCompliant, NestedListFormatter::Ignored::No}, "❌"}, {{Status::NonCompliant, NestedListFormatter::Ignored::Yes}, "🇽"},
+    {{Status::NotApplicable, NestedListFormatter::Ignored::No}, "➖"}, {{Status::NotApplicable, NestedListFormatter::Ignored::Yes}, "–"}};
 
+void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth, const Ignored ignored)
+{
     std::size_t compliantIndicatorsCount = 0;
     for (std::size_t i = 0; i < node.children.size(); i++)
     {
@@ -384,7 +395,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount > cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeCompliantIndicators)
         {
             continue;
         }
@@ -393,25 +404,26 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        bool ign = ignored;
-        if (i + 1 != node.children.size() && node.procedureName == "anyOf" && node.status == Status::Compliant)
+        Ignored ign = ignored;
+        // Check if this child is not the last one and if we're in an alternative.
+        if (i + 1 != node.children.size() && node.procedureName == "anyOf")
         {
-            ign = true;
+            // In this case we know this child is not the last one,
+            // so it does not determine the result. If the status was compliant,
+            // it would have to be the last child.
+            assert(child->status != Status::Compliant);
+            ign = Ignored::Yes;
         }
 
-        if (node.procedureName == "not")
+        // Ignore the 'not' inner status only if it's results is determined, otherwise it'll be forwarded as not-applicable.
+        if (node.procedureName == "not" && child->status != Status::NotApplicable)
         {
-            ign = true;
+            ign = Ignored::Yes;
         }
 
-        if (ign)
-        {
-            result << (child->status == Status::Compliant ? greyCompliant : greyNonCompliant) << " " << child->procedureName << "\n";
-        }
-        else
-        {
-            result << (child->status == Status::Compliant ? greenCompliant : redNonCompliant) << " " << child->procedureName << "\n";
-        }
+        auto emoji = sEmojiMap.find({child->status, ign});
+        assert(emoji != sEmojiMap.end());
+        result << emoji->second << " " << child->procedureName << "\n";
         FormatNode(*child.get(), result, depth + 1, ign);
     }
 
@@ -423,7 +435,7 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             compliantIndicatorsCount++;
         }
-        if (compliantIndicatorsCount > cMaxNodeIndicators)
+        if (compliantIndicatorsCount > cMaxNodeCompliantIndicators)
         {
             continue;
         }
@@ -432,28 +444,10 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         {
             result << "\t";
         }
-        if (indicator.status == Status::Compliant)
-        {
-            if (ignored)
-            {
-                result << greyCompliant << " " << indicator.message << "\n";
-            }
-            else
-            {
-                result << greenCompliant << " " << indicator.message << "\n";
-            }
-        }
-        else
-        {
-            if (ignored)
-            {
-                result << greyNonCompliant << " " << indicator.message << "\n";
-            }
-            else
-            {
-                result << redNonCompliant << " " << indicator.message << "\n";
-            }
-        }
+
+        auto emoji = sEmojiMap.find({indicator.status, ignored});
+        assert(emoji != sEmojiMap.end());
+        result << emoji->second << " " << indicator.message << "\n";
     }
 }
 
@@ -462,8 +456,11 @@ Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
     assert(nullptr != node);
-    result << (node->status == Status::Compliant ? "✅ " : "❌ ") << node->procedureName << "\n";
-    FormatNode(*node, result, 1, false);
+    auto emoji = sEmojiMap.find({node->status, NestedListFormatter::Ignored::No});
+    // Keep the assert if in the future the Status enum has changed
+    assert(emoji != sEmojiMap.end());
+    result << emoji->second << " " << node->procedureName << "\n";
+    FormatNode(*node, result, 1, NestedListFormatter::Ignored::No);
     return result.str();
 }
 

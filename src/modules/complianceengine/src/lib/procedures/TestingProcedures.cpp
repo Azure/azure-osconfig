@@ -18,12 +18,22 @@ Result<Status> RemediateRemediationFailure(const TestingProcedureParams& params,
     return Status::NonCompliant;
 }
 
+Result<Status> RemediateRemediationNotApplicable(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
+{
+    UNUSED(context);
+    if (params.message.HasValue())
+    {
+        return indicators.NotApplicable(params.message.Value());
+    }
+    return Status::NotApplicable;
+}
+
 Result<Status> RemediateRemediationSuccess(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
     if (params.message.HasValue())
     {
-        return indicators.NonCompliant(params.message.Value());
+        return indicators.Compliant(params.message.Value());
     }
     return Status::Compliant;
 }
@@ -46,6 +56,16 @@ Result<Status> AuditAuditSuccess(const TestingProcedureParams& params, Indicator
         return indicators.Compliant(params.message.Value());
     }
     return Status::Compliant;
+}
+
+Result<Status> AuditAuditNotApplicable(const TestingProcedureParams& params, IndicatorsTree& indicators, ContextInterface& context)
+{
+    UNUSED(context);
+    if (params.message.HasValue())
+    {
+        return indicators.NotApplicable(params.message.Value());
+    }
+    return Status::NotApplicable;
 }
 
 Result<Status> RemediateRemediationParametrized(const TestingProcedureParametrizedParams& params, IndicatorsTree& indicators, ContextInterface& context)

@@ -71,6 +71,9 @@ struct IndicatorsTree
     // Add a non-compliant indicator to the current node in the evaluation stack.
     Status NonCompliant(std::string message) &;
 
+    // Add a not applicable indicator to the current node in the evaluation stack.
+    Status NotApplicable(std::string message = "This procedure is not applicable") &;
+
     // Get the root node of the tree.
     const Node* GetRootNode() const noexcept;
 
