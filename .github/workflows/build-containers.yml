@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - devops/docker/**/Dockerfile
+      - .github/workflows/build-containers.yml
   push:
     branches:
       - dev
@@ -22,7 +23,7 @@ on:
 env:
   REGISTRY: ghcr.io
   BUILD_TYPE: Release
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
 
 jobs:
   modified-containers:

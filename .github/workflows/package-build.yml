@@ -56,7 +56,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
   REGISTRY: ghcr.io
 
 jobs:

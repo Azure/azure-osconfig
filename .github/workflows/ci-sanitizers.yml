@@ -7,7 +7,7 @@ on:
 
 env:
   BUILD_TYPE: Debug
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
   REGISTRY: ghcr.io
   SANITIZER_FLAGS: -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1
 

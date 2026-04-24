@@ -57,7 +57,6 @@ jobs:
             { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt, container-tag: "@sha256:630feaa03825b3f319df2b09c9a0216a0a11902e923713144399357218254d2e" },
             # { os: debian, version: 12, arch: arm64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt, container-tag: sha-db3d4c8 },
             { os: mariner, version: 2, arch: amd64, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum, container-tag: "@sha256:18c338a157b3f22a30ac854efa7beffc8f35566d5e22177c5afbeb14802e32d6" },
-            { os: rhel, version: 7, arch: amd64, dist: rhel7, package-type: RPM, repo: microsoft-rhel7.4-insiders-fast-prod-yum, container-tag: "@sha256:f081fea3fb438bdadbe37ede21ef1ccaccd6bb1a92a99e01fbee8aa270a29859" },
             { os: rhel, version: 8, arch: amd64, dist: rhel8, package-type: RPM, repo: microsoft-rhel8.0-insiders-fast-prod-yum, container-tag: "@sha256:98cc3106943b549059c126443c3dd1c9faf7e8e217b5f3feb94a8482d3a6afc6" },
             { os: rhel, version: 9, arch: amd64, dist: rhel9, package-type: RPM, repo: microsoft-rhel9.0-insiders-fast-prod-yum, container-tag: "@sha256:46cbe90ba3734b58692fa95af1414f870ef449b934cf89af84e6aa02fc3d7480" },
             { os: rockylinux, version: 9, arch: amd64, dist: rockylinux9, package-type: RPM, repo: microsoft-el9-insiders-fast-prod-yum, container-tag: "@sha256:a881fec8ac89651d3dd724761439130f96932406f70d43e2631be81307053ec5" },

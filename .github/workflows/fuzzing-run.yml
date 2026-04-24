@@ -27,7 +27,7 @@ on:
         default: true
 
 env:
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
   REGISTRY: ghcr.io
 
 jobs:
