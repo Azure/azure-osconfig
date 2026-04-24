@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+          container: microsoft/kompli/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ matrix.target.tag }}
 
