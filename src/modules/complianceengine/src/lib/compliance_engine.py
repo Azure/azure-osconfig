@@ -194,14 +194,6 @@ class AuditGetParamValues:
 
 
 @marshmallow_dataclass.dataclass
-class AuditNotApplicable:
-    """Parameters for the AuditNotApplicable procedure."""
-
-    # The message to be logged
-    message: Optional[str] = dataclasses.field(default=None)
-
-
-@marshmallow_dataclass.dataclass
 class AuditSuccess:
     """Parameters for the AuditSuccess procedure."""
 
@@ -734,14 +726,6 @@ class RemediationFailure:
 
 
 @marshmallow_dataclass.dataclass
-class RemediationNotApplicable:
-    """Parameters for the RemediationNotApplicable procedure."""
-
-    # The message to be logged
-    message: Optional[str] = dataclasses.field(default=None)
-
-
-@marshmallow_dataclass.dataclass
 class RemediationParametrized:
     """Parameters for the RemediationParametrized procedure."""
 
@@ -829,7 +813,6 @@ class UfwStatus:
 _PROCEDURE_REGISTRY: dict = {
     "AuditFailure": AuditFailure,
     "AuditGetParamValues": AuditGetParamValues,
-    "AuditNotApplicable": AuditNotApplicable,
     "AuditSuccess": AuditSuccess,
     "AuditdRulesCheck": AuditdRulesCheck,
     "EnsureAccountsWithoutShellAreLocked": EnsureAccountsWithoutShellAreLocked,
@@ -873,7 +856,6 @@ _PROCEDURE_REGISTRY: dict = {
     "LoginDefsOption": LoginDefsOption,
     "PackageInstalled": PackageInstalled,
     "RemediationFailure": RemediationFailure,
-    "RemediationNotApplicable": RemediationNotApplicable,
     "RemediationParametrized": RemediationParametrized,
     "RemediationSuccess": RemediationSuccess,
     "SCE": SCE,
