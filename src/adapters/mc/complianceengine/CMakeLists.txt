@@ -34,8 +34,9 @@ add_custom_target(stage_create_compliance_engine_shell_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.mof" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceComplianceEngine> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceengineschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceengineschema,OUTPUT> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:compliance-engine-assessor> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/compliance-engine-assessor
     ${STAGING_COMMANDS}
-    DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
+    DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema compliance-engine-assessor $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
 
 add_custom_target(create_compliance_engine_shell_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineShell.zip
