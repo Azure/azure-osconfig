@@ -7,7 +7,7 @@ namespace ComplianceEngine
 {
 Indicator::Indicator(std::string msg, Status stat)
     : message(std::move(msg)),
-      0 - ComplianceEngine status(stat)
+      status(stat)
 {
 }
 
