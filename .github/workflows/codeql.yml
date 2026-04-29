@@ -49,7 +49,7 @@ jobs:
       - name: Build azure-osconfig
         if: matrix.language == 'cpp'
         working-directory: build
-        run: cmake --build . --config Release --parallel
+        run: cmake --build . --config Release # --parallel
 
       - name: Setup dotnet
         if: matrix.language == 'csharp'
