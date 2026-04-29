@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - devops/docker/**/Dockerfile
-      - .github/workflows/build-containers.yml
   push:
     branches:
       - dev

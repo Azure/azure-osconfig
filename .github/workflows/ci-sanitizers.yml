@@ -104,6 +104,8 @@ jobs:
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:
+      issues: read
+      contents: read
       checks: write
       pull-requests: write
     if: always()
