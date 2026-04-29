@@ -29,7 +29,6 @@ set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
 
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
-option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_TELEMETRY "Build telemetry" ON)
@@ -42,7 +41,6 @@ add_compile_options("-Wno-psabi;-fPIC")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
-        set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
     endif()
 endif()
@@ -130,12 +128,10 @@ if (COVERAGE)
     message(STATUS "Code coverage: Enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/pnp/")
 else ()
     message(STATUS "Code coverage: Disabled")
 endif()
 
-set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
@@ -165,25 +161,8 @@ add_subdirectory(common)
 if (BUILD_ADAPTERS)
     add_subdirectory(adapters)
 endif()
-if (BUILD_PLATFORM)
-    add_subdirectory(platform)
-endif()
 if (BUILD_MODULES)
     add_subdirectory(modules)
-endif()
-
-if (BUILD_TELEMETRY)
-    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
-    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
-    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
-        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
-        @ONLY)
-
-    set_property(DIRECTORY APPEND PROPERTY
-        TEST_INCLUDE_FILES
-            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
 endif()
 
 add_subdirectory(tests)
@@ -207,7 +186,6 @@ set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
 set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
-    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/")
 
