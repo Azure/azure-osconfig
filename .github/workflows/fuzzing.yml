@@ -15,7 +15,7 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: '@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e' },
+            { os: ubuntu, version: 22.04, package-type: DEB, container-tag: '@sha256:98cd5889fffd4d86eeeeb6bd730525365e05c228a64bef2070f777abbcc59373' },
           ]
         arch: [amd64]
     with:

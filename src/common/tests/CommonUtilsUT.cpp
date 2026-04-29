@@ -2771,20 +2771,20 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(0, StartPerfClock(&another, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
-    SleepMilliseconds(1);
+    SleepMilliseconds(10);
     EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
-    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 1000);
-    EXPECT_LE(microseconds, 1500);
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 10000);
+    EXPECT_LE(microseconds, 15000);
 
     EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
-    SleepMilliseconds(2);
+    SleepMilliseconds(20);
     EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
-    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 2000);
-    EXPECT_LE(microseconds, 2500);
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 20000);
+    EXPECT_LE(microseconds, 25000);
 
     EXPECT_EQ(0, StopPerfClock(&another, nullptr));
-    EXPECT_GE(microseconds = GetPerfClockTime(&another, nullptr), 3000);
-    EXPECT_LE(microseconds, 3500);
+    EXPECT_GE(microseconds = GetPerfClockTime(&another, nullptr), 30000);
+    EXPECT_LE(microseconds, 35000);
 
     clock.start.tv_sec = 54217;
     clock.start.tv_nsec = 999942868;

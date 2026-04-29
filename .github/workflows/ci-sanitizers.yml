@@ -7,7 +7,7 @@ on:
 
 env:
   BUILD_TYPE: Debug
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
   REGISTRY: ghcr.io
   SANITIZER_FLAGS: -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1
 
@@ -23,7 +23,7 @@ jobs:
         run: |
           matrix="$(cat <<'EOL'
           [
-            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e" }
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "@sha256:98cd5889fffd4d86eeeeb6bd730525365e05c228a64bef2070f777abbcc59373" }
           ]
           EOL
           )"
@@ -41,7 +41,7 @@ jobs:
         target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           clean: true
@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+          container: microsoft/kompli/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ matrix.target.tag }}
 
@@ -104,6 +104,8 @@ jobs:
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:
+      issues: read
+      contents: read
       checks: write
       pull-requests: write
     if: always()

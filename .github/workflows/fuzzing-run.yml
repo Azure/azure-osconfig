@@ -27,7 +27,7 @@ on:
         default: true
 
 env:
-  MOUNT: /azure-osconfig
+  MOUNT: /kompli
   REGISTRY: ghcr.io
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
     needs: package
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/download-artifact@v4
         id: download
@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
+          container: microsoft/kompli/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
 

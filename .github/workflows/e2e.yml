@@ -12,7 +12,7 @@ jobs:
       connection_string: ${{ steps.terraform.outputs.connection_string }}
       resource_group_name: ${{ steps.terraform.outputs.resource_group_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: azure/login@v2
         with:
