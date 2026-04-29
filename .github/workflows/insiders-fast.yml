@@ -14,7 +14,7 @@ jobs:
       new: ${{ steps.commits.outputs.new }}
       status: ${{ steps.last_scheduled_workflow_status.outputs.status }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check last commit
         id: commits
