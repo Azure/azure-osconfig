@@ -21,19 +21,13 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
-#include <mntent.h>
 #include <dirent.h>
-#include <math.h>
-#include <libgen.h>
-#include <shadow.h>
 #include <parson.h>
 #include <Logging.h>
 #include <Reasons.h>
 #include <CommonUtils.h>
 #include <Telemetry.h>
 #include <version.h>
-
-#include "../asb/Asb.h"
 
 #if ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 30))
 #include <sys/syscall.h>

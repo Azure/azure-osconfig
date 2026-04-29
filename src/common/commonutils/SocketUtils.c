@@ -60,65 +60,6 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLo
     return buffer;
 }
 
-char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
-{
-    const char* postPrefix = "POST /";
-    char* returnUri = NULL;
-    char* buffer = NULL;
-    char bufferUri[MAX_MPI_URI_LENGTH] = {0};
-    int uriLength = 0;
-    size_t i = 0;
-
-    if (socketHandle < 0)
-    {
-        OsConfigLogError(log, "ReadUriFromSocket: invalid socket (%d)", socketHandle);
-        OSConfigTelemetryStatusTrace("socketHandle", EINVAL);
-        return NULL;
-    }
-
-    buffer = ReadUntilStringFound(socketHandle, postPrefix, log);
-    if (NULL == buffer)
-    {
-        OsConfigLogError(log, "ReadUriFromSocket: '%s' prefix not found", postPrefix);
-        OSConfigTelemetryStatusTrace("ReadUntilStringFound", ENOENT);
-        return NULL;
-    }
-
-    FREE_MEMORY(buffer);
-
-    for (i = 0; i < sizeof(bufferUri); i++)
-    {
-        if (1 == read(socketHandle, &(bufferUri[i]), 1))
-        {
-            if (isalpha(bufferUri[i]))
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
-
-    uriLength = i;
-
-    returnUri = (char*)malloc(uriLength + 1);
-    if (NULL != returnUri)
-    {
-        memset(returnUri, 0, uriLength + 1);
-        strncpy(returnUri, bufferUri, uriLength);
-        OsConfigLogDebug(log, "ReadUriFromSocket: %s", returnUri);
-    }
-    else
-    {
-        OsConfigLogError(log, "ReadUriFromSocket: out of memory");
-        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
-    }
-
-    return returnUri;
-}
-
 int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
 {
     const char* httpPrefix = "HTTP/1.1";
