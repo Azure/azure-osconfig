@@ -9,6 +9,8 @@
 #include <Mmi.h>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 #include <version.h>
 
@@ -210,13 +212,32 @@ TEST_F(ComplianceEngineTest, ValidatePayload_OverrideFile)
         GTEST_SKIP() << "This test suite modifies the override file which is already present";
     }
 
+    bool createdDir = false;
+    struct stat dirSt;
+    if (0 != stat("/etc/osconfig", &dirSt))
+    {
+        createdDir = (0 == mkdir("/etc/osconfig", 0755));
+    }
+
     std::ofstream overrideFile(DistributionInfo::cDefaultOverrideFilePath);
+    if (!overrideFile.is_open())
+    {
+        if (createdDir)
+        {
+            rmdir("/etc/osconfig");
+        }
+        GTEST_SKIP() << "Cannot create override file (insufficient permissions or missing directory)";
+    }
     overrideFile << "OS=Linux ARCH=x86_64 DISTRO=ol VERSION=foo\n";
     overrideFile.flush();
     overrideFile.close();
     ComplianceEngineShutdown();
     auto handle = ComplianceEngineMmiOpen("test", cMaxPayloadSize);
     EXPECT_EQ(0, remove(DistributionInfo::cDefaultOverrideFilePath));
+    if (createdDir)
+    {
+        rmdir("/etc/osconfig");
+    }
     ASSERT_NE(nullptr, handle);
     auto& engine = *reinterpret_cast<ComplianceEngine::Engine*>(handle);
     auto osRelease = engine.GetDistributionInfo();
