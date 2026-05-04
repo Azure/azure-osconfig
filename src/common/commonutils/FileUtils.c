@@ -16,7 +16,7 @@ static bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
 
     if (NULL == file)
     {
-        return ENOENT;
+        return false;
     }
 
     if (-1 == (fileDescriptor = fileno(file)))
