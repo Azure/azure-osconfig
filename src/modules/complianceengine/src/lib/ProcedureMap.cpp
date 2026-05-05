@@ -5,86 +5,77 @@
 
 namespace ComplianceEngine
 {
-// AuditdRulesCheck.h:22
-const char* Bindings<AuditAuditdRulesCheckParams>::names[] = {"searchItem", "excludeOption", "requiredOptions"};
+// ApparmorProfileState.h:15
+const char* Bindings<ApparmorProfileStateParams>::names[] = {"enforce"};
 
-// EnsureAccountsWithoutShellAreLocked.h:21
-const char* Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min", "skip_invalid_shells"};
+// AuditdRules.h:22
+const char* Bindings<AuditdRulesParams>::names[] = {"searchItem", "excludeOption", "requiredOptions"};
 
-// EnsureApparmorProfiles.h:15
-const char* Bindings<AuditEnsureApparmorProfilesParams>::names[] = {"enforce"};
+// CommandOutputMatch.h:43
+const char* Bindings<CommandOutputMatchParams>::names[] = {"command", "awk", "regex", "type"};
 
-// EnsureDconf.h:31
-const char* Bindings<AuditEnsureDconfParams>::names[] = {"key", "value", "operation"};
+// DconfValue.h:31
+const char* Bindings<DconfValueParams>::names[] = {"key", "value", "operation"};
 
-// EnsureFileExists.h:15
-const char* Bindings<AuditEnsureFileExistsParams>::names[] = {"filename"};
+// FileExists.h:15
+const char* Bindings<FileExistsParams>::names[] = {"filename"};
 
-// EnsureFilePermissions.h:36
-const char* Bindings<EnsureFilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "behavior"};
+// FilePermissions.h:36
+const char* Bindings<FilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "behavior"};
 
-// EnsureFilePermissions.h:68
-const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "behavior"};
-
-// EnsureFilesystemOption.h:31
-const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
-
-// EnsureGroupIsOnlyGroupWith.h:22
-const char* Bindings<EnsureGroupIsOnlyGroupWithParams>::names[] = {"group", "gid", "test_etcGroupPath"};
-
-// EnsureGsettings.h:56
-const char* Bindings<EnsureGsettingsParams>::names[] = {"schema", "key", "keyType", "operation", "value"};
-
-// EnsureKernelModule.h:15
-const char* Bindings<EnsureKernelModuleUnavailableParams>::names[] = {"moduleName"};
-
-// EnsureLogfileAccess.h:15
-const char* Bindings<EnsureLogfileAccessParams>::names[] = {"path"};
-
-// EnsureMountPointExists.h:15
-const char* Bindings<EnsureMountPointExistsParams>::names[] = {"mountPoint"};
-
-// EnsureNoDuplicateEntriesExist.h:24
-const char* Bindings<EnsureNoDuplicateEntriesExistParams>::names[] = {"filename", "delimiter", "column", "context"};
-
-// EnsurePasswordChangeIsInPast.h:15
-const char* Bindings<EnsurePasswordChangeIsInPastParams>::names[] = {"test_etcShadowPath"};
-
-// EnsureShadowContains.h:90
-const char* Bindings<EnsureShadowContainsParams>::names[] = {"username", "username_operation", "field", "value", "operation", "test_etcShadowPath"};
-
-// EnsureSshKeyPerms.h:24
-const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
-
-// EnsureSshdOption.h:64
-const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
-
-// EnsureSysctl.h:21
-const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};
-
-// EnsureUserIsOnlyAccountWith.h:26
-const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
-
-// EnsureWirelessIsDisabled.h:15
-const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_class_net"};
-
-// ExecuteCommandGrep.h:43
-const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
+// FilePermissions.h:68
+const char* Bindings<FilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "behavior"};
 
 // FileRegexMatch.h:64
 const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
+// FilesystemMountOption.h:31
+const char* Bindings<FilesystemMountOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
+
+// GsettingsValue.h:56
+const char* Bindings<GsettingsValueParams>::names[] = {"schema", "key", "keyType", "operation", "value"};
+
+// KernelModule.h:15
+const char* Bindings<KernelModuleUnavailableParams>::names[] = {"moduleName"};
+
+// LogFilePermissions.h:15
+const char* Bindings<LogFilePermissionsParams>::names[] = {"path"};
+
 // LoginDefsOption.h:23
 const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comparison"};
+
+// MountPointExists.h:15
+const char* Bindings<MountPointExistsParams>::names[] = {"mountPoint"};
+
+// NoDuplicateEntries.h:24
+const char* Bindings<NoDuplicateEntriesParams>::names[] = {"filename", "delimiter", "column", "context"};
+
+// NoShellAccountsLocked.h:21
+const char* Bindings<NoShellAccountsLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min", "skip_invalid_shells"};
 
 // PackageInstalled.h:37
 const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPackageVersion", "packageManager", "test_cachePath"};
 
+// PasswordChangeDate.h:15
+const char* Bindings<PasswordChangeDateParams>::names[] = {"test_etcShadowPath"};
+
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
 
+// ShadowField.h:90
+const char* Bindings<ShadowFieldParams>::names[] = {"username", "username_operation", "field", "value", "operation", "test_etcShadowPath"};
+
+// SshKeyPermissions.h:24
+const char* Bindings<SshKeyPermissionsParams>::names[] = {"type"};
+
+// SshdOption.h:64
+const char* Bindings<SshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
+
+// SysctlValue.h:21
+const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value"};
+
 // SystemdConfig.h:55
-const char* Bindings<SystemdParameterParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
+const char* Bindings<SystemdConfigValueParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
 
 // SystemdUnitState.h:28
 const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
@@ -101,60 +92,69 @@ const char* Bindings<TestingProcedureGetParamValuesParams>::names[] = {"KEY1", "
 // UfwStatus.h:16
 const char* Bindings<AuditUfwStatusParams>::names[] = {"statusRegex"};
 
+// UniqueGroupId.h:22
+const char* Bindings<UniqueGroupIdParams>::names[] = {"group", "gid", "test_etcGroupPath"};
+
+// UniqueUserId.h:26
+const char* Bindings<UniqueUserIdParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
+
+// WirelessDisabled.h:15
+const char* Bindings<WirelessDisabledParams>::names[] = {"test_sysfs_class_net"};
+
 const ProcedureMap Evaluator::mProcedureMap = {
+    {"ApparmorProfileState", {MakeHandler(AuditApparmorProfileState), nullptr}},
     {"AuditFailure", {MakeHandler(AuditAuditFailure), nullptr}},
     {"AuditGetParamValues", {MakeHandler(AuditAuditGetParamValues), nullptr}},
     {"AuditNotApplicable", {MakeHandler(AuditAuditNotApplicable), nullptr}},
     {"AuditSuccess", {MakeHandler(AuditAuditSuccess), nullptr}},
-    {"AuditdRulesCheck", {MakeHandler(AuditAuditdRulesCheck), nullptr}},
-    {"EnsureAccountsWithoutShellAreLocked", {MakeHandler(AuditEnsureAccountsWithoutShellAreLocked), nullptr}},
-    {"EnsureAllGroupsFromEtcPasswdExistInEtcGroup", {MakeHandler(AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup), MakeHandler(RemediateEnsureAllGroupsFromEtcPasswdExistInEtcGroup)}},
-    {"EnsureApparmorProfiles", {MakeHandler(AuditEnsureApparmorProfiles), nullptr}},
-    {"EnsureDconf", {MakeHandler(AuditEnsureDconf), nullptr}},
-    {"EnsureDefaultShellTimeoutIsConfigured", {MakeHandler(AuditEnsureDefaultShellTimeoutIsConfigured), nullptr}},
-    {"EnsureDefaultUserUmaskIsConfigured", {MakeHandler(AuditEnsureDefaultUserUmaskIsConfigured), nullptr}},
-    {"EnsureFileExists", {MakeHandler(AuditEnsureFileExists), nullptr}},
-    {"EnsureFilePermissions", {MakeHandler(AuditEnsureFilePermissions), MakeHandler(RemediateEnsureFilePermissions)}},
-    {"EnsureFilePermissionsCollection", {MakeHandler(AuditEnsureFilePermissionsCollection), MakeHandler(RemediateEnsureFilePermissionsCollection)}},
-    {"EnsureFilesystemOption", {MakeHandler(AuditEnsureFilesystemOption), MakeHandler(RemediateEnsureFilesystemOption)}},
-    {"EnsureFirewalldActiveZoneTargets", {MakeHandler(AuditEnsureFirewalldActiveZoneTargets), nullptr}},
-    {"EnsureGroupIsOnlyGroupWith", {MakeHandler(AuditEnsureGroupIsOnlyGroupWith), nullptr}},
-    {"EnsureGsettings", {MakeHandler(AuditEnsureGsettings), nullptr}},
-    {"EnsureInteractiveUsersDotFilesAccessIsConfigured", {MakeHandler(AuditEnsureInteractiveUsersDotFilesAccessIsConfigured), MakeHandler(RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured)}},
-    {"EnsureInteractiveUsersHomeDirectoriesAreConfigured", {MakeHandler(AuditEnsureInteractiveUsersHomeDirectoriesAreConfigured), MakeHandler(RemediateEnsureInteractiveUsersHomeDirectoriesAreConfigured)}},
-    {"EnsureIp6tablesOpenPorts", {MakeHandler(AuditEnsureIp6tablesOpenPorts), nullptr}},
-    {"EnsureIptablesOpenPorts", {MakeHandler(AuditEnsureIptablesOpenPorts), nullptr}},
-    {"EnsureKernelModuleUnavailable", {MakeHandler(AuditEnsureKernelModuleUnavailable), nullptr}},
-    {"EnsureLogfileAccess", {MakeHandler(AuditEnsureLogfileAccess), MakeHandler(RemediateEnsureLogfileAccess)}},
-    {"EnsureMTAsLocalOnly", {MakeHandler(AuditEnsureMTAsLocalOnly), nullptr}},
-    {"EnsureMountPointExists", {MakeHandler(AuditEnsureMountPointExists), nullptr}},
-    {"EnsureNoDuplicateEntriesExist", {MakeHandler(AuditEnsureNoDuplicateEntriesExist), nullptr}},
-    {"EnsureNoUnowned", {MakeHandler(AuditEnsureNoUnowned), nullptr}},
-    {"EnsureNoUserHasPrimaryShadowGroup", {MakeHandler(AuditEnsureNoUserHasPrimaryShadowGroup), nullptr}},
-    {"EnsureNoWritables", {MakeHandler(AuditEnsureNoWritables), nullptr}},
-    {"EnsurePasswordChangeIsInPast", {MakeHandler(AuditEnsurePasswordChangeIsInPast), nullptr}},
-    {"EnsureRootPath", {MakeHandler(AuditEnsureRootPath), nullptr}},
-    {"EnsureShadowContains", {MakeHandler(AuditEnsureShadowContains), nullptr}},
-    {"EnsureSshKeyPerms", {MakeHandler(AuditEnsureSshKeyPerms), MakeHandler(RemediateEnsureSshKeyPerms)}},
-    {"EnsureSshdOption", {MakeHandler(AuditEnsureSshdOption), nullptr}},
-    {"EnsureSysctl", {MakeHandler(AuditEnsureSysctl), nullptr}},
-    {"EnsureSystemAccountsDoNotHaveValidShell", {MakeHandler(AuditEnsureSystemAccountsDoNotHaveValidShell), nullptr}},
-    {"EnsureUfwOpenPorts", {MakeHandler(AuditEnsureUfwOpenPorts), nullptr}},
-    {"EnsureUserIsOnlyAccountWith", {MakeHandler(AuditEnsureUserIsOnlyAccountWith), nullptr}},
-    {"EnsureWirelessIsDisabled", {MakeHandler(AuditEnsureWirelessIsDisabled), nullptr}},
-    {"EnsureXdmcp", {MakeHandler(AuditEnsureXdmcp), nullptr}},
-    {"ExecuteCommandGrep", {MakeHandler(AuditExecuteCommandGrep), nullptr}},
+    {"AuditdRules", {MakeHandler(AuditAuditdRules), nullptr}},
+    {"CommandOutputMatch", {MakeHandler(AuditCommandOutputMatch), nullptr}},
+    {"DconfValue", {MakeHandler(AuditDconfValue), nullptr}},
+    {"DefaultUmask", {MakeHandler(AuditDefaultUmask), nullptr}},
+    {"FileExists", {MakeHandler(AuditFileExists), nullptr}},
+    {"FilePermissions", {MakeHandler(AuditFilePermissions), MakeHandler(RemediateFilePermissions)}},
+    {"FilePermissionsCollection", {MakeHandler(AuditFilePermissionsCollection), MakeHandler(RemediateFilePermissionsCollection)}},
     {"FileRegexMatch", {MakeHandler(AuditFileRegexMatch), nullptr}},
+    {"FilesystemMountOption", {MakeHandler(AuditFilesystemMountOption), MakeHandler(RemediateFilesystemMountOption)}},
+    {"FirewalldZoneTargets", {MakeHandler(AuditFirewalldZoneTargets), nullptr}},
+    {"GsettingsValue", {MakeHandler(AuditGsettingsValue), nullptr}},
+    {"Ip6tablesOpenPorts", {MakeHandler(AuditIp6tablesOpenPorts), nullptr}},
+    {"IptablesOpenPorts", {MakeHandler(AuditIptablesOpenPorts), nullptr}},
+    {"KernelModuleUnavailable", {MakeHandler(AuditKernelModuleUnavailable), nullptr}},
+    {"LogFilePermissions", {MakeHandler(AuditLogFilePermissions), MakeHandler(RemediateLogFilePermissions)}},
     {"LoginDefsOption", {MakeHandler(AuditLoginDefsOption), nullptr}},
+    {"MountPointExists", {MakeHandler(AuditMountPointExists), nullptr}},
+    {"MtaLocalOnly", {MakeHandler(AuditMtaLocalOnly), nullptr}},
+    {"NoDuplicateEntries", {MakeHandler(AuditNoDuplicateEntries), nullptr}},
+    {"NoShadowPrimaryGroup", {MakeHandler(AuditNoShadowPrimaryGroup), nullptr}},
+    {"NoShellAccountsLocked", {MakeHandler(AuditNoShellAccountsLocked), nullptr}},
+    {"NoUnownedFiles", {MakeHandler(AuditNoUnownedFiles), nullptr}},
+    {"NoWorldWritableFiles", {MakeHandler(AuditNoWorldWritableFiles), nullptr}},
     {"PackageInstalled", {MakeHandler(AuditPackageInstalled), nullptr}},
+    {"PasswdGroupsExist", {MakeHandler(AuditPasswdGroupsExist), MakeHandler(RemediatePasswdGroupsExist)}},
+    {"PasswordChangeDate", {MakeHandler(AuditPasswordChangeDate), nullptr}},
     {"RemediationFailure", {nullptr, MakeHandler(RemediateRemediationFailure)}},
     {"RemediationNotApplicable", {nullptr, MakeHandler(RemediateRemediationNotApplicable)}},
     {"RemediationParametrized", {nullptr, MakeHandler(RemediateRemediationParametrized)}},
     {"RemediationSuccess", {nullptr, MakeHandler(RemediateRemediationSuccess)}},
+    {"RootPathSecurity", {MakeHandler(AuditRootPathSecurity), nullptr}},
     {"SCE", {MakeHandler(AuditSCE), MakeHandler(RemediateSCE)}},
-    {"SystemdParameter", {MakeHandler(AuditSystemdParameter), nullptr}},
+    {"ShadowField", {MakeHandler(AuditShadowField), nullptr}},
+    {"ShellTimeout", {MakeHandler(AuditShellTimeout), nullptr}},
+    {"SshKeyPermissions", {MakeHandler(AuditSshKeyPermissions), MakeHandler(RemediateSshKeyPermissions)}},
+    {"SshdOption", {MakeHandler(AuditSshdOption), nullptr}},
+    {"SysctlValue", {MakeHandler(AuditSysctlValue), nullptr}},
+    {"SystemAccountShell", {MakeHandler(AuditSystemAccountShell), nullptr}},
+    {"SystemdConfigValue", {MakeHandler(AuditSystemdConfigValue), nullptr}},
     {"SystemdUnitState", {MakeHandler(AuditSystemdUnitState), nullptr}},
+    {"UfwOpenPorts", {MakeHandler(AuditUfwOpenPorts), nullptr}},
     {"UfwStatus", {MakeHandler(AuditUfwStatus), nullptr}},
+    {"UniqueGroupId", {MakeHandler(AuditUniqueGroupId), nullptr}},
+    {"UniqueUserId", {MakeHandler(AuditUniqueUserId), nullptr}},
+    {"UserDotFilePermissions", {MakeHandler(AuditUserDotFilePermissions), MakeHandler(RemediateUserDotFilePermissions)}},
+    {"UserHomeDirectoryPermissions", {MakeHandler(AuditUserHomeDirectoryPermissions), MakeHandler(RemediateUserHomeDirectoryPermissions)}},
+    {"WirelessDisabled", {MakeHandler(AuditWirelessDisabled), nullptr}},
+    {"XdmcpDisabled", {MakeHandler(AuditXdmcpDisabled), nullptr}},
 };
 } // namespace ComplianceEngine
 
@@ -172,9 +172,45 @@ string to_string(const ComplianceEngine::Behavior value) noexcept(false)
     return it->second;
 }
 
+string to_string(const ComplianceEngine::RegexType value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::RegexType>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
 string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::Operation value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Operation>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::IgnoreCase>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -199,6 +235,18 @@ string to_string(const ComplianceEngine::GsettingsKeyType value) noexcept(false)
 string to_string(const ComplianceEngine::GsettingsOperationType value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::GsettingsOperationType>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::PackageManagerType value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::PackageManagerType>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -268,57 +316,9 @@ string to_string(const ComplianceEngine::EnsureSshdOptionMode value) noexcept(fa
     return it->second;
 }
 
-string to_string(const ComplianceEngine::RegexType value) noexcept(false)
+string to_string(const ComplianceEngine::SystemdConfigValueOperator value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::RegexType>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::Operation value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::Operation>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::IgnoreCase value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::IgnoreCase>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::PackageManagerType value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::PackageManagerType>();
-    static const auto revmap = ComplianceEngine::RevertMap(map);
-    const auto it = revmap.find(value);
-    if (revmap.end() == it)
-    {
-        throw std::out_of_range("Invalid enum value");
-    }
-    return it->second;
-}
-
-string to_string(const ComplianceEngine::SystemdParameterOperator value) noexcept(false)
-{
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SystemdParameterOperator>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SystemdConfigValueOperator>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

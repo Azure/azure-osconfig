@@ -72,7 +72,7 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
 }
 } // namespace
 
-Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditSystemdConfigValue(const SystemdConfigValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
 
@@ -238,9 +238,9 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         // Operator + value comparison
         bool comparisonResult = false;
         const std::string& expectedValue = params.value.Value();
-        SystemdParameterOperator op = params.op.Value();
+        SystemdConfigValueOperator op = params.op.Value();
 
-        if (op == SystemdParameterOperator::Equal)
+        if (op == SystemdConfigValueOperator::Equal)
         {
             comparisonResult = (actualValue == expectedValue);
         }
@@ -262,16 +262,16 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
 
             switch (op)
             {
-                case SystemdParameterOperator::LessThan:
+                case SystemdConfigValueOperator::LessThan:
                     comparisonResult = (actualNum < expectedNum);
                     break;
-                case SystemdParameterOperator::LessOrEqual:
+                case SystemdConfigValueOperator::LessOrEqual:
                     comparisonResult = (actualNum <= expectedNum);
                     break;
-                case SystemdParameterOperator::GreaterThan:
+                case SystemdConfigValueOperator::GreaterThan:
                     comparisonResult = (actualNum > expectedNum);
                     break;
-                case SystemdParameterOperator::GreaterOrEqual:
+                case SystemdConfigValueOperator::GreaterOrEqual:
                     comparisonResult = (actualNum >= expectedNum);
                     break;
                 default:

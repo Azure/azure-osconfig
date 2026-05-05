@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "WirelessDisabled"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "WirelessDisabled": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "test_sysfs_class_net": {
+                  "type": "string",
+                  "description": "Optional path to the sysfs net class directory to test against"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

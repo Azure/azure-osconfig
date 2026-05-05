@@ -2,49 +2,49 @@
 #ifndef COMPLIANCEENGINE_PROCEDURE_MAP_H
 #define COMPLIANCEENGINE_PROCEDURE_MAP_H
 
-#include <AuditdRulesCheck.h>
-#include <EnsureAccountsWithoutShellAreLocked.h>
-#include <EnsureAllGroupsFromEtcPasswdExistInEtcGroup.h>
-#include <EnsureApparmorProfiles.h>
-#include <EnsureDconf.h>
-#include <EnsureDefaultShellTimeoutIsConfigured.h>
-#include <EnsureDefaultUserUmaskIsConfigured.h>
-#include <EnsureFileExists.h>
-#include <EnsureFilePermissions.h>
-#include <EnsureFilesystemOption.h>
-#include <EnsureFirewallOpenPorts.h>
-#include <EnsureFirewalldActiveZoneTargets.h>
-#include <EnsureGroupIsOnlyGroupWith.h>
-#include <EnsureGsettings.h>
-#include <EnsureInteractiveUsersDotFilesAccessIsConfigured.h>
-#include <EnsureInteractiveUsersHomeDirectoriesAreConfigured.h>
-#include <EnsureKernelModule.h>
-#include <EnsureLogfileAccess.h>
-#include <EnsureMTAsLocalOnly.h>
-#include <EnsureMountPointExists.h>
-#include <EnsureNoDuplicateEntriesExist.h>
-#include <EnsureNoUnowned.h>
-#include <EnsureNoUserHasPrimaryShadowGroup.h>
-#include <EnsureNoWritables.h>
-#include <EnsurePasswordChangeIsInPast.h>
-#include <EnsureRootPath.h>
-#include <EnsureShadowContains.h>
-#include <EnsureSshKeyPerms.h>
-#include <EnsureSshdOption.h>
-#include <EnsureSysctl.h>
-#include <EnsureSystemAccountsDoNotHaveValidShell.h>
-#include <EnsureUserIsOnlyAccountWith.h>
-#include <EnsureWirelessIsDisabled.h>
-#include <EnsureXdmcp.h>
-#include <ExecuteCommandGrep.h>
+#include <ApparmorProfileState.h>
+#include <AuditdRules.h>
+#include <CommandOutputMatch.h>
+#include <DconfValue.h>
+#include <DefaultUmask.h>
+#include <FileExists.h>
+#include <FilePermissions.h>
 #include <FileRegexMatch.h>
+#include <FilesystemMountOption.h>
+#include <FirewallOpenPorts.h>
+#include <FirewalldZoneTargets.h>
+#include <GsettingsValue.h>
+#include <KernelModule.h>
+#include <LogFilePermissions.h>
 #include <LoginDefsOption.h>
+#include <MountPointExists.h>
+#include <MtaLocalOnly.h>
+#include <NoDuplicateEntries.h>
+#include <NoShadowPrimaryGroup.h>
+#include <NoShellAccountsLocked.h>
+#include <NoUnownedFiles.h>
+#include <NoWorldWritableFiles.h>
 #include <PackageInstalled.h>
+#include <PasswdGroupsExist.h>
+#include <PasswordChangeDate.h>
+#include <RootPathSecurity.h>
 #include <SCE.h>
+#include <ShadowField.h>
+#include <ShellTimeout.h>
+#include <SshKeyPermissions.h>
+#include <SshdOption.h>
+#include <SysctlValue.h>
+#include <SystemAccountShell.h>
 #include <SystemdConfig.h>
 #include <SystemdUnitState.h>
 #include <TestingProcedures.h>
 #include <UfwStatus.h>
+#include <UniqueGroupId.h>
+#include <UniqueUserId.h>
+#include <UserDotFilePermissions.h>
+#include <UserHomeDirectoryPermissions.h>
+#include <WirelessDisabled.h>
+#include <XdmcpDisabled.h>
 
 namespace ComplianceEngine
 {
@@ -71,6 +71,19 @@ inline const std::map<std::string, Behavior>& MapEnum<Behavior>()
     return map;
 }
 
+// Maps the RegexType enum labels to the enum values.
+template <>
+inline const std::map<std::string, RegexType>& MapEnum<RegexType>()
+{
+    static const std::map<std::string, RegexType> map = {
+        {"P", RegexType::Perl},
+        {"E", RegexType::Extended},
+        {"Pv", RegexType::PerlInverted},
+        {"Ev", RegexType::ExtendedInverted},
+    };
+    return map;
+}
+
 // Maps the DConfOperation enum labels to the enum values.
 template <>
 inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
@@ -78,6 +91,28 @@ inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
     static const std::map<std::string, DConfOperation> map = {
         {"eq", DConfOperation::Eq},
         {"ne", DConfOperation::Ne},
+    };
+    return map;
+}
+
+// Maps the Operation enum labels to the enum values.
+template <>
+inline const std::map<std::string, Operation>& MapEnum<Operation>()
+{
+    static const std::map<std::string, Operation> map = {
+        {"pattern match", Operation::Match},
+    };
+    return map;
+}
+
+// Maps the IgnoreCase enum labels to the enum values.
+template <>
+inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
+{
+    static const std::map<std::string, IgnoreCase> map = {
+        {"matchPattern statePattern", IgnoreCase::Both},
+        {"matchPattern", IgnoreCase::MatchPattern},
+        {"statePattern", IgnoreCase::StatePattern},
     };
     return map;
 }
@@ -103,6 +138,18 @@ inline const std::map<std::string, GsettingsOperationType>& MapEnum<GsettingsOpe
         {"lt", GsettingsOperationType::LessThan},
         {"gt", GsettingsOperationType::GreaterThan},
         {"is-unlocked", GsettingsOperationType::IsUnlocked},
+    };
+    return map;
+}
+
+// Maps the PackageManagerType enum labels to the enum values.
+template <>
+inline const std::map<std::string, PackageManagerType>& MapEnum<PackageManagerType>()
+{
+    static const std::map<std::string, PackageManagerType> map = {
+        {"autodetect", PackageManagerType::Autodetect},
+        {"rpm", PackageManagerType::RPM},
+        {"dpkg", PackageManagerType::DPKG},
     };
     return map;
 }
@@ -180,285 +227,88 @@ inline const std::map<std::string, EnsureSshdOptionMode>& MapEnum<EnsureSshdOpti
     return map;
 }
 
-// Maps the RegexType enum labels to the enum values.
+// Maps the SystemdConfigValueOperator enum labels to the enum values.
 template <>
-inline const std::map<std::string, RegexType>& MapEnum<RegexType>()
+inline const std::map<std::string, SystemdConfigValueOperator>& MapEnum<SystemdConfigValueOperator>()
 {
-    static const std::map<std::string, RegexType> map = {
-        {"P", RegexType::Perl},
-        {"E", RegexType::Extended},
-        {"Pv", RegexType::PerlInverted},
-        {"Ev", RegexType::ExtendedInverted},
+    static const std::map<std::string, SystemdConfigValueOperator> map = {
+        {"lt", SystemdConfigValueOperator::LessThan},
+        {"le", SystemdConfigValueOperator::LessOrEqual},
+        {"gt", SystemdConfigValueOperator::GreaterThan},
+        {"ge", SystemdConfigValueOperator::GreaterOrEqual},
+        {"eq", SystemdConfigValueOperator::Equal},
     };
     return map;
 }
 
-// Maps the Operation enum labels to the enum values.
+// Defines the bindings for the ApparmorProfileStateParams structure.
 template <>
-inline const std::map<std::string, Operation>& MapEnum<Operation>()
+struct Bindings<ApparmorProfileStateParams>
 {
-    static const std::map<std::string, Operation> map = {
-        {"pattern match", Operation::Match},
-    };
-    return map;
-}
-
-// Maps the IgnoreCase enum labels to the enum values.
-template <>
-inline const std::map<std::string, IgnoreCase>& MapEnum<IgnoreCase>()
-{
-    static const std::map<std::string, IgnoreCase> map = {
-        {"matchPattern statePattern", IgnoreCase::Both},
-        {"matchPattern", IgnoreCase::MatchPattern},
-        {"statePattern", IgnoreCase::StatePattern},
-    };
-    return map;
-}
-
-// Maps the PackageManagerType enum labels to the enum values.
-template <>
-inline const std::map<std::string, PackageManagerType>& MapEnum<PackageManagerType>()
-{
-    static const std::map<std::string, PackageManagerType> map = {
-        {"autodetect", PackageManagerType::Autodetect},
-        {"rpm", PackageManagerType::RPM},
-        {"dpkg", PackageManagerType::DPKG},
-    };
-    return map;
-}
-
-// Maps the SystemdParameterOperator enum labels to the enum values.
-template <>
-inline const std::map<std::string, SystemdParameterOperator>& MapEnum<SystemdParameterOperator>()
-{
-    static const std::map<std::string, SystemdParameterOperator> map = {
-        {"lt", SystemdParameterOperator::LessThan},
-        {"le", SystemdParameterOperator::LessOrEqual},
-        {"gt", SystemdParameterOperator::GreaterThan},
-        {"ge", SystemdParameterOperator::GreaterOrEqual},
-        {"eq", SystemdParameterOperator::Equal},
-    };
-    return map;
-}
-
-// Defines the bindings for the AuditAuditdRulesCheckParams structure.
-template <>
-struct Bindings<AuditAuditdRulesCheckParams>
-{
-    using T = AuditAuditdRulesCheckParams;
-    static constexpr size_t size = 3;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::searchItem, &T::excludeOption, &T::requiredOptions);
-};
-
-// Defines the bindings for the AuditEnsureAccountsWithoutShellAreLockedParams structure.
-template <>
-struct Bindings<AuditEnsureAccountsWithoutShellAreLockedParams>
-{
-    using T = AuditEnsureAccountsWithoutShellAreLockedParams;
-    static constexpr size_t size = 3;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min, &T::skip_invalid_shells);
-};
-
-// Defines the bindings for the AuditEnsureApparmorProfilesParams structure.
-template <>
-struct Bindings<AuditEnsureApparmorProfilesParams>
-{
-    using T = AuditEnsureApparmorProfilesParams;
+    using T = ApparmorProfileStateParams;
     static constexpr size_t size = 1;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::enforce);
 };
 
-// Defines the bindings for the AuditEnsureDconfParams structure.
+// Defines the bindings for the AuditdRulesParams structure.
 template <>
-struct Bindings<AuditEnsureDconfParams>
+struct Bindings<AuditdRulesParams>
 {
-    using T = AuditEnsureDconfParams;
+    using T = AuditdRulesParams;
+    static constexpr size_t size = 3;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::searchItem, &T::excludeOption, &T::requiredOptions);
+};
+
+// Defines the bindings for the CommandOutputMatchParams structure.
+template <>
+struct Bindings<CommandOutputMatchParams>
+{
+    using T = CommandOutputMatchParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::command, &T::awk, &T::regex, &T::type);
+};
+
+// Defines the bindings for the DconfValueParams structure.
+template <>
+struct Bindings<DconfValueParams>
+{
+    using T = DconfValueParams;
     static constexpr size_t size = 3;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::key, &T::value, &T::operation);
 };
 
-// Defines the bindings for the AuditEnsureFileExistsParams structure.
+// Defines the bindings for the FileExistsParams structure.
 template <>
-struct Bindings<AuditEnsureFileExistsParams>
+struct Bindings<FileExistsParams>
 {
-    using T = AuditEnsureFileExistsParams;
+    using T = FileExistsParams;
     static constexpr size_t size = 1;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::filename);
 };
 
-// Defines the bindings for the EnsureFilePermissionsParams structure.
+// Defines the bindings for the FilePermissionsParams structure.
 template <>
-struct Bindings<EnsureFilePermissionsParams>
+struct Bindings<FilePermissionsParams>
 {
-    using T = EnsureFilePermissionsParams;
+    using T = FilePermissionsParams;
     static constexpr size_t size = 6;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
-// Defines the bindings for the EnsureFilePermissionsCollectionParams structure.
+// Defines the bindings for the FilePermissionsCollectionParams structure.
 template <>
-struct Bindings<EnsureFilePermissionsCollectionParams>
+struct Bindings<FilePermissionsCollectionParams>
 {
-    using T = EnsureFilePermissionsCollectionParams;
+    using T = FilePermissionsCollectionParams;
     static constexpr size_t size = 8;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
-};
-
-// Defines the bindings for the EnsureFilesystemOptionParams structure.
-template <>
-struct Bindings<EnsureFilesystemOptionParams>
-{
-    using T = EnsureFilesystemOptionParams;
-    static constexpr size_t size = 6;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::mountpoint, &T::optionsSet, &T::optionsNotSet, &T::test_fstab, &T::test_mtab, &T::test_mount);
-};
-
-// Defines the bindings for the EnsureGroupIsOnlyGroupWithParams structure.
-template <>
-struct Bindings<EnsureGroupIsOnlyGroupWithParams>
-{
-    using T = EnsureGroupIsOnlyGroupWithParams;
-    static constexpr size_t size = 3;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::group, &T::gid, &T::test_etcGroupPath);
-};
-
-// Defines the bindings for the EnsureGsettingsParams structure.
-template <>
-struct Bindings<EnsureGsettingsParams>
-{
-    using T = EnsureGsettingsParams;
-    static constexpr size_t size = 5;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::schema, &T::key, &T::keyType, &T::operation, &T::value);
-};
-
-// Defines the bindings for the EnsureKernelModuleUnavailableParams structure.
-template <>
-struct Bindings<EnsureKernelModuleUnavailableParams>
-{
-    using T = EnsureKernelModuleUnavailableParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::moduleName);
-};
-
-// Defines the bindings for the EnsureLogfileAccessParams structure.
-template <>
-struct Bindings<EnsureLogfileAccessParams>
-{
-    using T = EnsureLogfileAccessParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::path);
-};
-
-// Defines the bindings for the EnsureMountPointExistsParams structure.
-template <>
-struct Bindings<EnsureMountPointExistsParams>
-{
-    using T = EnsureMountPointExistsParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::mountPoint);
-};
-
-// Defines the bindings for the EnsureNoDuplicateEntriesExistParams structure.
-template <>
-struct Bindings<EnsureNoDuplicateEntriesExistParams>
-{
-    using T = EnsureNoDuplicateEntriesExistParams;
-    static constexpr size_t size = 4;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::filename, &T::delimiter, &T::column, &T::context);
-};
-
-// Defines the bindings for the EnsurePasswordChangeIsInPastParams structure.
-template <>
-struct Bindings<EnsurePasswordChangeIsInPastParams>
-{
-    using T = EnsurePasswordChangeIsInPastParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::test_etcShadowPath);
-};
-
-// Defines the bindings for the EnsureShadowContainsParams structure.
-template <>
-struct Bindings<EnsureShadowContainsParams>
-{
-    using T = EnsureShadowContainsParams;
-    static constexpr size_t size = 6;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::username, &T::username_operation, &T::field, &T::value, &T::operation, &T::test_etcShadowPath);
-};
-
-// Defines the bindings for the EnsureSshKeyPermsParams structure.
-template <>
-struct Bindings<EnsureSshKeyPermsParams>
-{
-    using T = EnsureSshKeyPermsParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::type);
-};
-
-// Defines the bindings for the EnsureSshdOptionParams structure.
-template <>
-struct Bindings<EnsureSshdOptionParams>
-{
-    using T = EnsureSshdOptionParams;
-    static constexpr size_t size = 5;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::op, &T::mode, &T::readExtraConfigs);
-};
-
-// Defines the bindings for the EnsureSysctlParams structure.
-template <>
-struct Bindings<EnsureSysctlParams>
-{
-    using T = EnsureSysctlParams;
-    static constexpr size_t size = 2;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
-};
-
-// Defines the bindings for the EnsureUserIsOnlyAccountWithParams structure.
-template <>
-struct Bindings<EnsureUserIsOnlyAccountWithParams>
-{
-    using T = EnsureUserIsOnlyAccountWithParams;
-    static constexpr size_t size = 4;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::username, &T::uid, &T::gid, &T::test_etcPasswdPath);
-};
-
-// Defines the bindings for the EnsureWirelessIsDisabledParams structure.
-template <>
-struct Bindings<EnsureWirelessIsDisabledParams>
-{
-    using T = EnsureWirelessIsDisabledParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::test_sysfs_class_net);
-};
-
-// Defines the bindings for the ExecuteCommandGrepParams structure.
-template <>
-struct Bindings<ExecuteCommandGrepParams>
-{
-    using T = ExecuteCommandGrepParams;
-    static constexpr size_t size = 4;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::command, &T::awk, &T::regex, &T::type);
 };
 
 // Defines the bindings for the AuditFileRegexMatchParams structure.
@@ -471,6 +321,46 @@ struct Bindings<AuditFileRegexMatchParams>
     static constexpr auto members = std::make_tuple(&T::path, &T::filenamePattern, &T::matchOperation, &T::matchPattern, &T::stateOperation, &T::statePattern, &T::ignoreCase, &T::behavior);
 };
 
+// Defines the bindings for the FilesystemMountOptionParams structure.
+template <>
+struct Bindings<FilesystemMountOptionParams>
+{
+    using T = FilesystemMountOptionParams;
+    static constexpr size_t size = 6;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::mountpoint, &T::optionsSet, &T::optionsNotSet, &T::test_fstab, &T::test_mtab, &T::test_mount);
+};
+
+// Defines the bindings for the GsettingsValueParams structure.
+template <>
+struct Bindings<GsettingsValueParams>
+{
+    using T = GsettingsValueParams;
+    static constexpr size_t size = 5;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::schema, &T::key, &T::keyType, &T::operation, &T::value);
+};
+
+// Defines the bindings for the KernelModuleUnavailableParams structure.
+template <>
+struct Bindings<KernelModuleUnavailableParams>
+{
+    using T = KernelModuleUnavailableParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::moduleName);
+};
+
+// Defines the bindings for the LogFilePermissionsParams structure.
+template <>
+struct Bindings<LogFilePermissionsParams>
+{
+    using T = LogFilePermissionsParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::path);
+};
+
 // Defines the bindings for the LoginDefsOptionParams structure.
 template <>
 struct Bindings<LoginDefsOptionParams>
@@ -479,6 +369,36 @@ struct Bindings<LoginDefsOptionParams>
     static constexpr size_t size = 3;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::comparison);
+};
+
+// Defines the bindings for the MountPointExistsParams structure.
+template <>
+struct Bindings<MountPointExistsParams>
+{
+    using T = MountPointExistsParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::mountPoint);
+};
+
+// Defines the bindings for the NoDuplicateEntriesParams structure.
+template <>
+struct Bindings<NoDuplicateEntriesParams>
+{
+    using T = NoDuplicateEntriesParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::filename, &T::delimiter, &T::column, &T::context);
+};
+
+// Defines the bindings for the NoShellAccountsLockedParams structure.
+template <>
+struct Bindings<NoShellAccountsLockedParams>
+{
+    using T = NoShellAccountsLockedParams;
+    static constexpr size_t size = 3;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min, &T::skip_invalid_shells);
 };
 
 // Defines the bindings for the PackageInstalledParams structure.
@@ -491,6 +411,16 @@ struct Bindings<PackageInstalledParams>
     static constexpr auto members = std::make_tuple(&T::packageName, &T::minPackageVersion, &T::packageManager, &T::test_cachePath);
 };
 
+// Defines the bindings for the PasswordChangeDateParams structure.
+template <>
+struct Bindings<PasswordChangeDateParams>
+{
+    using T = PasswordChangeDateParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::test_etcShadowPath);
+};
+
 // Defines the bindings for the SCEParams structure.
 template <>
 struct Bindings<SCEParams>
@@ -501,11 +431,51 @@ struct Bindings<SCEParams>
     static constexpr auto members = std::make_tuple(&T::scriptName, &T::ENVIRONMENT);
 };
 
-// Defines the bindings for the SystemdParameterParams structure.
+// Defines the bindings for the ShadowFieldParams structure.
 template <>
-struct Bindings<SystemdParameterParams>
+struct Bindings<ShadowFieldParams>
 {
-    using T = SystemdParameterParams;
+    using T = ShadowFieldParams;
+    static constexpr size_t size = 6;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::username, &T::username_operation, &T::field, &T::value, &T::operation, &T::test_etcShadowPath);
+};
+
+// Defines the bindings for the SshKeyPermissionsParams structure.
+template <>
+struct Bindings<SshKeyPermissionsParams>
+{
+    using T = SshKeyPermissionsParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::type);
+};
+
+// Defines the bindings for the SshdOptionParams structure.
+template <>
+struct Bindings<SshdOptionParams>
+{
+    using T = SshdOptionParams;
+    static constexpr size_t size = 5;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::op, &T::mode, &T::readExtraConfigs);
+};
+
+// Defines the bindings for the SysctlValueParams structure.
+template <>
+struct Bindings<SysctlValueParams>
+{
+    using T = SysctlValueParams;
+    static constexpr size_t size = 2;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
+};
+
+// Defines the bindings for the SystemdConfigValueParams structure.
+template <>
+struct Bindings<SystemdConfigValueParams>
+{
+    using T = SystemdConfigValueParams;
     static constexpr size_t size = 8;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::parameter, &T::valueRegex, &T::op, &T::value, &T::file, &T::block, &T::dir, &T::passOnNotFound);
@@ -561,6 +531,36 @@ struct Bindings<AuditUfwStatusParams>
     static constexpr auto members = std::make_tuple(&T::statusRegex);
 };
 
+// Defines the bindings for the UniqueGroupIdParams structure.
+template <>
+struct Bindings<UniqueGroupIdParams>
+{
+    using T = UniqueGroupIdParams;
+    static constexpr size_t size = 3;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::group, &T::gid, &T::test_etcGroupPath);
+};
+
+// Defines the bindings for the UniqueUserIdParams structure.
+template <>
+struct Bindings<UniqueUserIdParams>
+{
+    using T = UniqueUserIdParams;
+    static constexpr size_t size = 4;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::username, &T::uid, &T::gid, &T::test_etcPasswdPath);
+};
+
+// Defines the bindings for the WirelessDisabledParams structure.
+template <>
+struct Bindings<WirelessDisabledParams>
+{
+    using T = WirelessDisabledParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::test_sysfs_class_net);
+};
+
 } // namespace ComplianceEngine
 
 namespace std
@@ -568,14 +568,26 @@ namespace std
 // Returns a string representation of the Behavior enum value.
 string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-identifier-naming)
 
+// Returns a string representation of the RegexType enum value.
+string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*-identifier-naming)
+
 // Returns a string representation of the DConfOperation enum value.
 string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the Operation enum value.
+string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the IgnoreCase enum value.
+string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the GsettingsKeyType enum value.
 string to_string(ComplianceEngine::GsettingsKeyType value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the GsettingsOperationType enum value.
 string to_string(ComplianceEngine::GsettingsOperationType value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the PackageManagerType enum value.
+string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the ComparisonOperation enum value.
 string to_string(ComplianceEngine::ComparisonOperation value) noexcept(false); // NOLINT(*-identifier-naming)
@@ -592,20 +604,8 @@ string to_string(ComplianceEngine::EnsureSshdOptionOperation value) noexcept(fal
 // Returns a string representation of the EnsureSshdOptionMode enum value.
 string to_string(ComplianceEngine::EnsureSshdOptionMode value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the RegexType enum value.
-string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the Operation enum value.
-string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the IgnoreCase enum value.
-string to_string(ComplianceEngine::IgnoreCase value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the PackageManagerType enum value.
-string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)
-
-// Returns a string representation of the SystemdParameterOperator enum value.
-string to_string(ComplianceEngine::SystemdParameterOperator value) noexcept(false); // NOLINT(*-identifier-naming)
+// Returns a string representation of the SystemdConfigValueOperator enum value.
+string to_string(ComplianceEngine::SystemdConfigValueOperator value) noexcept(false); // NOLINT(*-identifier-naming)
 
 } // namespace std
 #endif // COMPLIANCEENGINE_PROCEDURE_MAP_H

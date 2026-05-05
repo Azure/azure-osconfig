@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "NoShellAccountsLocked"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "NoShellAccountsLocked": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "excludeUsers": {
+                  "type": "string",
+                  "description": "List of users to be excluded from check"
+                },
+                "skip_below_uid_min": {
+                  "type": "string",
+                  "description": "Parse /etc/login.defs and skip users with uid below UID_MIN"
+                },
+                "skip_invalid_shells": {
+                  "type": "string",
+                  "description": "Parse /etc/shells and if user does not have valid shell skip it"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
