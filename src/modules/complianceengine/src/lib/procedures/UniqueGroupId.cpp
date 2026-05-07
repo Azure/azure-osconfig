@@ -26,10 +26,10 @@ Result<Status> AuditUniqueGroupId(const UniqueGroupIdParams& params, IndicatorsT
     {
         if (params.gid.HasValue() && item.gr_gid == static_cast<decltype(item.gr_gid)>(params.gid.Value()))
         {
-            if (item.gr_name != params.group)
+            if (item.gr_name != params.groupName)
             {
-                OsConfigLogDebug(context.GetLogHandle(), "Group '%s' has GID %d, but expected '%s'.", item.gr_name, item.gr_gid, params.group.c_str());
-                return indicators.NonCompliant("A group other than '" + params.group + "' has GID " + std::to_string(item.gr_gid));
+                OsConfigLogDebug(context.GetLogHandle(), "Group '%s' has GID %d, but expected '%s'.", item.gr_name, item.gr_gid, params.groupName.c_str());
+                return indicators.NonCompliant("A group other than '" + params.groupName + "' has GID " + std::to_string(item.gr_gid));
             }
 
             hasGid = true;
@@ -42,6 +42,6 @@ Result<Status> AuditUniqueGroupId(const UniqueGroupIdParams& params, IndicatorsT
         return indicators.NonCompliant("No group with GID " + std::to_string(params.gid.Value()) + " found");
     }
 
-    return indicators.Compliant("All criteria has been met for group '" + params.group + "'");
+    return indicators.Compliant("All criteria has been met for group '" + params.groupName + "'");
 }
 } // namespace ComplianceEngine

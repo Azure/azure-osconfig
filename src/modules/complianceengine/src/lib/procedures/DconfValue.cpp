@@ -12,9 +12,9 @@ namespace ComplianceEngine
 Result<Status> AuditDconfValue(const DconfValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     const auto key = EscapeForShell(params.key);
-    static const std::map<DConfOperation, std::function<bool(const std::string&, const std::string&)>> ops{
-        {DConfOperation::Eq, [](const std::string& x, const std::string& y) { return x == y; }},
-        {DConfOperation::Ne, [](const std::string& x, const std::string& y) { return x != y; }}};
+    static const std::map<DconfOperation, std::function<bool(const std::string&, const std::string&)>> ops{
+        {DconfOperation::Eq, [](const std::string& x, const std::string& y) { return x == y; }},
+        {DconfOperation::Ne, [](const std::string& x, const std::string& y) { return x != y; }}};
     const auto op = ops.find(params.operation);
     if (op == ops.end())
     {

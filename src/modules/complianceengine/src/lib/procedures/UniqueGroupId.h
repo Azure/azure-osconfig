@@ -11,7 +11,7 @@ namespace ComplianceEngine
 struct UniqueGroupIdParams
 {
     /// A pattern or value to match group names against
-    std::string group;
+    std::string groupName;
 
     /// A value to match the GID against
     /// pattern: \d+

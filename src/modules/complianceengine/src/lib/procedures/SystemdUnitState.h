@@ -15,16 +15,16 @@ struct SystemdUnitStateParams
     std::string unitName;
 
     /// value of systemd ActiveState of unitName to match
-    Optional<Pattern> ActiveState;
+    Optional<Pattern> activeState;
 
     /// value of systemd LoadState of unitName to match
-    Optional<Pattern> LoadState;
+    Optional<Pattern> loadState;
 
     /// value of systemd UnitFileState of unitName to match
-    Optional<Pattern> UnitFileState;
+    Optional<Pattern> unitFileState;
 
     /// value of systemd property Unit, used in systemd.timer, name of unit to run when timer elapses
-    Optional<Pattern> Unit;
+    Optional<Pattern> unit;
 };
 
 Result<Status> AuditSystemdUnitState(const SystemdUnitStateParams& params, IndicatorsTree& indicators, ContextInterface& context);

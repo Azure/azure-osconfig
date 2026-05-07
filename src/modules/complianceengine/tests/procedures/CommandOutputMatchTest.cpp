@@ -30,7 +30,7 @@ TEST_F(ExecuteCommandGrepTest, AuditInvalidCommand)
 {
     CommandOutputMatchParams params;
     params.command = "invalid command";
-    params.regex = "test";
+    params.pattern = "test";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -43,7 +43,7 @@ TEST_F(ExecuteCommandGrepTest, AuditCommandFails)
 
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
-    params.regex = "test";
+    params.pattern = "test";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -56,7 +56,7 @@ TEST_F(ExecuteCommandGrepTest, AuditCommandMatches)
 
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
-    params.regex = "test";
+    params.pattern = "test";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -69,7 +69,7 @@ TEST_F(ExecuteCommandGrepTest, AuditExtendedRegex)
 
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
-    params.regex = "test";
+    params.pattern = "test";
     params.type = RegexType::Extended;
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
@@ -86,7 +86,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithAwkTransformation)
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
     params.awk = "{print $1}";
-    params.regex = "test";
+    params.pattern = "test";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -102,7 +102,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithAwkAndExtendedRegex)
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
     params.awk = "{print $2}";
-    params.regex = "test.*pattern";
+    params.pattern = "test.*pattern";
     params.type = RegexType::Extended;
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
@@ -120,7 +120,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithAwkSpecialCharactersEscaping)
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
     params.awk = "/^Chain/ {print $2}";
-    params.regex = "INPUT";
+    params.pattern = "INPUT";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -137,7 +137,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithAwkComplexTransformation)
     CommandOutputMatchParams params;
     params.command = "uname";
     params.awk = "BEGIN{FS=\"\\n\"} {gsub(/\\s+/, \"\", $1); print $1}";
-    params.regex = "Linux";
+    params.pattern = "Linux";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -153,7 +153,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithEmptyAwkParameter)
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
     params.awk = "";
-    params.regex = "test";
+    params.pattern = "test";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -170,7 +170,7 @@ TEST_F(ExecuteCommandGrepTest, AuditWithAwkFailsAtGrep)
     CommandOutputMatchParams params;
     params.command = "iptables -L -n";
     params.awk = "{print $3}";
-    params.regex = "nonexistent";
+    params.pattern = "nonexistent";
 
     auto result = AuditCommandOutputMatch(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());

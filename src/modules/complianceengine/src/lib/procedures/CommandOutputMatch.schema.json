@@ -14,7 +14,7 @@
               "type": "object",
               "required": [
                 "command",
-                "regex"
+                "pattern"
               ],
               "additionalProperties": false,
               "properties": {
@@ -26,7 +26,7 @@
                   "type": "string",
                   "description": "Awk transformation in the middle, optional"
                 },
-                "regex": {
+                "pattern": {
                   "type": "string",
                   "description": "Regex to be matched"
                 },

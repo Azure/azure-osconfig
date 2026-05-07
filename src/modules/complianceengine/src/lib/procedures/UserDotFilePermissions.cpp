@@ -94,7 +94,7 @@ Result<Status> AuditUserDotFilePermissions(IndicatorsTree& indicators, ContextIn
                 }
 
                 FilePermissionsParams params;
-                params.filename = path;
+                params.path = path;
                 params.owner = {{std::move(pwdPattern.Value())}};
                 params.group = {{std::move(groupPattern.Value())}};
                 params.mask = mask;
@@ -217,7 +217,7 @@ Result<Status> RemediateUserDotFilePermissions(IndicatorsTree& indicators, Conte
                     return;
                 }
                 FilePermissionsParams params;
-                params.filename = path;
+                params.path = path;
                 params.owner = {{pwdPattern.Value()}};
                 params.group = {{groupPattern.Value()}};
                 params.mask = mask;

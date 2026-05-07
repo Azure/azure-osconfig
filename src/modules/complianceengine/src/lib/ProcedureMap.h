@@ -84,13 +84,13 @@ inline const std::map<std::string, RegexType>& MapEnum<RegexType>()
     return map;
 }
 
-// Maps the DConfOperation enum labels to the enum values.
+// Maps the DconfOperation enum labels to the enum values.
 template <>
-inline const std::map<std::string, DConfOperation>& MapEnum<DConfOperation>()
+inline const std::map<std::string, DconfOperation>& MapEnum<DconfOperation>()
 {
-    static const std::map<std::string, DConfOperation> map = {
-        {"eq", DConfOperation::Eq},
-        {"ne", DConfOperation::Ne},
+    static const std::map<std::string, DconfOperation> map = {
+        {"eq", DconfOperation::Eq},
+        {"ne", DconfOperation::Ne},
     };
     return map;
 }
@@ -200,29 +200,29 @@ inline const std::map<std::string, SshKeyType>& MapEnum<SshKeyType>()
     return map;
 }
 
-// Maps the EnsureSshdOptionOperation enum labels to the enum values.
+// Maps the SshdOptionOperation enum labels to the enum values.
 template <>
-inline const std::map<std::string, EnsureSshdOptionOperation>& MapEnum<EnsureSshdOptionOperation>()
+inline const std::map<std::string, SshdOptionOperation>& MapEnum<SshdOptionOperation>()
 {
-    static const std::map<std::string, EnsureSshdOptionOperation> map = {
-        {"regex", EnsureSshdOptionOperation::Regex},
-        {"match", EnsureSshdOptionOperation::Match},
-        {"not_match", EnsureSshdOptionOperation::NotMatch},
-        {"lt", EnsureSshdOptionOperation::LessThan},
-        {"le", EnsureSshdOptionOperation::LessOrEqual},
-        {"gt", EnsureSshdOptionOperation::GreaterThan},
-        {"ge", EnsureSshdOptionOperation::GreaterOrEqual},
+    static const std::map<std::string, SshdOptionOperation> map = {
+        {"regex", SshdOptionOperation::Regex},
+        {"match", SshdOptionOperation::Match},
+        {"not_match", SshdOptionOperation::NotMatch},
+        {"lt", SshdOptionOperation::LessThan},
+        {"le", SshdOptionOperation::LessOrEqual},
+        {"gt", SshdOptionOperation::GreaterThan},
+        {"ge", SshdOptionOperation::GreaterOrEqual},
     };
     return map;
 }
 
-// Maps the EnsureSshdOptionMode enum labels to the enum values.
+// Maps the SshdOptionMode enum labels to the enum values.
 template <>
-inline const std::map<std::string, EnsureSshdOptionMode>& MapEnum<EnsureSshdOptionMode>()
+inline const std::map<std::string, SshdOptionMode>& MapEnum<SshdOptionMode>()
 {
-    static const std::map<std::string, EnsureSshdOptionMode> map = {
-        {"regular", EnsureSshdOptionMode::Regular},
-        {"all_matches", EnsureSshdOptionMode::AllMatches},
+    static const std::map<std::string, SshdOptionMode> map = {
+        {"regular", SshdOptionMode::Regular},
+        {"all_matches", SshdOptionMode::AllMatches},
     };
     return map;
 }
@@ -268,7 +268,7 @@ struct Bindings<CommandOutputMatchParams>
     using T = CommandOutputMatchParams;
     static constexpr size_t size = 4;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::command, &T::awk, &T::regex, &T::type);
+    static constexpr auto members = std::make_tuple(&T::command, &T::awk, &T::pattern, &T::type);
 };
 
 // Defines the bindings for the DconfValueParams structure.
@@ -298,7 +298,7 @@ struct Bindings<FilePermissionsParams>
     using T = FilePermissionsParams;
     static constexpr size_t size = 6;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::filename, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
+    static constexpr auto members = std::make_tuple(&T::path, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
 // Defines the bindings for the FilePermissionsCollectionParams structure.
@@ -308,14 +308,14 @@ struct Bindings<FilePermissionsCollectionParams>
     using T = FilePermissionsCollectionParams;
     static constexpr size_t size = 8;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::ext, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
+    static constexpr auto members = std::make_tuple(&T::directory, &T::recurse, &T::filePattern, &T::owner, &T::group, &T::permissions, &T::mask, &T::behavior);
 };
 
-// Defines the bindings for the AuditFileRegexMatchParams structure.
+// Defines the bindings for the FileRegexMatchParams structure.
 template <>
-struct Bindings<AuditFileRegexMatchParams>
+struct Bindings<FileRegexMatchParams>
 {
-    using T = AuditFileRegexMatchParams;
+    using T = FileRegexMatchParams;
     static constexpr size_t size = 8;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::path, &T::filenamePattern, &T::matchOperation, &T::matchPattern, &T::stateOperation, &T::statePattern, &T::ignoreCase, &T::behavior);
@@ -398,7 +398,7 @@ struct Bindings<NoShellAccountsLockedParams>
     using T = NoShellAccountsLockedParams;
     static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skip_below_uid_min, &T::skip_invalid_shells);
+    static constexpr auto members = std::make_tuple(&T::excludeUsers, &T::skipBelowUidMin, &T::skipInvalidShells);
 };
 
 // Defines the bindings for the PackageInstalledParams structure.
@@ -428,7 +428,7 @@ struct Bindings<SCEParams>
     using T = SCEParams;
     static constexpr size_t size = 2;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::scriptName, &T::ENVIRONMENT);
+    static constexpr auto members = std::make_tuple(&T::scriptName, &T::environment);
 };
 
 // Defines the bindings for the ShadowFieldParams structure.
@@ -438,7 +438,7 @@ struct Bindings<ShadowFieldParams>
     using T = ShadowFieldParams;
     static constexpr size_t size = 6;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::username, &T::username_operation, &T::field, &T::value, &T::operation, &T::test_etcShadowPath);
+    static constexpr auto members = std::make_tuple(&T::username, &T::usernameOperation, &T::field, &T::value, &T::operation, &T::test_etcShadowPath);
 };
 
 // Defines the bindings for the SshKeyPermissionsParams structure.
@@ -488,7 +488,7 @@ struct Bindings<SystemdUnitStateParams>
     using T = SystemdUnitStateParams;
     static constexpr size_t size = 5;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::unitName, &T::ActiveState, &T::LoadState, &T::UnitFileState, &T::Unit);
+    static constexpr auto members = std::make_tuple(&T::unitName, &T::activeState, &T::loadState, &T::unitFileState, &T::unit);
 };
 
 // Defines the bindings for the TestingProcedureParams structure.
@@ -521,11 +521,11 @@ struct Bindings<TestingProcedureGetParamValuesParams>
     static constexpr auto members = std::make_tuple(&T::KEY1, &T::KEY2, &T::KEY3);
 };
 
-// Defines the bindings for the AuditUfwStatusParams structure.
+// Defines the bindings for the UfwStatusParams structure.
 template <>
-struct Bindings<AuditUfwStatusParams>
+struct Bindings<UfwStatusParams>
 {
-    using T = AuditUfwStatusParams;
+    using T = UfwStatusParams;
     static constexpr size_t size = 1;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::statusRegex);
@@ -538,7 +538,7 @@ struct Bindings<UniqueGroupIdParams>
     using T = UniqueGroupIdParams;
     static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::group, &T::gid, &T::test_etcGroupPath);
+    static constexpr auto members = std::make_tuple(&T::groupName, &T::gid, &T::test_etcGroupPath);
 };
 
 // Defines the bindings for the UniqueUserIdParams structure.
@@ -571,8 +571,8 @@ string to_string(ComplianceEngine::Behavior value) noexcept(false); // NOLINT(*-
 // Returns a string representation of the RegexType enum value.
 string to_string(ComplianceEngine::RegexType value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the DConfOperation enum value.
-string to_string(ComplianceEngine::DConfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
+// Returns a string representation of the DconfOperation enum value.
+string to_string(ComplianceEngine::DconfOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the Operation enum value.
 string to_string(ComplianceEngine::Operation value) noexcept(false); // NOLINT(*-identifier-naming)
@@ -598,11 +598,11 @@ string to_string(ComplianceEngine::Field value) noexcept(false); // NOLINT(*-ide
 // Returns a string representation of the SshKeyType enum value.
 string to_string(ComplianceEngine::SshKeyType value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the EnsureSshdOptionOperation enum value.
-string to_string(ComplianceEngine::EnsureSshdOptionOperation value) noexcept(false); // NOLINT(*-identifier-naming)
+// Returns a string representation of the SshdOptionOperation enum value.
+string to_string(ComplianceEngine::SshdOptionOperation value) noexcept(false); // NOLINT(*-identifier-naming)
 
-// Returns a string representation of the EnsureSshdOptionMode enum value.
-string to_string(ComplianceEngine::EnsureSshdOptionMode value) noexcept(false); // NOLINT(*-identifier-naming)
+// Returns a string representation of the SshdOptionMode enum value.
+string to_string(ComplianceEngine::SshdOptionMode value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the SystemdConfigValueOperator enum value.
 string to_string(ComplianceEngine::SystemdConfigValueOperator value) noexcept(false); // NOLINT(*-identifier-naming)

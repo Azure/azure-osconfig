@@ -9,7 +9,7 @@
 
 namespace ComplianceEngine
 {
-enum class EnsureSshdOptionOperation
+enum class SshdOptionOperation
 {
     /// label: regex
     Regex,
@@ -33,7 +33,7 @@ enum class EnsureSshdOptionOperation
     GreaterOrEqual,
 };
 
-enum class EnsureSshdOptionMode
+enum class SshdOptionMode
 {
     /// label: regular
     Regular,
@@ -53,11 +53,11 @@ struct SshdOptionParams
 
     /// (regex|match|not_match|lt|le|gt|ge) optional, defaults to 'regex'
     /// pattern: ^(regex|match|not_match|lt|le|gt|ge)$
-    Optional<EnsureSshdOptionOperation> op = EnsureSshdOptionOperation::Regex;
+    Optional<SshdOptionOperation> op = SshdOptionOperation::Regex;
 
     /// Mode, one of (regular|all_matches). Optional, defaults to 'regular'
     /// pattern: ^(regular|all_matches)$
-    Optional<EnsureSshdOptionMode> mode = EnsureSshdOptionMode::Regular;
+    Optional<SshdOptionMode> mode = SshdOptionMode::Regular;
 
     /// Read extra configuration files in sysconfig and crypto policies
     Optional<bool> readExtraConfigs = false;

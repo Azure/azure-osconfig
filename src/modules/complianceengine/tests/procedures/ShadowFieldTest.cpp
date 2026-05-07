@@ -104,7 +104,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_1)
     // Use a non-empty password so the user is not skipped
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
     params.test_etcShadowPath = path;
-    params.username_operation = ComparisonOperation::Equal; // unused but required by procedure
+    params.usernameOperation = ComparisonOperation::Equal; // unused but required by procedure
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
@@ -120,7 +120,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
     params.operation = ComparisonOperation::PatternMatch;
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
     params.test_etcShadowPath = path;
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
@@ -136,7 +136,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
     params.operation = ComparisonOperation::PatternMatch;
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
     params.test_etcShadowPath = path;
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
@@ -152,7 +152,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
     params.value = "x";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -169,7 +169,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_1)
     // Create controlled shadow file with password that does NOT contain 'test' so pattern fails
     const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -204,7 +204,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
     params.value = "^.*$";
     params.operation = ComparisonOperation::PatternMatch;
     params.username = "^root$";
-    params.username_operation = ComparisonOperation::PatternMatch;
+    params.usernameOperation = ComparisonOperation::PatternMatch;
     auto result = AuditShadowField(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -221,7 +221,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_4)
     params.value = "^test$";
     params.operation = ComparisonOperation::PatternMatch;
     params.username = "^$";
-    params.username_operation = ComparisonOperation::PatternMatch;
+    params.usernameOperation = ComparisonOperation::PatternMatch;
     auto result = AuditShadowField(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // No users matched the empty string pattern so we return compliant status
@@ -239,7 +239,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_5)
     params.value = "^test$";
     params.operation = ComparisonOperation::PatternMatch;
     params.username = "^root$";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     auto result = AuditShadowField(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -253,7 +253,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_6)
     params.operation = ComparisonOperation::PatternMatch;
     const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -269,7 +269,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_1)
     params.value = "SHA-512";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -289,7 +289,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_2)
     params.value = "SHA-512";
     params.operation = ComparisonOperation::NotEqual;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -305,7 +305,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_3)
     params.value = "DES";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -321,7 +321,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_4)
     params.value = "BSDi";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -337,7 +337,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_5)
     params.value = "None";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -353,7 +353,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_6)
     params.value = "None";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -369,7 +369,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_7)
     params.value = "MD5";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -385,7 +385,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_8)
     params.value = "Blowfish";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -401,7 +401,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_9)
     params.value = "Blowfish";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -417,7 +417,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_10)
     params.value = "Blowfish";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -433,7 +433,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_11)
     params.value = "MD5";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -449,7 +449,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_12)
     params.value = "SHA-256";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -465,7 +465,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_13)
     params.value = "YesCrypt";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -481,7 +481,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_1)
     params.value = "1";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -497,7 +497,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_2)
     params.value = "2";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -513,7 +513,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_3)
     params.value = "3";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -529,7 +529,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_4)
     params.value = "4";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -545,7 +545,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_5)
     params.value = "5";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -561,7 +561,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_6)
     params.value = "6";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -577,7 +577,7 @@ TEST_F(EnsureShadowContainsTest, FeatureFlag)
     params.value = "6";
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
-    params.username_operation = ComparisonOperation::Equal;
+    params.usernameOperation = ComparisonOperation::Equal;
     params.test_etcShadowPath = path;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);

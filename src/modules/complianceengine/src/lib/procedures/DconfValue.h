@@ -8,7 +8,7 @@
 
 namespace ComplianceEngine
 {
-enum class DConfOperation
+enum class DconfOperation
 {
     /// label: eq
     Eq,
@@ -27,7 +27,7 @@ struct DconfValueParams
 
     /// Type of operation, one of eq, ne
     /// pattern: ^(eq|ne)$
-    DConfOperation operation = DConfOperation::Eq;
+    DconfOperation operation = DconfOperation::Eq;
 };
 
 Result<Status> AuditDconfValue(const DconfValueParams& params, IndicatorsTree& indicators, ContextInterface& context);

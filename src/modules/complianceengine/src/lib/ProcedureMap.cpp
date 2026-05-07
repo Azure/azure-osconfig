@@ -12,7 +12,7 @@ const char* Bindings<ApparmorProfileStateParams>::names[] = {"enforce"};
 const char* Bindings<AuditdRulesParams>::names[] = {"searchItem", "excludeOption", "requiredOptions"};
 
 // CommandOutputMatch.h:43
-const char* Bindings<CommandOutputMatchParams>::names[] = {"command", "awk", "regex", "type"};
+const char* Bindings<CommandOutputMatchParams>::names[] = {"command", "awk", "pattern", "type"};
 
 // DconfValue.h:31
 const char* Bindings<DconfValueParams>::names[] = {"key", "value", "operation"};
@@ -21,13 +21,13 @@ const char* Bindings<DconfValueParams>::names[] = {"key", "value", "operation"};
 const char* Bindings<FileExistsParams>::names[] = {"filename"};
 
 // FilePermissions.h:36
-const char* Bindings<FilePermissionsParams>::names[] = {"filename", "owner", "group", "permissions", "mask", "behavior"};
+const char* Bindings<FilePermissionsParams>::names[] = {"path", "owner", "group", "permissions", "mask", "behavior"};
 
 // FilePermissions.h:68
-const char* Bindings<FilePermissionsCollectionParams>::names[] = {"directory", "recurse", "ext", "owner", "group", "permissions", "mask", "behavior"};
+const char* Bindings<FilePermissionsCollectionParams>::names[] = {"directory", "recurse", "filePattern", "owner", "group", "permissions", "mask", "behavior"};
 
 // FileRegexMatch.h:64
-const char* Bindings<AuditFileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
+const char* Bindings<FileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
 // FilesystemMountOption.h:31
 const char* Bindings<FilesystemMountOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
@@ -51,7 +51,7 @@ const char* Bindings<MountPointExistsParams>::names[] = {"mountPoint"};
 const char* Bindings<NoDuplicateEntriesParams>::names[] = {"filename", "delimiter", "column", "context"};
 
 // NoShellAccountsLocked.h:21
-const char* Bindings<NoShellAccountsLockedParams>::names[] = {"excludeUsers", "skip_below_uid_min", "skip_invalid_shells"};
+const char* Bindings<NoShellAccountsLockedParams>::names[] = {"excludeUsers", "skipBelowUidMin", "skipInvalidShells"};
 
 // PackageInstalled.h:37
 const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPackageVersion", "packageManager", "test_cachePath"};
@@ -60,10 +60,10 @@ const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPack
 const char* Bindings<PasswordChangeDateParams>::names[] = {"test_etcShadowPath"};
 
 // SCE.h:18
-const char* Bindings<SCEParams>::names[] = {"scriptName", "ENVIRONMENT"};
+const char* Bindings<SCEParams>::names[] = {"scriptName", "environment"};
 
 // ShadowField.h:90
-const char* Bindings<ShadowFieldParams>::names[] = {"username", "username_operation", "field", "value", "operation", "test_etcShadowPath"};
+const char* Bindings<ShadowFieldParams>::names[] = {"username", "usernameOperation", "field", "value", "operation", "test_etcShadowPath"};
 
 // SshKeyPermissions.h:24
 const char* Bindings<SshKeyPermissionsParams>::names[] = {"type"};
@@ -78,7 +78,7 @@ const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value"};
 const char* Bindings<SystemdConfigValueParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
 
 // SystemdUnitState.h:28
-const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "ActiveState", "LoadState", "UnitFileState", "Unit"};
+const char* Bindings<SystemdUnitStateParams>::names[] = {"unitName", "activeState", "loadState", "unitFileState", "unit"};
 
 // TestingProcedures.h:15
 const char* Bindings<TestingProcedureParams>::names[] = {"message"};
@@ -90,10 +90,10 @@ const char* Bindings<TestingProcedureParametrizedParams>::names[] = {"result"};
 const char* Bindings<TestingProcedureGetParamValuesParams>::names[] = {"KEY1", "KEY2", "KEY3"};
 
 // UfwStatus.h:16
-const char* Bindings<AuditUfwStatusParams>::names[] = {"statusRegex"};
+const char* Bindings<UfwStatusParams>::names[] = {"statusRegex"};
 
 // UniqueGroupId.h:22
-const char* Bindings<UniqueGroupIdParams>::names[] = {"group", "gid", "test_etcGroupPath"};
+const char* Bindings<UniqueGroupIdParams>::names[] = {"groupName", "gid", "test_etcGroupPath"};
 
 // UniqueUserId.h:26
 const char* Bindings<UniqueUserIdParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
@@ -184,9 +184,9 @@ string to_string(const ComplianceEngine::RegexType value) noexcept(false)
     return it->second;
 }
 
-string to_string(const ComplianceEngine::DConfOperation value) noexcept(false)
+string to_string(const ComplianceEngine::DconfOperation value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DConfOperation>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::DconfOperation>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -292,9 +292,9 @@ string to_string(const ComplianceEngine::SshKeyType value) noexcept(false)
     return it->second;
 }
 
-string to_string(const ComplianceEngine::EnsureSshdOptionOperation value) noexcept(false)
+string to_string(const ComplianceEngine::SshdOptionOperation value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::EnsureSshdOptionOperation>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SshdOptionOperation>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
@@ -304,9 +304,9 @@ string to_string(const ComplianceEngine::EnsureSshdOptionOperation value) noexce
     return it->second;
 }
 
-string to_string(const ComplianceEngine::EnsureSshdOptionMode value) noexcept(false)
+string to_string(const ComplianceEngine::SshdOptionMode value) noexcept(false)
 {
-    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::EnsureSshdOptionMode>();
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::SshdOptionMode>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)

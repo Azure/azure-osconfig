@@ -358,7 +358,7 @@ Result<Status> AuditSshdOption(const SshdOptionParams& params, IndicatorsTree& i
 
     std::vector<regex> valueRegexes;
     auto op = params.op.Value();
-    if (op == EnsureSshdOptionOperation::Regex)
+    if (op == SshdOptionOperation::Regex)
     {
         try
         {
@@ -373,7 +373,7 @@ Result<Status> AuditSshdOption(const SshdOptionParams& params, IndicatorsTree& i
             return Error("Failed to compile regex error: " + std::string(e.what()), EINVAL);
         }
     }
-    if (op == EnsureSshdOptionOperation::Match || op == EnsureSshdOptionOperation::NotMatch)
+    if (op == SshdOptionOperation::Match || op == SshdOptionOperation::NotMatch)
     {
         std::istringstream valueStream(params.value);
         std::string valuePart;
@@ -394,7 +394,7 @@ Result<Status> AuditSshdOption(const SshdOptionParams& params, IndicatorsTree& i
 
     std::vector<std::string> matchModes;
     auto mode = params.mode.Value();
-    if (mode == EnsureSshdOptionMode::AllMatches)
+    if (mode == SshdOptionMode::AllMatches)
     {
         auto allMatches = GetAllMatches(context);
         if (!allMatches.HasValue())

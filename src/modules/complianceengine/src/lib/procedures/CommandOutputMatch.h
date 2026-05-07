@@ -36,7 +36,7 @@ struct CommandOutputMatchParams
     Optional<std::string> awk;
 
     /// Regex to be matched
-    std::string regex;
+    std::string pattern;
 
     /// Type of regex, P for Perl (default) or E for Extended
     Optional<RegexType> type = RegexType::Perl;

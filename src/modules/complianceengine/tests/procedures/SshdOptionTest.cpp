@@ -10,13 +10,13 @@
 
 using ComplianceEngine::AuditSshdOption;
 using ComplianceEngine::CompactListFormatter;
-using ComplianceEngine::EnsureSshdOptionMode;
-using ComplianceEngine::EnsureSshdOptionOperation;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
 using ComplianceEngine::Separated;
+using ComplianceEngine::SshdOptionMode;
+using ComplianceEngine::SshdOptionOperation;
 using ComplianceEngine::SshdOptionParams;
 using ComplianceEngine::Status;
 using ::testing::Return;
@@ -263,7 +263,7 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_Compliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "yes"; // forbidden
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -278,7 +278,7 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_NonCompliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "no"; // actual value matches forbidden pattern
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -293,7 +293,7 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_MissingOptionIsCompliant)
     SshdOptionParams params;
     params.option = {{"nonexistentoption"}}; // ensure not present
     params.value = "forbidden";              // arbitrary pattern
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -311,7 +311,7 @@ TEST_F(EnsureSshdOptionTest, OperationNumericLt_Compliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}}; // value 4
     params.value = "5";
-    params.op = EnsureSshdOptionOperation::LessThan;
+    params.op = SshdOptionOperation::LessThan;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -326,7 +326,7 @@ TEST_F(EnsureSshdOptionTest, OperationNumericLt_NonCompliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}}; // value 4
     params.value = "3";
-    params.op = EnsureSshdOptionOperation::LessThan;
+    params.op = SshdOptionOperation::LessThan;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -341,7 +341,7 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_Compliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}}; // value 4
     params.value = "4";
-    params.op = EnsureSshdOptionOperation::GreaterOrEqual;
+    params.op = SshdOptionOperation::GreaterOrEqual;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -356,7 +356,7 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_NonCompliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}}; // value 4
     params.value = "5";
-    params.op = EnsureSshdOptionOperation::GreaterOrEqual;
+    params.op = SshdOptionOperation::GreaterOrEqual;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -370,7 +370,7 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
 
     SshdOptionParams params;
     params.option = {{"maxstartups"}}; // special case
-    params.op = EnsureSshdOptionOperation::Match;
+    params.op = SshdOptionOperation::Match;
     // Provide thresholds higher than actual values (10 30 60)
     params.value = "15:40:70";
 
@@ -388,7 +388,7 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
 
     SshdOptionParams params;
     params.option = {{"maxstartups"}};
-    params.op = EnsureSshdOptionOperation::Match;
+    params.op = SshdOptionOperation::Match;
     // Set at least one threshold lower than actual (e.g., middle value 25 < 30)
     params.value = "15:25:70";
 
@@ -405,8 +405,8 @@ TEST_F(EnsureSshdOptionTest, RekeyLimit_Compliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
 
     SshdOptionParams params;
-    params.option = {{"rekeylimit"}};             // special case expects actual '10 123'
-    params.op = EnsureSshdOptionOperation::Match; // special-case numeric limits comparison
+    params.option = {{"rekeylimit"}};       // special case expects actual '10 123'
+    params.op = SshdOptionOperation::Match; // special-case numeric limits comparison
     // Provide thresholds higher than actual values (10 123) using colon format
     params.value = "15:150"; // limits: first>=10 second>=123
 
@@ -423,9 +423,9 @@ TEST_F(EnsureSshdOptionTest, RekeyLimit_NonCompliant)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdSpecialOptionsOutput)));
 
     SshdOptionParams params;
-    params.option = {{"rekeylimit"}};             // actual value '10 123'
-    params.op = EnsureSshdOptionOperation::Match; // numeric limits compare
-    params.value = "5:150";                       // first threshold lower than actual first value (10 > 5) triggers non-compliance
+    params.option = {{"rekeylimit"}};       // actual value '10 123'
+    params.op = SshdOptionOperation::Match; // numeric limits compare
+    params.value = "5:150";                 // first threshold lower than actual first value (10 > 5) triggers non-compliance
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -444,7 +444,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_AllOptionsAbsent_Adapted)
     SshdOptionParams params;
     params.option = {{"nonexistentoption1", "nonexistentoption2"}};
     params.value = ".*";
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = ComplianceEngine::AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -464,7 +464,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithForbiddenValue_Adapted)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}}; // actual value 'no'
     params.value = "no";                   // forbidden value pattern
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = ComplianceEngine::AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -480,7 +480,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithAllowedValue_Adapted)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}};
     params.value = "5,6,7";
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = ComplianceEngine::AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -496,7 +496,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_InvalidRegex_Adapted)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "(invalid["; // invalid regex
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
     auto result = AuditSshdOption(params, mIndicators, mContext);
 
     ASSERT_FALSE(result.HasValue());
@@ -507,7 +507,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_MissingOptionArgument_Adapted)
 {
     SshdOptionParams params;
     params.value = "no";
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
     auto result = AuditSshdOption(params, mIndicators, mContext);
 
     ASSERT_FALSE(result.HasValue());
@@ -518,7 +518,7 @@ TEST_F(EnsureSshdOptionTest, NoOption_MissingValueArgument_Adapted)
 {
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
@@ -545,7 +545,7 @@ TEST_F(EnsureSshdOptionTest, Match_MissingOptionArgument)
 {
     SshdOptionParams params;
     params.value = "no";
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
@@ -555,7 +555,7 @@ TEST_F(EnsureSshdOptionTest, Match_MissingValueArgument)
 {
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
@@ -566,7 +566,7 @@ TEST_F(EnsureSshdOptionTest, Match_InvalidRegex)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "(invalid[";
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
@@ -585,7 +585,7 @@ TEST_F(EnsureSshdOptionTest, Match_AllCompliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "no";
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -606,7 +606,7 @@ TEST_F(EnsureSshdOptionTest, Match_FirstNonCompliantShortCircuits)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "no"; // expecting 'no'
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -625,7 +625,7 @@ TEST_F(EnsureSshdOptionTest, Match_OptionMissingInOneContext)
     params.option = {{"permitrootlogin"}};
     params.value = ".*";
 
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // option missing treated as non-compliant
@@ -641,8 +641,8 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_Compliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "yes"; // forbidden
-    params.op = EnsureSshdOptionOperation::NotMatch;
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.op = SshdOptionOperation::NotMatch;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -660,8 +660,8 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_NonCompliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "no"; // actual value matches forbidden pattern
-    params.op = EnsureSshdOptionOperation::NotMatch;
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.op = SshdOptionOperation::NotMatch;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -679,8 +679,8 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_Compliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}};
     params.value = "5";
-    params.op = EnsureSshdOptionOperation::LessThan;
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.op = SshdOptionOperation::LessThan;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -698,8 +698,8 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_NonCompliant)
     SshdOptionParams params;
     params.option = {{"maxauthtries"}};
     params.value = "5";
-    params.op = EnsureSshdOptionOperation::LessThan;
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.op = SshdOptionOperation::LessThan;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -713,7 +713,7 @@ TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
     SshdOptionParams params;
     params.option = {{"permitrootlogin"}};
     params.value = "no";
-    params.mode = EnsureSshdOptionMode::AllMatches;
+    params.mode = SshdOptionMode::AllMatches;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -806,7 +806,7 @@ TEST_F(EnsureSshdOptionTest, CaseInsensitive_MatchOp_MixedCaseCommaList)
     params.option = {{"permitrootlogin"}};
     // Match op with comma-separated values, one uses uppercase
     params.value = "Yes,No";
-    params.op = EnsureSshdOptionOperation::Match;
+    params.op = SshdOptionOperation::Match;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -823,7 +823,7 @@ TEST_F(EnsureSshdOptionTest, CaseInsensitive_NotMatchOp_UpperCaseForbiddenValue)
     params.option = {{"permitrootlogin"}};
     // Forbidden pattern uses upper case "NO" — must still match the lowercased actual value "no"
     params.value = "NO";
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -840,7 +840,7 @@ TEST_F(EnsureSshdOptionTest, CaseInsensitive_NotMatchOp_UpperCaseNonMatchingPatt
     params.option = {{"permitrootlogin"}};
     // Forbidden pattern "YES" does not match actual value "no" regardless of case
     params.value = "YES";
-    params.op = EnsureSshdOptionOperation::NotMatch;
+    params.op = SshdOptionOperation::NotMatch;
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());

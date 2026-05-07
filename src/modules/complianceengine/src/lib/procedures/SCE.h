@@ -14,7 +14,7 @@ struct SCEParams
     std::string scriptName;
 
     /// Environment as passed to the SCE script
-    Optional<std::string> ENVIRONMENT;
+    Optional<std::string> environment;
 };
 
 Result<Status> AuditSCE(const SCEParams& params, IndicatorsTree& indicators, ContextInterface& context);

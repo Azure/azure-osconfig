@@ -21,19 +21,19 @@
                   "type": "string",
                   "description": "Name of the systemd unit"
                 },
-                "ActiveState": {
+                "activeState": {
                   "type": "string",
                   "description": "value of systemd ActiveState of unitName to match"
                 },
-                "LoadState": {
+                "loadState": {
                   "type": "string",
                   "description": "value of systemd LoadState of unitName to match"
                 },
-                "UnitFileState": {
+                "unitFileState": {
                   "type": "string",
                   "description": "value of systemd UnitFileState of unitName to match"
                 },
-                "Unit": {
+                "unit": {
                   "type": "string",
                   "description": "value of systemd property Unit, used in systemd.timer, name of unit to run when timer elapses"
                 }

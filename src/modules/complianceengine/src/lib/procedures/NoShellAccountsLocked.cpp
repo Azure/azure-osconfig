@@ -20,7 +20,7 @@ using std::string;
 Result<Status> AuditNoShellAccountsLocked(const NoShellAccountsLockedParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     Result<unsigned int> uidMin = Error("Uninitialised UID_MIN");
-    if (params.skip_below_uid_min.HasValue() && params.skip_below_uid_min.Value())
+    if (params.skipBelowUidMin.HasValue() && params.skipBelowUidMin.Value())
     {
         uidMin = GetUidMin(context);
     }
@@ -77,8 +77,8 @@ Result<Status> AuditNoShellAccountsLocked(const NoShellAccountsLockedParams& par
         }
 
         bool shouldSkip = false;
-        assert(params.skip_invalid_shells.HasValue());
-        if (params.skip_invalid_shells.Value())
+        assert(params.skipInvalidShells.HasValue());
+        if (params.skipInvalidShells.Value())
         {
             OsConfigLogDebug(context.GetLogHandle(), "Skip User '%s' as it's does not have valid shell %s", user.pw_name, user.pw_shell);
             shouldSkip = true;
@@ -100,7 +100,7 @@ Result<Status> AuditNoShellAccountsLocked(const NoShellAccountsLockedParams& par
         {
             continue;
         }
-        if (params.skip_below_uid_min && uidMin.HasValue())
+        if (params.skipBelowUidMin && uidMin.HasValue())
         {
             if (user.pw_uid < uidMin.Value())
             {

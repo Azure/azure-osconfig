@@ -194,7 +194,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, IngnoreInvalidShellUnlockedUser)
     filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     NoShellAccountsLockedParams params;
-    params.skip_invalid_shells = true;
+    params.skipInvalidShells = true;
     auto result = AuditNoShellAccountsLocked(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -231,7 +231,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, SkipBelowUidMin_GetUidMinError)
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>(Error("Failed to load file contents"))));
     NoShellAccountsLockedParams params;
-    params.skip_below_uid_min = true;
+    params.skipBelowUidMin = true;
     auto result = AuditNoShellAccountsLocked(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -251,7 +251,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, SkipBelowUidMin_NoIUidMin)
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>("# EMPTY FILE")));
     NoShellAccountsLockedParams params;
-    params.skip_below_uid_min = true;
+    params.skipBelowUidMin = true;
     auto result = AuditNoShellAccountsLocked(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -271,7 +271,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, SkipBelowUidMin)
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     EXPECT_CALL(mContext, GetFileContents(cLoginDefsPath)).WillOnce(Return(Result<string>("UID_MIN 10001")));
     NoShellAccountsLockedParams params;
-    params.skip_below_uid_min = true;
+    params.skipBelowUidMin = true;
     auto result = AuditNoShellAccountsLocked(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);

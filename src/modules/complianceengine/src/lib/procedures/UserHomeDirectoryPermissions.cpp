@@ -90,7 +90,7 @@ Result<Status> AuditUserHomeDirectoryPermissions(IndicatorsTree& indicators, Con
         }
 
         FilePermissionsParams params;
-        params.filename = pwd.pw_dir;
+        params.path = pwd.pw_dir;
         params.mask = 027;
         params.owner = {{std::move(pwdPattern.Value())}};
         params.group = {{std::move(groupPattern.Value())}};
@@ -188,7 +188,7 @@ Result<Status> RemediateUserHomeDirectoryPermissions(IndicatorsTree& indicators,
         }
 
         FilePermissionsParams params;
-        params.filename = pwd.pw_dir;
+        params.path = pwd.pw_dir;
         params.mask = 027;
         params.owner = {{std::move(pwdPattern.Value())}};
         params.group = {{std::move(groupPattern.Value())}};

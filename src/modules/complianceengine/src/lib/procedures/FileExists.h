@@ -10,7 +10,7 @@ namespace ComplianceEngine
 // Parameters used by the EnsureFileExists procedure.
 struct FileExistsParams
 {
-    /// A filename containing to check for existence
+    /// Path to the file to check for existence
     std::string filename;
 };
 

@@ -91,7 +91,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, EmptyFile)
 {
     auto path = CreateTestGroupFile("");
     UniqueGroupIdParams params;
-    params.group = "foo";
+    params.groupName = "foo";
     params.gid = 8888;
     params.test_etcGroupPath = path;
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
@@ -104,7 +104,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, NoParameter)
 {
     auto path = CreateTestGroupFile(string("foo"), string("x"), 8888);
     UniqueGroupIdParams params;
-    params.group = "foo";
+    params.groupName = "foo";
     params.test_etcGroupPath = path;
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -116,7 +116,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, SingleGID)
 {
     auto path = CreateTestGroupFile(string("foo"), string("x"), 8888);
     UniqueGroupIdParams params;
-    params.group = "foo";
+    params.groupName = "foo";
     params.gid = 8888;
     params.test_etcGroupPath = path;
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
@@ -129,7 +129,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, DuplicatedGID)
 {
     auto path = CreateTestGroupFile("foo:x:8888:\nbar:x:8888:");
     UniqueGroupIdParams params;
-    params.group = "foo";
+    params.groupName = "foo";
     params.gid = 8888;
     params.test_etcGroupPath = path;
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);

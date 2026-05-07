@@ -34,7 +34,7 @@ Result<Status> AuditCommandOutputMatch(const CommandOutputMatchParams& params, I
         fullCommand += " | awk -S \"" + awkStr + "\" ";
     }
     fullCommand +=
-        " | grep -" + std::to_string(params.type.Value()) + " -- \"" + EscapeForShell(params.regex) + "\" || (echo -n 'No match found'; exit 1)";
+        " | grep -" + std::to_string(params.type.Value()) + " -- \"" + EscapeForShell(params.pattern) + "\" || (echo -n 'No match found'; exit 1)";
     Result<std::string> commandOutput = context.ExecuteCommand(fullCommand);
     if (!commandOutput.HasValue())
     {
@@ -42,7 +42,7 @@ Result<Status> AuditCommandOutputMatch(const CommandOutputMatchParams& params, I
     }
     else
     {
-        return indicators.Compliant("Output of command '" + params.command + "' matches regex '" + params.regex + "'");
+        return indicators.Compliant("Output of command '" + params.command + "' matches regex '" + params.pattern + "'");
     }
 }
 

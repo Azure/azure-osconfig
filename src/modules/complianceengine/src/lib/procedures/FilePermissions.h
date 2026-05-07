@@ -15,7 +15,7 @@ namespace ComplianceEngine
 struct FilePermissionsParams
 {
     /// Path to the file
-    std::string filename;
+    std::string path;
 
     /// Required owner of the file, single or | separated, first one is used for remediation
     Optional<Separated<Pattern, '|'>> owner;
@@ -47,7 +47,7 @@ struct FilePermissionsCollectionParams
     Optional<bool> recurse = true;
 
     /// File pattern
-    std::string ext;
+    std::string filePattern;
 
     /// Required owner of the file, single or | separated, first one is used for remediation
     Optional<Separated<Pattern, '|'>> owner;

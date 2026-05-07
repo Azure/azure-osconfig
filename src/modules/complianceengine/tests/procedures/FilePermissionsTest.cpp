@@ -104,7 +104,7 @@ protected:
 TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
 {
     FilePermissionsParams params;
-    params.filename = "/this_doesnt_exist_for_sure";
+    params.path = "/this_doesnt_exist_for_sure";
 
     auto result = AuditFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -115,7 +115,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
 {
     FilePermissionsParams params;
-    params.filename = "/this_doesnt_exist_for_sure";
+    params.path = "/this_doesnt_exist_for_sure";
     params.behavior = Behavior::NoneExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -127,7 +127,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingNoneExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.behavior = Behavior::NoneExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -139,7 +139,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsNoneExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingAllExist)
 {
     FilePermissionsParams params;
-    params.filename = "/this_doesnt_exist_for_sure";
+    params.path = "/this_doesnt_exist_for_sure";
     params.behavior = Behavior::AllExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -151,7 +151,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAllExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingOnlyOneExists)
 {
     FilePermissionsParams params;
-    params.filename = "/this_doesnt_exist_for_sure";
+    params.path = "/this_doesnt_exist_for_sure";
     params.behavior = Behavior::OnlyOneExists;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -163,7 +163,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingOnlyOneExists)
 TEST_F(EnsureFilePermissionsTest, AuditFileMissingAnyExist)
 {
     FilePermissionsParams params;
-    params.filename = "/this_doesnt_exist_for_sure";
+    params.path = "/this_doesnt_exist_for_sure";
     params.behavior = Behavior::AnyExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -175,7 +175,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissingAnyExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsAllExist)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.behavior = Behavior::AllExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -188,7 +188,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsAllExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermssionsBehaviorNoneExist)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 0, 0610);
+    CreateFile(params.path, 1, 0, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -206,7 +206,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermssionsBehaviorNoneExist)
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 0, 0610);
+    CreateFile(params.path, 1, 0, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -224,7 +224,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
 TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 0, 0610);
+    CreateFile(params.path, 1, 0, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -237,7 +237,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -246,7 +246,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
 TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 1, 0610);
+    CreateFile(params.path, 0, 1, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -265,7 +265,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
 TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 1, 0610);
+    CreateFile(params.path, 0, 1, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -279,7 +279,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -288,7 +288,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
 TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0210);
+    CreateFile(params.path, 0, 0, 0210);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -307,7 +307,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
 TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0210);
+    CreateFile(params.path, 0, 0, 0210);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -321,7 +321,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -330,7 +330,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
 TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0654);
+    CreateFile(params.path, 0, 0, 0654);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -349,7 +349,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
 TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0654);
+    CreateFile(params.path, 0, 0, 0654);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -363,7 +363,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -372,7 +372,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
 TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 1, 0276);
+    CreateFile(params.path, 1, 1, 0276);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -390,7 +390,7 @@ TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
 TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 1, 0276);
+    CreateFile(params.path, 1, 1, 0276);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -403,7 +403,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -412,7 +412,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
 TEST_F(EnsureFilePermissionsTest, AuditAllOk)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0610);
+    CreateFile(params.path, 0, 0, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -429,7 +429,7 @@ TEST_F(EnsureFilePermissionsTest, AuditAllOk)
 TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0610);
+    CreateFile(params.path, 0, 0, 0610);
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -442,7 +442,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
+    ASSERT_EQ(stat(params.path.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0u);
     ASSERT_EQ(st.st_gid, 0u);
     ASSERT_EQ(st.st_mode & 0777, 0610u);
@@ -451,7 +451,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
 TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 15213, 0, 0600);
+    CreateFile(params.path, 15213, 0, 0600);
     auto owner = Pattern::Make("boohoonotarealuser");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -463,7 +463,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 15213, 0, 0600);
+    CreateFile(params.path, 15213, 0, 0600);
     auto owner = Pattern::Make("boohoonotarealuser");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -475,7 +475,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
 TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 15213, 0600);
+    CreateFile(params.path, 0, 15213, 0600);
     auto group = Pattern::Make("boohoonotarealgroup");
     ASSERT_TRUE(group.HasValue());
     params.group = {{std::move(group.Value())}};
@@ -487,7 +487,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 15213, 0600);
+    CreateFile(params.path, 0, 15213, 0600);
     auto group = Pattern::Make("boohoonotarealgroup");
     ASSERT_TRUE(group.HasValue());
     params.group = {{std::move(group.Value())}};
@@ -499,7 +499,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
 TEST_F(EnsureFilePermissionsTest, AuditSameBitsSet)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.permissions = 600;
     params.mask = 600;
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -509,7 +509,7 @@ TEST_F(EnsureFilePermissionsTest, AuditSameBitsSet)
 TEST_F(EnsureFilePermissionsTest, RemediateSameBitsSet)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.permissions = 600;
     params.mask = 600;
     auto result = RemediateFilePermissions(params, indicators, mContext);
@@ -523,7 +523,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionAllCompliant)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -543,7 +543,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionExplicitFile)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "file1.txt";
+    params.filePattern = "file1.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -566,7 +566,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionQuestionMark)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "file?.txt";
+    params.filePattern = "file?.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -590,7 +590,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNonCompliantFile)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -610,7 +610,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateCollectionNonCompliantFile)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -639,7 +639,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFiles)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -674,7 +674,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseDefaultTrue)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files
+    params.filePattern = "*.txt"; // Matches both files
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -704,7 +704,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseFalse)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse false should skip nested
+    params.filePattern = "*.txt"; // Matches both files but recurse false should skip nested
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -745,7 +745,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAllExistsFailOneBad)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior AllExist
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior AllExist
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -790,7 +790,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAllExistsAllgood)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior AllExist
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior AllExist
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -837,7 +837,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueNoneExists)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior AllExist
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior AllExist
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -879,7 +879,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueOnlyOneExists)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -921,7 +921,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueOnlyOneExistsOneBad)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -963,7 +963,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAtLeastOneExists)
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1005,7 +1005,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAtLeastOneExistsOneB
     }
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
+    params.filePattern = "*.txt"; // Matches both files but recurse true and Behavior OnlyOneExists
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1023,7 +1023,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionRecurseTrueAtLeastOneExistsOneB
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsAnyExist)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.behavior = Behavior::AnyExist;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -1035,7 +1035,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsAnyExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsOnlyOneExists)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.behavior = Behavior::OnlyOneExists;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -1047,7 +1047,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsOnlyOneExists)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsAtLeastOneExistsExplicit)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 0, 0, 0600);
+    CreateFile(params.path, 0, 0, 0600);
     params.behavior = Behavior::AtLeastOneExists;
 
     auto result = AuditFilePermissions(params, indicators, mContext);
@@ -1061,7 +1061,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsAtLeastOneExistsExplicit)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermsAnyExist)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 0, 0600); // owner=bin, not root
+    CreateFile(params.path, 1, 0, 0600); // owner=bin, not root
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1076,7 +1076,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermsAnyExist)
 TEST_F(EnsureFilePermissionsTest, AuditFileExistsBadPermsOnlyOneExists)
 {
     FilePermissionsParams params;
-    CreateFile(params.filename, 1, 0, 0600); // owner=bin, not root
+    CreateFile(params.path, 1, 0, 0600); // owner=bin, not root
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1096,7 +1096,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesNoneExist)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt"; // no txt files exist
+    params.filePattern = "*.txt"; // no txt files exist
     params.behavior = Behavior::NoneExist;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);
@@ -1113,7 +1113,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesAllExist)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     params.behavior = Behavior::AllExist;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);
@@ -1129,7 +1129,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesOnlyOneExists)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     params.behavior = Behavior::OnlyOneExists;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);
@@ -1144,7 +1144,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFilesAnyExist)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     params.behavior = Behavior::AnyExist;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);
@@ -1163,7 +1163,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionAnyExistAllGood)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1182,7 +1182,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionAnyExistOneBad)
 
     FilePermissionsCollectionParams params;
     params.directory = testDir;
-    params.ext = "*.txt";
+    params.filePattern = "*.txt";
     auto owner = Pattern::Make("root");
     ASSERT_TRUE(owner.HasValue());
     params.owner = {{std::move(owner).Value()}};
@@ -1201,7 +1201,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionMissingDirectoryNoneExist)
 {
     FilePermissionsCollectionParams params;
     params.directory = "/tmp/this_dir_does_not_exist_efp_test_noneexist";
-    params.ext = "*.conf";
+    params.filePattern = "*.conf";
     params.behavior = Behavior::NoneExist;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);
@@ -1214,7 +1214,7 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionMissingDirectoryAtLeastOneExist
 {
     FilePermissionsCollectionParams params;
     params.directory = "/tmp/this_dir_does_not_exist_efp_test_atleastone";
-    params.ext = "*.conf";
+    params.filePattern = "*.conf";
     params.behavior = Behavior::AtLeastOneExists;
 
     auto result = AuditFilePermissionsCollection(params, indicators, mContext);

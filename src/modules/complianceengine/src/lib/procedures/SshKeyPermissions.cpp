@@ -83,7 +83,7 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
         }
 
         FilePermissionsParams params;
-        params.filename = fullPath;
+        params.path = fullPath;
         static const auto rootPattern = Pattern::Make("root");
         if (!rootPattern.HasValue())
         {

@@ -72,7 +72,7 @@ struct ShadowFieldParams
 
     /// A comparison operation for the username parameter
     /// pattern: ^(eq|ne|lt|le|gt|ge|match)$
-    Optional<ComparisonOperation> username_operation = ComparisonOperation::Equal;
+    Optional<ComparisonOperation> usernameOperation = ComparisonOperation::Equal;
 
     /// The /etc/shadow entry field to match against
     /// pattern: ^(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)$

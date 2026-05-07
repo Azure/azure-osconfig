@@ -19,7 +19,7 @@
               "properties": {
                 "filename": {
                   "type": "string",
-                  "description": "A filename containing to check for existence"
+                  "description": "Path to the file to check for existence"
                 }
               }
             }

@@ -11,7 +11,7 @@
       "audit": {
         "EnsureShadowContains": {
           "username": "securitybaselinetest",
-          "username_operation": "eq",
+          "usernameOperation": "eq",
           "field": "password",
           "value": "^\\$.*\\$.*$",
           "operation": "match"

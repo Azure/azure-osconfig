@@ -51,7 +51,7 @@ const std::map<std::string, std::string> g_defaultLogfileArgs = {{"owner", "root
 
 FilePermissionsParams GetFilePermissionsParams(const std::string& filename, std::map<std::string, std::string> args)
 {
-    args["filename"] = filename;
+    args["path"] = filename;
     auto result = BindingsImpl::ParseArguments<FilePermissionsParams>(args);
     if (!result.HasValue())
     {

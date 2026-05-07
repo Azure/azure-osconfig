@@ -13,11 +13,11 @@
             "UniqueGroupId": {
               "type": "object",
               "required": [
-                "group"
+                "groupName"
               ],
               "additionalProperties": false,
               "properties": {
-                "group": {
+                "groupName": {
                   "type": "string",
                   "description": "A pattern or value to match group names against"
                 },

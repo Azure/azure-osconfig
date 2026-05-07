@@ -52,12 +52,12 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const FilePermissionsCollec
     {
         if (FTS_F == entry->fts_info && (recurse || entry->fts_level == 1))
         {
-            if (0 == fnmatch(params.ext.c_str(), entry->fts_name, 0))
+            if (0 == fnmatch(params.filePattern.c_str(), entry->fts_name, 0))
             {
                 const char* fileName = entry->fts_path;
 
                 FilePermissionsParams subParams;
-                subParams.filename = fileName;
+                subParams.path = fileName;
                 subParams.owner = params.owner;
                 subParams.group = params.group;
                 subParams.permissions = params.permissions;
@@ -157,18 +157,18 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
     assert(params.behavior.HasValue());
     auto log = context.GetLogHandle();
     struct stat statbuf;
-    if (0 != stat(params.filename.c_str(), &statbuf))
+    if (0 != stat(params.path.c_str(), &statbuf))
     {
         const int status = errno;
         if (ENOENT == status)
         {
             if (Behavior::NoneExist == params.behavior.Value() || Behavior::CheckIfExists == params.behavior.Value())
             {
-                OsConfigLogDebug(log, "File '%s' does not exist as it should", params.filename.c_str());
-                return indicators.Compliant("File '" + params.filename + "' does not exist as it should");
+                OsConfigLogDebug(log, "File '%s' does not exist as it should", params.path.c_str());
+                return indicators.Compliant("File '" + params.path + "' does not exist as it should");
             }
-            OsConfigLogDebug(log, "File '%s' does not exist but it should", params.filename.c_str());
-            return indicators.NonCompliant("File '" + params.filename + "' does not exist but it should");
+            OsConfigLogDebug(log, "File '%s' does not exist but it should", params.path.c_str());
+            return indicators.NonCompliant("File '" + params.path + "' does not exist but it should");
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
@@ -178,8 +178,8 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
 
     if (Behavior::NoneExist == params.behavior.Value())
     {
-        OsConfigLogDebug(log, "File '%s' exist but it should not", params.filename.c_str());
-        return indicators.NonCompliant("File '" + params.filename + "' exist but it should not");
+        OsConfigLogDebug(log, "File '%s' exist but it should not", params.path.c_str());
+        return indicators.NonCompliant("File '" + params.path + "' exist but it should not");
     }
     // Behavior::CheckIfExists: file exists, proceed to check permissions
 
@@ -203,8 +203,8 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
         }
         if (!ownerOk)
         {
-            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", params.filename.c_str(), pwd->pw_name, params.owner->ToString().c_str());
-            return indicators.NonCompliant("Invalid owner on '" + params.filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" +
+            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", params.path.c_str(), pwd->pw_name, params.owner->ToString().c_str());
+            return indicators.NonCompliant("Invalid owner on '" + params.path + "' - is '" + std::string(pwd->pw_name) + "' should be '" +
                                            params.owner->ToString() + "'");
         }
         else
@@ -212,7 +212,7 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
             OsConfigLogDebug(log, "Matched owner '%s' to '%s'", params.owner->ToString().c_str(), pwd->pw_name);
         }
 
-        indicators.Compliant(params.filename + " owner matches expected value '" + params.owner->ToString() + "'");
+        indicators.Compliant(params.path + " owner matches expected value '" + params.owner->ToString() + "'");
     }
 
     if (params.group.HasValue())
@@ -235,8 +235,8 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
         }
         if (!groupOk)
         {
-            OsConfigLogDebug(log, "Invalid group on '%s' - is '%s' should be '%s'", params.filename.c_str(), grp->gr_name, params.group->ToString().c_str());
-            return indicators.NonCompliant("Invalid group on '" + params.filename + "' - is '" + std::string(grp->gr_name) + "' should be '" +
+            OsConfigLogDebug(log, "Invalid group on '%s' - is '%s' should be '%s'", params.path.c_str(), grp->gr_name, params.group->ToString().c_str());
+            return indicators.NonCompliant("Invalid group on '" + params.path + "' - is '" + std::string(grp->gr_name) + "' should be '" +
                                            params.group->ToString() + "'");
         }
         else
@@ -244,7 +244,7 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
             OsConfigLogDebug(log, "Matched group '%s' to '%s'", params.group->ToString().c_str(), grp->gr_name);
         }
 
-        indicators.Compliant(params.filename + " group matches expected value '" + params.group->ToString() + "'");
+        indicators.Compliant(params.path + " group matches expected value '" + params.group->ToString() + "'");
     }
 
     if ((params.permissions.HasValue() && params.mask.HasValue()) && (0 != (params.permissions.Value() & params.mask.Value())))
@@ -258,14 +258,14 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
         if (params.permissions.Value() != (statbuf.st_mode & params.permissions.Value()))
         {
             std::ostringstream oss;
-            oss << "Invalid permissions on '" << params.filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
+            oss << "Invalid permissions on '" << params.path << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
                 << std::oct << params.permissions.Value();
             return indicators.NonCompliant(oss.str());
         }
 
-        OsConfigLogDebug(log, "%s permissions are correct", params.filename.c_str());
+        OsConfigLogDebug(log, "%s permissions are correct", params.path.c_str());
         std::ostringstream oss;
-        oss << params.filename << " matches expected permissions " << std::oct << params.permissions.Value();
+        oss << params.path << " matches expected permissions " << std::oct << params.permissions.Value();
         indicators.Compliant(oss.str());
     }
     if (params.mask.HasValue())
@@ -273,32 +273,32 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
         if (0 != (statbuf.st_mode & params.mask.Value()))
         {
             std::ostringstream oss;
-            oss << "Invalid permissions on '" << params.filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be set to "
-                << std::oct << std::setw(3) << std::setfill('0') << (statbuf.st_mode & ~params.mask.Value() & displayMask) << " or a more restrictive value";
+            oss << "Invalid permissions on '" << params.path << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be set to " << std::oct
+                << std::setw(3) << std::setfill('0') << (statbuf.st_mode & ~params.mask.Value() & displayMask) << " or a more restrictive value";
             return indicators.NonCompliant(oss.str());
         }
 
-        OsConfigLogDebug(log, "%s mask is correct", params.filename.c_str());
+        OsConfigLogDebug(log, "%s mask is correct", params.path.c_str());
         std::ostringstream oss;
-        oss << params.filename << " mask matches expected mask " << std::oct << params.mask.Value();
+        oss << params.path << " mask matches expected mask " << std::oct << params.mask.Value();
         indicators.Compliant(oss.str());
     }
 
-    OsConfigLogDebug(log, "File '%s' has correct permissions and ownership, as expected", params.filename.c_str());
-    return indicators.Compliant("File '" + params.filename + "' has correct permissions and ownership as expected");
+    OsConfigLogDebug(log, "File '%s' has correct permissions and ownership, as expected", params.path.c_str());
+    return indicators.Compliant("File '" + params.path + "' has correct permissions and ownership as expected");
 }
 
 Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
     struct stat statbuf;
-    if (stat(params.filename.c_str(), &statbuf) < 0)
+    if (stat(params.path.c_str(), &statbuf) < 0)
     {
         const int status = errno;
         if (ENOENT == status)
         {
-            OsConfigLogDebug(log, "File '%s' does not exist", params.filename.c_str());
-            return indicators.NonCompliant("File '" + params.filename + "' does not exist");
+            OsConfigLogDebug(log, "File '%s' does not exist", params.path.c_str());
+            return indicators.NonCompliant("File '" + params.path + "' does not exist");
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
@@ -388,8 +388,8 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
     }
     if (ownership_changed)
     {
-        OsConfigLogInfo(log, "Changing owner of '%s' from %d:%d to %d:%d", params.filename.c_str(), statbuf.st_uid, statbuf.st_gid, uid, gid);
-        if (0 != chown(params.filename.c_str(), uid, gid))
+        OsConfigLogInfo(log, "Changing owner of '%s' from %d:%d to %d:%d", params.path.c_str(), statbuf.st_uid, statbuf.st_gid, uid, gid);
+        if (0 != chown(params.path.c_str(), uid, gid))
         {
             int status = errno;
             OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
@@ -397,7 +397,7 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
             return Error(std::string("Chown error: ") + strerror(status), status);
         }
 
-        indicators.Compliant(params.filename + " owner changed to " + std::to_string(uid) + ":" + std::to_string(gid));
+        indicators.Compliant(params.path + " owner changed to " + std::to_string(uid) + ":" + std::to_string(gid));
     }
 
     unsigned short new_perms = statbuf.st_mode;
@@ -419,8 +419,8 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
     }
     if (new_perms != statbuf.st_mode)
     {
-        OsConfigLogInfo(log, "Changing permissions of '%s' from %o to %o", params.filename.c_str(), statbuf.st_mode, new_perms);
-        if (chmod(params.filename.c_str(), new_perms) < 0)
+        OsConfigLogInfo(log, "Changing permissions of '%s' from %o to %o", params.path.c_str(), statbuf.st_mode, new_perms);
+        if (chmod(params.path.c_str(), new_perms) < 0)
         {
             int status = errno;
             OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
@@ -428,10 +428,10 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
             return Error(std::string("Chmod error: ") + strerror(status), status);
         }
 
-        indicators.Compliant(params.filename + " permissions changed to " + std::to_string(new_perms));
+        indicators.Compliant(params.path + " permissions changed to " + std::to_string(new_perms));
     }
 
-    OsConfigLogDebug(log, "File '%s' remediation succeeded", params.filename.c_str());
+    OsConfigLogDebug(log, "File '%s' remediation succeeded", params.path.c_str());
     return Status::Compliant;
 }
 

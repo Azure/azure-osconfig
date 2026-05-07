@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 using ComplianceEngine::AuditDconfValue;
-using ComplianceEngine::DConfOperation;
+using ComplianceEngine::DconfOperation;
 using ComplianceEngine::DconfValueParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
@@ -36,7 +36,7 @@ protected:
 TEST_F(EnsureDconf, AuditNonCompliantValueNotEqual)
 {
     mParams.key = "/org/gnome/login-screen/banner-message-text";
-    mParams.operation = DConfOperation::Eq;
+    mParams.operation = DconfOperation::Eq;
     mParams.value = "You *SHALL NOT PASS* (this login screen)";
     EXPECT_CALL(mContext, ExecuteCommand(DconfRead())).WillOnce(::testing::Return(Result<std::string>("You *SHALL* PASSS")));
     auto result = AuditDconfValue(mParams, mIndicators, mContext);
@@ -47,7 +47,7 @@ TEST_F(EnsureDconf, AuditNonCompliantValueNotEqual)
 TEST_F(EnsureDconf, AuditCompliantValueNotEqual)
 {
     mParams.key = "/org/gnome/login-screen/banner-message-text";
-    mParams.operation = DConfOperation::Ne;
+    mParams.operation = DconfOperation::Ne;
     mParams.value = "You *SHALL NOT PASS* (this login screen)";
     EXPECT_CALL(mContext, ExecuteCommand(DconfRead())).WillOnce(::testing::Return(Result<std::string>("You *SHALL* PASSS")));
     auto result = AuditDconfValue(mParams, mIndicators, mContext);
@@ -58,7 +58,7 @@ TEST_F(EnsureDconf, AuditCompliantValueNotEqual)
 TEST_F(EnsureDconf, AuditCompliantValueEqual)
 {
     mParams.key = "/org/gnome/login-screen/banner-message-text";
-    mParams.operation = DConfOperation::Eq;
+    mParams.operation = DconfOperation::Eq;
     mParams.value = "You *SHALL NOT PASS* (this login screen)";
     EXPECT_CALL(mContext, ExecuteCommand(DconfRead())).WillOnce(::testing::Return(Result<std::string>(mParams.value)));
     auto result = AuditDconfValue(mParams, mIndicators, mContext);

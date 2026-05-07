@@ -9,13 +9,13 @@
 
 namespace ComplianceEngine
 {
-struct AuditUfwStatusParams
+struct UfwStatusParams
 {
     /// Regex that the status must match
     Pattern statusRegex;
 };
 
-Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> AuditUfwStatus(const UfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_PROCEDURES_UFWSTATUS_H
