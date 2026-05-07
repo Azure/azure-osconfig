@@ -326,9 +326,9 @@ template <>
 struct Bindings<FilesystemMountOptionParams>
 {
     using T = FilesystemMountOptionParams;
-    static constexpr size_t size = 6;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::mountpoint, &T::optionsSet, &T::optionsNotSet, &T::test_fstab, &T::test_mtab, &T::test_mount);
+    static constexpr auto members = std::make_tuple(&T::mountpoint, &T::optionsSet, &T::optionsNotSet);
 };
 
 // Defines the bindings for the GsettingsValueParams structure.
@@ -406,19 +406,9 @@ template <>
 struct Bindings<PackageInstalledParams>
 {
     using T = PackageInstalledParams;
-    static constexpr size_t size = 4;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::packageName, &T::minPackageVersion, &T::packageManager, &T::test_cachePath);
-};
-
-// Defines the bindings for the PasswordChangeDateParams structure.
-template <>
-struct Bindings<PasswordChangeDateParams>
-{
-    using T = PasswordChangeDateParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::test_etcShadowPath);
+    static constexpr auto members = std::make_tuple(&T::packageName, &T::minPackageVersion, &T::packageManager);
 };
 
 // Defines the bindings for the SCEParams structure.
@@ -436,9 +426,9 @@ template <>
 struct Bindings<ShadowFieldParams>
 {
     using T = ShadowFieldParams;
-    static constexpr size_t size = 6;
+    static constexpr size_t size = 5;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::username, &T::usernameOperation, &T::field, &T::value, &T::operation, &T::test_etcShadowPath);
+    static constexpr auto members = std::make_tuple(&T::username, &T::usernameOperation, &T::field, &T::value, &T::operation);
 };
 
 // Defines the bindings for the SshKeyPermissionsParams structure.
@@ -536,9 +526,9 @@ template <>
 struct Bindings<UniqueGroupIdParams>
 {
     using T = UniqueGroupIdParams;
-    static constexpr size_t size = 3;
+    static constexpr size_t size = 2;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::groupName, &T::gid, &T::test_etcGroupPath);
+    static constexpr auto members = std::make_tuple(&T::groupName, &T::gid);
 };
 
 // Defines the bindings for the UniqueUserIdParams structure.
@@ -546,19 +536,9 @@ template <>
 struct Bindings<UniqueUserIdParams>
 {
     using T = UniqueUserIdParams;
-    static constexpr size_t size = 4;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::username, &T::uid, &T::gid, &T::test_etcPasswdPath);
-};
-
-// Defines the bindings for the WirelessDisabledParams structure.
-template <>
-struct Bindings<WirelessDisabledParams>
-{
-    using T = WirelessDisabledParams;
-    static constexpr size_t size = 1;
-    static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::test_sysfs_class_net);
+    static constexpr auto members = std::make_tuple(&T::username, &T::uid, &T::gid);
 };
 
 } // namespace ComplianceEngine

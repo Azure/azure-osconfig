@@ -29,8 +29,8 @@ const char* Bindings<FilePermissionsCollectionParams>::names[] = {"directory", "
 // FileRegexMatch.h:64
 const char* Bindings<FileRegexMatchParams>::names[] = {"path", "filenamePattern", "matchOperation", "matchPattern", "stateOperation", "statePattern", "ignoreCase", "behavior"};
 
-// FilesystemMountOption.h:31
-const char* Bindings<FilesystemMountOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
+// FilesystemMountOption.h:22
+const char* Bindings<FilesystemMountOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet"};
 
 // GsettingsValue.h:56
 const char* Bindings<GsettingsValueParams>::names[] = {"schema", "key", "keyType", "operation", "value"};
@@ -53,17 +53,14 @@ const char* Bindings<NoDuplicateEntriesParams>::names[] = {"filename", "delimite
 // NoShellAccountsLocked.h:21
 const char* Bindings<NoShellAccountsLockedParams>::names[] = {"excludeUsers", "skipBelowUidMin", "skipInvalidShells"};
 
-// PackageInstalled.h:37
-const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPackageVersion", "packageManager", "test_cachePath"};
-
-// PasswordChangeDate.h:15
-const char* Bindings<PasswordChangeDateParams>::names[] = {"test_etcShadowPath"};
+// PackageInstalled.h:34
+const char* Bindings<PackageInstalledParams>::names[] = {"packageName", "minPackageVersion", "packageManager"};
 
 // SCE.h:18
 const char* Bindings<SCEParams>::names[] = {"scriptName", "environment"};
 
-// ShadowField.h:90
-const char* Bindings<ShadowFieldParams>::names[] = {"username", "usernameOperation", "field", "value", "operation", "test_etcShadowPath"};
+// ShadowField.h:87
+const char* Bindings<ShadowFieldParams>::names[] = {"username", "usernameOperation", "field", "value", "operation"};
 
 // SshKeyPermissions.h:24
 const char* Bindings<SshKeyPermissionsParams>::names[] = {"type"};
@@ -92,14 +89,11 @@ const char* Bindings<TestingProcedureGetParamValuesParams>::names[] = {"KEY1", "
 // UfwStatus.h:16
 const char* Bindings<UfwStatusParams>::names[] = {"statusRegex"};
 
-// UniqueGroupId.h:22
-const char* Bindings<UniqueGroupIdParams>::names[] = {"groupName", "gid", "test_etcGroupPath"};
+// UniqueGroupId.h:19
+const char* Bindings<UniqueGroupIdParams>::names[] = {"groupName", "gid"};
 
-// UniqueUserId.h:26
-const char* Bindings<UniqueUserIdParams>::names[] = {"username", "uid", "gid", "test_etcPasswdPath"};
-
-// WirelessDisabled.h:15
-const char* Bindings<WirelessDisabledParams>::names[] = {"test_sysfs_class_net"};
+// UniqueUserId.h:23
+const char* Bindings<UniqueUserIdParams>::names[] = {"username", "uid", "gid"};
 
 const ProcedureMap Evaluator::mProcedureMap = {
     {"ApparmorProfileState", {MakeHandler(AuditApparmorProfileState), nullptr}},

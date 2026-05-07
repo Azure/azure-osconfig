@@ -20,9 +20,6 @@ struct UniqueUserIdParams
     /// A value to match the GID against
     /// pattern: \d+
     Optional<int> gid;
-
-    /// Alternative path to the /etc/passwd file to test against
-    Optional<std::string> test_etcPasswdPath = std::string("/etc/passwd");
 };
 
 Result<Status> AuditUniqueUserId(const UniqueUserIdParams& params, IndicatorsTree& indicators, ContextInterface& context);

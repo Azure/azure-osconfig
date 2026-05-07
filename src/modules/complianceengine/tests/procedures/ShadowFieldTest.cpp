@@ -103,7 +103,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_1)
     params.operation = ComparisonOperation::PatternMatch;
     // Use a non-empty password so the user is not skipped
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     params.usernameOperation = ComparisonOperation::Equal; // unused but required by procedure
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -119,7 +119,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
     params.value = "test";
     params.operation = ComparisonOperation::PatternMatch;
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     params.usernameOperation = ComparisonOperation::Equal;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -135,7 +135,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
     params.value = "asdf";
     params.operation = ComparisonOperation::PatternMatch;
     const auto path = CreateTestShadowFile("testuser:$6$:0::::::");
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     params.usernameOperation = ComparisonOperation::Equal;
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
@@ -153,7 +153,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());
@@ -170,7 +170,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_1)
     const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -254,7 +254,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_6)
     const auto path = CreateTestShadowFile("testuser:$6$abc$xyz:0::::::");
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -270,7 +270,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_1)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     if (!result.HasValue())
@@ -290,7 +290,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_2)
     params.operation = ComparisonOperation::NotEqual;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -306,7 +306,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_3)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -322,7 +322,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_4)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -338,7 +338,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_5)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -354,7 +354,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_6)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -370,7 +370,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_7)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -386,7 +386,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_8)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -402,7 +402,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_9)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -418,7 +418,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_10)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -434,7 +434,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_11)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -450,7 +450,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_12)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -466,7 +466,7 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_13)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -482,7 +482,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_1)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -498,7 +498,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_2)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -514,7 +514,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_3)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -530,7 +530,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_4)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -546,7 +546,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_5)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -562,7 +562,7 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_6)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -578,7 +578,7 @@ TEST_F(EnsureShadowContainsTest, FeatureFlag)
     params.operation = ComparisonOperation::Equal;
     params.username = "testuser";
     params.usernameOperation = ComparisonOperation::Equal;
-    params.test_etcShadowPath = path;
+    mContext.SetSpecialFilePath("/etc/shadow", path);
     auto result = AuditShadowField(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_FALSE(result.HasValue());

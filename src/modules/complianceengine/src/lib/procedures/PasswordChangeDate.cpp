@@ -13,10 +13,9 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-Result<Status> AuditPasswordChangeDate(const PasswordChangeDateParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditPasswordChangeDate(IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_etcShadowPath.HasValue());
-    auto range = PasswordEntryRange::Make(params.test_etcShadowPath.Value(), context.GetLogHandle());
+    auto range = PasswordEntryRange::Make(context.GetSpecialFilePath("/etc/shadow"), context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();

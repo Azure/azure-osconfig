@@ -19,11 +19,10 @@
 namespace ComplianceEngine
 {
 
-Result<Status> AuditWirelessDisabled(const WirelessDisabledParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditWirelessDisabled(IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_sysfs_class_net.HasValue());
     auto log = context.GetLogHandle();
-    std::string sysfs = params.test_sysfs_class_net.Value();
+    std::string sysfs = context.GetSpecialFilePath("/sys/class/net");
     // normalize sysfs - remove trailing slash if necessary
     if (sysfs.back() == '/')
         sysfs = sysfs.substr(sysfs.length() - 1);

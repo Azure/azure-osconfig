@@ -108,17 +108,13 @@ static Status CheckOptions(const std::vector<std::string>& options, const std::s
 
 Result<Status> AuditFilesystemMountOption(const FilesystemMountOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(context);
-    assert(params.test_fstab.HasValue());
-    assert(params.test_mtab.HasValue());
-    assert(params.test_mount.HasValue());
-    auto fstabEntries = ParseFstab(params.test_fstab.Value());
+    auto fstabEntries = ParseFstab(context.GetSpecialFilePath("/etc/fstab"));
     if (!fstabEntries.HasValue())
     {
         return fstabEntries.Error();
     }
 
-    auto mtabEntries = ParseFstab(params.test_mtab.Value());
+    auto mtabEntries = ParseFstab(context.GetSpecialFilePath("/etc/mtab"));
     if (!mtabEntries.HasValue())
     {
         return mtabEntries.Error();
@@ -163,18 +159,13 @@ Result<Status> AuditFilesystemMountOption(const FilesystemMountOptionParams& par
 
 Result<Status> RemediateFilesystemMountOption(const FilesystemMountOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(context);
-    assert(params.test_fstab.HasValue());
-    assert(params.test_mtab.HasValue());
-    assert(params.test_mount.HasValue());
-
-    auto fstabEntries = ParseFstab(params.test_fstab.Value());
+    auto fstabEntries = ParseFstab(context.GetSpecialFilePath("/etc/fstab"));
     if (!fstabEntries.HasValue())
     {
         return fstabEntries.Error();
     }
 
-    auto mtabEntries = ParseFstab(params.test_mtab.Value());
+    auto mtabEntries = ParseFstab(context.GetSpecialFilePath("/etc/mtab"));
     if (!mtabEntries.HasValue())
     {
         return mtabEntries.Error();
@@ -195,8 +186,8 @@ Result<Status> RemediateFilesystemMountOption(const FilesystemMountOptionParams&
         if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
             auto& entry = fstabEntries.Value()[params.mountpoint];
-            std::ifstream file(params.test_fstab.Value());
-            std::ofstream tempFile(params.test_fstab.Value() + ".tmp");
+            std::ifstream file(context.GetSpecialFilePath("/etc/fstab"));
+            std::ofstream tempFile(context.GetSpecialFilePath("/etc/fstab") + ".tmp");
             std::string line;
             int lineno = 0;
             while (std::getline(file, line))
@@ -241,13 +232,13 @@ Result<Status> RemediateFilesystemMountOption(const FilesystemMountOptionParams&
             char timeString[PATH_MAX] = {0};
             auto tm = time(nullptr);
             strftime(timeString, 64, "%Y%m%d%H%M%S", gmtime(&tm));
-            if (0 != rename(params.test_fstab.Value().c_str(), (params.test_fstab.Value() + ".bak." + timeString).c_str()))
+            if (0 != rename(context.GetSpecialFilePath("/etc/fstab").c_str(), (context.GetSpecialFilePath("/etc/fstab") + ".bak." + timeString).c_str()))
             {
-                return Error("Failed to backup " + params.test_fstab.Value() + " with error " + std::to_string(errno));
+                return Error("Failed to backup " + context.GetSpecialFilePath("/etc/fstab") + " with error " + std::to_string(errno));
             }
-            if (0 != rename((params.test_fstab.Value() + ".tmp").c_str(), params.test_fstab.Value().c_str()))
+            if (0 != rename((context.GetSpecialFilePath("/etc/fstab") + ".tmp").c_str(), context.GetSpecialFilePath("/etc/fstab").c_str()))
             {
-                return Error("Failed to rename " + params.test_fstab.Value() + ".tmp with error " + std::to_string(errno));
+                return Error("Failed to rename " + context.GetSpecialFilePath("/etc/fstab") + ".tmp with error " + std::to_string(errno));
             }
         }
     }
@@ -256,7 +247,7 @@ Result<Status> RemediateFilesystemMountOption(const FilesystemMountOptionParams&
     {
         if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            std::string command = params.test_mount.Value() + " -o remount " + params.mountpoint;
+            std::string command = context.GetSpecialFilePath("/sbin/mount") + " -o remount " + params.mountpoint;
             system(command.c_str());
             indicators.Compliant("Remounted " + params.mountpoint + " with options: " + command);
         }

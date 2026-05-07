@@ -31,9 +31,6 @@ struct PackageInstalledParams
     /// Package manager, autodetected by default
     /// pattern: ^(rpm|dpkg)$
     Optional<PackageManagerType> packageManager = PackageManagerType::Autodetect;
-
-    /// Cache path
-    Optional<std::string> test_cachePath = std::string("/var/lib/GuestConfig/ComplianceEnginePackageCache");
 };
 
 Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, IndicatorsTree& indicators, ContextInterface& context);

@@ -84,9 +84,6 @@ struct ShadowFieldParams
     /// A comparison operation for the value parameter
     /// pattern: ^(eq|ne|lt|le|gt|ge|match)$
     ComparisonOperation operation = ComparisonOperation::Equal;
-
-    /// Path to the /etc/shadow file to test against
-    Optional<std::string> test_etcShadowPath = std::string("/etc/shadow");
 };
 
 Result<Status> AuditShadowField(const ShadowFieldParams& params, IndicatorsTree& indicators, ContextInterface& context);

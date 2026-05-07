@@ -94,7 +94,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, NoParameter)
     auto path = CreateTestPasswdFile(string("foo"), string("x"), 8888, 1000, string("/home/foo"), string("/bin/bash"));
     UniqueUserIdParams params;
     params.username = "foo";
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -107,7 +107,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, EmptyFile)
     UniqueUserIdParams params;
     params.username = "foo";
     params.uid = 8888;
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -120,7 +120,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, SingleUID)
     UniqueUserIdParams params;
     params.username = "foo";
     params.uid = 8888;
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -135,7 +135,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, DuplicatedUID)
     UniqueUserIdParams params;
     params.username = "foo";
     params.uid = 8888;
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -148,7 +148,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, SingleGID)
     UniqueUserIdParams params;
     params.username = "foo";
     params.gid = 9999;
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -163,7 +163,7 @@ TEST_F(EnsureUserIsOnlyAccountWithTest, DuplicatedGID)
     UniqueUserIdParams params;
     params.username = "foo";
     params.gid = 9999;
-    params.test_etcPasswdPath = path;
+    mContext.SetSpecialFilePath("/etc/passwd", path);
     auto result = AuditUniqueUserId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());

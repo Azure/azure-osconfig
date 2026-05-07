@@ -64,8 +64,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
     CreateTabs();
     FilesystemMountOptionParams params;
     params.mountpoint = "/";
-    params.test_fstab = fstabFile;
-    params.test_mtab = mtabFile;
+    mContext.SetSpecialFilePath("/etc/fstab", fstabFile);
+    mContext.SetSpecialFilePath("/etc/mtab", mtabFile);
     params.optionsSet = {{"rw", "noatime"}};
     params.optionsNotSet = {{"noreltime"}};
 
@@ -79,8 +79,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
     CreateTabs();
     FilesystemMountOptionParams params;
     params.mountpoint = "/";
-    params.test_fstab = fstabFile;
-    params.test_mtab = mtabFile;
+    mContext.SetSpecialFilePath("/etc/fstab", fstabFile);
+    mContext.SetSpecialFilePath("/etc/mtab", mtabFile);
     params.optionsSet = {{"rw", "noatime", "noexec"}};
     params.optionsNotSet = {{"noreltime"}};
 
@@ -94,8 +94,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
     CreateTabs();
     FilesystemMountOptionParams params;
     params.mountpoint = "/";
-    params.test_fstab = fstabFile;
-    params.test_mtab = mtabFile;
+    mContext.SetSpecialFilePath("/etc/fstab", fstabFile);
+    mContext.SetSpecialFilePath("/etc/mtab", mtabFile);
     params.optionsSet = {{"rw"}};
     params.optionsNotSet = {{"nodev"}};
 
@@ -109,11 +109,11 @@ TEST_F(EnsureFilesystemOptionTest, RemediateFilesystemMountOption)
     CreateTabs();
     FilesystemMountOptionParams params;
     params.mountpoint = "/home";
-    params.test_fstab = fstabFile;
-    params.test_mtab = mtabFile;
+    mContext.SetSpecialFilePath("/etc/fstab", fstabFile);
+    mContext.SetSpecialFilePath("/etc/mtab", mtabFile);
     params.optionsSet = {{"rw", "noatime"}};
     params.optionsNotSet = {{"relatime"}};
-    params.test_mount = "touch " + dir + " /remounted;/bin/true ";
+    mContext.SetSpecialFilePath("/sbin/mount", "touch " + dir + " /remounted;/bin/true ");
 
     auto result = RemediateFilesystemMountOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());

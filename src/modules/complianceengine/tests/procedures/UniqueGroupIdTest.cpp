@@ -93,7 +93,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, EmptyFile)
     UniqueGroupIdParams params;
     params.groupName = "foo";
     params.gid = 8888;
-    params.test_etcGroupPath = path;
+    mContext.SetSpecialFilePath("/etc/group", path);
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -105,7 +105,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, NoParameter)
     auto path = CreateTestGroupFile(string("foo"), string("x"), 8888);
     UniqueGroupIdParams params;
     params.groupName = "foo";
-    params.test_etcGroupPath = path;
+    mContext.SetSpecialFilePath("/etc/group", path);
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -118,7 +118,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, SingleGID)
     UniqueGroupIdParams params;
     params.groupName = "foo";
     params.gid = 8888;
-    params.test_etcGroupPath = path;
+    mContext.SetSpecialFilePath("/etc/group", path);
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
@@ -131,7 +131,7 @@ TEST_F(EnsureGroupIsOnlyGroupWithTest, DuplicatedGID)
     UniqueGroupIdParams params;
     params.groupName = "foo";
     params.gid = 8888;
-    params.test_etcGroupPath = path;
+    mContext.SetSpecialFilePath("/etc/group", path);
     auto result = AuditUniqueGroupId(params, mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());

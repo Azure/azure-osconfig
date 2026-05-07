@@ -279,9 +279,8 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
 
 Result<Status> AuditShadowField(const ShadowFieldParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_etcShadowPath.HasValue());
     assert(params.usernameOperation.HasValue());
-    auto range = PasswordEntryRange::Make(params.test_etcShadowPath.Value(), context.GetLogHandle());
+    auto range = PasswordEntryRange::Make(context.GetSpecialFilePath("/etc/shadow"), context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();

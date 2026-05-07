@@ -11,7 +11,6 @@ using ComplianceEngine::CompactListFormatter;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Optional;
-using ComplianceEngine::PasswordChangeDateParams;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using std::map;
@@ -93,10 +92,9 @@ protected:
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_1)
 {
-    PasswordChangeDateParams params;
     auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
-    params.test_etcShadowPath = path;
-    auto result = AuditPasswordChangeDate(params, mIndicators, mContext);
+    mContext.SetSpecialFilePath("/etc/shadow", path);
+    auto result = AuditPasswordChangeDate(mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -104,11 +102,10 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_1)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_2)
 {
-    PasswordChangeDateParams params;
     auto today = time(nullptr) / (24 * 3600); // Set to today
     auto path = CreateTestShadowFile("testuser", string("$y$"), today, 2, 3, 4, 5, 6);
-    params.test_etcShadowPath = path;
-    auto result = AuditPasswordChangeDate(params, mIndicators, mContext);
+    mContext.SetSpecialFilePath("/etc/shadow", path);
+    auto result = AuditPasswordChangeDate(mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -116,11 +113,10 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_Compliant_2)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_1)
 {
-    PasswordChangeDateParams params;
     auto tomorrow = time(nullptr) / (24 * 3600) + 1; // Set to tomorrow
     auto path = CreateTestShadowFile("testuser", string("$y$"), tomorrow, 2, 3, 4, 5, 6);
-    params.test_etcShadowPath = path;
-    auto result = AuditPasswordChangeDate(params, mIndicators, mContext);
+    mContext.SetSpecialFilePath("/etc/shadow", path);
+    auto result = AuditPasswordChangeDate(mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -128,7 +124,6 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_1)
 
 TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_2)
 {
-    PasswordChangeDateParams params;
     string contents = "user1:$y$:99999:2:3:4:5:6:";
     contents += "\nuser2:$y$:99999:2:3:4:5:6:";
     contents += "\nuser3:$y$:99999:2:3:4:5:6:";
@@ -138,8 +133,8 @@ TEST_F(EnsurePasswordChangeIsInPastTest, SingleUser_NonCompliant_2)
     contents += "\nuser7:$y$:99999:2:3:4:5:6:";
     contents += "\nuser8:$y$:99999:2:3:4:5:6:";
     auto path = CreateTestShadowFile(std::move(contents));
-    params.test_etcShadowPath = path;
-    auto result = AuditPasswordChangeDate(params, mIndicators, mContext);
+    mContext.SetSpecialFilePath("/etc/shadow", path);
+    auto result = AuditPasswordChangeDate(mIndicators, mContext);
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

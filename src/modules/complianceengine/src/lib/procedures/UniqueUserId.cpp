@@ -12,11 +12,10 @@ namespace ComplianceEngine
 {
 Result<Status> AuditUniqueUserId(const UniqueUserIdParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_etcPasswdPath.HasValue());
     bool hasUid = false;
     bool hasGid = false;
 
-    auto users = UsersRange::Make(params.test_etcPasswdPath.Value(), context.GetLogHandle());
+    auto users = UsersRange::Make(context.GetSpecialFilePath("/etc/passwd"), context.GetLogHandle());
     if (!users.HasValue())
     {
         return users.Error();

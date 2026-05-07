@@ -16,9 +16,6 @@ struct UniqueGroupIdParams
     /// A value to match the GID against
     /// pattern: \d+
     Optional<int> gid;
-
-    /// Alternative path to the /etc/group file to test against
-    Optional<std::string> test_etcGroupPath = std::string("/etc/group");
 };
 
 Result<Status> AuditUniqueGroupId(const UniqueGroupIdParams& params, IndicatorsTree& indicators, ContextInterface& context);

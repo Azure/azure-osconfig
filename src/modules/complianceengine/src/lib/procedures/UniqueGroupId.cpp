@@ -13,10 +13,9 @@ namespace ComplianceEngine
 {
 Result<Status> AuditUniqueGroupId(const UniqueGroupIdParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    assert(params.test_etcGroupPath.HasValue());
     bool hasGid = false;
 
-    auto groups = GroupsRange::Make(params.test_etcGroupPath.Value(), context.GetLogHandle());
+    auto groups = GroupsRange::Make(context.GetSpecialFilePath("/etc/group"), context.GetLogHandle());
     if (!groups.HasValue())
     {
         return groups.Error();

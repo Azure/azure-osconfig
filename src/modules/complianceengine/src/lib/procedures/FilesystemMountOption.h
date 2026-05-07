@@ -19,15 +19,6 @@ struct FilesystemMountOptionParams
 
     /// Comma-separated list of options that must not be set
     Optional<Separated<std::string, ','>> optionsNotSet;
-
-    /// Location of the fstab file
-    Optional<std::string> test_fstab = std::string("/etc/fstab");
-
-    /// Location of the mtab file
-    Optional<std::string> test_mtab = std::string("/etc/mtab");
-
-    /// Location of the mount binary
-    Optional<std::string> test_mount = std::string("/sbin/mount");
 };
 
 Result<Status> AuditFilesystemMountOption(const FilesystemMountOptionParams& params, IndicatorsTree& indicators, ContextInterface& context);
