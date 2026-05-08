@@ -10,4 +10,4 @@ namespace ComplianceEngine
 {
 Result<Status> AuditNoUnownedFiles(IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
-#endif // COMPLIANCEENGINE_PROCEDURES_ROOT_PATH_SECURITY_H
+#endif // COMPLIANCEENGINE_PROCEDURES_NO_UNOWNED_FILES_H
