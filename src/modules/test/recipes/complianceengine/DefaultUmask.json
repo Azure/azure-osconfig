@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureDefaultUserUmaskIsConfigured": {
+        "DefaultUmask": {
         }
       }
     }
@@ -45,7 +45,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is not set } == FALSE"
+    "Payload": "{ DefaultUmask: umask is not set } == FALSE"
   },
 
   // Invalid octal umask
@@ -56,7 +56,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/bashrc } == FALSE"
+    "Payload": "{ DefaultUmask: umask is incorrectly set in /etc/bashrc } == FALSE"
   },
 
   // Valid octal umask
@@ -67,7 +67,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/bashrc } == TRUE"
+    "Payload": "PASS{ DefaultUmask: umask is correctly set in /etc/bashrc } == TRUE"
   },
 
   // Invalid symbolic mask
@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/bashrc } == FALSE"
+    "Payload": "{ DefaultUmask: umask is incorrectly set in /etc/bashrc } == FALSE"
   },
 
   // Valid symbolic mask
@@ -89,7 +89,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/bashrc } == TRUE"
+    "Payload": "PASS{ DefaultUmask: umask is correctly set in /etc/bashrc } == TRUE"
   },
 
   // Precedence check - /etc/profile comes first and reports compliance early
@@ -103,7 +103,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/profile } == TRUE"
+    "Payload": "PASS{ DefaultUmask: umask is correctly set in /etc/profile } == TRUE"
   },
 
   // Precedence check - /etc/profile comes first, but reports incompliance.
@@ -118,7 +118,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/profile, umask is correctly set in /etc/bashrc } == TRUE"
+    "Payload": "PASS{ DefaultUmask: umask is incorrectly set in /etc/profile, umask is correctly set in /etc/bashrc } == TRUE"
   },
 
   // Cleanup

@@ -14,7 +14,7 @@ namespace
 {
 // Helper routine shared by audit and remediation for SSH key permission checks.
 // When isRemediation == true it will remediate permissions/ownership, otherwise only audit.
-Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> SshKeyPermsHelper(bool isPublic, bool isRemediation, IndicatorsTree& indicators, ContextInterface& context)
 {
     (void)context; // log handle not needed currently
 
@@ -125,13 +125,13 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
 Result<Status> AuditSshKeyPermissions(const SshKeyPermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     bool isPublic = (params.type == SshKeyType::Public);
-    return EnsureSshKeyPermsHelper(isPublic, false, indicators, context);
+    return SshKeyPermsHelper(isPublic, false, indicators, context);
 }
 
 Result<Status> RemediateSshKeyPermissions(const SshKeyPermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     bool isPublic = (params.type == SshKeyType::Public);
-    return EnsureSshKeyPermsHelper(isPublic, true, indicators, context);
+    return SshKeyPermsHelper(isPublic, true, indicators, context);
 }
 
 } // namespace ComplianceEngine

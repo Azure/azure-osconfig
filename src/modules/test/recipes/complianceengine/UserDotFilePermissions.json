@@ -6,19 +6,19 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureEnsureInteractiveUsersDotFilesAccessIsConfigured",
+    "ObjectName": "procedureUserDotFilePermissions",
     "Payload": {
       "audit": {
         "allOf": [
           {
-            "EnsureInteractiveUsersDotFilesAccessIsConfigured": {}
+            "UserDotFilePermissions": {}
           }
         ]
       },
       "remediate": {
         "allOf": [
           {
-            "EnsureInteractiveUsersDotFilesAccessIsConfigured": {}
+            "UserDotFilePermissions": {}
           }
         ]
       }
@@ -30,14 +30,14 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersDotFilesAccessIsConfigured",
+    "ObjectName": "remediateUserDotFilePermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "PASS{ allOf: [{ UserDotFilePermissions:  } == TRUE]} == TRUE"
   },
 
 
@@ -64,8 +64,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "PASS{ allOf: [{ UserDotFilePermissions:  } == TRUE]} == TRUE"
   },
   // Fix the missing home directory
   {
@@ -80,20 +80,20 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == FALSE]} == FALSE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "{ allOf: [{ UserDotFilePermissions:  } == FALSE]} == FALSE"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersDotFilesAccessIsConfigured",
+    "ObjectName": "remediateUserDotFilePermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "PASS{ allOf: [{ UserDotFilePermissions:  } == TRUE]} == TRUE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest/.x | grep -E 'Access: \\(0644/-rw-r--r--\\)'"
@@ -110,21 +110,21 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured: '.forward' exists in home directory '\/home\/securitybaselinetest' } == FALSE]} == FALSE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "{ allOf: [{ UserDotFilePermissions: '.forward' exists in home directory '\/home\/securitybaselinetest' } == FALSE]} == FALSE"
   },
   // Remediation won't drop this file
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersDotFilesAccessIsConfigured",
+    "ObjectName": "remediateUserDotFilePermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured: '.forward' exists in home directory '\/home\/securitybaselinetest' } == FALSE]} == FALSE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "{ allOf: [{ UserDotFilePermissions: '.forward' exists in home directory '\/home\/securitybaselinetest' } == FALSE]} == FALSE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest/foo/bar/.forward | grep -E 'Access: \\(0777/-rwxrwxrwx\\)'"
@@ -141,20 +141,20 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == FALSE]} == FALSE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "{ allOf: [{ UserDotFilePermissions:  } == FALSE]} == FALSE"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersDotFilesAccessIsConfigured",
+    "ObjectName": "remediateUserDotFilePermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersDotFilesAccessIsConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersDotFilesAccessIsConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserDotFilePermissions",
+    "Payload": "PASS{ allOf: [{ UserDotFilePermissions:  } == TRUE]} == TRUE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest/.netrc | grep -E 'Access: \\(0600/-rw-------\\)'"

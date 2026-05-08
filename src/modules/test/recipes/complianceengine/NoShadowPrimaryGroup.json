@@ -23,14 +23,14 @@
       "audit": {
         "allOf": [
           {
-            "EnsureNoUserHasPrimaryShadowGroup": {}
+            "NoShadowPrimaryGroup": {}
           }
         ]
       },
       "remediate": {
         "allOf": [
           {
-            "EnsureNoUserHasPrimaryShadowGroup": {}
+            "NoShadowPrimaryGroup": {}
           }
         ]
       }
@@ -43,7 +43,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ NoShadowPrimaryGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE]} == FALSE"
   },
 
 
@@ -62,7 +62,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ NoShadowPrimaryGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
 
 
@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ NoShadowPrimaryGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
 
 

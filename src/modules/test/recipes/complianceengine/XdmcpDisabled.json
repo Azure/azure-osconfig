@@ -16,7 +16,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureXdmcp": {
+        "XdmcpDisabled": {
         }
       },
       "parameters": {
@@ -27,7 +27,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureXdmcp: Found xdmcp Enabled block } == FALSE"
+    "Payload": "{ XdmcpDisabled: Found xdmcp Enabled block } == FALSE"
   },
   {
     "RunCommand": "test -f /etc/gdm3/custom.conf.bak && mv /etc/gdm3/custom.conf.bak /etc/gdm3/custom.conf || rm /etc/gdm3/custom.conf "
@@ -40,7 +40,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureXdmcp": {
+        "XdmcpDisabled": {
         }
       },
       "parameters": {
@@ -51,7 +51,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureXdmcp: Did not found xdmcp Enabled block } == TRUE"
+    "Payload": "PASS{ XdmcpDisabled: Did not found xdmcp Enabled block } == TRUE"
   },
   {
     "Action": "UnloadModule"

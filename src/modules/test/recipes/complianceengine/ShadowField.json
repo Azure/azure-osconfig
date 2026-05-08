@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureShadowContains": {
+        "ShadowField": {
           "username": "securitybaselinetest",
           "usernameOperation": "eq",
           "field": "password",
@@ -32,7 +32,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureShadowContains: encrypted password matches expected value for all tested users } == TRUE"
+    "Payload": "PASS{ ShadowField: encrypted password matches expected value for all tested users } == TRUE"
   },
 
   // Create the securitybaselinetest user and group
@@ -51,7 +51,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureShadowContains: encrypted password does not match expected value for user 'securitybaselinetest' } == FALSE"
+    "Payload": "{ ShadowField: encrypted password does not match expected value for user 'securitybaselinetest' } == FALSE"
   },
 
   // Set a password for the user, inactivity period and expiration date

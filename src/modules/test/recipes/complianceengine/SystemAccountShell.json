@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureSystemAccountsDoNotHaveValidShell": {
+        "SystemAccountShell": {
         }
       }
     }
@@ -39,7 +39,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureSystemAccountsDoNotHaveValidShell:  } == TRUE"
+    "Payload": "PASS{ SystemAccountShell:  } == TRUE"
   },
 
   {
@@ -54,7 +54,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureSystemAccountsDoNotHaveValidShell:  } == TRUE"
+    "Payload": "PASS{ SystemAccountShell:  } == TRUE"
   },
 
   {
@@ -66,7 +66,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureSystemAccountsDoNotHaveValidShell: System user 99 does not have a valid login shell } == TRUE"
+    "Payload": "PASS{ SystemAccountShell: System user 99 does not have a valid login shell } == TRUE"
   },
 
   {
@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureSystemAccountsDoNotHaveValidShell: System user 99 has a valid login shell } == FALSE"
+    "Payload": "{ SystemAccountShell: System user 99 has a valid login shell } == FALSE"
   },
 
 

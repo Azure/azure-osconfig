@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureAccountsWithoutShellAreLocked": {
+        "NoShellAccountsLocked": {
         }
       }
     }
@@ -45,7 +45,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: All non-root users without a login shell are locked } == TRUE"
   },
 
   {
@@ -62,7 +62,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: All non-root users without a login shell are locked } == TRUE"
   },
 
   {
@@ -77,7 +77,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
   },
 
   {
@@ -92,7 +92,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
   },
 
   {
@@ -107,7 +107,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: User 9999 does not have a valid shell, but the account is locked, All non-root users without a login shell are locked } == TRUE"
   },
 
   {
@@ -122,7 +122,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureAccountsWithoutShellAreLocked: User 9999 does not have a valid shell, but the account is not locked } == FALSE"
+    "Payload": "{ NoShellAccountsLocked: User 9999 does not have a valid shell, but the account is not locked } == FALSE"
   },
 
   {
@@ -140,7 +140,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureAccountsWithoutShellAreLocked: All non-root users without a login shell are locked } == TRUE"
+    "Payload": "PASS{ NoShellAccountsLocked: All non-root users without a login shell are locked } == TRUE"
   },
 
   // Cleanup

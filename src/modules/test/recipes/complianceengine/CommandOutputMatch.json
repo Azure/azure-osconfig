@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "ExecuteCommandGrep": {
+        "CommandOutputMatch": {
           "command": "uname",
           "regex": "Linux"
         }
@@ -20,7 +20,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ ExecuteCommandGrep: Output of command 'uname' matches regex 'Linux' } == TRUE"
+    "Payload": "PASS{ CommandOutputMatch: Output of command 'uname' matches regex 'Linux' } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -28,7 +28,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "ExecuteCommandGrep": {
+        "CommandOutputMatch": {
           "command": "uname",
           "regex": "SunOS"
         }
@@ -39,7 +39,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ ExecuteCommandGrep: No match found } == FALSE"
+    "Payload": "{ CommandOutputMatch: No match found } == FALSE"
   },
 
   {
@@ -48,7 +48,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "ExecuteCommandGrep": {
+        "CommandOutputMatch": {
           "command": "useradd evilhacker",
           "regex": "dontcare"
         }

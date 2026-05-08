@@ -14,7 +14,7 @@
       "audit": {
         "allOf": [
           {
-            "EnsureNoDuplicateEntriesExist": {
+            "NoDuplicateEntries": {
               "filename": "/etc/passwd",
               "delimiter": ":",
               "column": "2"
@@ -32,7 +32,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ NoDuplicateEntries: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
 
 
@@ -45,7 +45,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888' } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ NoDuplicateEntries: Duplicate entry: '8888' } == FALSE]} == FALSE"
   },
 
 
@@ -58,7 +58,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ NoDuplicateEntries: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
 
 
@@ -86,7 +86,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', Duplicate entry: '8889' } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ NoDuplicateEntries: Duplicate entry: '8888', Duplicate entry: '8889' } == FALSE]} == FALSE"
   },
 
 

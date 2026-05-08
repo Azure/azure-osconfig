@@ -12,14 +12,14 @@
       "audit": {
         "anyOf": [
           {
-            "EnsureSysctl": {
+            "SysctlValue": {
               "sysctlName": "net.ipv4.conf.default.log_martians",
               "value": "1"
             }
           },
           {
             "not": {
-              "EnsureSysctl": {
+              "SysctlValue": {
                 "sysctlName": "net.ipv4.conf.default.log_martians",
                 "value": "1"
               }

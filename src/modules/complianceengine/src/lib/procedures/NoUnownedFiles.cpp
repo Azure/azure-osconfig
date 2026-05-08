@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 //
-// EnsureNoUnowned: Fails if any file in the scanned filesystem snapshot has a UID
+// NoUnownedFiles: Fails if any file in the scanned filesystem snapshot has a UID
 // that is not present in /etc/passwd (as enumerated by UsersIterator). Stops at
 // the first unowned file (early exit) and returns NonCompliant. If all files
 // are owned by known UIDs, returns Compliant.

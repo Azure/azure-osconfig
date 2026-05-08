@@ -78,31 +78,31 @@ Result<Status> AuditSystemdConfigValue(const SystemdConfigValueParams& params, I
 
     if (!params.dir.HasValue() && !params.file.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: neither 'file' nor 'dir' argument is provided");
+        OsConfigLogError(log, "Error: SystemdConfigValue: neither 'file' nor 'dir' argument is provided");
         OSConfigTelemetryStatusTrace("dir.empty && filename.empty", EINVAL);
         return Error("Neither 'file' nor 'dir' argument is provided");
     }
     if (params.dir.HasValue() && params.file.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: both 'file' and 'dir' arguments are provided, only one is allowed");
+        OsConfigLogError(log, "Error: SystemdConfigValue: both 'file' and 'dir' arguments are provided, only one is allowed");
         OSConfigTelemetryStatusTrace("one dir or file only", EINVAL);
         return Error("Both 'file' and 'dir' arguments are provided, only one is allowed");
     }
     if (params.valueRegex.HasValue() && params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: both 'value' and 'valueRegex' are provided, only one is allowed");
+        OsConfigLogError(log, "Error: SystemdConfigValue: both 'value' and 'valueRegex' are provided, only one is allowed");
         OSConfigTelemetryStatusTrace("value and valueRegex", EINVAL);
         return Error("Both 'value' and 'valueRegex' are provided, only one is allowed");
     }
     if (!params.valueRegex.HasValue() && !params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: 'value' (or 'valueRegex') must be provided");
+        OsConfigLogError(log, "Error: SystemdConfigValue: 'value' (or 'valueRegex') must be provided");
         OSConfigTelemetryStatusTrace("value required", EINVAL);
         return Error("'value' (or 'valueRegex') must be provided");
     }
     if (params.op.HasValue() && !params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: 'op' requires 'value' (not 'valueRegex')");
+        OsConfigLogError(log, "Error: SystemdConfigValue: 'op' requires 'value' (not 'valueRegex')");
         OSConfigTelemetryStatusTrace("op requires value", EINVAL);
         return Error("'op' requires 'value' (not 'valueRegex')");
     }

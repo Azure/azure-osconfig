@@ -6,19 +6,19 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "procedureEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "procedureUserHomeDirectoryPermissions",
     "Payload": {
       "audit": {
         "allOf": [
           {
-            "EnsureInteractiveUsersHomeDirectoriesAreConfigured": {}
+            "UserHomeDirectoryPermissions": {}
           }
         ]
       },
       "remediate": {
         "allOf": [
           {
-            "EnsureInteractiveUsersHomeDirectoriesAreConfigured": {}
+            "UserHomeDirectoryPermissions": {}
           }
         ]
       }
@@ -30,14 +30,14 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "remediateUserHomeDirectoryPermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
 
 
@@ -61,8 +61,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "{ allOf: [{ UserHomeDirectoryPermissions: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
   },
 
 
@@ -73,8 +73,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
 
 
@@ -85,8 +85,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "{ allOf: [{ UserHomeDirectoryPermissions: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
   },
 
 
@@ -94,14 +94,14 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "remediateUserHomeDirectoryPermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
@@ -118,8 +118,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "{ allOf: [{ UserHomeDirectoryPermissions: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
   },
 
 
@@ -127,14 +127,14 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "remediateUserHomeDirectoryPermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
@@ -154,21 +154,21 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "{ allOf: [{ UserHomeDirectoryPermissions: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
   },
   // Remediate and audit
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "remediateUserHomeDirectoryPermissions",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
   {
     "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
@@ -194,8 +194,8 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
-    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+    "ObjectName": "auditUserHomeDirectoryPermissions",
+    "Payload": "PASS{ allOf: [{ UserHomeDirectoryPermissions:  } == TRUE]} == TRUE"
   },
 
 
@@ -204,7 +204,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "ObjectName": "remediateUserHomeDirectoryPermissions",
     "Payload": ""
   },
   {

@@ -13,12 +13,12 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureLogfileAccess": {
+        "LogFilePermissions": {
           "path": "/tmp/logdir"
         }
       },
       "remediate": {
-        "EnsureLogfileAccess": {
+        "LogFilePermissions": {
           "path": "/tmp/logdir"
         }
       }

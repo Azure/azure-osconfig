@@ -9,7 +9,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "EnsureDefaultShellTimeoutIsConfigured": {
+        "ShellTimeout": {
         }
       }
     }
@@ -36,7 +36,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is not set } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is not set } == FALSE"
   },
 
   // Create a TMOUT variable with invalid value - above 900
@@ -47,7 +47,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to an incorrect value in /etc/bashrc } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is set to an incorrect value in /etc/bashrc } == FALSE"
   },
 
   // Create a TMOUT variable, but there's missing the readonly attribute
@@ -58,7 +58,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to a correct value in /etc/bashrc, TMOUT is not readonly in /etc/bashrc } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is set to a correct value in /etc/bashrc, TMOUT is not readonly in /etc/bashrc } == FALSE"
   },
 
   // Add the readonly attribute, but there's no export yet
@@ -69,7 +69,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is not exported in /etc/bashrc } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is not exported in /etc/bashrc } == FALSE"
   },
 
   // Add the missing export, the rule should succeed now
@@ -80,7 +80,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is exported in /etc/bashrc, TMOUT variable is properly defined } == TRUE"
+    "Payload": "PASS{ ShellTimeout: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is exported in /etc/bashrc, TMOUT variable is properly defined } == TRUE"
   },
 
   // Multiple TMOUT settings are not allowed within a single file
@@ -91,7 +91,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set multiple times in /etc/bashrc } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set multiple times in /etc/bashrc } == FALSE"
   },
 
   // Multiple definitions are not allowed across different files
@@ -105,7 +105,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureDefaultShellTimeoutIsConfigured: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is exported in /etc/bashrc, TMOUT is set to a correct value in /etc/bash.bashrc, TMOUT is set readonly in /etc/bash.bashrc, TMOUT is exported in /etc/bash.bashrc, TMOUT is set in multiple locations } == FALSE"
+    "Payload": "{ ShellTimeout: TMOUT is set to a correct value in /etc/bashrc, TMOUT is set readonly in /etc/bashrc, TMOUT is exported in /etc/bashrc, TMOUT is set to a correct value in /etc/bash.bashrc, TMOUT is set readonly in /etc/bash.bashrc, TMOUT is exported in /etc/bash.bashrc, TMOUT is set in multiple locations } == FALSE"
   },
 
   // Cleanup

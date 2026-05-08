@@ -17,7 +17,7 @@
       "audit": {
         "allOf": [
           {
-            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup": {}
+            "PasswdGroupsExist": {}
           }
         ]
       }
@@ -30,7 +30,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "PASS{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ PasswdGroupsExist: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
   },
 
 
@@ -44,7 +44,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "PASS{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
+    "Payload": "PASS{ allOf: [{ PasswdGroupsExist: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
   },
 
 
@@ -63,7 +63,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: User's 'securitybaselinetest2' group 8888 from \/etc\/passwd does not exist in \/etc\/group } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ PasswdGroupsExist: User's 'securitybaselinetest2' group 8888 from \/etc\/passwd does not exist in \/etc\/group } == FALSE]} == FALSE"
   },
 
 
