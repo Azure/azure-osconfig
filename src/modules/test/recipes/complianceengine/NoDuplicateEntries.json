@@ -15,7 +15,7 @@
         "allOf": [
           {
             "NoDuplicateEntries": {
-              "filename": "/etc/passwd",
+              "path": "/etc/passwd",
               "delimiter": ":",
               "column": "2"
             }

@@ -13,18 +13,18 @@
     "Payload": {
       "audit": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "permissions": "$PERMISSIONS",
           "owner": "$USER",
-          "group": "$GROUP"
+          "groupName": "$GROUP"
         }
       },
       "remediate": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "permissions": "$PERMISSIONS",
           "owner": "$USER",
-          "group": "$GROUP"
+          "groupName": "$GROUP"
         }
       },
       "parameters": {
@@ -136,17 +136,17 @@
     "Payload": {
       "audit": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "owner": "$USER",
-          "group": "$GROUP",
+          "groupName": "$GROUP",
           "mask": "$MASK"
         }
       },
       "remediate": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "owner": "$USER",
-          "group": "$GROUP",
+          "groupName": "$GROUP",
           "mask": "$MASK"
         }
       },
@@ -305,19 +305,19 @@
     "Payload": {
       "audit": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "owner": "$USER",
           "permissions": "$PERMISSIONS",
-          "group": "$GROUP",
+          "groupName": "$GROUP",
           "mask": "$MASK"
         }
       },
       "remediate": {
         "FilePermissions": {
-          "filename": "/tmp/testfile",
+          "path": "/tmp/testfile",
           "owner": "$USER",
           "permissions": "$PERMISSIONS",
-          "group": "$GROUP",
+          "groupName": "$GROUP",
           "mask": "$MASK"
         }
       },
@@ -420,14 +420,14 @@
       "audit": {
         "FilePermissionsCollection": {
           "directory": "/tmp/testdir",
-          "ext": "*.log",
+          "filePattern": "*.log",
           "permissions": "0666"
         }
       },
       "remediate": {
         "FilePermissionsCollection": {
           "directory": "/tmp/testdir",
-          "ext": "*.log",
+          "filePattern": "*.log",
           "permissions": "0666"
         }
       }
