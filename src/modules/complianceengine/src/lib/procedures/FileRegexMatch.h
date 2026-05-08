@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#ifndef COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
-#define COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
+#ifndef COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H
+#define COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H
 
 #include <Behavior.h>
 #include <Evaluator.h>
@@ -66,4 +66,4 @@ struct FileRegexMatchParams
 Result<Status> AuditFileRegexMatch(const FileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
 
-#endif // COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
+#endif // COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H

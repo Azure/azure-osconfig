@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_UNIT_STATE_H
-#define COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_UNIT_STATE_H
+#ifndef COMPLIANCEENGINE_PROCEDURES_SYSTEMD_UNIT_STATE_H
+#define COMPLIANCEENGINE_PROCEDURES_SYSTEMD_UNIT_STATE_H
 
 #include <Evaluator.h>
 #include <Pattern.h>
@@ -29,4 +29,4 @@ struct SystemdUnitStateParams
 
 Result<Status> AuditSystemdUnitState(const SystemdUnitStateParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
-#endif // COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_UNIT_STATE_H
+#endif // COMPLIANCEENGINE_PROCEDURES_SYSTEMD_UNIT_STATE_H
