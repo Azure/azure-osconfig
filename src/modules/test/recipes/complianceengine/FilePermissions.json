@@ -16,7 +16,7 @@
           "path": "/tmp/testfile",
           "permissions": "$PERMISSIONS",
           "owner": "$USER",
-          "groupName": "$GROUP"
+          "group": "$GROUP"
         }
       },
       "remediate": {
@@ -24,7 +24,7 @@
           "path": "/tmp/testfile",
           "permissions": "$PERMISSIONS",
           "owner": "$USER",
-          "groupName": "$GROUP"
+          "group": "$GROUP"
         }
       },
       "parameters": {
@@ -138,7 +138,7 @@
         "FilePermissions": {
           "path": "/tmp/testfile",
           "owner": "$USER",
-          "groupName": "$GROUP",
+          "group": "$GROUP",
           "mask": "$MASK"
         }
       },
@@ -146,7 +146,7 @@
         "FilePermissions": {
           "path": "/tmp/testfile",
           "owner": "$USER",
-          "groupName": "$GROUP",
+          "group": "$GROUP",
           "mask": "$MASK"
         }
       },
@@ -308,7 +308,7 @@
           "path": "/tmp/testfile",
           "owner": "$USER",
           "permissions": "$PERMISSIONS",
-          "groupName": "$GROUP",
+          "group": "$GROUP",
           "mask": "$MASK"
         }
       },
@@ -317,7 +317,7 @@
           "path": "/tmp/testfile",
           "owner": "$USER",
           "permissions": "$PERMISSIONS",
-          "groupName": "$GROUP",
+          "group": "$GROUP",
           "mask": "$MASK"
         }
       },
