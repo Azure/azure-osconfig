@@ -65,7 +65,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateAnyMatch)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -86,7 +86,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateNotMatch)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("notMatch");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -107,7 +107,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateNoOuptu)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("notMatch");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -128,7 +128,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActive)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -149,10 +149,10 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateAny)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -174,10 +174,10 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateNotPresent)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -199,10 +199,10 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMasked)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make("masked");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -224,13 +224,13 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make("masked");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
     pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.UnitFileState = std::move(pattern.Value());
+    params.unitFileState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -253,13 +253,13 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make("masked");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
     pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.UnitFileState = std::move(pattern.Value());
+    params.unitFileState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -282,13 +282,13 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
     pattern = Pattern::Make("masked");
     ASSERT_TRUE(pattern.HasValue());
-    params.LoadState = std::move(pattern.Value());
+    params.loadState = std::move(pattern.Value());
     pattern = Pattern::Make(".*");
     ASSERT_TRUE(pattern.HasValue());
-    params.UnitFileState = std::move(pattern.Value());
+    params.unitFileState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -311,7 +311,7 @@ TEST_F(SystemdUnitStateTest, argTestUnit)
     params.unitName = "fooTimer.timer";
     auto pattern = Pattern::Make("foo.service");
     ASSERT_TRUE(pattern.HasValue());
-    params.Unit = std::move(pattern.Value());
+    params.unit = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p Unit ";
@@ -332,7 +332,7 @@ TEST_F(SystemdUnitStateTest, partialMatchFails)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make("active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
@@ -352,7 +352,7 @@ TEST_F(SystemdUnitStateTest, partialMatchSucceeds)
     params.unitName = "fooArg.service";
     auto pattern = Pattern::Make(".*active");
     ASSERT_TRUE(pattern.HasValue());
-    params.ActiveState = std::move(pattern.Value());
+    params.activeState = std::move(pattern.Value());
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";

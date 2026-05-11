@@ -1,0 +1,72 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ShadowField": {
+          "username": "securitybaselinetest",
+          "usernameOperation": "eq",
+          "field": "password",
+          "value": "^\\$.*\\$.*$",
+          "operation": "match"
+        }
+      }
+    }
+  },
+
+
+
+  // Make sure there are no residues of other module tests
+  {
+    "RunCommand": "! stat /home/securitybaselinetest"
+  },
+
+  // No securitybaselintetest user, we expect compliance
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ShadowField: encrypted password matches expected value for all tested users } == TRUE"
+  },
+
+  // Create the securitybaselinetest user and group
+  {
+    "RunCommand": "groupadd -g 8888 securitybaselinetest"
+  },
+  {
+    "RunCommand": "useradd -g 8888 securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "RunCommand": "cat /etc/shadow | grep securitybaselinetest"
+  },
+
+  // Now we have a user without a password, we expect incompliance
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ ShadowField: encrypted password does not match expected value for user 'securitybaselinetest' } == FALSE"
+  },
+
+  // Set a password for the user, inactivity period and expiration date
+  {
+    "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
+  },
+
+  // cleanup
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

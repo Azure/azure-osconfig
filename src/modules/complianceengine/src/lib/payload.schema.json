@@ -153,121 +153,103 @@
     "auditProcedure": {
       "anyOf": [
         {
-          "$ref": "procedures/AuditdRulesCheck.schema.json#/definitions/audit"
+          "$ref": "procedures/ApparmorProfileState.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/audit"
+          "$ref": "procedures/AuditdRules.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
+          "$ref": "procedures/CommandOutputMatch.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureApparmorProfiles.schema.json#/definitions/audit"
+          "$ref": "procedures/DconfValue.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureDconf.schema.json#/definitions/audit"
+          "$ref": "procedures/DefaultUmask.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/audit"
+          "$ref": "procedures/FileExists.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/EnsureDefaultUserUmaskIsConfigured.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureFileExists.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureFirewalldActiveZoneTargets.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureGsettings.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureLogfileAccess.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureNoWritables.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureRootPath.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureSysctl.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/EnsureXdmcp.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/audit"
+          "$ref": "procedures/FilePermissions.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/FilesystemMountOption.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/FirewallOpenPorts.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/FirewalldZoneTargets.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/GsettingsValue.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/KernelModule.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/LogFilePermissions.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/LoginDefsOption.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/MountPointExists.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/MtaLocalOnly.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NoDuplicateEntries.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NoShadowPrimaryGroup.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NoShellAccountsLocked.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NoUnownedFiles.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NoWorldWritableFiles.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/PackageInstalled.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/PasswdGroupsExist.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/PasswordChangeDate.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/RootPathSecurity.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/SCE.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ShadowField.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ShellTimeout.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/SshKeyPermissions.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/SshdOption.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/SysctlValue.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/SystemAccountShell.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/SystemdConfig.schema.json#/definitions/audit"
@@ -280,127 +262,127 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/UniqueGroupId.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/UniqueUserId.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/UserDotFilePermissions.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/UserHomeDirectoryPermissions.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/WirelessDisabled.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/XdmcpDisabled.schema.json#/definitions/audit"
         }
       ]
     },
     "remediationProcedure": {
       "anyOf": [
         {
-          "$ref": "procedures/AuditdRulesCheck.schema.json#/definitions/remediation"
+          "$ref": "procedures/ApparmorProfileState.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/remediation"
+          "$ref": "procedures/AuditdRules.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+          "$ref": "procedures/CommandOutputMatch.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureApparmorProfiles.schema.json#/definitions/remediation"
+          "$ref": "procedures/DconfValue.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureDconf.schema.json#/definitions/remediation"
+          "$ref": "procedures/DefaultUmask.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/remediation"
+          "$ref": "procedures/FileExists.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/EnsureDefaultUserUmaskIsConfigured.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureFileExists.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureFirewalldActiveZoneTargets.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureGsettings.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureLogfileAccess.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureNoWritables.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureRootPath.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureSysctl.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/EnsureXdmcp.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/remediation"
+          "$ref": "procedures/FilePermissions.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/FilesystemMountOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/FirewallOpenPorts.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/FirewalldZoneTargets.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/GsettingsValue.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/KernelModule.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/LogFilePermissions.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/LoginDefsOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/MountPointExists.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/MtaLocalOnly.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NoDuplicateEntries.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NoShadowPrimaryGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NoShellAccountsLocked.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NoUnownedFiles.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NoWorldWritableFiles.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/PackageInstalled.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/PasswdGroupsExist.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/PasswordChangeDate.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/RootPathSecurity.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/SCE.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ShadowField.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ShellTimeout.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SshKeyPermissions.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SshdOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SysctlValue.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SystemAccountShell.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/SystemdConfig.schema.json#/definitions/remediation"
@@ -413,6 +395,24 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/UniqueGroupId.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/UniqueUserId.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/UserDotFilePermissions.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/UserHomeDirectoryPermissions.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/WirelessDisabled.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/XdmcpDisabled.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"

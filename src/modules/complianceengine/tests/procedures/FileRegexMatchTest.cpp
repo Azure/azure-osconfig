@@ -13,10 +13,10 @@
 #include <unistd.h>
 
 using ComplianceEngine::AuditFileRegexMatch;
-using ComplianceEngine::AuditFileRegexMatchParams;
 using ComplianceEngine::Behavior;
 using ComplianceEngine::CompactListFormatter;
 using ComplianceEngine::Error;
+using ComplianceEngine::FileRegexMatchParams;
 using ComplianceEngine::IgnoreCase;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Operation;
@@ -70,7 +70,7 @@ protected:
 
 TEST_F(FileRegexMatchTest, Audit_InvalidArguments_1)
 {
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     MakeTempfile("test");
     params.path = mTempdir;
     params.filenamePattern = regex("1");
@@ -83,7 +83,7 @@ TEST_F(FileRegexMatchTest, Audit_InvalidArguments_1)
 
 TEST_F(FileRegexMatchTest, Audit_EmptyFile_1)
 {
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "test";
@@ -96,7 +96,7 @@ TEST_F(FileRegexMatchTest, Audit_EmptyFile_1)
 TEST_F(FileRegexMatchTest, Audit_Match_1)
 {
     MakeTempfile("test");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "test";
@@ -109,7 +109,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_1)
 TEST_F(FileRegexMatchTest, Audit_Match_2)
 {
     MakeTempfile("tests");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "test";
@@ -123,7 +123,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_2)
 TEST_F(FileRegexMatchTest, Audit_Match_3)
 {
     MakeTempfile("test");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "tests";
@@ -136,7 +136,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_3)
 TEST_F(FileRegexMatchTest, Audit_Match_4)
 {
     MakeTempfile("test");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "te.t";
@@ -149,7 +149,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_4)
 TEST_F(FileRegexMatchTest, Audit_Match_5)
 {
     MakeTempfile("test");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = "^te.t$";
@@ -162,7 +162,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_5)
 TEST_F(FileRegexMatchTest, Audit_Match_6)
 {
     MakeTempfile(" \ttesting");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^[[:space:]]*te[a-z]t.*$)";
@@ -175,7 +175,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_6)
 TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
 {
     MakeTempfile(" \ttesTing");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^[[:space:]]*Te[a-z]t.*$)";
@@ -189,7 +189,7 @@ TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
 TEST_F(FileRegexMatchTest, Audit_State_1)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -203,7 +203,7 @@ TEST_F(FileRegexMatchTest, Audit_State_1)
 TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitve)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -218,7 +218,7 @@ TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitve)
 TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBoth)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^Key=.*$)";
@@ -233,7 +233,7 @@ TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBoth)
 TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBothDiffetnArg)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^Key=.*$)";
@@ -247,7 +247,7 @@ TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBothDiffetnArg)
 TEST_F(FileRegexMatchTest, Audit_State_2)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -263,7 +263,7 @@ TEST_F(FileRegexMatchTest, Audit_State_2)
 TEST_F(FileRegexMatchTest, Audit_State_3)
 {
     MakeTempfile("key=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -279,7 +279,7 @@ TEST_F(FileRegexMatchTest, Audit_State_3)
 TEST_F(FileRegexMatchTest, Audit_State_4)
 {
     MakeTempfile("key=bar\nkey=foo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -295,7 +295,7 @@ TEST_F(FileRegexMatchTest, Audit_State_4)
 TEST_F(FileRegexMatchTest, Audit_Multiline_Match_1)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -309,7 +309,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_Match_1)
 TEST_F(FileRegexMatchTest, Audit_Multiline_Match_2)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz\nky=typo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -323,7 +323,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_Match_2)
 TEST_F(FileRegexMatchTest, Audit_Multiline_Match_3)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz\nky=typo");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -337,7 +337,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_Match_3)
 TEST_F(FileRegexMatchTest, Audit_Multiline_State_1)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -353,7 +353,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_State_1)
 TEST_F(FileRegexMatchTest, Audit_Multiline_State_2)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -369,7 +369,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_State_2)
 TEST_F(FileRegexMatchTest, Audit_Multiline_State_4)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -385,7 +385,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_State_4)
 TEST_F(FileRegexMatchTest, Audit_FilenamePattern_1)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchPattern = R"(^key=.*$)";
@@ -399,7 +399,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_1)
 TEST_F(FileRegexMatchTest, Audit_FilenamePattern_2)
 {
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("2"); // no such file
     params.matchPattern = R"(^key=.*$)";
@@ -415,7 +415,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_3)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*");
     params.matchPattern = R"(^key=.*$)";
@@ -437,7 +437,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_4)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("2");
     params.matchPattern = R"(^key=.*$)";
@@ -453,7 +453,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_5)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*");
     params.matchPattern = R"(^key=.*$)";
@@ -469,7 +469,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_6)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("2");
     params.matchPattern = R"(^key=(.*)$)";
@@ -485,7 +485,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_7)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("2");
     params.matchPattern = R"(^key=(.*)$)";
@@ -501,7 +501,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_8)
     MakeTempfile("nothing important here");
     MakeTempfile("key=foo\nkey=bar\nkey=baz");
     MakeTempfile("nothing important here as well");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("2");
     params.matchPattern = R"(^(key=(.*))$)";
@@ -517,7 +517,7 @@ TEST_F(FileRegexMatchTest, Audit_TestPattern)
     MakeTempfile(
         "# here are the per-package modules (the \"Primary\" block)\naccount\t[success=1 new_authtok_reqd=done default=ignore]\tpam_unix.so \n# here's "
         "the fallback if no module succeeds\n");
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex("1");
     params.matchOperation = Operation::Match;
@@ -534,7 +534,7 @@ TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_1)
     const auto targetFilename = mTempfiles.back();
     const auto linkFilename = targetFilename + ".link";
 
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*\\.link");
     params.matchOperation = Operation::Match;
@@ -554,7 +554,7 @@ TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_2)
     const auto targetFilename = mTempfiles.back();
     const auto linkFilename = targetFilename + ".link";
 
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*\\.link");
     params.matchOperation = Operation::Match;
@@ -573,7 +573,7 @@ TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_Directory)
     const auto targetDirectory = std::string(mTempdir) + "/Audit_SymlinkFollow_Directory";
     const auto linkFilename = targetDirectory + ".link";
 
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*\\.link");
     params.matchOperation = Operation::Match;
@@ -595,7 +595,7 @@ TEST_F(FileRegexMatchTest, Audit_SymlinkFollow_DanglingLink)
     const auto targetFilename = mTempfiles.back();
     const auto linkFilename = targetFilename + ".link";
 
-    AuditFileRegexMatchParams params;
+    FileRegexMatchParams params;
     params.path = mTempdir;
     params.filenamePattern = regex(".*\\.link");
     params.matchOperation = Operation::Match;

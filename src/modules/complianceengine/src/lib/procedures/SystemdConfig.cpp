@@ -72,37 +72,37 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
 }
 } // namespace
 
-Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditSystemdConfigValue(const SystemdConfigValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
 
     if (!params.dir.HasValue() && !params.file.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: neither 'file' nor 'dir' argument is provided");
+        OsConfigLogError(log, "Error: SystemdConfigValue: neither 'file' nor 'dir' argument is provided");
         OSConfigTelemetryStatusTrace("dir.empty && filename.empty", EINVAL);
         return Error("Neither 'file' nor 'dir' argument is provided");
     }
     if (params.dir.HasValue() && params.file.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: both 'file' and 'dir' arguments are provided, only one is allowed");
+        OsConfigLogError(log, "Error: SystemdConfigValue: both 'file' and 'dir' arguments are provided, only one is allowed");
         OSConfigTelemetryStatusTrace("one dir or file only", EINVAL);
         return Error("Both 'file' and 'dir' arguments are provided, only one is allowed");
     }
     if (params.valueRegex.HasValue() && params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: both 'value' and 'valueRegex' are provided, only one is allowed");
+        OsConfigLogError(log, "Error: SystemdConfigValue: both 'value' and 'valueRegex' are provided, only one is allowed");
         OSConfigTelemetryStatusTrace("value and valueRegex", EINVAL);
         return Error("Both 'value' and 'valueRegex' are provided, only one is allowed");
     }
     if (!params.valueRegex.HasValue() && !params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: 'value' (or 'valueRegex') must be provided");
+        OsConfigLogError(log, "Error: SystemdConfigValue: 'value' (or 'valueRegex') must be provided");
         OSConfigTelemetryStatusTrace("value required", EINVAL);
         return Error("'value' (or 'valueRegex') must be provided");
     }
     if (params.op.HasValue() && !params.value.HasValue())
     {
-        OsConfigLogError(log, "Error: SystemdParameter: 'op' requires 'value' (not 'valueRegex')");
+        OsConfigLogError(log, "Error: SystemdConfigValue: 'op' requires 'value' (not 'valueRegex')");
         OSConfigTelemetryStatusTrace("op requires value", EINVAL);
         return Error("'op' requires 'value' (not 'valueRegex')");
     }
@@ -238,9 +238,9 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
         // Operator + value comparison
         bool comparisonResult = false;
         const std::string& expectedValue = params.value.Value();
-        SystemdParameterOperator op = params.op.Value();
+        SystemdConfigValueOperator op = params.op.Value();
 
-        if (op == SystemdParameterOperator::Equal)
+        if (op == SystemdConfigValueOperator::Equal)
         {
             comparisonResult = (actualValue == expectedValue);
         }
@@ -262,16 +262,16 @@ Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, Indic
 
             switch (op)
             {
-                case SystemdParameterOperator::LessThan:
+                case SystemdConfigValueOperator::LessThan:
                     comparisonResult = (actualNum < expectedNum);
                     break;
-                case SystemdParameterOperator::LessOrEqual:
+                case SystemdConfigValueOperator::LessOrEqual:
                     comparisonResult = (actualNum <= expectedNum);
                     break;
-                case SystemdParameterOperator::GreaterThan:
+                case SystemdConfigValueOperator::GreaterThan:
                     comparisonResult = (actualNum > expectedNum);
                     break;
-                case SystemdParameterOperator::GreaterOrEqual:
+                case SystemdConfigValueOperator::GreaterOrEqual:
                     comparisonResult = (actualNum >= expectedNum);
                     break;
                 default:

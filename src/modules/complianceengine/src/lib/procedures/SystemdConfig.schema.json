@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "SystemdParameter"
+            "SystemdConfigValue"
           ],
           "additionalProperties": false,
           "properties": {
-            "SystemdParameter": {
+            "SystemdConfigValue": {
               "type": "object",
               "required": [
                 "parameter"

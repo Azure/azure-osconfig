@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "Ip6tablesOpenPorts"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "Ip6tablesOpenPorts": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "IptablesOpenPorts"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "IptablesOpenPorts": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "UfwOpenPorts"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "UfwOpenPorts": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

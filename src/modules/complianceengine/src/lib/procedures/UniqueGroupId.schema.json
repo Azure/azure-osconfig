@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "UniqueGroupId"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "UniqueGroupId": {
+              "type": "object",
+              "required": [
+                "groupName"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "groupName": {
+                  "type": "string",
+                  "description": "A pattern or value to match group names against"
+                },
+                "gid": {
+                  "type": "string",
+                  "description": "A value to match the GID against",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*\\d+.*)$|(\\d+))"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

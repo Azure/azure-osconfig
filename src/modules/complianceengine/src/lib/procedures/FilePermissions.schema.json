@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "FilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FilePermissions": {
+              "type": "object",
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file, single or | separated, first one is used for remediation"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file, single or | separated, first one is used for remediation"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "FilePermissionsCollection"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FilePermissionsCollection": {
+              "type": "object",
+              "required": [
+                "directory",
+                "filePattern"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "directory": {
+                  "type": "string",
+                  "description": "Directory path"
+                },
+                "recurse": {
+                  "type": "string",
+                  "description": "Whether to recurse"
+                },
+                "filePattern": {
+                  "type": "string",
+                  "description": "File pattern"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file, single or | separated, first one is used for remediation"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file, single or | separated, first one is used for remediation"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "FilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FilePermissions": {
+              "type": "object",
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file, single or | separated, first one is used for remediation"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file, single or | separated, first one is used for remediation"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "FilePermissionsCollection"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FilePermissionsCollection": {
+              "type": "object",
+              "required": [
+                "directory",
+                "filePattern"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "directory": {
+                  "type": "string",
+                  "description": "Directory path"
+                },
+                "recurse": {
+                  "type": "string",
+                  "description": "Whether to recurse"
+                },
+                "filePattern": {
+                  "type": "string",
+                  "description": "File pattern"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file, single or | separated, first one is used for remediation"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file, single or | separated, first one is used for remediation"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Behavior when checking file existence"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

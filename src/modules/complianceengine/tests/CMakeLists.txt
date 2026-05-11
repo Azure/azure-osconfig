@@ -9,43 +9,43 @@ include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 set(PROCEDURES
-    procedures/AuditdRulesCheckTest.cpp
-    procedures/EnsureAccountsWithoutShellAreLockedTest.cpp
-    procedures/EnsureApparmorProfilesTest.cpp
-    procedures/EnsureDconfTest.cpp
-    procedures/EnsureDefaultShellTimeoutIsConfiguredTest.cpp
-    procedures/EnsureDefaultUserUmaskIsConfiguredTest.cpp
-    procedures/EnsureFileExistsTest.cpp
-    procedures/EnsureFilePermissionsTest.cpp
-    procedures/EnsureFilesystemOptionTest.cpp
-    procedures/EnsureFirewalldActiveZoneTargetsTest.cpp
-    procedures/EnsureFirewallOpenPortsTest.cpp
-    procedures/EnsureKernelModuleTest.cpp
-    procedures/EnsureLogfileAccessTest.cpp
+    procedures/AuditdRulesTest.cpp
+    procedures/NoShellAccountsLockedTest.cpp
+    procedures/ApparmorProfileStateTest.cpp
+    procedures/DconfValueTest.cpp
+    procedures/ShellTimeoutTest.cpp
+    procedures/DefaultUmaskTest.cpp
+    procedures/FileExistsTest.cpp
+    procedures/FilePermissionsTest.cpp
+    procedures/FilesystemMountOptionTest.cpp
+    procedures/FirewalldZoneTargetsTest.cpp
+    procedures/FirewallOpenPortsTest.cpp
+    procedures/KernelModuleTest.cpp
+    procedures/LogFilePermissionsTest.cpp
     procedures/LoginDefsOptionTest.cpp
-    procedures/EnsureGroupIsOnlyGroupWithTest.cpp
-    procedures/EnsureGsettingsTest.cpp
-    procedures/EnsureMountPointExistsTest.cpp
-    procedures/EnsureMTAsLocalOnlyTest.cpp
-    procedures/EnsureNoDuplicateEntriesExistTest.cpp
-    procedures/EnsureNoWritablesTest.cpp
-    procedures/EnsurePasswordChangeIsInPastTest.cpp
-    procedures/EnsureNoUnownedTest.cpp
-    procedures/EnsureRootPathTest.cpp
-    procedures/EnsureSshKeyPermsTest.cpp
-    procedures/EnsureSshdOptionTest.cpp
-    procedures/EnsureSysctlTest.cpp
-    procedures/EnsureSystemAccountsDoNotHaveValidShellTest.cpp
-    procedures/EnsureUserIsOnlyAccountWithTest.cpp
-    procedures/EnsureWirelessIsDisabledTest.cpp
-    procedures/EnsureXdmcpTest.cpp
-    procedures/ExecuteCommandGrepTest.cpp
+    procedures/UniqueGroupIdTest.cpp
+    procedures/GsettingsValueTest.cpp
+    procedures/MountPointExistsTest.cpp
+    procedures/MtaLocalOnlyTest.cpp
+    procedures/NoDuplicateEntriesTest.cpp
+    procedures/NoWorldWritableFilesTest.cpp
+    procedures/PasswordChangeDateTest.cpp
+    procedures/NoUnownedFilesTest.cpp
+    procedures/RootPathSecurityTest.cpp
+    procedures/SshKeyPermissionsTest.cpp
+    procedures/SshdOptionTest.cpp
+    procedures/SysctlValueTest.cpp
+    procedures/SystemAccountShellTest.cpp
+    procedures/UniqueUserIdTest.cpp
+    procedures/WirelessDisabledTest.cpp
+    procedures/XdmcpDisabledTest.cpp
+    procedures/CommandOutputMatchTest.cpp
     procedures/FileRegexMatchTest.cpp
     procedures/PackageInstalledTest.cpp
     procedures/SystemdConfigTest.cpp
     procedures/SystemdUnitStateTest.cpp
     procedures/ufwStatusTest.cpp
-    procedures/EnsureShadowContainsTest.cpp
+    procedures/ShadowFieldTest.cpp
 )
 
 # Check that all globbed procedures are in the PROCEDURES list

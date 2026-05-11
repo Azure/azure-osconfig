@@ -109,7 +109,7 @@ TEST_F(PackageInstalledTest, DetectDpkgPackageManager)
 
     PackageInstalledParams params;
     params.packageName = "sample-package";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
@@ -126,7 +126,7 @@ TEST_F(PackageInstalledTest, DetectRpmPackageManager)
 
     PackageInstalledParams params;
     params.packageName = "sample-package";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
@@ -142,7 +142,7 @@ TEST_F(PackageInstalledTest, NoPackageManagerDetected)
 
     PackageInstalledParams params;
     params.packageName = "sample-package";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
@@ -159,7 +159,7 @@ TEST_F(PackageInstalledTest, SpecifiedPackageManagerOverridesDetection)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
@@ -173,7 +173,7 @@ TEST_F(PackageInstalledTest, RpmPackageExists)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -186,7 +186,7 @@ TEST_F(PackageInstalledTest, RpmPackageDoesNotExist)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -199,7 +199,7 @@ TEST_F(PackageInstalledTest, DpkgPackageExists)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -212,7 +212,7 @@ TEST_F(PackageInstalledTest, DpkgPackageDoesNotExist)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -225,7 +225,7 @@ TEST_F(PackageInstalledTest, RpmCommandFails)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -238,7 +238,7 @@ TEST_F(PackageInstalledTest, DpkgCommandFails)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -254,7 +254,7 @@ TEST_F(PackageInstalledTest, UseCacheWhenAvailable)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -271,7 +271,7 @@ TEST_F(PackageInstalledTest, UseStaleCache)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -288,7 +288,7 @@ TEST_F(PackageInstalledTest, RefreshStaleCache)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -305,7 +305,7 @@ TEST_F(PackageInstalledTest, PackageManagerMismatch)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM; // Mismatch with cache
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -324,7 +324,7 @@ TEST_F(PackageInstalledTest, InvalidCacheFormat)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -345,7 +345,7 @@ TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -363,7 +363,7 @@ TEST_F(PackageInstalledTest, CacheTooStale)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -377,7 +377,7 @@ TEST_F(PackageInstalledTest, CachePathBroken)
     PackageInstalledParams params;
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
-    params.test_cachePath = "/invalid/path/to/cache"; // Invalid path
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", "/invalid/path/to/cache"); // Invalid path
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -393,7 +393,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredAndMet_Rpm)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "3.0.0-1"; // Required version is less than installed 3.1.4-5
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -408,7 +408,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredAndNotMet_Rpm)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "4.0.0-1"; // Required version is greater than installed 3.1.4-5
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -423,7 +423,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredExactMatch_Rpm)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "3.1.4-5"; // Exact match with installed version including release
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -438,7 +438,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredAndMet_Dpkg)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
     params.minPackageVersion = "3.0.0-1"; // Required version is less than installed 3.1.4-2
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -453,7 +453,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredAndNotMet_Dpkg)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
     params.minPackageVersion = "4.0.0-1"; // Required version is greater than installed 3.1.4-2
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -468,7 +468,7 @@ TEST_F(PackageInstalledTest, MinVersionRequiredExactMatch_Dpkg)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::DPKG;
     params.minPackageVersion = "3.1.4-2"; // Exact match with installed version
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -483,7 +483,7 @@ TEST_F(PackageInstalledTest, PackageNotInstalledWithMinVersion)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1.0.0-1";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -501,7 +501,7 @@ TEST_F(PackageInstalledTest, ComplexVersionComparison_Rpm)
     params.packageName = "complex-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2.4.0-1"; // Should be satisfied by 2.4.1-rc3
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -518,7 +518,7 @@ TEST_F(PackageInstalledTest, ComplexVersionComparisonFails_Rpm)
     params.packageName = "complex-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2.4.0-1"; // Should not be satisfied by 2.3.5-beta
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -536,7 +536,7 @@ TEST_F(PackageInstalledTest, VersionComparisonWithCache)
     params.packageName = "version-test";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2.5.0-1"; // Should be satisfied by cached 2.5.1-2
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -554,7 +554,7 @@ TEST_F(PackageInstalledTest, VersionComparisonWithCacheFails)
     params.packageName = "version-test";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2.5.0-1"; // Should not be satisfied by cached 2.4.9-1
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -569,7 +569,7 @@ TEST_F(PackageInstalledTest, EmptyMinVersionIsIgnored)
     params.packageName = "sample-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = ""; // Empty version should be ignored
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -586,7 +586,7 @@ TEST_F(PackageInstalledTest, NumericVersionComparison)
     params.packageName = "numeric2";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1.9.0-1"; // Should be satisfied by 1.10.0-2
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -604,7 +604,7 @@ TEST_F(PackageInstalledTest, MixedAlphanumericVersionComparison)
     params.packageName = "mixed3";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1.0b-1"; // Should be satisfied by 1.0.1-2
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -622,7 +622,7 @@ TEST_F(PackageInstalledTest, AlphaOnlyVersionComparison)
     params.packageName = "alpha";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1.alpha.0-1";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -640,7 +640,7 @@ TEST_F(PackageInstalledTest, LongerVersionComparison)
     params.packageName = "alpha";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1.beta.3.7-1";
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -660,7 +660,7 @@ TEST_F(PackageInstalledTest, EpochVersionComparison_Rpm)
     params.packageName = "epoch-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "1:2.0.0-1"; // Should be satisfied by 2:1.0.0-1 (higher epoch)
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -679,7 +679,7 @@ TEST_F(PackageInstalledTest, EpochVersionComparisonFails_Rpm)
     params.packageName = "epoch-package";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2:1.0.0-1"; // Should not be satisfied by 1:1.0.0-1 (lower epoch)
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -697,7 +697,7 @@ TEST_F(PackageInstalledTest, MixedEpochAndNoEpochComparison_Rpm)
     params.packageName = "with-epoch";
     params.packageManager = PackageManagerType::RPM;
     params.minPackageVersion = "2.0.0-1"; // Should be satisfied by 1:1.0.0-1 (epoch 1 > implicit epoch 0)
-    params.test_cachePath = cacheFile;
+    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());

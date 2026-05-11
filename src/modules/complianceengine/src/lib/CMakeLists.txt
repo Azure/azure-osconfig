@@ -10,40 +10,40 @@ endif()
 find_package(Lua REQUIRED)
 
 set(PROCEDURES
-    procedures/EnsureAccountsWithoutShellAreLocked.cpp
-    procedures/AuditdRulesCheck.cpp
-    procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
-    procedures/EnsureApparmorProfiles.cpp
-    procedures/EnsureDconf.cpp
-    procedures/EnsureDefaultShellTimeoutIsConfigured.cpp
-    procedures/EnsureDefaultUserUmaskIsConfigured.cpp
-    procedures/EnsureFileExists.cpp
-    procedures/EnsureFilePermissions.cpp
-    procedures/EnsureFilesystemOption.cpp
-    procedures/EnsureFirewalldActiveZoneTargets.cpp
-    procedures/EnsureFirewallOpenPorts.cpp
-    procedures/EnsureGroupIsOnlyGroupWith.cpp
-    procedures/EnsureGsettings.cpp
-    procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
-    procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
-    procedures/EnsureKernelModule.cpp
-    procedures/EnsureLogfileAccess.cpp
+    procedures/NoShellAccountsLocked.cpp
+    procedures/AuditdRules.cpp
+    procedures/PasswdGroupsExist.cpp
+    procedures/ApparmorProfileState.cpp
+    procedures/DconfValue.cpp
+    procedures/ShellTimeout.cpp
+    procedures/DefaultUmask.cpp
+    procedures/FileExists.cpp
+    procedures/FilePermissions.cpp
+    procedures/FilesystemMountOption.cpp
+    procedures/FirewalldZoneTargets.cpp
+    procedures/FirewallOpenPorts.cpp
+    procedures/UniqueGroupId.cpp
+    procedures/GsettingsValue.cpp
+    procedures/UserDotFilePermissions.cpp
+    procedures/UserHomeDirectoryPermissions.cpp
+    procedures/KernelModule.cpp
+    procedures/LogFilePermissions.cpp
     procedures/LoginDefsOption.cpp
-    procedures/EnsureMountPointExists.cpp
-    procedures/EnsureMTAsLocalOnly.cpp
-    procedures/EnsureNoDuplicateEntriesExist.cpp
-    procedures/EnsureNoUserHasPrimaryShadowGroup.cpp
-    procedures/EnsureNoUnowned.cpp
-    procedures/EnsureNoWritables.cpp
-    procedures/EnsurePasswordChangeIsInPast.cpp
-    procedures/EnsureRootPath.cpp
-    procedures/EnsureSshdOption.cpp
-    procedures/EnsureSysctl.cpp
-    procedures/EnsureSystemAccountsDoNotHaveValidShell.cpp
-    procedures/EnsureUserIsOnlyAccountWith.cpp
-    procedures/EnsureWirelessIsDisabled.cpp
-    procedures/EnsureXdmcp.cpp
-    procedures/ExecuteCommandGrep.cpp
+    procedures/MountPointExists.cpp
+    procedures/MtaLocalOnly.cpp
+    procedures/NoDuplicateEntries.cpp
+    procedures/NoShadowPrimaryGroup.cpp
+    procedures/NoUnownedFiles.cpp
+    procedures/NoWorldWritableFiles.cpp
+    procedures/PasswordChangeDate.cpp
+    procedures/RootPathSecurity.cpp
+    procedures/SshdOption.cpp
+    procedures/SysctlValue.cpp
+    procedures/SystemAccountShell.cpp
+    procedures/UniqueUserId.cpp
+    procedures/WirelessDisabled.cpp
+    procedures/XdmcpDisabled.cpp
+    procedures/CommandOutputMatch.cpp
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
     procedures/SCE.cpp
@@ -51,44 +51,44 @@ set(PROCEDURES
     procedures/SystemdUnitState.cpp
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
-    procedures/EnsureShadowContains.cpp
-    procedures/EnsureSshKeyPerms.cpp
+    procedures/ShadowField.cpp
+    procedures/SshKeyPermissions.cpp
 )
 set(SCHEMAS
-    procedures/EnsureAccountsWithoutShellAreLocked.schema.json
-    procedures/AuditdRulesCheck.schema.json
-    procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
-    procedures/EnsureApparmorProfiles.schema.json
-    procedures/EnsureDconf.schema.json
-    procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json
-    procedures/EnsureDefaultUserUmaskIsConfigured.schema.json
-    procedures/EnsureFileExists.schema.json
-    procedures/EnsureFilePermissions.schema.json
-    procedures/EnsureFilesystemOption.schema.json
-    procedures/EnsureFirewalldActiveZoneTargets.schema.json
-    procedures/EnsureFirewallOpenPorts.schema.json
-    procedures/EnsureGroupIsOnlyGroupWith.schema.json
-    procedures/EnsureGsettings.schema.json
-    procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
-    procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
-    procedures/EnsureKernelModule.schema.json
-    procedures/EnsureLogfileAccess.schema.json
+    procedures/NoShellAccountsLocked.schema.json
+    procedures/AuditdRules.schema.json
+    procedures/PasswdGroupsExist.schema.json
+    procedures/ApparmorProfileState.schema.json
+    procedures/DconfValue.schema.json
+    procedures/ShellTimeout.schema.json
+    procedures/DefaultUmask.schema.json
+    procedures/FileExists.schema.json
+    procedures/FilePermissions.schema.json
+    procedures/FilesystemMountOption.schema.json
+    procedures/FirewalldZoneTargets.schema.json
+    procedures/FirewallOpenPorts.schema.json
+    procedures/UniqueGroupId.schema.json
+    procedures/GsettingsValue.schema.json
+    procedures/UserDotFilePermissions.schema.json
+    procedures/UserHomeDirectoryPermissions.schema.json
+    procedures/KernelModule.schema.json
+    procedures/LogFilePermissions.schema.json
     procedures/LoginDefsOption.schema.json
-    procedures/EnsureMountPointExists.schema.json
-    procedures/EnsureMTAsLocalOnly.schema.json
-    procedures/EnsureNoDuplicateEntriesExist.schema.json
-    procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json
-    procedures/EnsureNoUnowned.schema.json
-    procedures/EnsureNoWritables.schema.json
-    procedures/EnsurePasswordChangeIsInPast.schema.json
-    procedures/EnsureRootPath.schema.json
-    procedures/EnsureSshdOption.schema.json
-    procedures/EnsureSysctl.schema.json
-    procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json
-    procedures/EnsureUserIsOnlyAccountWith.schema.json
-    procedures/EnsureWirelessIsDisabled.schema.json
-    procedures/EnsureXdmcp.schema.json
-    procedures/ExecuteCommandGrep.schema.json
+    procedures/MountPointExists.schema.json
+    procedures/MtaLocalOnly.schema.json
+    procedures/NoDuplicateEntries.schema.json
+    procedures/NoShadowPrimaryGroup.schema.json
+    procedures/NoUnownedFiles.schema.json
+    procedures/NoWorldWritableFiles.schema.json
+    procedures/PasswordChangeDate.schema.json
+    procedures/RootPathSecurity.schema.json
+    procedures/SshdOption.schema.json
+    procedures/SysctlValue.schema.json
+    procedures/SystemAccountShell.schema.json
+    procedures/UniqueUserId.schema.json
+    procedures/WirelessDisabled.schema.json
+    procedures/XdmcpDisabled.schema.json
+    procedures/CommandOutputMatch.schema.json
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json
     procedures/SCE.schema.json
@@ -96,8 +96,8 @@ set(SCHEMAS
     procedures/SystemdUnitState.schema.json
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json
-    procedures/EnsureShadowContains.schema.json
-    procedures/EnsureSshKeyPerms.schema.json
+    procedures/ShadowField.schema.json
+    procedures/SshKeyPermissions.schema.json
 )
 
 # Check that all globbed procedures are in the PROCEDURES list

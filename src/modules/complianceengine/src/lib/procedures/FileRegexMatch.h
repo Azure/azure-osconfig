@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#ifndef COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
-#define COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
+#ifndef COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H
+#define COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H
 
 #include <Behavior.h>
 #include <Evaluator.h>
@@ -32,7 +32,7 @@ enum class IgnoreCase
 };
 
 // Parameters used by the FileRegexMatch procedure.
-struct AuditFileRegexMatchParams
+struct FileRegexMatchParams
 {
     /// A directory name containing files to check
     std::string path;
@@ -63,7 +63,7 @@ struct AuditFileRegexMatchParams
     Optional<Behavior> behavior = Behavior::AllExist;
 };
 
-Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> AuditFileRegexMatch(const FileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
 
-#endif // COMPLIANCEENGINE_PROCEDURES_FILEREGEXMATCH_H
+#endif // COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "PasswdGroupsExist"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "PasswdGroupsExist": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "PasswdGroupsExist"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "PasswdGroupsExist": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    }
+  }
+}
