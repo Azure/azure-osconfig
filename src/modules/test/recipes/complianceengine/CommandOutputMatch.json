@@ -1,0 +1,68 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "CommandOutputMatch": {
+          "command": "uname",
+          "pattern": "Linux"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ CommandOutputMatch: Output of command 'uname' matches regex 'Linux' } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "CommandOutputMatch": {
+          "command": "uname",
+          "pattern": "SunOS"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ CommandOutputMatch: No match found } == FALSE"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "CommandOutputMatch": {
+          "command": "useradd evilhacker",
+          "pattern": "dontcare"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "Audit failed with a non-critical error: Command useradd evilhacker is not allowed"
+  },
+
+  {
+    "Action": "UnloadModule"
+  }
+]

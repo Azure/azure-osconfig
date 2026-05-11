@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "FileExists"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FileExists": {
+              "type": "object",
+              "required": [
+                "filename"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file to check for existence"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

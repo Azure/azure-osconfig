@@ -10,7 +10,7 @@
 
 namespace ComplianceEngine
 {
-Result<Status> AuditUfwStatus(const AuditUfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditUfwStatus(const UfwStatusParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     const auto* cmd = "ufw status verbose";
     auto output = context.ExecuteCommand(cmd);
