@@ -20,6 +20,11 @@ struct MockContext : public ComplianceEngine::ContextInterface
     MOCK_METHOD(ComplianceEngine::Result<std::string>, ExecuteCommand, (const std::string& cmd), (const, override));
     MOCK_METHOD(ComplianceEngine::Result<std::string>, GetFileContents, (const std::string& filePath), (const, override));
 
+    ComplianceEngine::Telemetry& GetTelemetry() override
+    {
+        return mTelemetry;
+    }
+
     OsConfigLogHandle GetLogHandle() const override
     {
         return nullptr;
@@ -150,4 +155,5 @@ private:
     std::vector<std::string> mTempfiles;
     std::map<std::string, std::string> mSpecialFilesMap;
     std::unique_ptr<ComplianceEngine::FilesystemScanner> mFsScannerp;
+    ComplianceEngine::Telemetry mTelemetry{-1};
 };

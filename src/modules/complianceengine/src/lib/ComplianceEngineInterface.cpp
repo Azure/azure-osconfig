@@ -4,8 +4,10 @@
 #include "ComplianceEngineInterface.h"
 
 #include "BenchmarkInfo.h"
+#include "CeTelemetry.h"
 #include "CommonContext.h"
 #include "CommonUtils.h"
+#include "DirTools.h"
 #include "DistributionInfo.h"
 #include "Engine.h"
 #include "JsonWrapper.h"
@@ -18,11 +20,14 @@
 #include <cstddef>
 #include <cstring>
 #include <exception>
+#include <fcntl.h>
 #include <fstream>
 #include <parson.h>
 #include <set>
 #include <sstream>
+#include <stdio.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 using ComplianceEngine::CISBenchmarkInfo;
 using ComplianceEngine::DistributionInfo;
@@ -37,6 +42,8 @@ static constexpr const char* cNRPClientName = "ComplianceEngine";
 OsConfigLogHandle g_log = nullptr;
 static const std::set<int> g_criticalErrors = {ENOMEM};
 static constexpr const char* g_configurationFile = "/etc/osconfig/osconfig.json";
+static constexpr const char* telemetry_log_dir = "/var/lib/osconfig/";
+static constexpr const char* telemetry_log_file = "complianceengine.telemetry";
 } // namespace
 
 // This function is called in library constructor by BaselineInitialize
@@ -45,7 +52,7 @@ void ComplianceEngineInitialize(OsConfigLogHandle log)
     UNUSED(log);
     g_log = log;
 
-    TelemetryInitialize(g_log);
+    // TelemetryInitialize(g_log);
 
     std::ifstream configStream(g_configurationFile);
     if (configStream)
@@ -69,12 +76,28 @@ void ComplianceEngineInitialize(OsConfigLogHandle log)
 // This function is called in library destructor by BaselineInitialize
 void ComplianceEngineShutdown(void)
 {
-    TelemetryCleanup(g_log);
+    // TelemetryCleanup(g_log);
 }
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    auto context = std::unique_ptr<ComplianceEngine::CommonContext>(new ComplianceEngine::CommonContext(g_log));
+
+    int telemetry_fd = -1;
+    std::string telemetry_log_path(telemetry_log_dir);
+    if (!ComplianceEngine::mkdir_recursive(telemetry_log_path, 0755))
+    {
+        OsConfigLogError(g_log, "Failed to create telemetry directory %s: %d", telemetry_log_path.c_str(), errno);
+    }
+    else
+    {
+        auto telemetry_file = telemetry_log_path + std::string(telemetry_log_file);
+        telemetry_fd = open(telemetry_file.c_str(), O_CREAT | O_APPEND | O_WRONLY, 0600);
+        if (0 > telemetry_fd)
+        {
+            OsConfigLogError(g_log, "Failed to open telemetry file  %s: %d", telemetry_file.c_str(), errno);
+        }
+    }
+    auto context = std::unique_ptr<ComplianceEngine::CommonContext>(new ComplianceEngine::CommonContext(g_log, telemetry_fd));
     if (nullptr == context)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);

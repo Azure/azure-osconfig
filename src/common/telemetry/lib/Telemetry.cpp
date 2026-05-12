@@ -196,11 +196,11 @@ bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     }
 
     // Validate parameters against the event's parameter set
-    if (!ValidateEventParameters(eventName, jsonKeys))
-    {
-        OsConfigLogError(m_log, "Parameter validation failed for event '%s': %s", eventName.c_str(), jsonLine.c_str());
-        return false;
-    }
+    // if (!ValidateEventParameters(eventName, jsonKeys))
+    // {
+    //     OsConfigLogError(m_log, "Parameter validation failed for event '%s': %s", eventName.c_str(), jsonLine.c_str());
+    //     return false;
+    // }
 
     // Create event with the event name
     EventProperties event(eventName);

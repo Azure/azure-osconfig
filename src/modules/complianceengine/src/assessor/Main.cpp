@@ -1,6 +1,7 @@
 #include <CommonContext.h>
 #include <CompactListFormatter.hpp>
 #include <DebugFormatter.hpp>
+#include <DirTools.h>
 #include <Engine.h>
 #include <JsonFormatter.hpp>
 #include <Logging.h>
@@ -9,11 +10,14 @@
 #include <Optional.h>
 #include <algorithm>
 #include <cassert>
+#include <fcntl.h>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
 #include <memory>
+#include <stdio.h>
 #include <string>
+#include <unistd.h>
 #include <version.h>
 
 using ComplianceEngine::Action;
@@ -34,6 +38,8 @@ using std::ifstream;
 using std::istream;
 using std::string;
 
+static constexpr const char* telemetry_log_dir = "/var/lib/osconfig/";
+static constexpr const char* telemetry_log_file = "complianceengine.telemetry";
 namespace
 {
 enum class Command
@@ -262,7 +268,23 @@ int main(int argc, char* argv[])
         OsConfigLogInfo(logHandle, "Debug logging enabled");
     }
 
-    auto context = std::unique_ptr<CommonContext>(new CommonContext(logHandle));
+    int telemetry_fd = -1;
+    std::string telemetry_log_path(telemetry_log_dir);
+    if (!ComplianceEngine::mkdir_recursive(telemetry_log_path, 0755))
+    {
+        OsConfigLogError(logHandle, "Failed to create telemetry directory %s: %d", telemetry_log_path.c_str(), errno);
+    }
+    else
+    {
+        auto telemetry_file = telemetry_log_path + std::string(telemetry_log_file);
+        telemetry_fd = open(telemetry_file.c_str(), O_CREAT | O_APPEND | O_WRONLY, 0600);
+        if (0 > telemetry_fd)
+        {
+            OsConfigLogError(logHandle, "Failed to open telemetry file  %s: %d", telemetry_file.c_str(), errno);
+        }
+    }
+
+    auto context = std::unique_ptr<CommonContext>(new ComplianceEngine::CommonContext(logHandle, telemetry_fd));
     Engine engine(std::move(context), std::move(payloadFormatter));
 
     auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);

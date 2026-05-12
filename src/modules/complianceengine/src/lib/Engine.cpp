@@ -4,6 +4,8 @@
 #include "Engine.h"
 
 #include "Base64.h"
+#include "CeTelemetry.h"
+#include "DirTools.h"
 #include "Evaluator.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
@@ -142,7 +144,9 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
     }
 
     Evaluator evaluator(ruleName, procedure.Audit(), procedure.Parameters(), *mContext);
-    return evaluator.ExecuteAudit(*mFormatter);
+    Result<AuditResult> result = RunWithTelemetry(TelemetryEvent(TelemetryEventType::Audit, ruleName), mContext->GetTelemetry(),
+        [&]() { return evaluator.ExecuteAudit(*mFormatter); });
+    return result;
 }
 
 Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::string& payload)
@@ -300,7 +304,9 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
     }
 
     Evaluator evaluator(ruleName, remediation, procedure.Parameters(), *mContext);
-    return evaluator.ExecuteRemediation();
+    Result<Status> result = RunWithTelemetry(TelemetryEvent(TelemetryEventType::Remediation, ruleName), mContext->GetTelemetry(),
+        [&]() { return evaluator.ExecuteRemediation(); });
+    return result;
 }
 
 Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload)
@@ -308,7 +314,6 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
     if (nullptr == objectName)
     {
         OsConfigLogError(Log(), "Object name is null");
-        OSConfigTelemetryStatusTrace("objectName", EINVAL);
         return Error("Invalid argument", EINVAL);
     }
 
@@ -346,7 +351,6 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
     }
 
     OsConfigLogError(Log(), "Invalid object name: Must start with %s, %s or %s prefix", initPrefix, procedurePrefix, remediatePrefix);
-    OSConfigTelemetryStatusTrace("objectName", EINVAL);
     return Error("Invalid object name");
 }
 } // namespace ComplianceEngine

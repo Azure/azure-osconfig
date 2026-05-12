@@ -4,10 +4,12 @@
 #ifndef COMPLIANCEENGINE_COMMONCONTEXT_H
 #define COMPLIANCEENGINE_COMMONCONTEXT_H
 
+#include "CeTelemetry.h"
 #include "ContextInterface.h"
 #include "Logging.h"
 #include "Result.h"
 
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -25,8 +27,9 @@ constexpr int scanWaitTime = 30;
 class CommonContext : public ContextInterface
 {
 public:
-    CommonContext(OsConfigLogHandle log)
+    explicit CommonContext(OsConfigLogHandle log, const int fd = -1) noexcept
         : mLog(log),
+          mTelemetry(fd),
           mFsScanner("/", fsCachePath, lockPath, softTimeout, hardTimeout, scanWaitTime)
     {
     }
@@ -34,6 +37,10 @@ public:
 
     Result<std::string> ExecuteCommand(const std::string& cmd) const override;
     Result<std::string> GetFileContents(const std::string& filePath) const override;
+    Telemetry& GetTelemetry() override
+    {
+        return mTelemetry;
+    }
     OsConfigLogHandle GetLogHandle() const override
     {
         return mLog;
@@ -47,6 +54,7 @@ public:
 
 private:
     OsConfigLogHandle mLog;
+    Telemetry mTelemetry;
     FilesystemScanner mFsScanner;
 };
 } // namespace ComplianceEngine
