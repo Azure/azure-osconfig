@@ -2066,6 +2066,228 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
     }
 }
 
+TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttemptsViaFaillockConf)
+{
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+
+    const char* pamWithoutFaillock =
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_deny.so\n";
+
+    const char* pamWithFaillockCommented =
+        "# auth      required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n";
+
+    const char* faillockConfDefaultsCommented =
+        "# deny = 3\n"
+        "# unlock_time = 600\n"
+        "# even_deny_root\n";
+
+    const char* faillockConfCompliant =
+        "deny = 5\n"
+        "unlock_time = 900\n"
+        "even_deny_root\n"
+        "root_unlock_time = 900\n";
+
+    const char* faillockConfDenyTooHigh =
+        "deny = 6\n"
+        "unlock_time = 900\n";
+
+    const char* faillockConfDenyAtBoundary =
+        "deny = 5\n"
+        "unlock_time = 1\n";
+
+    const char* faillockConfUnlockTimeZero =
+        "deny = 3\n"
+        "unlock_time = 0\n";
+
+    const char* faillockConfUnlockTimeNegative =
+        "deny = 3\n"
+        "unlock_time = -1\n";
+
+    const char* faillockConfWithSubstringSiblings =
+        "even_deny_root\n"
+        "root_unlock_time = 100\n"
+        "deny = 5\n"
+        "unlock_time = 900\n";
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf("dummy", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, "dummy", nullptr, nullptr));
+
+    // faillock.conf missing.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(ENOENT, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, "~file_that_does_not_exist", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // PAM file missing (faillock.conf present).
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf("~file_that_does_not_exist", m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM contains pam_faillock.so and faillock.conf has compliant values explicitly set.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM contains pam_faillock.so and faillock.conf has all defaults commented out: pam_faillock
+    // built-in defaults of 'deny = 3' and 'unlock_time = 600' apply and are compliant.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDefaultsCommented));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Boundary: 'deny' set to 5 is acceptable.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDenyAtBoundary));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'deny' greater than 5 is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDenyTooHigh));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'unlock_time' of 0 is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfUnlockTimeZero));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'unlock_time' negative is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfUnlockTimeNegative));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM file does not reference pam_faillock.so.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM file has pam_faillock.so commented out.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'even_deny_root' and 'root_unlock_time' siblings must not be picked up as 'deny' or
+    // 'unlock_time' by the parser.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfWithSubstringSiblings));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, SetLockoutForFailedPasswordAttemptsViaFaillockConf)
+{
+    char* contents = nullptr;
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, SetLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, 3, 900, nullptr));
+
+    // Target file does not exist.
+    EXPECT_EQ(ENOENT, SetLockoutForFailedPasswordAttemptsViaFaillockConf("~file_that_does_not_exist", 3, 900, nullptr));
+
+    // In-place replacement when both keys are already present uncommented; sibling lines preserved.
+    const char* originalWithBothKeys =
+        "# Deny access after n consecutive failures.\n"
+        "deny = 10\n"
+        "# Lock-out period in seconds for non-root.\n"
+        "unlock_time = 60\n"
+        "even_deny_root\n"
+        "root_unlock_time = 60\n"
+        "fail_interval = 900\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalWithBothKeys));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    EXPECT_NE(nullptr, strstr(contents, "even_deny_root\n"));
+    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 60\n"));
+    EXPECT_NE(nullptr, strstr(contents, "fail_interval = 900\n"));
+    EXPECT_EQ(nullptr, strstr(contents, "deny = 10"));
+    EXPECT_EQ(nullptr, strstr(contents, "unlock_time = 60\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Append when both keys are absent (only commented defaults are present in the file).
+    const char* originalCommentedOnly =
+        "# deny = 3\n"
+        "# unlock_time = 600\n"
+        "# even_deny_root\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalCommentedOnly));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 5, 1200, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 5\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 1200\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# unlock_time = 600\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# even_deny_root\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Token-boundary match: 'deny' must not match 'even_deny_root' and 'unlock_time' must not
+    // match 'root_unlock_time' on either replacement.
+    const char* originalSubstringSiblings =
+        "even_deny_root\n"
+        "root_unlock_time = 100\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalSubstringSiblings));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "even_deny_root\n"));
+    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 100\n"));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Tabs and extra leading whitespace are treated as token separators.
+    const char* originalTabs =
+        "  deny\t=\t10\n"
+        "\tunlock_time = 30\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalTabs));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    EXPECT_EQ(nullptr, strstr(contents, "deny\t=\t10"));
+    EXPECT_EQ(nullptr, strstr(contents, "unlock_time = 30\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Round-trip: after Set, the audit helper accepts the resulting configuration.
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+    const char* originalEmpty = "# initially empty\n";
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, originalEmpty));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 5, 900, nullptr));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
 TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 {
     const char* expected = "\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n";

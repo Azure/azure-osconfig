@@ -8,11 +8,13 @@ static const char* g_etcPamdCommonPassword = "/tmp/~test.test";
 static const char* g_etcSecurityPwQualityConf = "/tmp/~test.test2";
 static const char* g_etcPamdSystemAuth = "/tmp/~test.test3";
 static const char* g_etcPamdSystemPassword = "/tmp/~test.test4";
+static const char* g_etcSecurityFaillockConf = "/tmp/~test.test5";
 #else
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
+static const char* g_etcSecurityFaillockConf = "/etc/security/faillock.conf";
 #endif
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
@@ -308,6 +310,286 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
+int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, const char* faillockConf, char** reason, OsConfigLogHandle log)
+{
+    // On systems shipping Linux-PAM 1.4.0 or newer 'pam_faillock.so' reads its 'deny' and 'unlock_time'
+    // values from '/etc/security/faillock.conf' instead of from inline options on the PAM line.
+    // This helper checks compliance against that configuration model:
+    //
+    // 1. '/etc/security/faillock.conf' must exist.
+    // 2. 'pam_faillock.so' must be referenced (uncommented) in 'pamFile'.
+    // 3. If 'deny' is uncommented in '/etc/security/faillock.conf' it must be less than or equal to 5;
+    //    if it is absent or commented out the pam_faillock built-in default of 3 applies and is compliant.
+    // 4. If 'unlock_time' is uncommented in '/etc/security/faillock.conf' it must be greater than 0;
+    //    if it is absent or commented out the pam_faillock  built-in default of 600 applies and is compliant.
+
+    const char* pamFaillockSo = "pam_faillock.so";
+    const char* deny = "deny";
+    const char* unlockTime = "unlock_time";
+    const int maxDeny = 5;
+    const int defaultDeny = 3;
+    const int defaultUnlockTime = 600;
+    int denyValue = INT_ENOENT;
+    int unlockTimeValue = INT_ENOENT;
+
+    if ((NULL == pamFile) || (NULL == faillockConf))
+    {
+        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: invalid arguments");
+        OSConfigTelemetryStatusTrace("pamFile", EINVAL);
+        return EINVAL;
+    }
+
+    if (0 != CheckFileExists(faillockConf, NULL, log))
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' does not exist", faillockConf);
+        OsConfigCaptureReason(reason, "'%s' does not exist", faillockConf);
+        return ENOENT;
+    }
+
+    if (0 != CheckLineFoundNotCommentedOut(pamFile, '#', pamFaillockSo, NULL, log))
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' is not referenced uncommented in '%s'",
+            pamFaillockSo, pamFile);
+        OsConfigCaptureReason(reason, "'%s' is not referenced uncommented in '%s'", pamFaillockSo, pamFile);
+        return ENOENT;
+    }
+
+    if (INT_ENOENT != (denyValue = GetIntegerOptionFromFile(faillockConf, deny, '=', '#', 10, log)))
+    {
+        if (denyValue > maxDeny)
+        {
+            OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' from '%s' is %d, expected a value less than or equal to %d",
+                deny, faillockConf, denyValue, maxDeny);
+            OsConfigCaptureReason(reason, "'%s' from '%s' is %d, expected a value less than or equal to %d",
+                deny, faillockConf, denyValue, maxDeny);
+            return ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' not set in '%s', the pam_faillock default of %d applies",
+            deny, faillockConf, defaultDeny);
+        denyValue = defaultDeny;
+    }
+
+    if (INT_ENOENT != (unlockTimeValue = GetIntegerOptionFromFile(faillockConf, unlockTime, '=', '#', 10, log)))
+    {
+        if (unlockTimeValue <= 0)
+        {
+            OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' from '%s' is %d, expected a positive value",
+                unlockTime, faillockConf, unlockTimeValue);
+            OsConfigCaptureReason(reason, "'%s' from '%s' is %d, expected a positive value",
+                unlockTime, faillockConf, unlockTimeValue);
+            return ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' not set in '%s', the pam_faillock default of %d applies",
+            unlockTime, faillockConf, defaultUnlockTime);
+        unlockTimeValue = defaultUnlockTime;
+    }
+
+    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttemptsViaFaillockConf: '%s' is referenced uncommented in '%s' and '%s' has '%s' set to %d (less than or equal to %d) and '%s' set to %d (greater than 0)",
+        pamFaillockSo, pamFile, faillockConf, deny, denyValue, maxDeny, unlockTime, unlockTimeValue);
+    OsConfigCaptureSuccessReason(reason, "'%s' is referenced uncommented in '%s' and '%s' has '%s' set to %d (less than or equal to %d) and '%s' set to %d (greater than 0)",
+        pamFaillockSo, pamFile, faillockConf, deny, denyValue, maxDeny, unlockTime, unlockTimeValue);
+
+    return 0;
+}
+
+static int SetFaillockConfOption(const char* fileName, const char* key, int value, OsConfigLogHandle log)
+{
+    // Writes 'key = value' to the configuration file at 'fileName'. The function replaces the first
+    // uncommented line whose first whitespace-delimited token is exactly 'key' (token-boundary match,
+    // so 'deny' does not match 'even_deny_root' and 'unlock_time' does not match 'root_unlock_time').
+    // Commented lines (those whose first non-whitespace character is '#') are left untouched. If no
+    // matching line is present, 'key = value' is appended at the end of the file. File ownership and
+    // access mode are preserved through SecureSaveToFile.
+
+    char* originalContents = NULL;
+    char* newContents = NULL;
+    char* formatted = NULL;
+    char* readCursor = NULL;
+    char* lineStart = NULL;
+    char* lineEnd = NULL;
+    char* firstNonWhitespace = NULL;
+    char* tokenEnd = NULL;
+    size_t originalSize = 0;
+    size_t formattedSize = 0;
+    size_t newCapacity = 0;
+    size_t newLength = 0;
+    size_t lineLength = 0;
+    size_t keyLength = 0;
+    bool replaced = false;
+    bool hasNewline = false;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == key))
+    {
+        OsConfigLogError(log, "SetFaillockConfOption: invalid arguments");
+        OSConfigTelemetryStatusTrace("fileName", EINVAL);
+        return EINVAL;
+    }
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "SetFaillockConfOption: '%s' does not exist", fileName);
+        return ENOENT;
+    }
+
+    if (NULL == (originalContents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogError(log, "SetFaillockConfOption: cannot read '%s'", fileName);
+        OSConfigTelemetryStatusTrace("LoadStringFromFile", EACCES);
+        return EACCES;
+    }
+
+    if (NULL == (formatted = FormatAllocateString("%s = %d\n", key, value)))
+    {
+        OsConfigLogError(log, "SetFaillockConfOption: out of memory");
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
+        FREE_MEMORY(originalContents);
+        return ENOMEM;
+    }
+
+    originalSize = strlen(originalContents);
+    formattedSize = strlen(formatted);
+    keyLength = strlen(key);
+
+    // Worst case the rewritten buffer is the original contents plus the appended line and one padding newline before that line.
+    newCapacity = originalSize + formattedSize + 2;
+    if (NULL == (newContents = (char*)malloc(newCapacity + 1)))
+    {
+        OsConfigLogError(log, "SetFaillockConfOption: out of memory");
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
+        FREE_MEMORY(formatted);
+        FREE_MEMORY(originalContents);
+        return ENOMEM;
+    }
+    memset(newContents, 0, newCapacity + 1);
+
+    readCursor = originalContents;
+    while (0 != *readCursor)
+    {
+        lineStart = readCursor;
+        lineEnd = strchr(readCursor, EOL);
+        if (NULL == lineEnd)
+        {
+            lineEnd = readCursor + strlen(readCursor);
+            readCursor = lineEnd;
+            hasNewline = false;
+        }
+        else
+        {
+            readCursor = lineEnd + 1;
+            hasNewline = true;
+        }
+        lineLength = (size_t)(lineEnd - lineStart);
+
+        // Locate the first non-whitespace character on the line so the comment marker and the key token can be detected even when the line is indented with spaces or tabs.
+        firstNonWhitespace = lineStart;
+        while ((firstNonWhitespace < lineEnd) && ((' ' == *firstNonWhitespace) || (TAB == *firstNonWhitespace)))
+        {
+            firstNonWhitespace++;
+        }
+
+        // A line is eligible for in-place replacement when no previous replacement has happened, the line is not empty after trimming,
+        // the line is not commented out and the first token is exactly 'key' (followed by end of line, whitespace, or '=').
+        if ((false == replaced) && (firstNonWhitespace < lineEnd) && ('#' != *firstNonWhitespace) &&
+            (((size_t)(lineEnd - firstNonWhitespace)) >= keyLength) &&
+            (0 == strncmp(firstNonWhitespace, key, keyLength)))
+        {
+            tokenEnd = firstNonWhitespace + keyLength;
+            if ((tokenEnd >= lineEnd) || (' ' == *tokenEnd) || (TAB == *tokenEnd) || ('=' == *tokenEnd))
+            {
+                memcpy(newContents + newLength, formatted, formattedSize);
+                newLength += formattedSize;
+                newContents[newLength] = 0;
+                replaced = true;
+                continue;
+            }
+        }
+
+        // Keep this line verbatim, preserving the trailing newline if the original had one.
+        if (lineLength > 0)
+        {
+            memcpy(newContents + newLength, lineStart, lineLength);
+            newLength += lineLength;
+        }
+        if (hasNewline)
+        {
+            newContents[newLength] = EOL;
+            newLength++;
+        }
+        newContents[newLength] = 0;
+    }
+
+    if (false == replaced)
+    {
+        // Append the canonical 'key = value' line. Make sure the file ends with a newline first so the appended line starts on its own row.
+        if ((newLength > 0) && (EOL != newContents[newLength - 1]))
+        {
+            newContents[newLength] = EOL;
+            newLength++;
+            newContents[newLength] = 0;
+        }
+
+        memcpy(newContents + newLength, formatted, formattedSize);
+        newLength += formattedSize;
+        newContents[newLength] = 0;
+    }
+
+    if (false == SecureSaveToFile(fileName, newContents, (int)newLength, log))
+    {
+        OsConfigLogError(log, "SetFaillockConfOption: SecureSaveToFile('%s') failed", fileName);
+        OSConfigTelemetryStatusTrace("SecureSaveToFile", EACCES);
+        status = EACCES;
+    }
+    else
+    {
+        OsConfigLogInfo(log, "SetFaillockConfOption: '%s = %d' written to '%s' (%s)", key, value, fileName, replaced ? "in place" : "appended");
+    }
+
+    FREE_MEMORY(newContents);
+    FREE_MEMORY(formatted);
+    FREE_MEMORY(originalContents);
+
+    return status;
+}
+
+int SetLockoutForFailedPasswordAttemptsViaFaillockConf(const char* faillockConf, int deny, int unlockTime, OsConfigLogHandle log)
+{
+    // On systems shipping Linux-PAM 1.4.0 or newer 'pam_faillock.so' reads its 'deny' and
+    // 'unlock_time' values from '/etc/security/faillock.conf'. This helper updates those two
+    // keys in place (or appends them if missing), leaving every other key in the file
+    // untouched. The two keys are written as 'deny = <deny>' and 'unlock_time = <unlockTime>'
+    // so a follow-up audit via CheckLockoutForFailedPasswordAttemptsViaFaillockConf reads
+    // them through GetIntegerOptionFromFile with separator '=' and comment character '#'.
+
+    int status = 0;
+    int _status = 0;
+
+    if (NULL == faillockConf)
+    {
+        OsConfigLogError(log, "SetLockoutForFailedPasswordAttemptsViaFaillockConf: invalid argument");
+        OSConfigTelemetryStatusTrace("faillockConf", EINVAL);
+        return EINVAL;
+    }
+
+    status = SetFaillockConfOption(faillockConf, "deny", deny, log);
+    _status = SetFaillockConfOption(faillockConf, "unlock_time", unlockTime, log);
+    if (0 == status)
+    {
+        status = _status;
+    }
+
+    OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttemptsViaFaillockConf('%s', %d, %d) returning %d",
+        faillockConf, deny, unlockTime, status);
+
+    return status;
+}
+
 int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 {
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
@@ -344,6 +626,8 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     const char* pamTallySo = "pam_tally.so";
     const char* pamDenySo = "pam_deny.so";
     const char* pamConfigurations[] = {"/etc/pam.d/login", "/etc/pam.d/system-auth", "/etc/pam.d/password-auth", "/etc/pam.d/common-auth"};
+    const int desiredDeny = 3;
+    const int desiredUnlockTime = 900;
     int numPamConfigurations = ARRAY_SIZE(pamConfigurations);
     char* pamModulePath = NULL;
     char* pamModulePath2 = NULL;
@@ -351,6 +635,18 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     int i = 0, status = 0, _status = 0;
 
     EnsurePamModulePackagesAreInstalled(log);
+
+    // When '/etc/security/faillock.conf' exists, the system uses the Linux-PAM 1.4.0+
+    // configuration model where pam_faillock.so reads 'deny' and 'unlock_time' from
+    // that file rather than from inline options on the PAM line. Update those two
+    // values in '/etc/security/faillock.conf' (preserving all other keys) and do not
+    // edit the PAM stack files in that branch.
+    if (0 == CheckFileExists(g_etcSecurityFaillockConf, NULL, log))
+    {
+        status = SetLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcSecurityFaillockConf, desiredDeny, desiredUnlockTime, log);
+        OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: '%s' is present, returning %d via faillock.conf", g_etcSecurityFaillockConf, status);
+        return status;
+    }
 
     for (i = 0; i < numPamConfigurations; i++)
     {
