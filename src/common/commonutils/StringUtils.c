@@ -53,19 +53,22 @@ char* ConcatenateStrings(const char* first, const char* second)
 {
     char* result = NULL;
     size_t resultSize = 0;
+    size_t firstLength = 0;
+    size_t secondLength = 0;
 
     if ((NULL == first) || (NULL == second))
     {
         return result;
     }
 
-    resultSize = strlen(first) + strlen(second) + 1;
+    firstLength = strlen(first);
+    secondLength = strlen(second);
+    resultSize = firstLength + secondLength + 1;
 
     if (NULL != (result = malloc(resultSize)))
     {
-        memset(result, 0, resultSize);
-        memcpy(result, first, strlen(first));
-        strncat(result, second, resultSize);
+        memcpy(result, first, firstLength);
+        memcpy(result + firstLength, second, secondLength + 1);
     }
 
     return result;
