@@ -115,7 +115,12 @@ jobs:
               --exclude '.*/modules/test/.*' \
               --exclude '.*/tests/.*' \
               --gcov-ignore-parse-errors
-            cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+            if [ -f module-test.log ]; then
+              cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+            else
+              echo "module-test.log not found; creating empty placeholder log"
+              : > ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+            fi
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
