@@ -7,18 +7,9 @@ add_library(commonutils STATIC
     CommandUtils.c
     ConfigUtils.c
     DaemonUtils.c
-    DeviceInfoUtils.c
     FileUtils.c
-    MountUtils.c
-    OtherUtils.c
-    PackageUtils.c
-    PassUtils.c
-    PerfUtils.c
-    ProxyUtils.c
     SocketUtils.c
-    SshUtils.c
-    UrlUtils.c
-    UserUtils.c)
+    StringUtils.c)
 
 target_include_directories(commonutils
     PUBLIC

@@ -4,14 +4,14 @@
 #include "Internal.h"
 
 #define MAX_DAEMON_NAME_LENGTH 256
+#define g_packageManagerTimeoutSeconds 1800
 
-// Valid systemd deamon name characters for us, not universal, add more here if necessary in the future
 static bool IsValidDaemonNameCharacter(char c)
 {
     return ((0 == isalnum(c)) && ('_' != c) && ('-' != c) && ('.' != c)) ? false : true;
 }
 
-bool IsValidDaemonName(const char *name)
+static bool IsValidDaemonName(const char *name)
 {
     size_t length = 0, i = 0;
     bool result = true;
@@ -64,49 +64,6 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
     return result;
 }
 
-bool IsDaemonActive(const char* daemonName, OsConfigLogHandle log)
-{
-    return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log))) ? true : false;
-}
-
-bool CheckDaemonActive(const char* daemonName, char** reason, OsConfigLogHandle log)
-{
-    bool result = false;
-
-    if (true == (result = IsDaemonActive(daemonName, log)))
-    {
-        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is active", daemonName);
-        OsConfigCaptureSuccessReason(reason, "Service '%s' is active", daemonName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
-        OsConfigCaptureReason(reason, "Service '%s' is inactive", daemonName);
-    }
-
-    return result;
-}
-
-bool CheckDaemonNotActive(const char* daemonName, char** reason, OsConfigLogHandle log)
-{
-    bool result = false;
-
-    if (true == IsDaemonActive(daemonName, log))
-    {
-        OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
-        OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
-        result = false;
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is inactive", daemonName);
-        OsConfigCaptureSuccessReason(reason, "Service '%s' is inactive", daemonName);
-        result = true;
-    }
-
-    return result;
-}
-
 static bool CommandDaemon(const char* command, const char* daemonName, OsConfigLogHandle log)
 {
     int result = 0;
@@ -132,12 +89,17 @@ static bool CommandDaemon(const char* command, const char* daemonName, OsConfigL
     return status;
 }
 
-bool EnableDaemon(const char* daemonName, OsConfigLogHandle log)
+bool IsDaemonActive(const char* daemonName, OsConfigLogHandle log)
+{
+    return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log))) ? true : false;
+}
+
+static bool EnableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("enable", daemonName, log);
 }
 
-bool StartDaemon(const char* daemonName, OsConfigLogHandle log)
+static bool StartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("start", daemonName, log);
 }
@@ -182,30 +144,39 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
     return status;
 }
 
-bool StopDaemon(const char* daemonName, OsConfigLogHandle log)
-{
-    return CommandDaemon("stop", daemonName, log);
-}
-
-bool DisableDaemon(const char* daemonName, OsConfigLogHandle log)
-{
-    return CommandDaemon("disable", daemonName, log);
-}
-
-void StopAndDisableDaemon(const char* daemonName, OsConfigLogHandle log)
-{
-    if (true == StopDaemon(daemonName, log))
-    {
-        DisableDaemon(daemonName, log);
-    }
-}
-
 bool RestartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("restart", daemonName, log);
 }
 
-bool MaskDaemon(const char* daemonName, OsConfigLogHandle log)
+int IsPresent(const char* what, OsConfigLogHandle log)
 {
-    return CommandDaemon("mask", daemonName, log);
+    const char* commandTemplate = "command -v %s";
+    char* command = NULL;
+    int status = ENOENT;
+
+    if (NULL == what)
+    {
+        OsConfigLogError(log, "IsPresent called with invalid argument");
+        OSConfigTelemetryStatusTrace("what", EINVAL);
+        return EINVAL;
+    }
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, what)))
+    {
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "'%s' is locally present", what);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "IsPresent: FormatAllocateString failed");
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
+        status = ENOMEM;
+    }
+
+    FREE_MEMORY(command);
+
+    return status;
 }
