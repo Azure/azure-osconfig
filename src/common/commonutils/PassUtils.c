@@ -206,6 +206,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     int deny = INT_ENOENT;
     int unlockTime = INT_ENOENT;
     long lineMax = sysconf(_SC_LINE_MAX);
+    bool foundUncommented = false;
     int status = ENOENT;
 
     if ((NULL == fileName) || (NULL == pamSo))
@@ -249,10 +250,12 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
-                status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
+
+            foundUncommented = true;
+
+            if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', '#', log))) && (0 == strcmp(authValue, required)) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', '#', 10, log))) && (deny <= 5) &&
                 (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', '#', 10, log))))
@@ -277,28 +280,35 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
         if (status)
         {
-            if (INT_ENOENT == deny)
+            if (false == foundUncommented)
             {
-                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
-                OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, pamSo);
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: all lines in '%s' are commented out or blank, no '%s' configuration is active",  fileName, pamSo);
+                OsConfigCaptureReason(reason, "All lines in '%s' are commented out or blank, no '%s' configuration is active", fileName, pamSo);
             }
             else
             {
-                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5",
-                    deny, fileName, pamSo);
-                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
-            }
+                if (INT_ENOENT == deny)
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
+                    OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, pamSo);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5",
+                        deny, fileName, pamSo);
+                    OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
+                }
 
-            if (INT_ENOENT == unlockTime)
-            {
-                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
-                OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a positive value",
-                    unlockTime, fileName, pamSo);
-                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a positive value", unlockTime, fileName, pamSo);
+                if (INT_ENOENT == unlockTime)
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
+                    OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a positive value", unlockTime, fileName, pamSo);
+                    OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a positive value", unlockTime, fileName, pamSo);
+                }
             }
         }
 
@@ -308,6 +318,93 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     FREE_MEMORY(line);
 
     return status;
+}
+
+static int GetFaillockConfIntegerOption(const char* fileName, const char* key, OsConfigLogHandle log)
+{
+    // Reads an integer 'key = value' setting from a configuration file using token-boundary matching,
+    // so that for example 'deny' does not match the unrelated key 'even_deny_root' and 'unlock_time'
+    // does not match 'root_unlock_time'. Returns INT_ENOENT when the file cannot be read, the key
+    // is absent or commented out, or the value cannot be parsed as an integer.
+
+    char* contents = NULL;
+    char* readCursor = NULL;
+    char* lineStart = NULL;
+    char* lineEnd = NULL;
+    char* firstNonWhitespace = NULL;
+    char* valueStart = NULL;
+    size_t keyLength = 0;
+    int result = INT_ENOENT;
+
+    if ((NULL == fileName) || (NULL == key))
+    {
+        OsConfigLogError(log, "GetFaillockConfIntegerOption: invalid arguments");
+        OSConfigTelemetryStatusTrace("fileName", EINVAL);
+        return INT_ENOENT;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogInfo(log, "GetFaillockConfIntegerOption: cannot read '%s'", fileName);
+        return INT_ENOENT;
+    }
+
+    keyLength = strlen(key);
+    readCursor = contents;
+
+    while (0 != *readCursor)
+    {
+        lineStart = readCursor;
+        lineEnd = strchr(readCursor, EOL);
+        if (NULL == lineEnd)
+        {
+            lineEnd = readCursor + strlen(readCursor);
+            readCursor = lineEnd;
+        }
+        else
+        {
+            readCursor = lineEnd + 1;
+        }
+
+        // Skip leading spaces and tabs to find the first significant character on the line.
+        firstNonWhitespace = lineStart;
+        while ((firstNonWhitespace < lineEnd) && ((' ' == *firstNonWhitespace) || (TAB == *firstNonWhitespace)))
+        {
+            firstNonWhitespace++;
+        }
+
+        // The line is a match when it is uncommented, long enough to contain 'key' and the first
+        // token is exactly 'key' (followed by end of line, whitespace, or '=').
+        if ((firstNonWhitespace < lineEnd) && ('#' != *firstNonWhitespace) &&
+            (((size_t)(lineEnd - firstNonWhitespace)) >= keyLength) &&
+            (0 == strncmp(firstNonWhitespace, key, keyLength)))
+        {
+            valueStart = firstNonWhitespace + keyLength;
+            if ((valueStart >= lineEnd) || (' ' == *valueStart) || (TAB == *valueStart) || ('=' == *valueStart))
+            {
+                // Skip the separator and any surrounding whitespace before the integer value.
+                while ((valueStart < lineEnd) && ((' ' == *valueStart) || (TAB == *valueStart) || ('=' == *valueStart)))
+                {
+                    valueStart++;
+                }
+
+                if (valueStart < lineEnd)
+                {
+                    result = (int)strtol(valueStart, NULL, 10);
+                    OsConfigLogInfo(log, "GetFaillockConfIntegerOption: '%s' set to %d in '%s'", key, result, fileName);
+                    break;
+                }
+            }
+        }
+    }
+
+    if (INT_ENOENT == result)
+    {
+        OsConfigLogInfo(log, "GetFaillockConfIntegerOption: '%s' not set uncommented in '%s'", key, fileName);
+    }
+
+    FREE_MEMORY(contents);
+    return result;
 }
 
 int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, const char* faillockConf, char** reason, OsConfigLogHandle log)
@@ -354,7 +451,7 @@ int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, co
         return ENOENT;
     }
 
-    if (INT_ENOENT != (denyValue = GetIntegerOptionFromFile(faillockConf, deny, '=', '#', 10, log)))
+    if (INT_ENOENT != (denyValue = GetFaillockConfIntegerOption(faillockConf, deny, log)))
     {
         if (denyValue > maxDeny)
         {
@@ -372,7 +469,7 @@ int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, co
         denyValue = defaultDeny;
     }
 
-    if (INT_ENOENT != (unlockTimeValue = GetIntegerOptionFromFile(faillockConf, unlockTime, '=', '#', 10, log)))
+    if (INT_ENOENT != (unlockTimeValue = GetFaillockConfIntegerOption(faillockConf, unlockTime, log)))
     {
         if (unlockTimeValue <= 0)
         {

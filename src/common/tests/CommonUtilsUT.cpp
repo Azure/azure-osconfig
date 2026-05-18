@@ -1991,14 +1991,11 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
         "auth required pam_faillock.so deny=3 unlock_time=600",
         "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",
-        "# comment line",
         "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
         "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
         "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
         "auth required pam_tally2.so file=/var/log/tallylog     deny=3 unlock_time=555",
         "auth required pam_tally2.so file=/var/log/tallylog deny=3     even_deny_root unlock_time=12",
-        "# comment line",
-        "# comment line",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4    unlock_time=3000",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4 even_deny_root     unlock_time=1",
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
@@ -2033,7 +2030,10 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
         "auth	requisite			pam_deny.so\n"
         "auth	required			pam_permit.so\n"
-        "auth	optional			pam_cap.so\n"
+        "auth	optional			pam_cap.so\n",
+        "# comment line",
+        "# first comment line\n# second comment line\n# third comment line\n",
+        "\n\n\n"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
@@ -2213,7 +2213,7 @@ TEST_F(CommonUtilsTest, SetLockoutForFailedPasswordAttemptsViaFaillockConf)
         "# Lock-out period in seconds for non-root.\n"
         "unlock_time = 60\n"
         "even_deny_root\n"
-        "root_unlock_time = 60\n"
+        "root_unlock_time = 77\n"
         "fail_interval = 900\n";
     EXPECT_TRUE(CreateTestFile(m_path2, originalWithBothKeys));
     EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
@@ -2221,7 +2221,7 @@ TEST_F(CommonUtilsTest, SetLockoutForFailedPasswordAttemptsViaFaillockConf)
     EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
     EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
     EXPECT_NE(nullptr, strstr(contents, "even_deny_root\n"));
-    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 60\n"));
+    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 77\n"));
     EXPECT_NE(nullptr, strstr(contents, "fail_interval = 900\n"));
     EXPECT_EQ(nullptr, strstr(contents, "deny = 10"));
     EXPECT_EQ(nullptr, strstr(contents, "unlock_time = 60\n"));
