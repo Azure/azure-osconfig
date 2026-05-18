@@ -119,7 +119,7 @@ jobs:
               cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
             else
               echo "module-test.log not found; creating empty placeholder log"
-              : > ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+              touch ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
             fi
 
       - uses: actions/upload-artifact@v4
