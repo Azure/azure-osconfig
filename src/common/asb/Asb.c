@@ -490,6 +490,8 @@ static const char* g_etcPasswdDash = "/etc/passwd-";
 static const char* g_etcPamdPasswordAuth = "/etc/pam.d/password-auth";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdLogin = "/etc/pam.d/login";
+static const char* g_etcPamdCommonAuth = "/etc/pam.d/common-auth";
+static const char* g_etcSecurityFaillockConf = "/etc/security/faillock.conf";
 static const char* g_etcGroup = "/etc/group";
 static const char* g_etcGroupDash = "/etc/group-";
 static const char* g_etcAnacronTab = "/etc/anacrontab";
@@ -2082,19 +2084,41 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     const char* pamFailLockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
     const char* pamTallySo = "pam_tally.so";
+    const char* const pamFiles[] = { g_etcPamdSystemAuth, g_etcPamdPasswordAuth, g_etcPamdLogin, g_etcPamdCommonAuth };
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log));
+
+    // Path selection uses the shared CheckPamFaillockModernModelInUse helper so that audit
+    // and remediation observe the same gate. The modern path (check 'faillock.conf' values,
+    // ignore inline options) is taken if AND ONLY IF both 'faillock.conf' is present and
+    // 'pam_faillock.so' is referenced uncommented in at least one of the inspected PAM
+    // stack files. Otherwise the legacy path runs and checks inline options on the PAM line
+    // for 'pam_faillock.so', 'pam_tally2.so' and 'pam_tally.so' in turn.
+    if (0 == CheckPamFaillockModernModelInUse(pamFiles, (unsigned int)ARRAY_SIZE(pamFiles), g_etcSecurityFaillockConf, log))
+    {
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdSystemAuth, g_etcSecurityFaillockConf, &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdPasswordAuth, g_etcSecurityFaillockConf, &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdLogin, g_etcSecurityFaillockConf, &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdCommonAuth, g_etcSecurityFaillockConf, &reason, log));
+    }
+    else
+    {
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdCommonAuth, pamFailLockSo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdCommonAuth, pamTally2So, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log));
+        RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdCommonAuth, pamTallySo, '#', &reason, log));
+    }
+
     FREE_MEMORY(reason);
-    reason = DuplicateString("Neither pam_faillock.so, pam_tally2.so or pam_tally.so PAM modules exist for this distribution. "
-        "Manually set lockout for failed password attempts following specific instructions for this distrubution. Automatic remediation is not possible");
+    reason = DuplicateString("Neither pam_faillock.so, pam_tally2.so or pam_tally.so PAM modules are configured for failed-login lockout on this system. "
+        "Manually set lockout for failed password attempts following specific instructions for this distribution. Automatic remediation is not possible");
     return reason;
 }
 
