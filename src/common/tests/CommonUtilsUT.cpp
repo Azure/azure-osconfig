@@ -2328,8 +2328,6 @@ TEST_F(CommonUtilsTest, CheckPamFaillockModernModelInUse)
     EXPECT_TRUE(Cleanup(m_path));
 
     // faillock.conf exists but NO PAM file references pam_faillock.so -> ENOENT.
-    // (This is the Debian 11 / SLES 15 / RHEL 8 CI image scenario: faillock.conf ships with
-    // the PAM package but the stack is not wired.)
     EXPECT_TRUE(CreateTestFile(m_path4, faillockConfCompliant));
     EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
 

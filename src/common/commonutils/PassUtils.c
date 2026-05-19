@@ -689,27 +689,27 @@ int SetLockoutForFailedPasswordAttemptsViaFaillockConf(const char* faillockConf,
 
 int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int numPamFiles, const char* faillockConf, OsConfigLogHandle log)
 {
-    // Detection gate for the Linux-PAM 1.4.0+ ('modern') faillock configuration model.
+    // Returns 0 if the Linux-PAM 1.4.0+ ('modern') faillock configuration model is active on
+    // this system, ENOENT otherwise, EINVAL on invalid arguments.
     //
-    // The modern model is in use on this system if AND ONLY IF BOTH of the following hold:
+    // The modern model is considered active if AND ONLY IF BOTH signals are present:
     //
     //   1. The system-wide faillock configuration file (typically '/etc/security/faillock.conf')
-    //      exists - so pam_faillock.so will read 'deny' and 'unlock_time' from it.
+    //      exists, so 'pam_faillock.so' has somewhere to read 'deny' and 'unlock_time' from.
     //   2. 'pam_faillock.so' is referenced uncommented in at least one of the inspected PAM
-    //      stack files - so the module is actually loaded by PAM at authentication time.
+    //      stack files, so the module is actually loaded by PAM at authentication time.
     //
-    // Condition (1) alone is not sufficient: distributions such as Debian 11, SLES 15 and the
-    // stock RHEL 8 CI images ship '/etc/security/faillock.conf' via the PAM package even when
-    // 'pam_faillock.so' is not wired into the PAM stack at all. Treating (1) as the sole gate
-    // makes the audit and the remediation disagree on which path is viable for those systems:
-    // the modern-only remediation writes faillock.conf but never the PAM stack, then the audit
-    // requires both signals and fails. The 'remediation OK => audit OK' invariant requires
-    // that both functions select the same path for the same system state, which is what this
-    // helper enforces.
+    // Signal (1) alone is not sufficient. The configuration file can be present on a system
+    // (shipped by a PAM package or left over from a previous configuration) while the PAM
+    // stack is wired to a different lockout mechanism or no lockout at all. Both signals must
+    // be observed together before treating the modern model as active.
     //
-    // Returns 0 on success (modern model in use), ENOENT if either signal is missing, EINVAL
-    // on invalid arguments. 'reason' is intentionally not surfaced - this is a path-selection
-    // helper, not an audit, so it never contributes to user-facing compliance text.
+    // This is the shared path-selection helper used by the audit and remediation entry points
+    // for this rule: both must select the same code path for the same on-disk state, otherwise
+    // the 'remediation succeeded => audit succeeds' invariant cannot be guaranteed.
+    //
+    // 'reason' is intentionally not surfaced - this is a path-selection helper, not an audit,
+    // so it never contributes to user-facing compliance text.
 
     static const char* pamFaillockSo = "pam_faillock.so";
     unsigned int i = 0;
@@ -723,6 +723,7 @@ int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int n
 
     if (0 != CheckFileExists(faillockConf, NULL, log))
     {
+        OsConfigLogInfo(log, "CheckPamFaillockModernModelInUse: '%s' does not exist, modern faillock model is not active", faillockConf);
         return ENOENT;
     }
 
@@ -732,10 +733,14 @@ int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int n
             (0 == CheckFileExists(pamFiles[i], NULL, log)) &&
             (0 == CheckLineFoundNotCommentedOut(pamFiles[i], '#', pamFaillockSo, NULL, log)))
         {
+            OsConfigLogInfo(log, "CheckPamFaillockModernModelInUse: '%s' is referenced uncommented in '%s' and '%s' exists, modern faillock model is active",
+                pamFaillockSo, pamFiles[i], faillockConf);
             return 0;
         }
     }
 
+    OsConfigLogInfo(log, "CheckPamFaillockModernModelInUse: '%s' exists but '%s' is not referenced uncommented in any inspected PAM stack file, modern faillock model is not active",
+        faillockConf, pamFaillockSo);
     return ENOENT;
 }
 
@@ -785,17 +790,11 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 
     EnsurePamModulePackagesAreInstalled(log);
 
-    // Use the SAME gate that AuditEnsureLockoutForFailedPasswordAttempts uses. This is the
-    // architectural contract: audit and remediation must select the same code path for the
-    // same system state, otherwise the 'remediation OK => audit OK' invariant can fail.
-    //
-    // The presence of '/etc/security/faillock.conf' alone is NOT sufficient to take the
-    // modern path. On Debian 11, SLES 15 and stock RHEL 8 CI images the PAM package ships
-    // faillock.conf but pam_faillock.so is not wired into the PAM stack. In that state the
-    // modern remediation (which deliberately leaves the PAM stack alone) would write only
-    // faillock.conf, and the subsequent audit would correctly report that pam_faillock.so is
-    // not loaded - leading to the exact 'remediation passes, audit fails' regression that
-    // motivated this gate.
+    // Path selection uses the shared CheckPamFaillockModernModelInUse helper so that audit
+    // and remediation observe the same gate. The modern path (write 'faillock.conf' only,
+    // leave the PAM stack untouched) is taken if AND ONLY IF both 'faillock.conf' is present
+    // and 'pam_faillock.so' is already referenced uncommented in at least one of the PAM
+    // stack files. Otherwise the legacy path runs and edits the PAM stack directly.
     if (0 == CheckPamFaillockModernModelInUse(pamConfigurations, (unsigned int)numPamConfigurations, g_etcSecurityFaillockConf, log))
     {
         status = SetLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcSecurityFaillockConf, desiredDeny, desiredUnlockTime, log);
@@ -866,15 +865,13 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
         }
     }
 
-    // Belt-and-suspenders for Linux-PAM 1.4.0+ systems that landed on the legacy path because
-    // 'pam_faillock.so' was not yet wired into the PAM stack (e.g., stock Debian 11 / SLES 15
-    // / RHEL 8 CI images that ship faillock.conf via the PAM package). The for-loop above just
-    // wired 'pam_faillock.so' into PAM, so the next AuditEnsureLockoutForFailedPasswordAttempts
-    // invocation will pick the modern path via CheckPamFaillockModernModelInUse. On those
-    // systems pam_faillock.so reads 'deny' and 'unlock_time' from faillock.conf, NOT from the
-    // inline options written on the PAM line - so the modern audit would fail if faillock.conf
-    // held non-compliant values (e.g., 'deny = 10' shipped by the distro). Update faillock.conf
-    // here so audit and remediation stay symmetric on the very next scan.
+    // On systems that ship 'faillock.conf' but reach this branch because 'pam_faillock.so'
+    // was not yet wired into the PAM stack, the loop above just wired it. 'pam_faillock.so'
+    // reads 'deny' and 'unlock_time' from 'faillock.conf' (not from the inline options on
+    // the PAM line) whenever 'faillock.conf' is present, so update 'faillock.conf' here as
+    // well. Without this, a subsequent audit invocation - which will now observe both
+    // signals and therefore evaluate the modern path - could see non-compliant values left
+    // in 'faillock.conf' by the previous system state.
     if ((ENOMEM != status) && (0 == CheckFileExists(g_etcSecurityFaillockConf, NULL, log)))
     {
         _status = SetLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcSecurityFaillockConf, desiredDeny, desiredUnlockTime, log);
@@ -882,7 +879,17 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
         {
             status = _status;
         }
-        OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: legacy path also wrote faillock.conf for forward compatibility, returning %d", status);
+
+        if (0 == _status)
+        {
+            OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: legacy path also wrote 'deny' and 'unlock_time' to '%s', returning %d",
+                g_etcSecurityFaillockConf, status);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: legacy path attempted to update '%s' but the write returned %d, overall status %d",
+                g_etcSecurityFaillockConf, _status, status);
+        }
     }
 
     return status;

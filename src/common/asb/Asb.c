@@ -2087,16 +2087,12 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     const char* const pamFiles[] = { g_etcPamdSystemAuth, g_etcPamdPasswordAuth, g_etcPamdLogin, g_etcPamdCommonAuth };
     char* reason = NULL;
 
-    // Use CheckPamFaillockModernModelInUse as the SAME gate that SetLockoutForFailedPasswordAttempts
-    // uses. This is the architectural contract for this rule: audit and remediation must select
-    // the same code path for the same system state, otherwise the 'remediation OK => audit OK'
-    // invariant can fail.
-    //
-    // The presence of '/etc/security/faillock.conf' alone is NOT sufficient to take the modern
-    // path. Debian 11, SLES 15 and stock RHEL 8 CI images ship faillock.conf via their PAM
-    // package even when pam_faillock.so is not wired into the PAM stack at all. The gate also
-    // requires pam_faillock.so to be referenced uncommented in at least one of the inspected
-    // PAM stack files - i.e., the modern model must actually be active end-to-end.
+    // Path selection uses the shared CheckPamFaillockModernModelInUse helper so that audit
+    // and remediation observe the same gate. The modern path (check 'faillock.conf' values,
+    // ignore inline options) is taken if AND ONLY IF both 'faillock.conf' is present and
+    // 'pam_faillock.so' is referenced uncommented in at least one of the inspected PAM
+    // stack files. Otherwise the legacy path runs and checks inline options on the PAM line
+    // for 'pam_faillock.so', 'pam_tally2.so' and 'pam_tally.so' in turn.
     if (0 == CheckPamFaillockModernModelInUse(pamFiles, (unsigned int)ARRAY_SIZE(pamFiles), g_etcSecurityFaillockConf, log))
     {
         RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdSystemAuth, g_etcSecurityFaillockConf, &reason, log));
