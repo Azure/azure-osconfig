@@ -2084,15 +2084,20 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     const char* pamFailLockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
     const char* pamTallySo = "pam_tally.so";
+    const char* const pamFiles[] = { g_etcPamdSystemAuth, g_etcPamdPasswordAuth, g_etcPamdLogin, g_etcPamdCommonAuth };
     char* reason = NULL;
 
-    // When '/etc/security/faillock.conf' is present on the system the PAM module
-    // 'pam_faillock.so' (introduced in Linux-PAM 1.4.0) reads 'deny' and 'unlock_time'
-    // from that file, not from inline options on the PAM line. Verify the modern model
-    // first when that file exists; fall back to the legacy inline-options checks
-    // otherwise, preserving the audit behaviour on systems that have shipped without
-    // '/etc/security/faillock.conf' since this rule was introduced.
-    if (0 == CheckFileExists(g_etcSecurityFaillockConf, NULL, log))
+    // Use CheckPamFaillockModernModelInUse as the SAME gate that SetLockoutForFailedPasswordAttempts
+    // uses. This is the architectural contract for this rule: audit and remediation must select
+    // the same code path for the same system state, otherwise the 'remediation OK => audit OK'
+    // invariant can fail.
+    //
+    // The presence of '/etc/security/faillock.conf' alone is NOT sufficient to take the modern
+    // path. Debian 11, SLES 15 and stock RHEL 8 CI images ship faillock.conf via their PAM
+    // package even when pam_faillock.so is not wired into the PAM stack at all. The gate also
+    // requires pam_faillock.so to be referenced uncommented in at least one of the inspected
+    // PAM stack files - i.e., the modern model must actually be active end-to-end.
+    if (0 == CheckPamFaillockModernModelInUse(pamFiles, (unsigned int)ARRAY_SIZE(pamFiles), g_etcSecurityFaillockConf, log))
     {
         RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdSystemAuth, g_etcSecurityFaillockConf, &reason, log));
         RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttemptsViaFaillockConf(g_etcPamdPasswordAuth, g_etcSecurityFaillockConf, &reason, log));

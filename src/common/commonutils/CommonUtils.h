@@ -124,6 +124,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, OsCon
 int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log);
 int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, const char* faillockConf, char** reason, OsConfigLogHandle log);
+int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int numPamFiles, const char* faillockConf, OsConfigLogHandle log);
 int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log);
 int SetLockoutForFailedPasswordAttemptsViaFaillockConf(const char* faillockConf, int deny, int unlockTime, OsConfigLogHandle log);
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log);

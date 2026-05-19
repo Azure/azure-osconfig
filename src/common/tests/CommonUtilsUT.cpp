@@ -2288,6 +2288,79 @@ TEST_F(CommonUtilsTest, SetLockoutForFailedPasswordAttemptsViaFaillockConf)
     EXPECT_TRUE(Cleanup(m_path2));
 }
 
+TEST_F(CommonUtilsTest, CheckPamFaillockModernModelInUse)
+{
+    // This is the shared 'is the Linux-PAM 1.4.0+ faillock model in use end-to-end' gate that
+    // both AuditEnsureLockoutForFailedPasswordAttempts and SetLockoutForFailedPasswordAttempts
+    // must agree on. The rule it encodes:
+    //
+    //   - faillock.conf MUST exist  AND
+    //   - 'pam_faillock.so' MUST be referenced uncommented in at least one of the supplied
+    //     PAM files
+    //
+    // -> only when both signals are present is the modern model active and the modern
+    // remediation (write faillock.conf only, don't touch the PAM stack) safe.
+
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+    const char* pamWithoutFaillock =
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_deny.so\n";
+    const char* pamWithFaillockCommented =
+        "# auth      required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n";
+    const char* faillockConfCompliant =
+        "deny = 3\n"
+        "unlock_time = 900\n";
+    const char* const fourPamFiles[] = { m_path, m_path2, m_path3, m_path4 };
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(nullptr, 4, "/tmp/whatever", nullptr));
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(fourPamFiles, 0, "/tmp/whatever", nullptr));
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(fourPamFiles, 4, nullptr, nullptr));
+
+    // faillock.conf missing -> ENOENT regardless of PAM state.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, "~file_that_does_not_exist", nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // faillock.conf exists but NO PAM file references pam_faillock.so -> ENOENT.
+    // (This is the Debian 11 / SLES 15 / RHEL 8 CI image scenario: faillock.conf ships with
+    // the PAM package but the stack is not wired.)
+    EXPECT_TRUE(CreateTestFile(m_path4, faillockConfCompliant));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+
+    // faillock.conf exists; only the LAST inspected PAM file references pam_faillock.so -> 0.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path3, pamWithFaillock));
+    EXPECT_EQ(0, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+    EXPECT_TRUE(Cleanup(m_path3));
+
+    // faillock.conf exists; pam_faillock.so is present BUT commented out -> ENOENT.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path2, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path3, pamWithFaillockCommented));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+    EXPECT_TRUE(Cleanup(m_path3));
+
+    // faillock.conf exists; only the FIRST inspected PAM file references pam_faillock.so -> 0.
+    // (Other PAM files don't even need to exist.)
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(0, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Cleanup the conf file.
+    EXPECT_TRUE(Cleanup(m_path4));
+}
+
 TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 {
     const char* expected = "\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n";
