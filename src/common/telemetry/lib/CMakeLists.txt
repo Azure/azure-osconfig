@@ -75,8 +75,8 @@ if(DEFINED ENV{OsConfigTelemetryApiKey} AND NOT "$ENV{OsConfigTelemetryApiKey}" 
     set(OsConfigTelemetryApiKey $ENV{OsConfigTelemetryApiKey})
     message(STATUS "Using OsConfigTelemetryApiKey from environment variable")
 else()
-    message(WARNING "OsConfigTelemetryApiKey not set, using default value")
-    set(OsConfigTelemetryApiKey "999999999999999999999999999999999-999999999-9999-9999-9999-999999999999-9999")
+    message(FATAL_ERROR "Telemetry enabled but missing OsConfigTelemetryApiKey environment variable")
+    return()
 endif()
 configure_file(Keys.h.in ${CMAKE_CURRENT_BINARY_DIR}/Keys.h @ONLY)
 
