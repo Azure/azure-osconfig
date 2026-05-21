@@ -62,10 +62,10 @@ add_executable(complianceenginetests
     BindingsTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
-    FilesystemScannerTest.cpp
     DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
+    FilesystemScannerTest.cpp
     LuaEvaluatorTest.cpp
     LuaProceduresTest.cpp
     NetworkToolsTest.cpp
@@ -73,6 +73,8 @@ add_executable(complianceenginetests
     RegexFallbackTest.cpp
     RegexTest.cpp
     ResultTest.cpp
+    StringToolsTest.cpp
+    UsersIteratorTest.cpp
     ${PROCEDURES}
 )
 # for ProcedureMap.h

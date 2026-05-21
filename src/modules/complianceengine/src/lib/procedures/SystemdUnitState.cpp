@@ -3,6 +3,7 @@
 
 #include <CommonUtils.h>
 #include <Regex.h>
+#include <StringTools.h>
 #include <SystemdUnitState.h>
 #include <Telemetry.h>
 #include <algorithm>
@@ -61,7 +62,7 @@ Result<Status> AuditSystemdUnitState(const SystemdUnitStateParams& params, Indic
     {
         setParamValue(queryParams[3], params.unit.Value());
     }
-    systemCtlCmd += params.unitName;
+    systemCtlCmd += "\"" + EscapeForShell(params.unitName) + "\"";
 
     if (!argFound)
     {
