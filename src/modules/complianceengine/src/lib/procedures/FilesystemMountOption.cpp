@@ -2,6 +2,7 @@
 
 #include <CommonUtils.h>
 #include <FilesystemMountOption.h>
+#include <StringTools.h>
 #include <algorithm>
 #include <ctime>
 #include <fstream>
@@ -247,8 +248,15 @@ Result<Status> RemediateFilesystemMountOption(const FilesystemMountOptionParams&
     {
         if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[params.mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            std::string command = context.GetSpecialFilePath("/sbin/mount") + " -o remount " + params.mountpoint;
-            system(command.c_str());
+            // Security: Escape mountpoint to prevent command injection
+            // Note: test_mount is a fixed path from params (e.g., "/usr/bin/mount") validated by schema
+            std::string escapedMountpoint = EscapeForShell(params.mountpoint);
+            std::string command = context.GetSpecialFilePath("/sbin/mount") + " -o remount \"" + escapedMountpoint + "\"";
+            auto result = context.ExecuteCommand(command);
+            if (!result.HasValue())
+            {
+                return Error("Failed to remount " + params.mountpoint + ": " + result.Error().message, result.Error().code);
+            }
             indicators.Compliant("Remounted " + params.mountpoint + " with options: " + command);
         }
     }

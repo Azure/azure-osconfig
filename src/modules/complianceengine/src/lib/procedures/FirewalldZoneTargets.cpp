@@ -60,8 +60,11 @@ Result<Status> AuditFirewalldZoneTargets(IndicatorsTree& indicators, ContextInte
 
     for (const auto& zone : zones)
     {
+        // Zone names come from firewall-cmd output but could theoretically contain shell metacharacters
+        auto escapedZone = EscapeForShell(zone);
+
         // Get interfaces for this zone
-        auto ifResult = context.ExecuteCommand("firewall-cmd --zone=" + zone + " --list-interfaces");
+        auto ifResult = context.ExecuteCommand("firewall-cmd --zone=\"" + escapedZone + "\" --list-interfaces");
         if (!ifResult.HasValue())
         {
             return indicators.NonCompliant("Failed to get interfaces for zone \"" + zone + "\": " + ifResult.Error().message);
@@ -89,7 +92,7 @@ Result<Status> AuditFirewalldZoneTargets(IndicatorsTree& indicators, ContextInte
         }
 
         // Get the permanent target
-        auto ptargetResult = context.ExecuteCommand("firewall-cmd --permanent --zone=" + zone + " --get-target");
+        auto ptargetResult = context.ExecuteCommand("firewall-cmd --permanent --zone=\"" + escapedZone + "\" --get-target");
         if (!ptargetResult.HasValue())
         {
             return indicators.NonCompliant("Failed to get permanent target for zone \"" + zone + "\": " + ptargetResult.Error().message);
@@ -97,7 +100,7 @@ Result<Status> AuditFirewalldZoneTargets(IndicatorsTree& indicators, ContextInte
         std::string permanentTarget = TrimWhiteSpaces(ptargetResult.Value());
 
         // Get the runtime target from --list-all output by parsing the "target:" line
-        auto listAllResult = context.ExecuteCommand("firewall-cmd --list-all --zone=" + zone);
+        auto listAllResult = context.ExecuteCommand("firewall-cmd --list-all --zone=\"" + escapedZone + "\"");
         if (!listAllResult.HasValue())
         {
             return indicators.NonCompliant("Failed to execute firewall-cmd --list-all for zone \"" + zone + "\": " + listAllResult.Error().message);

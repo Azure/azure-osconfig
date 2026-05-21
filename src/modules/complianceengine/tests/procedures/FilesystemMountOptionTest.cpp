@@ -7,6 +7,7 @@
 #include <FilesystemMountOption.h>
 #include <dirent.h>
 #include <fstream>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <linux/limits.h>
 #include <string>
@@ -19,6 +20,7 @@ using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::RemediateFilesystemMountOption;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
+using ::testing::Return;
 
 class EnsureFilesystemOptionTest : public ::testing::Test
 {
@@ -114,6 +116,8 @@ TEST_F(EnsureFilesystemOptionTest, RemediateFilesystemMountOption)
     params.optionsSet = {{"rw", "noatime"}};
     params.optionsNotSet = {{"relatime"}};
     mContext.SetSpecialFilePath("/sbin/mount", "touch " + dir + " /remounted;/bin/true ");
+
+    EXPECT_CALL(mContext, ExecuteCommand("touch " + dir + " /remounted;/bin/true  -o remount \"/home\"")).WillOnce(Return(Result<std::string>("")));
 
     auto result = RemediateFilesystemMountOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());

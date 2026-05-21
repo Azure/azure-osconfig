@@ -79,9 +79,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_DefaultTarget_ReturnsCom
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n"
                                              "  target: default\n"
                                              "  icmp-block-inversion: no\n"
@@ -107,9 +108,9 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_DropTarget_MatchesPerman
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("drop\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=drop --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=drop --get-target")).WillOnce(Return(Result<std::string>("DROP")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=drop"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"drop\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"drop\" --get-target")).WillOnce(Return(Result<std::string>("DROP")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"drop\""))
         .WillOnce(Return(Result<std::string>("drop (active)\n  target: DROP\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -122,9 +123,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_RejectTarget_MatchesPerm
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("%%REJECT%%")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("%%REJECT%%")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: %%REJECT%%\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -139,9 +141,9 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_TargetAccept_ReturnsNonC
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("ACCEPT")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target")).WillOnce(Return(Result<std::string>("ACCEPT")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: ACCEPT\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -154,9 +156,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_EmptyTarget_ReturnsNonCo
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -169,9 +172,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, SingleZone_TargetMismatch_ReturnsNo
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: DROP\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -186,7 +190,7 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, ListInterfacesFails_ReturnsNonCompl
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Error("command failed", 1)));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Error("command failed", 1)));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
 
@@ -198,8 +202,8 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, GetPermanentTargetFails_ReturnsNonC
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Error("command failed", 1)));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target")).WillOnce(Return(Error("command failed", 1)));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
 
@@ -211,9 +215,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, ListAllFails_ReturnsNonCompliant)
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public")).WillOnce(Return(Error("command failed", 1)));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\"")).WillOnce(Return(Error("command failed", 1)));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
 
@@ -227,7 +232,7 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, LoopbackInterface_Skipped_ReturnsCo
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("trusted\n  interfaces: lo\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=trusted --list-interfaces")).WillOnce(Return(Result<std::string>("lo")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"trusted\" --list-interfaces")).WillOnce(Return(Result<std::string>("lo")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
 
@@ -240,7 +245,7 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, VirtualBridgeInterface_Skipped_Retu
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones"))
         .WillOnce(Return(Result<std::string>("trusted\n  interfaces: virbr0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=trusted --list-interfaces")).WillOnce(Return(Result<std::string>("virbr0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"trusted\" --list-interfaces")).WillOnce(Return(Result<std::string>("virbr0")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
 
@@ -253,9 +258,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, MixedInterfacesIncludingNonLoopback
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones"))
         .WillOnce(Return(Result<std::string>("public\n  interfaces: lo eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("lo eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("lo eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: lo eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -272,14 +278,16 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, MultipleZones_AllCompliant_ReturnsC
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones"))
         .WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\ninternal\n  interfaces: eth1\n")));
 
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: eth0\n")));
 
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=internal --list-interfaces")).WillOnce(Return(Result<std::string>("eth1")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=internal --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=internal"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"internal\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth1")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"internal\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"internal\""))
         .WillOnce(Return(Result<std::string>("internal (active)\n  target: default\n  interfaces: eth1\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -295,15 +303,17 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, MultipleZones_SecondNonCompliant_Re
         .WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\ninternal\n  interfaces: eth1\n")));
 
     // Public zone - compliant
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: eth0\n")));
 
     // Internal zone - non-compliant (target is ACCEPT)
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=internal --list-interfaces")).WillOnce(Return(Result<std::string>("eth1")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=internal --get-target")).WillOnce(Return(Result<std::string>("ACCEPT")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=internal"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"internal\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth1")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"internal\" --get-target"))
+        .WillOnce(Return(Result<std::string>("ACCEPT")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"internal\""))
         .WillOnce(Return(Result<std::string>("internal (active)\n  target: ACCEPT\n  interfaces: eth1\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -319,12 +329,13 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, MultipleZones_LoopbackSkipped_Other
         .WillOnce(Return(Result<std::string>("trusted\n  interfaces: lo\npublic\n  interfaces: eth0\n")));
 
     // Trusted zone - loopback, should be skipped
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=trusted --list-interfaces")).WillOnce(Return(Result<std::string>("lo")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"trusted\" --list-interfaces")).WillOnce(Return(Result<std::string>("lo")));
 
     // Public zone - compliant
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -339,9 +350,9 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, CaseInsensitive_AcceptLowercase_Ret
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("accept")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target")).WillOnce(Return(Result<std::string>("accept")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: accept\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -354,9 +365,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, CaseInsensitive_TargetMatchesPerman
 {
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones")).WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("Default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("Default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);
@@ -372,9 +384,10 @@ TEST_F(EnsureFirewalldActiveZoneTargetsTest, ZonesOutputWithSources_ParsedCorrec
     EXPECT_CALL(mockContext, ExecuteCommand("systemctl is-active firewalld.service")).WillOnce(Return(Result<std::string>("active")));
     EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --get-active-zones"))
         .WillOnce(Return(Result<std::string>("public\n  interfaces: eth0\n  sources: 10.0.0.0/24\n")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=public --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=public --get-target")).WillOnce(Return(Result<std::string>("default")));
-    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=public"))
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --zone=\"public\" --list-interfaces")).WillOnce(Return(Result<std::string>("eth0")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --permanent --zone=\"public\" --get-target"))
+        .WillOnce(Return(Result<std::string>("default")));
+    EXPECT_CALL(mockContext, ExecuteCommand("firewall-cmd --list-all --zone=\"public\""))
         .WillOnce(Return(Result<std::string>("public (active)\n  target: default\n  interfaces: eth0\n")));
 
     auto result = AuditFirewalldZoneTargets(indicators, mockContext);

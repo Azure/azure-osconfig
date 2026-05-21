@@ -69,7 +69,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateAnyMatch)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=inactive\n";
 
@@ -90,7 +90,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateNotMatch)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=inactive\n";
 
@@ -111,7 +111,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateNoOuptu)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "NotanActiveStateActiveState=inactive\n";
 
@@ -132,7 +132,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActive)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=active\n";
 
@@ -157,7 +157,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateAny)
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=active\nLoadState=masked";
 
@@ -182,7 +182,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateNotPresent)
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=active\nExtraState=foo\n";
 
@@ -207,7 +207,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMasked)
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=active\nLoadState=masked\n";
 
@@ -236,7 +236,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
     executeCmd += "-p UnitFileState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=active\nLoadState=masked\nUnitFileState=masked";
 
@@ -265,7 +265,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
     executeCmd += "-p UnitFileState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "LoadState=masked\nUnitFileState=masked\nActiveState=active";
 
@@ -294,7 +294,7 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     executeCmd += "-p ActiveState ";
     executeCmd += "-p LoadState ";
     executeCmd += "-p UnitFileState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "LoadState=masked\nNotAnUnitFileState=masked\nActiveState=active";
 
@@ -315,7 +315,7 @@ TEST_F(SystemdUnitStateTest, argTestUnit)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p Unit ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "Unit=foo.service\n";
 
@@ -336,7 +336,7 @@ TEST_F(SystemdUnitStateTest, partialMatchFails)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=inactive";
 
@@ -356,7 +356,7 @@ TEST_F(SystemdUnitStateTest, partialMatchSucceeds)
 
     auto executeCmd = systemCtlCmd;
     executeCmd += "-p ActiveState ";
-    executeCmd += params.unitName;
+    executeCmd += "\"" + params.unitName + "\"";
 
     std::string fooServceAnyOutput = "ActiveState=inactive";
 

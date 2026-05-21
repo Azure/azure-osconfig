@@ -12,10 +12,60 @@
 
 namespace ComplianceEngine
 {
+// Valid sysctl names contain only alphanumeric characters, dots, underscores, hyphens, and forward slashes.
+// Forward slashes are valid in some sysctl naming conventions (e.g., fs.binfmt_misc.python3/10).
+// Path traversal is still prevented by the ".." check below.
+static bool IsValidSysctlName(const std::string& name)
+{
+    if (name.empty())
+    {
+        return false;
+    }
+
+    // Check for path traversal patterns
+    if (name.find("..") != std::string::npos)
+    {
+        return false;
+    }
+
+    // Validate characters: only allow alphanumeric, dots, underscores, hyphens, and forward slashes
+    static const regex validPattern("^[a-zA-Z0-9._/-]+$");
+    return regex_match(name, validPattern);
+}
+
+// File paths must be absolute and not contain path traversal sequences
+static bool IsValidFilePath(const std::string& path)
+{
+    if (path.empty())
+    {
+        return false;
+    }
+
+    // Must be absolute path
+    if (path[0] != '/')
+    {
+        return false;
+    }
+
+    // Check for path traversal patterns
+    if (path.find("..") != std::string::npos)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
     std::string procfsLocation = "/proc/sys";
+
+    if (!IsValidSysctlName(params.sysctlName))
+    {
+        OsConfigLogError(log, "Invalid sysctl name (possible path traversal attempt): %s", params.sysctlName.c_str());
+        return Error("Invalid sysctl name: " + params.sysctlName, EINVAL);
+    }
 
     auto sysctlPath = params.sysctlName;
     std::replace(sysctlPath.begin(), sysctlPath.end(), '.', '/');
@@ -188,7 +238,15 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     {
         return indicators.NonCompliant("Failed to find IPT_SYSCTL in /etc/default/ufw");
     }
-    auto sysctlContents = context.GetFileContents(TrimWhiteSpaces(sysctlFile));
+
+    std::string trimmedSysctlFile = TrimWhiteSpaces(sysctlFile);
+    if (!IsValidFilePath(trimmedSysctlFile))
+    {
+        OsConfigLogError(log, "Invalid sysctl file path in /etc/default/ufw (possible path traversal): %s", trimmedSysctlFile.c_str());
+        return indicators.NonCompliant("Invalid sysctl file path in /etc/default/ufw");
+    }
+
+    auto sysctlContents = context.GetFileContents(trimmedSysctlFile);
     if (!sysctlContents.HasValue())
     {
         return indicators.NonCompliant("Failed to read ufw sysctl config file: " + sysctlContents.Error().message);

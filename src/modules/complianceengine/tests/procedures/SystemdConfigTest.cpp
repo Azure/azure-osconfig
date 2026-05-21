@@ -59,7 +59,7 @@ TEST_F(SystemdConfigTest, BothFileAndDirProvided)
 
 TEST_F(SystemdConfigTest, FileCommandExecutionFails)
 {
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf")))
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\"")))
         .WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
 
     SystemdConfigValueParams params;
@@ -79,7 +79,7 @@ TEST_F(SystemdConfigTest, FileParameterNotFound)
         "OtherParam=value1\n"
         "AnotherParam=value2\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -98,7 +98,7 @@ TEST_F(SystemdConfigTest, FileParameterFoundButRegexMismatch)
         "TestParam=wrongvalue\n"
         "OtherParam=value1\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -117,7 +117,7 @@ TEST_F(SystemdConfigTest, FileParameterFoundAndRegexMatches)
         "TestParam=correctvalue\n"
         "OtherParam=value1\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -136,7 +136,7 @@ TEST_F(SystemdConfigTest, FileParameterWithComplexRegex)
         "DefaultLimitNOFILE=65536\n"
         "DefaultTimeoutStopSec=90s\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config system.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"system.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "DefaultLimitNOFILE";
@@ -157,7 +157,7 @@ TEST_F(SystemdConfigTest, FileWithMultipleConfigSections)
         "DefaultLimitNOFILE=65536\n"
         "DefaultTimeoutStopSec=90s\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config system.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"system.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "DefaultLimitNOFILE";
@@ -180,7 +180,7 @@ TEST_F(SystemdConfigTest, FileWithCommentsAndEmptyLines)
         "# Another comment\n"
         "OtherParam=othervalue\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -200,7 +200,7 @@ TEST_F(SystemdConfigTest, FileWithInvalidLineFormat)
         "InvalidLineWithoutEquals\n"
         "OtherParam=value1\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -218,7 +218,7 @@ TEST_F(SystemdConfigTest, FileParameterWithAnyValueRegex)
         "# /etc/systemd/test.conf\n"
         "TestParam=any_value_should_match\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -237,7 +237,7 @@ TEST_F(SystemdConfigTest, FileParameterWithEmptyValue)
         "TestParam=\n"
         "OtherParam=value1\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -255,7 +255,7 @@ TEST_F(SystemdConfigTest, FileParameterWithSpecialCharacters)
         "# /etc/systemd/test.conf\n"
         "TestParam=/path/to/file with spaces\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -327,7 +327,7 @@ TEST_F(SystemdConfigTest, ValueWithoutOpTreatedAsRegexCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=correctvalue\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -346,7 +346,7 @@ TEST_F(SystemdConfigTest, ValueWithoutOpTreatedAsRegexNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=wrongvalue\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -365,7 +365,7 @@ TEST_F(SystemdConfigTest, ValueWithoutOpRegexPattern)
         "# /etc/systemd/test.conf\n"
         "TestParam=65536\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -384,7 +384,7 @@ TEST_F(SystemdConfigTest, OperatorEqualCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=hello\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -403,7 +403,7 @@ TEST_F(SystemdConfigTest, OperatorEqualNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=world\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -422,7 +422,7 @@ TEST_F(SystemdConfigTest, OperatorLessThanCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=5\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -441,7 +441,7 @@ TEST_F(SystemdConfigTest, OperatorLessThanNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=10\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -460,7 +460,7 @@ TEST_F(SystemdConfigTest, OperatorLessOrEqualCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=10\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -479,7 +479,7 @@ TEST_F(SystemdConfigTest, OperatorLessOrEqualNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=11\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -498,7 +498,7 @@ TEST_F(SystemdConfigTest, OperatorGreaterThanCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=100\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -517,7 +517,7 @@ TEST_F(SystemdConfigTest, OperatorGreaterThanNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=50\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -536,7 +536,7 @@ TEST_F(SystemdConfigTest, OperatorGreaterOrEqualCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=50\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -555,7 +555,7 @@ TEST_F(SystemdConfigTest, OperatorGreaterOrEqualNonCompliant)
         "# /etc/systemd/test.conf\n"
         "TestParam=49\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -574,7 +574,7 @@ TEST_F(SystemdConfigTest, NumericComparisonWithNonNumericActualValue)
         "# /etc/systemd/test.conf\n"
         "TestParam=notanumber\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -593,7 +593,7 @@ TEST_F(SystemdConfigTest, NumericComparisonWithNonNumericExpectedValue)
         "# /etc/systemd/test.conf\n"
         "TestParam=42\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -612,7 +612,7 @@ TEST_F(SystemdConfigTest, OperatorEqualWithNumericStrings)
         "# /etc/systemd/test.conf\n"
         "TestParam=42\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";
@@ -637,7 +637,7 @@ TEST_F(SystemdConfigTest, BlockParameterFoundInCorrectBlock)
         "[Unit]\n"
         "Description=Test Unit\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Restart";
@@ -660,7 +660,7 @@ TEST_F(SystemdConfigTest, BlockParameterNotFoundInWrongBlock)
         "[Unit]\n"
         "Description=Test Unit\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Restart";
@@ -680,7 +680,7 @@ TEST_F(SystemdConfigTest, BlockParameterNotFoundInNonexistentBlock)
         "[Service]\n"
         "ExecStart=/usr/bin/test\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "ExecStart";
@@ -702,7 +702,7 @@ TEST_F(SystemdConfigTest, SameParameterInDifferentBlocksWithBlockFilter)
         "[Socket]\n"
         "Type=stream\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Type";
@@ -725,7 +725,7 @@ TEST_F(SystemdConfigTest, SameParameterInDifferentBlocksWithoutBlockFilter)
         "[Socket]\n"
         "Type=stream\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Type";
@@ -748,7 +748,7 @@ TEST_F(SystemdConfigTest, BlockWithOperatorComparison)
         "[Unit]\n"
         "StartLimitBurst=5\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "LimitNOFILE";
@@ -771,7 +771,7 @@ TEST_F(SystemdConfigTest, ParameterWithoutBlockHeaderFoundWithoutBlockFilter)
         "[Service]\n"
         "ServiceParam=servicevalue\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "GlobalParam";
@@ -788,7 +788,7 @@ TEST_F(SystemdConfigTest, JournalCompressUsesPassOnNotFoundWhenOutputHasNoJourna
 {
     std::string systemdOutput = "# /etc/systemd/journald.conf\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"journald.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Compress";
@@ -809,7 +809,7 @@ TEST_F(SystemdConfigTest, JournalCompressUsesPassOnNotFoundWhenJournalSectionHas
         "[Journal]\n"
         "Storage=auto\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"journald.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Compress";
@@ -830,7 +830,7 @@ TEST_F(SystemdConfigTest, JournalCompressWinsOverPassOnNotFound)
         "[Journal]\n"
         "Compress=no\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config journald.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"journald.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "Compress";
@@ -851,7 +851,7 @@ TEST_F(SystemdConfigTest, FileParameterNotFoundButPassOnNotFound)
         "OtherParam=value1\n"
         "AnotherParam=value2\n";
 
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config test.conf"))).WillOnce(Return(Result<std::string>(systemdOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("/usr/bin/systemd-analyze cat-config \"test.conf\""))).WillOnce(Return(Result<std::string>(systemdOutput)));
 
     SystemdConfigValueParams params;
     params.parameter = "TestParam";

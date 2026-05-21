@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <StringTools.h>
 #include <SystemdConfig.h>
 #include <Telemetry.h>
 #include <algorithm>
@@ -23,7 +24,8 @@ typedef std::map<std::pair<std::string, std::string>, std::pair<std::string, std
 
 Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& filename, ContextInterface& context)
 {
-    auto result = context.ExecuteCommand("/usr/bin/systemd-analyze cat-config " + filename);
+    auto escapedFilename = EscapeForShell(filename);
+    auto result = context.ExecuteCommand("/usr/bin/systemd-analyze cat-config \"" + escapedFilename + "\"");
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to execute systemd-analyze command: %s", result.Error().message.c_str());

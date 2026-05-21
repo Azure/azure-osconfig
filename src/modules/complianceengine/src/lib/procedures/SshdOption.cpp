@@ -143,7 +143,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             hostnameStr.erase(hostnameStr.find_last_not_of(" \n\r\t") + 1);
             hostAddrStr.erase(hostAddrStr.find_last_not_of(" \n\r\t") + 1);
 
-            sshdCommand = sshdCommand + " -C user=root -C host=" + hostnameStr + " -C addr=" + hostAddrStr;
+            sshdCommand = sshdCommand + " -C user=root -C host=" + EscapeForShell(hostnameStr) + " -C addr=" + EscapeForShell(hostAddrStr);
         }
     }
 
