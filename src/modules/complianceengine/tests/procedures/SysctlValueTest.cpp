@@ -114,7 +114,7 @@ static const char sysctlIpForward1Then0Than1Than0WithFilenames[] =
     "# /etc/sysctl.d/fwd_0_v2.conf\n"
     "   net.ipv4.ip_forward = 0\n";
 
-class EnsureSysctlTest : public ::testing::Test
+class SysctlValueTest : public ::testing::Test
 {
     struct LengthComparator
     {
@@ -135,11 +135,11 @@ protected:
 
     void SetUp() override
     {
-        mIndicators.Push("EnsureSysctl");
+        mIndicators.Push("SysctlValue");
     }
 };
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationNoOverride)
+TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfigurationNoOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -156,7 +156,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathAlternativeSystemdSysctlLocation)
+TEST_F(SysctlValueTest, HappyPathAlternativeSystemdSysctlLocation)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -174,7 +174,7 @@ TEST_F(EnsureSysctlTest, HappyPathAlternativeSystemdSysctlLocation)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -192,7 +192,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWins)
+TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWins)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -209,7 +209,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWi
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfigurationComment)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueEqualConfigurationComment)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -227,7 +227,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfigurationComment)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueNotEqual)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -244,7 +244,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueEqualConfiruationOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -262,7 +262,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
 }
 
 // Regexp value tests
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverride)
+TEST_F(SysctlValueTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -279,7 +279,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverrid
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
+TEST_F(SysctlValueTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -296,7 +296,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverr
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -313,7 +313,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOve
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -330,7 +330,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -350,7 +350,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpacesFilenameReportCheck)
+TEST_F(SysctlValueTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpacesFilenameReportCheck)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -370,7 +370,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWinsWithFilename)
+TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWinsWithFilename)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -391,7 +391,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
                     "'0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
 }
 
-TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
+TEST_F(SysctlValueTest, HappyPathValidateCisSysctls)
 {
     for (size_t i = 0; i < cisSsysctlNames.size(); i++)
     {
@@ -416,7 +416,7 @@ TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
     }
 }
 
-TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
+TEST_F(SysctlValueTest, UnhappyPathSysctlMultilineOutput)
 {
     SysctlNameValue sysctlNameValue(std::string("fs.binfmt_misc.python3/10"),
         std::string("enabled\ninterpreter /usr/bin/python3.10\nflags:\noffset 0\nmagic 6f0d0d0a\n"));
@@ -442,7 +442,7 @@ TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
     ;
 }
 
-TEST_F(EnsureSysctlTest, UfwDefaultsFileMissing)
+TEST_F(SysctlValueTest, UfwDefaultsFileMissing)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -461,7 +461,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileMissing)
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to read /etc/default/ufw") != std::string::npos);
 }
 
-TEST_F(EnsureSysctlTest, UfwDefaultsFileNoIptSysctl)
+TEST_F(SysctlValueTest, UfwDefaultsFileNoIptSysctl)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -480,7 +480,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileNoIptSysctl)
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to find IPT_SYSCTL") != std::string::npos);
 }
 
-TEST_F(EnsureSysctlTest, UfwSysctlFileMissing)
+TEST_F(SysctlValueTest, UfwSysctlFileMissing)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -500,7 +500,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileMissing)
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to read ufw sysctl config file") != std::string::npos);
 }
 
-TEST_F(EnsureSysctlTest, UfwSysctlFileValueMatches)
+TEST_F(SysctlValueTest, UfwSysctlFileValueMatches)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -520,7 +520,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueMatches)
     ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("in UFW configuration") != std::string::npos);
 }
 
-TEST_F(EnsureSysctlTest, UfwSysctlFileValueDoesNotMatch)
+TEST_F(SysctlValueTest, UfwSysctlFileValueDoesNotMatch)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;

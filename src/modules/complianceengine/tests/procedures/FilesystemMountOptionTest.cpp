@@ -119,7 +119,7 @@ TEST_F(EnsureFilesystemOptionTest, RemediateFilesystemMountOption)
 
     EXPECT_CALL(mContext, ExecuteCommand("touch " + dir + " /remounted;/bin/true  -o remount \"/home\"")).WillOnce(Return(Result<std::string>("")));
 
-    auto result = RemediateEnsureFilesystemOption(params, indicators, mContext);
+    auto result = RemediateFilesystemMountOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
