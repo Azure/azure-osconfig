@@ -1,0 +1,39 @@
+name: Build Compliance Engine Python interface for Augmentation Engine
+
+on:
+  pull_request:
+    paths:
+      - 'src/modules/complianceengine/src/lib/compliance_engine.py'
+      - 'src/modules/complianceengine/src/lib/pyproject.toml'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-wheel:
+    name: Build wheel
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build the package
+        working-directory: src/modules/complianceengine/src/lib
+        run: python -m build --wheel --outdir dist/
+
+      - name: Upload the package as an artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: compliance-engine-python-interface
+          path: src/modules/complianceengine/src/lib/dist/*.whl
+          if-no-files-found: error
+          retention-days: 90
