@@ -1,78 +1,111 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <Mof.hpp>
 #include <algorithm>
-#include <array>
+#include <cstring>
+#include <istream>
+#include <string>
 
 namespace ComplianceEngine
 {
 namespace MOF
 {
-using std::array;
 using std::istream;
-using std::map;
 using std::string;
 
 namespace
 {
-string GetValue(const std::string& line)
+
+// Reads a single line (up to `\n`, which is discarded) into `out`. Returns true
+// on success, false on EOF before any character was read. Sets `tooLong=true`
+// when the line exceeds kMaxLineLength; in that case the remainder of the line
+// is consumed and discarded so the caller can continue parsing safely.
+bool ReadBoundedLine(istream& stream, string& out, bool& tooLong)
+{
+    out.clear();
+    tooLong = false;
+    int ch = stream.get();
+    if (ch == std::char_traits<char>::eof())
+    {
+        return false;
+    }
+
+    while (ch != std::char_traits<char>::eof() && ch != '\n')
+    {
+        if (out.size() < kMaxLineLength)
+        {
+            out.push_back(static_cast<char>(ch));
+        }
+        else
+        {
+            tooLong = true;
+        }
+        ch = stream.get();
+    }
+
+    if (tooLong)
+    {
+        out.clear();
+    }
+    return true;
+}
+
+string GetValue(const string& line)
 {
     const auto start = line.find('"');
-    if (start == std::string::npos)
+    if (start == string::npos)
     {
-        return std::string();
+        return string();
     }
-    const auto end = line.find('"', start + 1);
-    if (end == std::string::npos)
+    // Walk from the opening quote, honouring \" and \\ escape sequences so
+    // that MOF string values like "{\"key\":\"val\"}" are returned
+    // unescaped as {"key":"val"} instead of being truncated at the first
+    // inner quote.
+    string result;
+    size_t pos = start + 1;
+    while (pos < line.size())
     {
-        return std::string();
+        if (line[pos] == '\\' && pos + 1 < line.size())
+        {
+            const char next = line[pos + 1];
+            if (next == '"' || next == '\\')
+            {
+                result += next;
+                pos += 2;
+                continue;
+            }
+        }
+        else if (line[pos] == '"')
+        {
+            break;
+        }
+        result += line[pos];
+        ++pos;
     }
-    return line.substr(start + 1, end - (start + 1));
-};
-} // anonymous namespace
-
-Result<SemVer> SemVer::Parse(const std::string& version)
-{
-    if (version.find("v") != 0)
-    {
-        return Error("Invalid version format: must start with 'v' prefix");
-    }
-
-    const auto pos1 = version.find('.', 1);
-    if (pos1 == std::string::npos)
-    {
-        return Error("Invalid version format: missing minor version");
-    }
-
-    const auto pos2 = version.find('.', pos1 + 1);
-    if (pos2 == std::string::npos)
-    {
-        return Error("Invalid version format: missing patch version");
-    }
-
-    try
-    {
-        const auto major = std::stoi(version.substr(1, pos1));
-        const auto minor = std::stoi(version.substr(pos1 + 1, pos2 - pos1 - 1));
-        const auto patch = std::stoi(version.substr(pos2 + 1));
-
-        return SemVer{major, minor, patch};
-    }
-    catch (std::exception& e)
-    {
-        return Error(string("Invalid version format: ") + e.what());
-    }
+    return result;
 }
+
+} // anonymous namespace
 
 Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
 {
     string line;
-    Optional<std::string> resourceID;
+    Optional<string> resourceID;
     Optional<CISBenchmarkInfo> benchmarkInfo;
-    Optional<std::string> procedure;
+    Optional<string> procedure;
     bool hasInitAudit = false;
-    Optional<std::string> ruleName;
-    Optional<std::string> payload;
-    while (std::getline(stream, line))
+    Optional<string> ruleName;
+    Optional<string> payload;
+
+    bool tooLong = false;
+    while (ReadBoundedLine(stream, line, tooLong))
     {
+        if (tooLong)
+        {
+            return Error("MOF line exceeds maximum length", EFBIG);
+        }
+
         if (line.find("ResourceID") != string::npos)
         {
             resourceID = GetValue(line);
@@ -90,13 +123,13 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
             continue;
         }
 
-        if (line.find("ProcedureObjectValue") != std::string::npos)
+        if (line.find("ProcedureObjectValue") != string::npos)
         {
             procedure = GetValue(line);
             continue;
         }
 
-        if (line.find("InitObjectName") != std::string::npos)
+        if (line.find("InitObjectName") != string::npos)
         {
             auto value = GetValue(line);
             if (value.find("init") != 0)
@@ -107,24 +140,24 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
             continue;
         }
 
-        if (line.find("ReportedObjectName") != std::string::npos)
+        if (line.find("ReportedObjectName") != string::npos)
         {
             auto value = GetValue(line);
             if (value.find("audit") != 0)
             {
                 return Error("Invalid reported object name");
             }
-            ruleName = value.substr(strlen("audit"));
+            ruleName = value.substr(std::strlen("audit"));
             continue;
         }
 
-        if (line.find("DesiredObjectValue") != std::string::npos)
+        if (line.find("DesiredObjectValue") != string::npos)
         {
             payload = GetValue(line);
             continue;
         }
 
-        if (line.find("};") != std::string::npos)
+        if (line.find("};") != string::npos)
         {
             // End of MOF entry, validate and return
             break;
@@ -168,5 +201,50 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
 
     return resource;
 }
+
+Optional<Error> ParseAll(std::istream& stream, const EntryCallback& callback)
+{
+    if (!callback)
+    {
+        return Error("ParseAll requires a non-null callback", EINVAL);
+    }
+
+    string line;
+    std::size_t entries = 0;
+    bool tooLong = false;
+    while (ReadBoundedLine(stream, line, tooLong))
+    {
+        if (tooLong)
+        {
+            return Error("MOF line exceeds maximum length", EFBIG);
+        }
+
+        if (line.find("instance of OsConfigResource as") == string::npos)
+        {
+            continue;
+        }
+
+        if (entries >= kMaxEntriesPerStream)
+        {
+            return Error("MOF stream exceeds maximum number of entries", E2BIG);
+        }
+
+        auto parsed = Resource::ParseSingleEntry(stream);
+        if (!parsed.HasValue())
+        {
+            return parsed.Error();
+        }
+        ++entries;
+
+        auto cbErr = callback(std::move(parsed.Value()));
+        if (cbErr.HasValue())
+        {
+            return cbErr;
+        }
+    }
+
+    return Optional<Error>();
+}
+
 } // namespace MOF
 } // namespace ComplianceEngine
