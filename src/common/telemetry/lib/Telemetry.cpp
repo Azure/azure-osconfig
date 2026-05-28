@@ -21,18 +21,31 @@ using namespace MAT;
 namespace Telemetry
 {
 
-TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardownTime, OsConfigLogHandle logHandle)
+TelemetryManager::TelemetryManager(std::string cacheFilePath,bool enableDebug, std::chrono::seconds teardownTime, OsConfigLogHandle logHandle)
     : m_log(logHandle)
     , m_logManager(nullptr)
     , m_logger(nullptr)
 {
+    {
+        FILE* testWrite = fopen(cacheFilePath.c_str(), "a");
+        if (testWrite)
+        {
+            fclose(testWrite);
+        }
+        else
+        {
+            OsConfigLogError(m_log, "Telemetry sdk cache path '%s' not writable, aborting", cacheFilePath.c_str() );
+            throw std::runtime_error("Telemetry sdk cache path not writable, aborting");
+        }
+    }
+
     m_logConfig["name"] = TELEMETRY_NAME;
     m_logConfig["version"] = TELEMETRY_VERSION;
     m_logConfig["config"]["host"] = "*";
     m_logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
     m_logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
     m_logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime.count();
-    m_logConfig[CFG_STR_CACHE_FILE_PATH] = TELEMETRY_CACHE_FILE_NAME;
+    m_logConfig[CFG_STR_CACHE_FILE_PATH] = cacheFilePath;
     m_logConfig[CFG_INT_CACHE_FILE_SIZE] = TELEMETRY_CACHE_FILE_SIZE;
     m_logConfig[CFG_INT_RAM_QUEUE_SIZE] = TELEMETRY_RAM_QUEUE_SIZE;
     m_logConfig[CFG_BOOL_ENABLE_DB_DROP_IF_FULL] = true;

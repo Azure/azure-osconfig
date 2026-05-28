@@ -52,6 +52,7 @@ struct Context
     MMI_HANDLE handle;
     std::string tempdir;
 #ifdef BUILD_TELEMETRY
+    std::string telemetryCache;
     std::unique_ptr<Telemetry::TelemetryManager> telemetryManager;
 #endif
 
@@ -72,12 +73,16 @@ struct Context
             throw std::runtime_error("failed to initialized SecurityBaseline library");
         }
 #ifdef BUILD_TELEMETRY
-        telemetryManager.reset(new Telemetry::TelemetryManager(false, std::chrono::seconds{1}));
+        telemetryCache = tempdir + "/telemetry_cache_db";
+        telemetryManager.reset(new Telemetry::TelemetryManager(telemetryCache, false, std::chrono::seconds{1}));
 #endif
     }
 
     ~Context() noexcept
     {
+#ifdef BUILD_TELEMETRY
+        ::remove(telemetryCache.c_str());
+#endif
         ::remove(tempdir.c_str());
         SecurityBaselineMmiClose(handle);
         SecurityBaselineShutdown();
