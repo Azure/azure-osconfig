@@ -14,7 +14,10 @@ Result<Status> AuditRootPathSecurity(IndicatorsTree& indicators, ContextInterfac
     // Directory must not be world- or group-writable
     const int maxPerm = 0777 & ~0022;
     // We're using sudo to get the proper root login shell, with the whole environment loaded.
-    auto rootEnv = context.ExecuteCommand("sudo -Hiu root env");
+    // -n (non-interactive) prevents sudo from blocking on a password prompt when the caller
+    // lacks a cached credential; it fails immediately so the assessor reports NonCompliant
+    // instead of hanging on a tty.
+    auto rootEnv = context.ExecuteCommand("sudo -n -Hiu root env");
     if (!rootEnv.HasValue())
     {
         return indicators.NonCompliant("Failed to run sudo: " + rootEnv.Error().message);
