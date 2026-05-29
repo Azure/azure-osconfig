@@ -1,4 +1,5 @@
 #include <Mof.hpp>
+#include <JsonWrapper.h>
 #include <algorithm>
 #include <array>
 
@@ -13,19 +14,62 @@ using std::string;
 
 namespace
 {
-string GetValue(const std::string& line)
+Result<string> GetValue(const std::string& line)
 {
     const auto start = line.find('"');
     if (start == std::string::npos)
     {
-        return std::string();
+        return Error("MOF string value is missing opening quote");
     }
-    const auto end = line.find('"', start + 1);
+
+    auto end = std::string::npos;
+    auto escaped = false;
+    for (auto index = start + 1; index < line.size(); ++index)
+    {
+        const auto current = line[index];
+        if (escaped)
+        {
+            escaped = false;
+            continue;
+        }
+
+        if ('\\' == current)
+        {
+            escaped = true;
+            continue;
+        }
+
+        if ('"' == current)
+        {
+            end = index;
+            break;
+        }
+    }
+
     if (end == std::string::npos)
     {
-        return std::string();
+        return Error("MOF string value is missing closing quote");
     }
-    return line.substr(start + 1, end - (start + 1));
+
+    const auto quotedValue = line.substr(start, end - start + 1);
+    auto parsedValue = JsonWrapper::FromString(quotedValue);
+    if (!parsedValue.HasValue())
+    {
+        return Error("Failed to parse MOF string value: " + parsedValue.Error().message);
+    }
+
+    if (JSONString != json_value_get_type(parsedValue.Value().get()))
+    {
+        return Error("Failed to parse MOF string value: parsed value is not a string");
+    }
+
+    const auto* value = json_value_get_string(parsedValue.Value().get());
+    if (nullptr == value)
+    {
+        return Error("Failed to parse MOF string value: parsed string is null");
+    }
+
+    return string(value);
 };
 } // anonymous namespace
 
@@ -75,13 +119,24 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
     {
         if (line.find("ResourceID") != string::npos)
         {
-            resourceID = GetValue(line);
+            auto value = GetValue(line);
+            if (!value.HasValue())
+            {
+                return value.Error();
+            }
+            resourceID = std::move(value.Value());
             continue;
         }
 
         if (line.find("PayloadKey") != string::npos)
         {
-            auto result = CISBenchmarkInfo::Parse(GetValue(line));
+            auto value = GetValue(line);
+            if (!value.HasValue())
+            {
+                return Error("Failed to parse PayloadKey: " + value.Error().message);
+            }
+
+            auto result = CISBenchmarkInfo::Parse(value.Value());
             if (!result.HasValue())
             {
                 return Error("Failed to parse PayloadKey: " + result.Error().message);
@@ -92,14 +147,23 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
 
         if (line.find("ProcedureObjectValue") != std::string::npos)
         {
-            procedure = GetValue(line);
+            auto value = GetValue(line);
+            if (!value.HasValue())
+            {
+                return Error("Failed to parse ProcedureObjectValue: " + value.Error().message);
+            }
+            procedure = std::move(value.Value());
             continue;
         }
 
         if (line.find("InitObjectName") != std::string::npos)
         {
             auto value = GetValue(line);
-            if (value.find("init") != 0)
+            if (!value.HasValue())
+            {
+                return Error("Failed to parse InitObjectName: " + value.Error().message);
+            }
+            if (value.Value().find("init") != 0)
             {
                 return Error("Invalid init object name");
             }
@@ -110,17 +174,26 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
         if (line.find("ReportedObjectName") != std::string::npos)
         {
             auto value = GetValue(line);
-            if (value.find("audit") != 0)
+            if (!value.HasValue())
+            {
+                return Error("Failed to parse ReportedObjectName: " + value.Error().message);
+            }
+            if (value.Value().find("audit") != 0)
             {
                 return Error("Invalid reported object name");
             }
-            ruleName = value.substr(strlen("audit"));
+            ruleName = value.Value().substr(strlen("audit"));
             continue;
         }
 
         if (line.find("DesiredObjectValue") != std::string::npos)
         {
-            payload = GetValue(line);
+            auto value = GetValue(line);
+            if (!value.HasValue())
+            {
+                return Error("Failed to parse DesiredObjectValue: " + value.Error().message);
+            }
+            payload = std::move(value.Value());
             continue;
         }
 

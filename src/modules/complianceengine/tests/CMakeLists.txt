@@ -68,16 +68,19 @@ add_executable(complianceenginetests
     EvaluatorTest.cpp
     LuaEvaluatorTest.cpp
     LuaProceduresTest.cpp
+    MofTest.cpp
     NetworkToolsTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
     RegexTest.cpp
     ResultTest.cpp
+    ../src/assessor/Mof.cpp
     ${PROCEDURES}
 )
 # for ProcedureMap.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib/procedures)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src/assessor)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(complianceenginetests
     GTest::gtest
