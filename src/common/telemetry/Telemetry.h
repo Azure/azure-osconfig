@@ -24,9 +24,7 @@
 #include <version.h>
 
 #define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
-#define OSCONFIG_DIRECTORY_NAME "/var/lib/osconfig"
-#define TELEMETRY_DIRECTORY_NAME "/var/lib/osconfig/telemetry"
-#define TELEMETRY_TMP_FILE_NAME "/var/lib/osconfig/telemetry/tmp.jsonl"
+#define TELEMETRY_TMP_FILE_NAME "/var/log/telemetry_osconfig.jsonl"
 
 // Ensure that TELEMETRY_COMMAND_TIMEOUT_SECONDS > TELEMETRY_TEARDOWN_TIMEOUT_SECONDS
 #define TELEMETRY_COMMAND_TIMEOUT_SECONDS (TELEMETRY_TEARDOWN_TIMEOUT_SECONDS + 2)
