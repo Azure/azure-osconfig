@@ -76,16 +76,8 @@ protected:
 
     void SetUp() override
     {
-        char* tempDir = mkdtemp(dirTemplate);
-        ASSERT_NE(tempDir, nullptr);
-        dir = tempDir;
-        cacheFile = dir + "/packageCache";
+        cacheFile = mContext.GetStatePath() + "/ComplianceEnginePackageCache";
         mIndicators.Push("PackageInstalled");
-    }
-
-    void TearDown() override
-    {
-        rmdir(dir.c_str());
     }
 
     void CreateCacheFile(const std::string& packageManager, time_t timestamp, const std::vector<std::pair<std::string, std::string>>& packages)
@@ -109,7 +101,6 @@ TEST_F(PackageInstalledTest, DetectDpkgPackageManager)
 
     PackageInstalledParams params;
     params.packageName = "sample-package";
-    mContext.SetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache", cacheFile);
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
