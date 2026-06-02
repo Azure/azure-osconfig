@@ -27,7 +27,7 @@ public:
     CommonContext(OsConfigLogHandle log, const std::string& statePath)
         : mLog(log),
           mStatePath(statePath),
-          mFsScanner("/", fsCachePath, lockPath, softTimeout, hardTimeout, scanWaitTime)
+          mFsScanner("/", mStatePath + "/" + fsCachePath, lockPath, softTimeout, hardTimeout, scanWaitTime)
     {
     }
     ~CommonContext() override;
