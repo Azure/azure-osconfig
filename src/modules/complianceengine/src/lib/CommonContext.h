@@ -13,21 +13,13 @@
 namespace ComplianceEngine
 {
 
-namespace
-{
-constexpr char fsCachePath[] = "ComplianceEngineFSCache";
-constexpr char lockPath[] = "/run/complianceengine-fsscanner.lock";
-constexpr int softTimeout = 3600;
-constexpr int hardTimeout = 86400;
-constexpr int scanWaitTime = 30;
-} // namespace
 class CommonContext : public ContextInterface
 {
 public:
     CommonContext(OsConfigLogHandle log, const std::string& statePath)
         : mLog(log),
           mStatePath(statePath),
-          mFsScanner("/", mStatePath + "/" + fsCachePath, lockPath, softTimeout, hardTimeout, scanWaitTime)
+          mFsScanner("/", mStatePath + "/" + sFsCachePath, sLockPath, sSoftTimeout, sHardTimeout, sScanWaitTime)
     {
     }
     ~CommonContext() override;
@@ -55,6 +47,12 @@ public:
     }
 
 private:
+    static constexpr char sFsCachePath[] = "ComplianceEngineFSCache";
+    static constexpr char sLockPath[] = "/run/complianceengine-fsscanner.lock";
+    static constexpr int sSoftTimeout = 3600;
+    static constexpr int sHardTimeout = 86400;
+    static constexpr int sScanWaitTime = 30;
+
     OsConfigLogHandle mLog;
     std::string mStatePath;
     FilesystemScanner mFsScanner;

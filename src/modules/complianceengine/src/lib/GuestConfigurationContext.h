@@ -10,18 +10,16 @@
 namespace ComplianceEngine
 {
 
-namespace
-{
-constexpr char guestConfigStatePath[] = "/var/lib/GuestConfig";
-} // namespace
-
 class GuestConfigurationContext : public CommonContext
 {
 public:
     GuestConfigurationContext(OsConfigLogHandle log)
-        : CommonContext(log, guestConfigStatePath)
+        : CommonContext(log, sStatePath)
     {
     }
+
+private:
+    static constexpr char sStatePath[] = "/var/lib/GuestConfig";
 };
 
 } // namespace ComplianceEngine
