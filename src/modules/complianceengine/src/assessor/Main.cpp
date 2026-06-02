@@ -56,6 +56,7 @@ struct Options
 {
     bool verbose = false;
     bool debug = false;
+    bool continueOnError = false;
     Optional<string> logFile;
     Optional<Format> format;
     Command command = Command::Help;
@@ -71,6 +72,7 @@ void PrintHelp(const std::string& programName)
     std::cout << "\t-V, --version\tShow software version and exit.\n";
     std::cout << "\t-v, --verbose\tRun in verbose mode.\n";
     std::cout << "\t-d, --debug\tRun in debug mode.\n";
+    std::cout << "\t-e, --continue-on-error\tSkip rules that fail due to engine errors and continue processing. Returns 1 if any error occurred.\n";
     std::cout << "\t-l, --log-file\tSpecify a log file. Default: print log entries to standard output.\n";
     std::cout << "\t-s, --section\tProcess only specific sections. Default: process all available rules.\n";
     std::cout << "\n";
@@ -82,10 +84,10 @@ void PrintHelp(const std::string& programName)
 // Command line parser using getopt_long
 Result<Options> ParseCommandLine(const int argc, char* argv[])
 {
-    const auto* short_opts = "hVvdl:s:f:";
+    const auto* short_opts = "hVvdel:s:f:";
     const option long_opts[] = {{"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'}, {"verbose", no_argument, nullptr, 'v'},
-        {"debug", no_argument, nullptr, 'd'}, {"log-file", required_argument, nullptr, 'l'}, {"section", required_argument, nullptr, 's'},
-        {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
+        {"debug", no_argument, nullptr, 'd'}, {"continue-on-error", no_argument, nullptr, 'e'}, {"log-file", required_argument, nullptr, 'l'},
+        {"section", required_argument, nullptr, 's'}, {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
 
     auto result = Options{};
     int opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
@@ -104,6 +106,9 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
                 break;
             case 'd':
                 result.debug = true;
+                break;
+            case 'e':
+                result.continueOnError = true;
                 break;
             case 'l':
                 result.logFile = std::string(optarg);
@@ -182,6 +187,7 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
 
     return result;
 }
+
 } // anonymous namespace
 
 int main(int argc, char* argv[])
@@ -244,8 +250,12 @@ int main(int argc, char* argv[])
         benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
     }
 
-    auto logHandle = options.logFile.HasValue() ? OpenLog(options.logFile->c_str(), nullptr) : nullptr;
-    if (nullptr != logHandle)
+    std::unique_ptr<OsConfigLog, void (*)(OsConfigLog*)> logHandle(options.logFile.HasValue() ? OpenLog(options.logFile->c_str(), nullptr) : nullptr,
+        [](OsConfigLog* h) {
+            OsConfigLogHandle tmp = h;
+            CloseLog(&tmp);
+        });
+    if (logHandle)
     {
         SetConsoleLoggingEnabled(false);
     }
@@ -253,23 +263,22 @@ int main(int argc, char* argv[])
     if (options.verbose)
     {
         SetLoggingLevel(LoggingLevel::LoggingLevelInformational);
-        OsConfigLogInfo(logHandle, "Verbose logging enabled");
+        OsConfigLogInfo(logHandle.get(), "Verbose logging enabled");
     }
 
     if (options.debug)
     {
         SetLoggingLevel(LoggingLevel::LoggingLevelDebug);
-        OsConfigLogInfo(logHandle, "Debug logging enabled");
+        OsConfigLogInfo(logHandle.get(), "Debug logging enabled");
     }
 
-    auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle));
+    auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle.get()));
     Engine engine(std::move(context), std::move(payloadFormatter));
 
     auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);
     if (error)
     {
-        OsConfigLogError(logHandle, "Failed to begin formatted output: %s", error.Value().message.c_str());
-        CloseLog(&logHandle);
+        OsConfigLogError(logHandle.get(), "Failed to begin formatted output: %s", error.Value().message.c_str());
         return 1;
     }
 
@@ -279,8 +288,7 @@ int main(int argc, char* argv[])
         file.open(options.input);
         if (!file.is_open())
         {
-            OsConfigLogError(logHandle, "Failed to open input file: %s", options.input.c_str());
-            CloseLog(&logHandle);
+            OsConfigLogError(logHandle.get(), "Failed to open input file: %s", options.input.c_str());
             return 1;
         }
     }
@@ -288,6 +296,7 @@ int main(int argc, char* argv[])
     istream& inputStream = options.input.empty() ? std::cin : file;
     string line;
     auto status = Status::Compliant;
+    bool hasError = false;
     while (std::getline(inputStream, line))
     {
         if (line.find("instance of OsConfigResource as") == std::string::npos)
@@ -298,8 +307,7 @@ int main(int argc, char* argv[])
         auto mofParsingResult = Resource::ParseSingleEntry(inputStream);
         if (!mofParsingResult.HasValue())
         {
-            OsConfigLogError(logHandle, "Failed to parse MOF entry: %s", mofParsingResult.Error().message.c_str());
-            CloseLog(&logHandle);
+            OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", mofParsingResult.Error().message.c_str());
             return 1;
         }
 
@@ -308,7 +316,8 @@ int main(int argc, char* argv[])
         {
             if (mofEntry.benchmarkInfo.section.find(options.section.Value()) != 0)
             {
-                OsConfigLogDebug(logHandle, "Skipping entry %s as it does not match section %s", mofEntry.resourceID.c_str(), options.section.Value().c_str());
+                OsConfigLogDebug(logHandle.get(), "Skipping entry %s as it does not match section %s", mofEntry.resourceID.c_str(),
+                    options.section.Value().c_str());
                 continue;
             }
         }
@@ -316,8 +325,12 @@ int main(int argc, char* argv[])
         auto procedureResult = engine.MmiSet((string("procedure") + mofEntry.ruleName).c_str(), mofEntry.procedure);
         if (!procedureResult.HasValue())
         {
-            OsConfigLogError(logHandle, "Failed to set procedure: %s", procedureResult.Error().message.c_str());
-            status = Status::NonCompliant;
+            OsConfigLogError(logHandle.get(), "Failed to set procedure: %s", procedureResult.Error().message.c_str());
+            if (!options.continueOnError)
+            {
+                return 1;
+            }
+            hasError = true;
             continue;
         }
 
@@ -329,8 +342,12 @@ int main(int argc, char* argv[])
                     auto result = engine.MmiSet((string("init") + mofEntry.ruleName).c_str(), mofEntry.payload.Value());
                     if (!result.HasValue())
                     {
-                        OsConfigLogError(logHandle, "Failed to init audit: %s", result.Error().message.c_str());
-                        status = Status::NonCompliant;
+                        OsConfigLogError(logHandle.get(), "Failed to init audit: %s", result.Error().message.c_str());
+                        if (!options.continueOnError)
+                        {
+                            return 1;
+                        }
+                        hasError = true;
                         continue;
                     }
                 }
@@ -339,17 +356,25 @@ int main(int argc, char* argv[])
                 auto result = engine.MmiGet(ruleName.c_str());
                 if (!result.HasValue())
                 {
-                    OsConfigLogError(logHandle, "Failed to perform audit: %s", result.Error().message.c_str());
-                    status = Status::NonCompliant;
+                    OsConfigLogError(logHandle.get(), "Failed to perform audit: %s", result.Error().message.c_str());
+                    if (!options.continueOnError)
+                    {
+                        return 1;
+                    }
+                    hasError = true;
                     continue;
                 }
 
                 error = benchmarkFormatter->AddEntry(mofEntry, result.Value().status, result.Value().payload);
                 if (error)
                 {
-                    OsConfigLogError(logHandle, "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
-                    status = Status::NonCompliant;
-                    break;
+                    OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
+                    if (!options.continueOnError)
+                    {
+                        return 1;
+                    }
+                    hasError = true;
+                    continue;
                 }
 
                 if (result.Value().status != Status::Compliant)
@@ -365,16 +390,24 @@ int main(int argc, char* argv[])
                 auto result = engine.MmiSet(ruleName.c_str(), mofEntry.payload.Value());
                 if (!result.HasValue())
                 {
-                    OsConfigLogError(logHandle, "Failed to remediate: %s", result.Error().message.c_str());
-                    status = Status::NonCompliant;
+                    OsConfigLogError(logHandle.get(), "Failed to remediate: %s", result.Error().message.c_str());
+                    if (!options.continueOnError)
+                    {
+                        return 1;
+                    }
+                    hasError = true;
                     continue;
                 }
 
                 error = benchmarkFormatter->AddEntry(mofEntry, result.Value(), "[]");
                 if (error)
                 {
-                    OsConfigLogError(logHandle, "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
-                    status = Status::NonCompliant;
+                    OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
+                    if (!options.continueOnError)
+                    {
+                        return 1;
+                    }
+                    hasError = true;
                     continue;
                 }
 
@@ -392,13 +425,12 @@ int main(int argc, char* argv[])
     }
 
     auto result = benchmarkFormatter->Finish(status);
-    CloseLog(&logHandle);
     if (!result.HasValue())
     {
-        OsConfigLogError(logHandle, "Failed to finish formatted output: %s", result.Error().message.c_str());
+        OsConfigLogError(logHandle.get(), "Failed to finish formatted output: %s", result.Error().message.c_str());
         return 1;
     }
 
     std::cout << result.Value() << "\n";
-    return status == Status::Compliant ? 0 : 1;
+    return hasError ? 1 : 0;
 }
