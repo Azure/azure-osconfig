@@ -1,4 +1,4 @@
-#include <CommonContext.h>
+#include <AssessorContext.h>
 #include <CompactListFormatter.hpp>
 #include <DebugFormatter.hpp>
 #include <Engine.h>
@@ -17,7 +17,7 @@
 #include <version.h>
 
 using ComplianceEngine::Action;
-using ComplianceEngine::CommonContext;
+using ComplianceEngine::AssessorContext;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
 using ComplianceEngine::Optional;
@@ -262,7 +262,7 @@ int main(int argc, char* argv[])
         OsConfigLogInfo(logHandle, "Debug logging enabled");
     }
 
-    auto context = std::unique_ptr<CommonContext>(new CommonContext(logHandle));
+    auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle));
     Engine engine(std::move(context), std::move(payloadFormatter));
 
     auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);

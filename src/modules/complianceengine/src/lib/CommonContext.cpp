@@ -4,7 +4,6 @@
 #include "CommonContext.h"
 
 #include "CommonUtils.h"
-#include "ContextInterface.h"
 
 namespace ComplianceEngine
 {
