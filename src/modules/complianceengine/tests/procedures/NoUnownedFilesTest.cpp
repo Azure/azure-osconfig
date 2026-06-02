@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Test for EnsureNoUnowned procedure
 #include "NoUnownedFiles.h"
 

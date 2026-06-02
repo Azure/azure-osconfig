@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include <BenchmarkFormatter.hpp>
 #include <cstdlib>
 #include <iomanip>

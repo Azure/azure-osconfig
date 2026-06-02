@@ -1,4 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include <AssessorContext.h>
+#include <CommonContext.h>
 #include <CompactListFormatter.hpp>
 #include <DebugFormatter.hpp>
 #include <Engine.h>

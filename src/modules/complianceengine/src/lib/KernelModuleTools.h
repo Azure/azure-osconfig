@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #ifndef KERNELMODULETOOLS_H
 #define KERNELMODULETOOLS_H

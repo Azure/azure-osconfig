@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 #include "KernelModuleTools.h"
 #include "Result.h"
