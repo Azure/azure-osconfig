@@ -72,9 +72,3 @@ TEST_F(CommonContextTest, GuestConfigurationContext_StatePath)
     ComplianceEngine::GuestConfigurationContext ctx(nullptr);
     EXPECT_EQ(ctx.GetStatePath(), "/var/lib/GuestConfig");
 }
-
-TEST_F(CommonContextTest, AssessorContext_StatePath)
-{
-    ComplianceEngine::AssessorContext ctx(nullptr);
-    EXPECT_EQ(ctx.GetStatePath(), "/tmp/compliance-engine");
-}

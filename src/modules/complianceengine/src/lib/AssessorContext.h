@@ -7,20 +7,42 @@
 #include "CommonContext.h"
 #include "Logging.h"
 
+#include <ftw.h>
+#include <stdexcept>
+#include <unistd.h>
+
 namespace ComplianceEngine
 {
-
-namespace
-{
-constexpr char assessorStatePath[] = "/tmp/compliance-engine";
-} // namespace
 
 class AssessorContext : public CommonContext
 {
 public:
     AssessorContext(OsConfigLogHandle log)
-        : CommonContext(log, assessorStatePath)
+        : CommonContext(log, CreateTempDir())
     {
+    }
+    AssessorContext(const AssessorContext&) = delete;
+    AssessorContext& operator=(const AssessorContext&) = delete;
+    AssessorContext(AssessorContext&&) = delete;
+    AssessorContext& operator=(AssessorContext&&) = delete;
+
+    ~AssessorContext() override
+    {
+        nftw(
+            GetStatePath().c_str(),
+            [](const char* fpath, const struct stat*, int typeflag, struct FTW*) -> int { return (typeflag == FTW_DP) ? rmdir(fpath) : unlink(fpath); },
+            64, FTW_DEPTH | FTW_PHYS);
+    }
+
+private:
+    static std::string CreateTempDir()
+    {
+        char tmpl[] = "/tmp/compliance-engine-assessor.XXXXXX";
+        if (mkdtemp(tmpl) == nullptr)
+        {
+            throw std::runtime_error("AssessorContext: failed to create temporary state directory");
+        }
+        return std::string(tmpl);
     }
 };
 
