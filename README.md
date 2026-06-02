@@ -92,6 +92,13 @@ OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="24.04"
 
 See [CONTRIBUTING](CONTRIBUTING.md) and [SECURITY](SECURITY.md).
 
----
+## Trademarks
 
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
+[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft
+sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+---
 Microsoft may collect performance and usage information which may be used to provide and improve Microsoft products and services and enhance users experience. To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?LinkId=521839&clcid=0x409).
