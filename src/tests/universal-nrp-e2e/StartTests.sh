@@ -1,5 +1,8 @@
 #!/bin/bash
+
 # Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # StartTests.sh
 # Description: This Microsoft internal only script is used to download the latest Azure Policy packages from internal pipelines
 #              and run the tests on the specified test data provided.

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 if [ -n "$(command -v yum)" ]; then
         echo "using yum"
         yum remove openssh-server -y
