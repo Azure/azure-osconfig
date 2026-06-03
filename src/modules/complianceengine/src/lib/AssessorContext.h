@@ -30,7 +30,18 @@ public:
     {
         nftw(
             GetStatePath().c_str(),
-            [](const char* fpath, const struct stat*, int typeflag, struct FTW*) -> int { return (typeflag == FTW_DP) ? rmdir(fpath) : unlink(fpath); },
+            [](const char* fpath, const struct stat*, int typeflag, struct FTW*) -> int
+            {
+                if (typeflag == FTW_DP)
+                {
+                    (void)rmdir(fpath);
+                }
+                else
+                {
+                    (void)unlink(fpath);
+                }
+                return 0; // best-effort cleanup: keep walking even if a removal fails
+            },
             64, FTW_DEPTH | FTW_PHYS);
     }
 
