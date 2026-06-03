@@ -28,10 +28,10 @@ public:
 
     ~AssessorContext() override
     {
+        const std::string statePath = GetStatePath();
         nftw(
-            GetStatePath().c_str(),
-            [](const char* fpath, const struct stat*, int typeflag, struct FTW*) -> int
-            {
+            statePath.c_str(),
+            [](const char* fpath, const struct stat*, int typeflag, struct FTW*) -> int {
                 if (typeflag == FTW_DP)
                 {
                     (void)rmdir(fpath);
