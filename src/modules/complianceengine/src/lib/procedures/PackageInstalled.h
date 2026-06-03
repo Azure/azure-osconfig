@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #ifndef COMPLIANCEENGINE_PROCEDURES_PACKAGE_INSTALLED_H
