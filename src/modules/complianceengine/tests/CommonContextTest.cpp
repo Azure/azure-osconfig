@@ -3,7 +3,6 @@
 
 #include "CommonContext.h"
 
-#include "AssessorContext.h"
 #include "GuestConfigurationContext.h"
 
 #include <fstream>
