@@ -1,0 +1,87 @@
+name: Telemetry Pipeline Deploy
+
+# Manually-triggered workflow that submits a deployment rollout to register
+# OSConfig Linux telemetry export configurations against Azure Data Explorer
+# (ADX) clusters used for analytics.
+#
+# Runs on the existing osconfig-prod-release-pool self-hosted runner so we can
+# authenticate to Azure via the runner's managed identity (same pattern as
+# the package publish workflow) and submit the rollout via a bundled CLI.
+#
+# The deployment package files (.github/deploy/*) live on the working topic
+# branch and are not merged to default. The workflow YAML on default exists
+# so that workflow_dispatch can find it; dispatched runs use the YAML and
+# files from whichever branch is selected with --ref.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which cluster environment to target'
+        required: true
+        type: choice
+        options:
+          - NonProd
+          - Prod
+        default: NonProd
+      deployInfra:
+        description: 'Deployment infrastructure (test = faster iteration, prod = production-grade SLA)'
+        required: true
+        type: choice
+        options:
+          - test
+          - prod
+        default: test
+
+jobs:
+  deploy:
+    name: 'Deploy (${{ inputs.target }} / ${{ inputs.deployInfra }})'
+    runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=build-infra]
+    concurrency:
+      group: telemetry-deploy-${{ inputs.target }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DEPLOY_ROOT: ${{ github.workspace }}/.github/deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare deployment CLI
+        run: |
+          set -euo pipefail
+          chmod +x "$DEPLOY_ROOT/tools/rollout"
+          mkdir -p "$HOME/.rollout"
+          cp -r "$DEPLOY_ROOT/tools/configurations" "$HOME/.rollout/"
+
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.AZURE_AME_TENANT_ID }}
+          # Telemetry deployment target subscription. Plain GUID (not a secret).
+          subscription-id: a6b7bb76-38f5-4440-95c2-5c2d031a5d62
+
+      - name: Show deployment package
+        run: |
+          set -euo pipefail
+          PKG="$DEPLOY_ROOT/${{ inputs.target }}"
+          echo "Listing $PKG"
+          ls -la "$PKG"
+          for f in RolloutSpec.json ScopeBindings.json ServiceModel.json; do
+            if [ -f "$PKG/$f" ]; then
+              echo "--- $f ---"
+              cat "$PKG/$f"
+            fi
+          done
+
+      - name: Submit deployment rollout
+        run: |
+          set -euo pipefail
+          PKG="$DEPLOY_ROOT/${{ inputs.target }}"
+          cd "$PKG"
+          "$DEPLOY_ROOT/tools/rollout" rollout new \
+            --rolloutspec RolloutSpec.json \
+            --servicegrouproot "$PKG" \
+            --rolloutinfra ${{ inputs.deployInfra }} \
+            --use-az-cli
