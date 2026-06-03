@@ -20,6 +20,10 @@ on:
         description: 'A regex pattern of tests to exclude.'
         type: string
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   package:
     uses: ./.github/workflows/package-build.yml

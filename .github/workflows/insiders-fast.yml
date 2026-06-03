@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 8 * * *' # Every day at 8am UTC (12am PST)
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   changes:
     name: Check changes

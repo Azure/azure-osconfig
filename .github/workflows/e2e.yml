@@ -3,6 +3,9 @@ name: E2E
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   hub:
     name: Create IoT Hub

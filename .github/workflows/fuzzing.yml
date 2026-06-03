@@ -6,6 +6,10 @@ on:
     - cron: '0 3 * * *' # Every day at 7pm PST/4am CET
   pull_request:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   fuzzer-execution:
     name: Fuzzer execution matrix
