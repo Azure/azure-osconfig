@@ -4,8 +4,7 @@
 # Licensed under the MIT License.
 #
 # StartTests.sh
-# Description: This Microsoft internal only script is used to download the latest Azure Policy packages from internal pipelines
-#              and run the tests on the specified test data provided.
+# Description: This script downloads the latest Azure Policy packages from internal pipelines (requires access) and runs the tests on the specified test data provided.
 # Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs] [-d policy-package-directory] [-n no-gui]
 # Options:
 #        -r run-id: Specify the run-id of the pipeline run to download the packages from (Default: latest-succeeded-run-id)
