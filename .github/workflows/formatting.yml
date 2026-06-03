@@ -2,6 +2,9 @@ name: Code Formatting
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   code-formatting:
     runs-on: ubuntu-latest

@@ -6,6 +6,10 @@ on:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   test:
     name: Test
