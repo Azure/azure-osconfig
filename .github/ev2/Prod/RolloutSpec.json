@@ -1,0 +1,35 @@
+{
+  "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/RolloutSpec.json",
+  "ContentVersion": "1.0.0.0",
+  "RolloutMetadata": {
+    "ServiceModelPath": "ServiceModel.json",
+    "scopeBindingsPath": "ScopeBindings.json",
+    "Name": "OSConfigLinux GDS Config Deploy (Prod)",
+    "RolloutType": "Major",
+    "BuildSource": {
+      "Parameters": {
+        "VersionFile": "BuildVer.txt"
+      }
+    },
+    "notification": {
+      "email": {
+        "to": "mariusni@microsoft.com",
+        "options": {
+          "when": [
+            "onError"
+          ]
+        }
+      }
+    }
+  },
+  "OrchestratedSteps": [
+    {
+      "Name": "DeployGdsConfig",
+      "TargetType": "ServiceResource",
+      "TargetName": "DeployGdsConfig",
+      "Actions": [
+        "Extension/DeployGdsConfig"
+      ]
+    }
+  ]
+}

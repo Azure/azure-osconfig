@@ -1,0 +1,44 @@
+{
+  "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/ServiceModel.json",
+  "contentVersion": "0.0.0.1",
+  "ServiceMetadata": {
+    "ServiceGroup": "EdgeSecurityOSConfigLinuxGdsConfig",
+    "Environment": "Prod"
+  },
+  "ServiceResourceGroupDefinitions": [
+    {
+      "Name": "osconfigLinuxGdsServiceResourceDefinition",
+      "ServiceResourceDefinitions": [
+        {
+          "Name": "GdsConfig",
+          "ComposedOf": {
+            "arm": {
+              "templatePath": "Templates\\UpdateConfig.Template.json",
+              "parametersPath": "Parameters\\ClusterDB.parameters.json"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "serviceResourceGroups": [
+    {
+      "AzureResourceGroupName": "rg-osconfiglinux-prod-cus",
+      "Location": "Central US",
+      "InstanceOf": "osconfigLinuxGdsServiceResourceDefinition",
+      "AzureSubscriptionId": "a6b7bb76-38f5-4440-95c2-5c2d031a5d62",
+      "serviceResources": [
+        {
+          "Name": "DeployGdsConfig",
+          "InstanceOf": "GdsConfig",
+          "RolloutParametersPath": "RolloutParameters\\GDSConfig.RolloutParameters.json",
+          "scopeTags": [
+            {
+              "name": "GDSExtension"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "extensions": [
+    {
+      "Name": "DeployGdsConfig",
+      "Type": "Microsoft.Geneva.Pipeline.Configuration/GdsConfig",
+      "Version": "2016-1-1",
+      "ConnectionProperties": {
+        "MaxExecutionTime": "PT30M",
+        "endpoint": "https://deliveryapi.prod.pipeline.geneva.trafficmanager.net:8924",
+        "Authentication": {
+          "Type": "CertificateAuthentication",
+          "Reference": {
+            "Provider": "AzureKeyVault",
+            "Parameters": {
+              "SecretId": "https://kv-osclinux-geneva.vault.azure.net/secrets/osconfig-geneva-cert"
+            }
+          }
+        }
+      },
+      "Payloadproperties": {
+        "Id":                  { "value": "__ID__" },
+        "Operation":           { "value": "__OPERATION__" },
+        "TeamAlias":           { "value": "__TEAMALIAS__" },
+        "Environment":         { "value": "__GDSENVIRONMENT__" },
+        "Region":              { "value": "__REGION__" },
+        "ConfigVersion":       { "value": "__CONFIGVERSION__" },
+        "AutoIncrementVersion":{ "value": "__AUTOINCREMENTVERSION__" },
+        "ServiceTreeId":       { "value": "__SERVICETREEID__" },
+        "Account":             { "value": "__LOGSACCOUNT__" },
+        "Namespace":           { "value": "__GDSNAMESPACE__" },
+        "Events":              { "value": "__GDSEVENTNAMES__" },
+        "VersionRegex":        { "value": "*" },
+        "LocationRegex":       { "value": "*" },
+        "LastNConfigs":        { "value": "3" },
+        "ForceUpdate":         { "value": "__FORCEUPDATE__" },
+        "ConsumeMapping": {
+          "value": {
+            "CatchAllKustoDestination": {
+              "LogAnalyticsId": "__CLUSTERNAMEEUS__.__KUSTOINGESTLOCATIONEUS__",
+              "LogAnalyticsDb": "__DBNAMEEUS__"
+            },
+            "RegionalKustoDestinations": {
+              "centralus": {
+                "LogAnalyticsId": "__CLUSTERNAMEEUS__.__KUSTOINGESTLOCATIONEUS__",
+                "LogAnalyticsDb": "__DBNAMEEUS__"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

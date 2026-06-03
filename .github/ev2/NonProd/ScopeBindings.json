@@ -1,0 +1,27 @@
+{
+  "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/ScopeBindings.json",
+  "contentVersion": "1.0.0.0",
+  "scopeBindings": [
+    {
+      "scopeTagName": "GDSExtension",
+      "bindings": [
+        { "find": "__KUSTOINGESTLOCATIONEUS__", "replaceWith": "centralus" },
+        { "find": "__CLUSTERNAMEEUS__",         "replaceWith": "osconfiglinuxnonprod2" },
+        { "find": "__DBNAMEEUS__",              "replaceWith": "OSConfigLinux" },
+        { "find": "__GDSENVIRONMENT__",         "replaceWith": "DiagnosticsProd" },
+        { "find": "__GDSNAMESPACE__",           "replaceWith": "OSConfigDev" },
+        { "find": "__GDSEVENTNAMES__",          "replaceWith": "OSConfigEvent" },
+        { "find": "__GDSSCRUBBEDEVENTNAMES__",  "replaceWith": "" },
+        { "find": "__FORCEUPDATE__",            "replaceWith": "false" },
+        { "find": "__AUTOINCREMENTVERSION__",   "replaceWith": "true" },
+        { "find": "__TEAMALIAS__",              "replaceWith": "EdgeSecurity" },
+        { "find": "__CONFIGVERSION__",          "replaceWith": "1" },
+        { "find": "__OPERATION__",              "replaceWith": "CreateOrUpdateSingleRegion" },
+        { "find": "__SERVICETREEID__",          "replaceWith": "e08c2182-a0fb-44da-b01d-29750856ab0c" },
+        { "find": "__LOGSACCOUNT__",            "replaceWith": "OSConfigDev" },
+        { "find": "__ID__",                     "replaceWith": "EdgeSecurity_OSConfigLinuxNonProdKusto_DiagnosticsProd" },
+        { "find": "__REGION__",                 "replaceWith": "centralus" }
+      ]
+    }
+  ]
+}

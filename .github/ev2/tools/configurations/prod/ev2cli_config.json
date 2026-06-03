@@ -1,0 +1,10 @@
+{
+    "name": "prod",
+    "endpointURI": "https://azureservicedeploy.msft.net",
+    "authResourceID": "https://azureservicedeploy.msft.net",
+    "authURL": "https://login.microsoftonline.com",
+    "authAppID": "4a49310a-0bb9-4226-ad0d-94a0929de1ea",
+    "authTenantID": "common",
+    "stateFile": "ev2cli_state.yaml",
+    "releaseFile": "ev2cli_release.yaml"
+}
