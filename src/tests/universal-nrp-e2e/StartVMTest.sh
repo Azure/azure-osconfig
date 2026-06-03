@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 #
-# StartMCTest.sh
+# StartVMTest.sh
 # Description: This script orchestrates tests on particular disk image for testing purposes.
 #              It configures the VM with a specified image and places all required test artifacts in
 #              addition to installing dependencies, running tests, and collecting logs/reports.
