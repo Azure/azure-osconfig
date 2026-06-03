@@ -20,12 +20,32 @@ string GetValue(const std::string& line)
     {
         return std::string();
     }
-    const auto end = line.find('"', start + 1);
-    if (end == std::string::npos)
+    // Walk from the opening quote, honouring \" and \\ escape sequences so
+    // that MOF string values like "{\"key\":\"val\"}" are returned
+    // unescaped as {"key":"val"} instead of being truncated at the first
+    // inner quote.
+    std::string result;
+    size_t pos = start + 1;
+    while (pos < line.size())
     {
-        return std::string();
+        if (line[pos] == '\\' && pos + 1 < line.size())
+        {
+            const char next = line[pos + 1];
+            if (next == '"' || next == '\\')
+            {
+                result += next;
+                pos += 2;
+                continue;
+            }
+        }
+        else if (line[pos] == '"')
+        {
+            break;
+        }
+        result += line[pos];
+        ++pos;
     }
-    return line.substr(start + 1, end - (start + 1));
+    return result;
 };
 } // anonymous namespace
 
