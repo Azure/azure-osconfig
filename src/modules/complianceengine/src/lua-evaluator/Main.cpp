@@ -1,4 +1,4 @@
-#include <CommonContext.h>
+#include <AssessorContext.h>
 #include <Logging.h>
 #include <LuaEvaluator.h>
 #include <Optional.h>
@@ -13,7 +13,7 @@
 #include <version.h>
 
 using ComplianceEngine::Action;
-using ComplianceEngine::CommonContext;
+using ComplianceEngine::AssessorContext;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::LuaEvaluator;
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
         OsConfigLogInfo(logHandle, "Debug logging enabled");
     }
 
-    auto context = std::unique_ptr<CommonContext>(new CommonContext(logHandle));
+    auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle));
     LuaEvaluator evaluator;
 
     ifstream file;

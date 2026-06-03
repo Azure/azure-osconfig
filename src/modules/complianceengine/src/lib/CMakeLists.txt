@@ -143,6 +143,7 @@ add_library(complianceenginelib STATIC
     Engine.cpp
     Evaluator.cpp
     FileTreeWalk.cpp
+    GuestConfigurationContext.cpp
     FilesystemScanner.cpp
     GroupsIterator.cpp
     Indicators.cpp

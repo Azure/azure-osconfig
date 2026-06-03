@@ -453,7 +453,7 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
     auto log = context.GetLogHandle();
 
     PackageCache cache;
-    auto cacheResult = LoadPackageCache(context.GetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache"));
+    auto cacheResult = LoadPackageCache(context.GetStatePath() + "/ComplianceEnginePackageCache");
     bool cacheValid = true;
     bool cacheStale = false;
     if (cacheResult.HasValue())
@@ -522,10 +522,10 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
         if (cacheResult.HasValue())
         {
             cache = cacheResult.Value();
-            auto saveResult = SavePackageCache(cache, context.GetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache"));
+            auto saveResult = SavePackageCache(cache, context.GetStatePath() + "/ComplianceEnginePackageCache");
             if (saveResult.HasValue())
             {
-                OsConfigLogInfo(log, "Saved package cache to %s", context.GetSpecialFilePath("/var/lib/GuestConfig/ComplianceEnginePackageCache").c_str());
+                OsConfigLogInfo(log, "Saved package cache to %s", (context.GetStatePath() + "/ComplianceEnginePackageCache").c_str());
             }
             else
             {
