@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 #ifndef COMPLIANCEENGINE_PROCEDURES_BEHAVIOR_H
 #define COMPLIANCEENGINE_PROCEDURES_BEHAVIOR_H
 
