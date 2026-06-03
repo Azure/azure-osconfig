@@ -368,6 +368,7 @@ def generate_procedure_map_header(model: Model, filename: str):
     with open(filename,"w") as f:
         f.write("// Copyright (c) Microsoft Corporation. All rights reserved.\n")
         f.write("// Licensed under the MIT License.\n")
+        f.write("\n")
         f.write("// This file is auto-generated. Do not edit manually.\n")
         f.write("#ifndef COMPLIANCEENGINE_PROCEDURE_MAP_H\n")
         f.write("#define COMPLIANCEENGINE_PROCEDURE_MAP_H\n")
@@ -424,6 +425,7 @@ def generate_procedure_map_impl(model: Model, filename: str):
     with open(filename,"w") as f:
         f.write("// Copyright (c) Microsoft Corporation. All rights reserved.\n")
         f.write("// Licensed under the MIT License.\n")
+        f.write("\n")
         f.write("// This file is auto-generated. Do not edit manually.\n")
         f.write("#include <ProcedureMap.h>\n")
         f.write("#include <Bindings.h>\n")

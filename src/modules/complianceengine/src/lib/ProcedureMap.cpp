@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 // This file is auto-generated. Do not edit manually.
 #include <ProcedureMap.h>
 #include <Bindings.h>
