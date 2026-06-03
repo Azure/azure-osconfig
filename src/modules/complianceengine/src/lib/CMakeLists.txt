@@ -51,7 +51,9 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT ${COPYFAIL_BPF_OBJECT_INC}
-    COMMAND /bin/sh -c "${XXD_EXECUTABLE} -i -n gCopyFailMitigationBpfObject ${COPYFAIL_BPF_OBJECT} > ${COPYFAIL_BPF_OBJECT_INC}"
+    # RHEL's older xxd does not support `-n`, so generate the include with the
+    # default path-derived symbols and rewrite only the declarations to stable names.
+    COMMAND /bin/sh -c "\"${XXD_EXECUTABLE}\" -i \"${COPYFAIL_BPF_OBJECT}\" | sed -e 's/^unsigned char .*\\[\\] =/unsigned char gCopyFailMitigationBpfObject[] =/' -e 's/^unsigned int .*_len =/unsigned int gCopyFailMitigationBpfObject_len =/' > \"${COPYFAIL_BPF_OBJECT_INC}\""
     DEPENDS ${COPYFAIL_BPF_OBJECT}
     VERBATIM
 )
