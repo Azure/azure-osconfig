@@ -40,6 +40,7 @@ set(PROCEDURES
     procedures/WirelessDisabledTest.cpp
     procedures/XdmcpDisabledTest.cpp
     procedures/CommandOutputMatchTest.cpp
+    procedures/CopyFailMitigationTest.cpp
     procedures/FileRegexMatchTest.cpp
     procedures/PackageInstalledTest.cpp
     procedures/SystemdConfigTest.cpp

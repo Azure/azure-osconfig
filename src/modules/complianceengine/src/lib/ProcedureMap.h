@@ -5,6 +5,7 @@
 #include <ApparmorProfileState.h>
 #include <AuditdRules.h>
 #include <CommandOutputMatch.h>
+#include <CopyFailMitigation.h>
 #include <DconfValue.h>
 #include <DefaultUmask.h>
 #include <FileExists.h>
@@ -269,6 +270,16 @@ struct Bindings<CommandOutputMatchParams>
     static constexpr size_t size = 4;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::command, &T::awk, &T::pattern, &T::type);
+};
+
+// Defines the bindings for the CopyFailMitigationParams structure.
+template <>
+struct Bindings<CopyFailMitigationParams>
+{
+    using T = CopyFailMitigationParams;
+    static constexpr size_t size = 1;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::allowedExecutablePaths);
 };
 
 // Defines the bindings for the DconfValueParams structure.

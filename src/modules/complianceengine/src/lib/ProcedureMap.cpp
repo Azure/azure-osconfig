@@ -14,6 +14,9 @@ const char* Bindings<AuditdRulesParams>::names[] = {"searchItem", "excludeOption
 // CommandOutputMatch.h:43
 const char* Bindings<CommandOutputMatchParams>::names[] = {"command", "awk", "pattern", "type"};
 
+// CopyFailMitigation.h:16
+const char* Bindings<CopyFailMitigationParams>::names[] = {"allowedExecutablePaths"};
+
 // DconfValue.h:31
 const char* Bindings<DconfValueParams>::names[] = {"key", "value", "operation"};
 
@@ -103,6 +106,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"AuditSuccess", {MakeHandler(AuditAuditSuccess), nullptr}},
     {"AuditdRules", {MakeHandler(AuditAuditdRules), nullptr}},
     {"CommandOutputMatch", {MakeHandler(AuditCommandOutputMatch), nullptr}},
+    {"CopyFailMitigation", {MakeHandler(AuditCopyFailMitigation), MakeHandler(RemediateCopyFailMitigation)}},
     {"DconfValue", {MakeHandler(AuditDconfValue), nullptr}},
     {"DefaultUmask", {MakeHandler(AuditDefaultUmask), nullptr}},
     {"FileExists", {MakeHandler(AuditFileExists), nullptr}},

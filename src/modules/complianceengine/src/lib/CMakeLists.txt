@@ -9,6 +9,55 @@ endif()
 # Find Lua via vcpkg
 find_package(Lua REQUIRED)
 
+find_program(CLANG_EXECUTABLE clang REQUIRED)
+find_program(XXD_EXECUTABLE xxd REQUIRED)
+file(GLOB COPYFAIL_BPFTOOL_CANDIDATES /usr/lib/linux-tools/*/bpftool)
+if (COPYFAIL_BPFTOOL_CANDIDATES)
+    list(SORT COPYFAIL_BPFTOOL_CANDIDATES)
+    list(LENGTH COPYFAIL_BPFTOOL_CANDIDATES COPYFAIL_BPFTOOL_CANDIDATES_LENGTH)
+    math(EXPR COPYFAIL_BPFTOOL_LAST_INDEX "${COPYFAIL_BPFTOOL_CANDIDATES_LENGTH} - 1")
+    list(GET COPYFAIL_BPFTOOL_CANDIDATES ${COPYFAIL_BPFTOOL_LAST_INDEX} COPYFAIL_BPFTOOL_EXECUTABLE)
+else()
+    find_program(COPYFAIL_BPFTOOL_EXECUTABLE bpftool REQUIRED)
+endif()
+
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+    set(COPYFAIL_BPF_TARGET_ARCH "x86")
+elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+    set(COPYFAIL_BPF_TARGET_ARCH "arm64")
+else()
+    set(COPYFAIL_BPF_TARGET_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+set(COPYFAIL_BPF_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/procedures/bpf/CopyFailMitigation.bpf.c)
+set(COPYFAIL_BPF_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bpf)
+set(COPYFAIL_BPF_VMLINUX ${COPYFAIL_BPF_BUILD_DIR}/vmlinux.h)
+set(COPYFAIL_BPF_OBJECT ${COPYFAIL_BPF_BUILD_DIR}/copyfail-afalg-lsm.bpf.o)
+set(COPYFAIL_BPF_OBJECT_INC ${COPYFAIL_BPF_BUILD_DIR}/CopyFailMitigationBpfObject.inc)
+
+add_custom_command(
+    OUTPUT ${COPYFAIL_BPF_VMLINUX}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${COPYFAIL_BPF_BUILD_DIR}
+    COMMAND /bin/sh -c "\"${COPYFAIL_BPFTOOL_EXECUTABLE}\" btf dump file /sys/kernel/btf/vmlinux format c > \"${COPYFAIL_BPF_VMLINUX}\""
+    VERBATIM
+)
+
+add_custom_command(
+    OUTPUT ${COPYFAIL_BPF_OBJECT}
+    COMMAND ${CLANG_EXECUTABLE} -O2 -g -target bpf -D__TARGET_ARCH_${COPYFAIL_BPF_TARGET_ARCH} -I ${COPYFAIL_BPF_BUILD_DIR} -c ${COPYFAIL_BPF_SOURCE} -o ${COPYFAIL_BPF_OBJECT}
+    DEPENDS ${COPYFAIL_BPF_SOURCE} ${COPYFAIL_BPF_VMLINUX}
+    VERBATIM
+)
+
+add_custom_command(
+    OUTPUT ${COPYFAIL_BPF_OBJECT_INC}
+    COMMAND /bin/sh -c "${XXD_EXECUTABLE} -i -n gCopyFailMitigationBpfObject ${COPYFAIL_BPF_OBJECT} > ${COPYFAIL_BPF_OBJECT_INC}"
+    DEPENDS ${COPYFAIL_BPF_OBJECT}
+    VERBATIM
+)
+
+add_custom_target(copyfailmitigation_bpf DEPENDS ${COPYFAIL_BPF_OBJECT_INC})
+
 set(PROCEDURES
     procedures/NoShellAccountsLocked.cpp
     procedures/AuditdRules.cpp
@@ -44,6 +93,7 @@ set(PROCEDURES
     procedures/WirelessDisabled.cpp
     procedures/XdmcpDisabled.cpp
     procedures/CommandOutputMatch.cpp
+    procedures/CopyFailMitigation.cpp
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
     procedures/SCE.cpp
@@ -89,6 +139,7 @@ set(SCHEMAS
     procedures/WirelessDisabled.schema.json
     procedures/XdmcpDisabled.schema.json
     procedures/CommandOutputMatch.schema.json
+    procedures/CopyFailMitigation.schema.json
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json
     procedures/SCE.schema.json
@@ -163,6 +214,7 @@ add_library(complianceenginelib STATIC
     UsersIterator.cpp
     ${PROCEDURES}
     )
+add_dependencies(complianceenginelib copyfailmitigation_bpf)
 
 set_property(TARGET complianceenginelib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
@@ -176,6 +228,9 @@ target_link_libraries(complianceenginelib PRIVATE
 target_include_directories(complianceenginelib PUBLIC
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${COPYFAIL_BPF_BUILD_DIR}
     ${LUA_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/procedures
 )
+
+install(FILES ${COPYFAIL_BPF_OBJECT} DESTINATION ${MODULES_INSTALL_DIR}/runtime-threat-mitigations)

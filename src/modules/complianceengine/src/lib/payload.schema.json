@@ -162,6 +162,9 @@
           "$ref": "procedures/CommandOutputMatch.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/CopyFailMitigation.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/DconfValue.schema.json#/definitions/audit"
         },
         {
@@ -293,6 +296,9 @@
         },
         {
           "$ref": "procedures/CommandOutputMatch.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/CopyFailMitigation.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/DconfValue.schema.json#/definitions/remediation"
