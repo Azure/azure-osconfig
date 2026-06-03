@@ -37,6 +37,9 @@ jobs:
   deploy:
     name: 'EV2 deploy (${{ inputs.target }} / ${{ inputs.ev2Infra }})'
     runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=build-infra]
+    concurrency:
+      group: kusto-ev2-${{ inputs.target }}
+      cancel-in-progress: false
     permissions:
       id-token: write
       contents: read
