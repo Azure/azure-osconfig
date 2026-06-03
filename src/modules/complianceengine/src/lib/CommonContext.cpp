@@ -4,10 +4,12 @@
 #include "CommonContext.h"
 
 #include "CommonUtils.h"
-#include "ContextInterface.h"
 
 namespace ComplianceEngine
 {
+constexpr char CommonContext::sFsCachePath[];
+constexpr char CommonContext::sLockPath[];
+
 CommonContext::~CommonContext() = default;
 
 Result<std::string> CommonContext::ExecuteCommand(const std::string& cmd) const

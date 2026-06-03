@@ -1,6 +1,7 @@
 #include <CommonContext.h>
 #include <StringTools.h>
 #include <Users.h>
+#include <sstream>
 
 namespace ComplianceEngine
 {

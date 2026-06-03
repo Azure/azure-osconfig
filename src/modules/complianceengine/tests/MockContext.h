@@ -144,6 +144,11 @@ struct MockContext : public ComplianceEngine::ContextInterface
         return mTempRootDir;
     }
 
+    std::string GetStatePath() const override
+    {
+        return mTempdir;
+    }
+
 private:
     char mTempdir[PATH_MAX];
     std::string mTempRootDir;
