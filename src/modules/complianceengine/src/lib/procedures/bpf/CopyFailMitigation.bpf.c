@@ -96,20 +96,21 @@ int BPF_PROG(copyfail_afalg, struct socket* sock, struct sockaddr* address, int 
     }
 
     struct task_struct* task = (struct task_struct*) bpf_get_current_task_btf();
-    struct mm_struct* mm = BPF_CORE_READ(task, mm);
+    struct mm_struct* mm = __builtin_preserve_access_index(task->mm);
     if (!mm)
     {
         return -EPERM;
     }
 
-    struct file* exe_file = BPF_CORE_READ(mm, exe_file);
+    struct file* exe_file = __builtin_preserve_access_index(mm->exe_file);
     if (!exe_file)
     {
         return -EPERM;
     }
 
     char path[MAX_PATH_LEN];
-    long path_len = bpf_d_path(&exe_file->f_path, path, sizeof(path));
+    struct path* exe_path = __builtin_preserve_access_index(&exe_file->f_path);
+    long path_len = bpf_d_path(exe_path, path, sizeof(path));
     if (path_len < 0)
     {
         return -EPERM;
