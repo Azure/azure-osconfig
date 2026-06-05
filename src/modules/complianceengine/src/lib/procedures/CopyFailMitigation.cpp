@@ -7,7 +7,6 @@
 #include <StringTools.h>
 
 #include <cerrno>
-#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
@@ -238,20 +237,6 @@ std::string HexByte(const unsigned int value)
     return hex.str();
 }
 
-std::string U32LittleEndianHex(const std::size_t value)
-{
-    std::ostringstream hex;
-    for (std::size_t i = 0; i < sizeof(uint32_t); ++i)
-    {
-        if (0 != i)
-        {
-            hex << " ";
-        }
-        hex << HexByte(static_cast<unsigned int>((value >> (8 * i)) & 0xff));
-    }
-    return hex.str();
-}
-
 std::string PathValueHex(const std::string& path)
 {
     std::ostringstream hex;
@@ -287,14 +272,11 @@ std::string BuildLoaderScript(const std::string& stateDirectory, const std::stri
     script << "    return 1\n";
     script << "}\n";
     script << "BPFTOOL=$(find_bpftool)\n";
-    script << "mkdir -p \"${STATE_DIR}\" \"${PIN_DIR}\" \"${MAP_DIR}\"\n";
+    script << "mkdir -p \"${STATE_DIR}\" \"${BPF_FS}\"\n";
     script << "mountpoint -q \"${BPF_FS}\" || mount -t bpf bpf \"${BPF_FS}\"\n";
-    script << "if [ ! -e \"${MAP_DIR}/allowed_paths\" ] || [ ! -e \"${MAP_DIR}/allowed_path_count\" ]; then\n";
-    script << "    rm -rf \"${PIN_DIR}\"\n";
-    script << "    mkdir -p \"${PIN_DIR}\" \"${MAP_DIR}\"\n";
-    script << "    \"${BPFTOOL}\" prog loadall \"${OBJ}\" \"${PIN_DIR}\" pinmaps \"${MAP_DIR}\" autoattach\n";
-    script << "fi\n";
-    script << "\"${BPFTOOL}\" map update pinned \"${MAP_DIR}/allowed_path_count\" key hex 00 00 00 00 value hex 00 00 00 00 any\n";
+    script << "rm -rf \"${PIN_DIR}\"\n";
+    script << "mkdir -p \"${PIN_DIR}\" \"${MAP_DIR}\"\n";
+    script << "\"${BPFTOOL}\" prog loadall \"${OBJ}\" \"${PIN_DIR}\" pinmaps \"${MAP_DIR}\" autoattach\n";
     return script.str();
 }
 
@@ -303,11 +285,8 @@ std::string BuildMapUpdateScript(const std::vector<std::string>& paths)
     std::ostringstream script;
     for (std::size_t i = 0; i < paths.size(); ++i)
     {
-        script << "\"${BPFTOOL}\" map update pinned \"${MAP_DIR}/allowed_paths\" key hex " << U32LittleEndianHex(i) << " value hex " << PathValueHex(paths[i])
-               << " any\n";
+        script << "\"${BPFTOOL}\" map update pinned \"${MAP_DIR}/allowed_paths\" key hex " << PathValueHex(paths[i]) << " value hex 01 any\n";
     }
-    script << "\"${BPFTOOL}\" map update pinned \"${MAP_DIR}/allowed_path_count\" key hex 00 00 00 00 value hex " << U32LittleEndianHex(paths.size())
-           << " any\n";
     script << "\"${BPFTOOL}\" prog show name " << cProgramName << " >/dev/null 2>&1\n";
     return script.str();
 }
