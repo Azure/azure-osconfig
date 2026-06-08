@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef COMPLIANCE_ENGINE_MMI_FORMATTER_HPP
 #define COMPLIANCE_ENGINE_MMI_FORMATTER_HPP
 
