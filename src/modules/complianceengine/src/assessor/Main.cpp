@@ -299,6 +299,7 @@ int main(int argc, char* argv[])
     bool hasError = false;
     while (std::getline(inputStream, line))
     {
+        OsConfigLogInfo(logHandle.get(), "hasError: %d", hasError ? 1 : 0);
         if (line.find("instance of OsConfigResource as") == std::string::npos)
         {
             continue;
@@ -353,6 +354,7 @@ int main(int argc, char* argv[])
                 }
 
                 auto ruleName = string("audit") + mofEntry.ruleName;
+                OsConfigLogInfo(logHandle.get(), "Rule: %s", ruleName.c_str());
                 auto result = engine.MmiGet(ruleName.c_str());
                 if (!result.HasValue())
                 {
@@ -362,6 +364,7 @@ int main(int argc, char* argv[])
                         return 1;
                     }
                     hasError = true;
+                    OsConfigLogInfo(logHandle.get(), "hasError: %d", hasError ? 1 : 0);
                     continue;
                 }
 
@@ -432,5 +435,6 @@ int main(int argc, char* argv[])
     }
 
     std::cout << result.Value() << "\n";
+    OsConfigLogInfo(logHandle.get(), "Result: %d", hasError ? 1 : 0);
     return hasError ? 1 : 0;
 }
