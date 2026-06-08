@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ApparmorProfileState"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ApparmorProfileState": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "enforce": {
+                  "type": "string",
+                  "description": "Set for enforce (L2) mode, complain (L1) mode by default"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

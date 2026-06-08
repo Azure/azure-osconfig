@@ -21,7 +21,7 @@
                   "type": "string",
                   "description": "Script path"
                 },
-                "ENVIRONMENT": {
+                "environment": {
                   "type": "string",
                   "description": "Environment as passed to the SCE script"
                 }
@@ -51,7 +51,7 @@
                   "type": "string",
                   "description": "Script path"
                 },
-                "ENVIRONMENT": {
+                "environment": {
                   "type": "string",
                   "description": "Environment as passed to the SCE script"
                 }

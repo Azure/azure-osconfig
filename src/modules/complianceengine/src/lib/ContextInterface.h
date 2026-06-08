@@ -23,6 +23,9 @@ public:
     virtual std::string GetSpecialFilePath(const std::string& path) const = 0;
 
     virtual FilesystemScanner& GetFilesystemScanner() = 0;
+
+    // Returns the path to be used for storing state.
+    virtual std::string GetStatePath() const = 0;
 };
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_CONTEXT_H

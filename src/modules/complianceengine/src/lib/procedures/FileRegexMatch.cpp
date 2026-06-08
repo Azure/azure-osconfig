@@ -88,7 +88,7 @@ Result<bool> MultilineMatch(const std::string& filename, const string& matchPatt
 }
 } // anonymous namespace
 
-Result<Status> AuditFileRegexMatch(const AuditFileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditFileRegexMatch(const FileRegexMatchParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     // These optional fields are guaranteed to have default values
     assert(params.matchOperation.HasValue());

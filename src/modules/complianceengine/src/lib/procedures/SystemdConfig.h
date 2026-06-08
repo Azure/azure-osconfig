@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_CONFIG_H
-#define COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_CONFIG_H
+#ifndef COMPLIANCEENGINE_PROCEDURES_SYSTEMD_CONFIG_H
+#define COMPLIANCEENGINE_PROCEDURES_SYSTEMD_CONFIG_H
 
 #include <Evaluator.h>
 #include <Regex.h>
@@ -10,7 +10,7 @@
 namespace ComplianceEngine
 {
 
-enum class SystemdParameterOperator
+enum class SystemdConfigValueOperator
 {
     /// label: lt
     LessThan,
@@ -27,7 +27,7 @@ enum class SystemdParameterOperator
     /// label: eq
     Equal,
 };
-struct SystemdParameterParams
+struct SystemdConfigValueParams
 {
     /// Parameter name
     std::string parameter;
@@ -36,7 +36,7 @@ struct SystemdParameterParams
     Optional<regex> valueRegex;
 
     /// Operator for the value
-    Optional<SystemdParameterOperator> op;
+    Optional<SystemdConfigValueOperator> op;
 
     /// Value to compare with
     Optional<std::string> value;
@@ -54,6 +54,6 @@ struct SystemdParameterParams
     Optional<bool> passOnNotFound = false;
 };
 
-Result<Status> AuditSystemdParameter(const SystemdParameterParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> AuditSystemdConfigValue(const SystemdConfigValueParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
-#endif // COMPLIANCEENGINE_PROCEDURES_ENSURE_SYSTEMD_CONFIG_H
+#endif // COMPLIANCEENGINE_PROCEDURES_SYSTEMD_CONFIG_H

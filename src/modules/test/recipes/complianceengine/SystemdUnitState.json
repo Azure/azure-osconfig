@@ -12,9 +12,9 @@
       "audit": {
         "SystemdUnitState": {
           "unitName": "foo.service",
-          "LoadState": "not-found",
-          "ActiveState": "inactive",
-          "UnitFileState": ""
+          "loadState": "not-found",
+          "activeState": "inactive",
+          "unitFileState": ""
         }
       },
       "parameters": {
@@ -36,9 +36,9 @@
       "audit": {
         "SystemdUnitState": {
           "unitName": "foo.service",
-          "LoadState": "active",
-          "ActiveState": "inactive",
-          "UnitFileState": ""
+          "loadState": "active",
+          "activeState": "inactive",
+          "unitFileState": ""
         }
       },
       "parameters": {
@@ -59,9 +59,9 @@
       "audit": {
         "SystemdUnitState": {
           "unitName": "init.scope",
-          "LoadState": "loade.",
-          "ActiveState": "acti.*",
-          "UnitFileState": ""
+          "loadState": "loade.",
+          "activeState": "acti.*",
+          "unitFileState": ""
         }
       },
       "parameters": {

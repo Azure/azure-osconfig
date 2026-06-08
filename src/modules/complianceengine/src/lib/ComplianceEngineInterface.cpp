@@ -4,10 +4,10 @@
 #include "ComplianceEngineInterface.h"
 
 #include "BenchmarkInfo.h"
-#include "CommonContext.h"
 #include "CommonUtils.h"
 #include "DistributionInfo.h"
 #include "Engine.h"
+#include "GuestConfigurationContext.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
@@ -74,7 +74,7 @@ void ComplianceEngineShutdown(void)
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    auto context = std::unique_ptr<ComplianceEngine::CommonContext>(new ComplianceEngine::CommonContext(g_log));
+    auto context = std::unique_ptr<ComplianceEngine::GuestConfigurationContext>(new ComplianceEngine::GuestConfigurationContext(g_log));
     if (nullptr == context)
     {
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);

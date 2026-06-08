@@ -3,6 +3,7 @@
 
 #include <CommonUtils.h>
 #include <Regex.h>
+#include <StringTools.h>
 #include <SystemdUnitState.h>
 #include <Telemetry.h>
 #include <algorithm>
@@ -45,23 +46,23 @@ Result<Status> AuditSystemdUnitState(const SystemdUnitStateParams& params, Indic
         systemCtlCmd += "-p " + param.argName + " ";
     };
 
-    if (params.ActiveState.HasValue())
+    if (params.activeState.HasValue())
     {
-        setParamValue(queryParams[0], params.ActiveState.Value());
+        setParamValue(queryParams[0], params.activeState.Value());
     }
-    if (params.LoadState.HasValue())
+    if (params.loadState.HasValue())
     {
-        setParamValue(queryParams[1], params.LoadState.Value());
+        setParamValue(queryParams[1], params.loadState.Value());
     }
-    if (params.UnitFileState.HasValue())
+    if (params.unitFileState.HasValue())
     {
-        setParamValue(queryParams[2], params.UnitFileState.Value());
+        setParamValue(queryParams[2], params.unitFileState.Value());
     }
-    if (params.Unit.HasValue())
+    if (params.unit.HasValue())
     {
-        setParamValue(queryParams[3], params.Unit.Value());
+        setParamValue(queryParams[3], params.unit.Value());
     }
-    systemCtlCmd += params.unitName;
+    systemCtlCmd += "\"" + EscapeForShell(params.unitName) + "\"";
 
     if (!argFound)
     {

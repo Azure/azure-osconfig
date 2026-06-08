@@ -14,13 +14,13 @@
 #include <unistd.h>
 
 using ComplianceEngine::AuditUfwStatus;
-using ComplianceEngine::AuditUfwStatusParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::NestedListFormatter;
 using ComplianceEngine::Pattern;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
+using ComplianceEngine::UfwStatusParams;
 
 static const std::string ufwCommand = "ufw status verbose";
 static const std::string ufwActiveOutput =
@@ -61,7 +61,7 @@ TEST_F(UfwStatusTest, UfwActiveStatusMatches)
     // Setup the expectation for the ufw status command to return active status
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    AuditUfwStatusParams args;
+    UfwStatusParams args;
     auto pattern = Pattern::Make("Status:\\s*active");
     ASSERT_TRUE(pattern.HasValue());
     args.statusRegex = std::move(pattern.Value());
@@ -80,7 +80,7 @@ TEST_F(UfwStatusTest, UfwNotActiveStatusMismatch)
     // Setup the expectation for the ufw status command to return inactive status
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwInactiveOutput)));
 
-    AuditUfwStatusParams args;
+    UfwStatusParams args;
     auto pattern = Pattern::Make("Status:\\s*active");
     ASSERT_TRUE(pattern.HasValue());
     args.statusRegex = std::move(pattern.Value());
@@ -99,7 +99,7 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMatches)
     // Setup the expectation for the ufw status command to return output with firewall rules
     EXPECT_CALL(mContext, ExecuteCommand((ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    AuditUfwStatusParams args;
+    UfwStatusParams args;
     auto pattern = Pattern::Make("22/tcp\\s+ALLOW IN\\s+Anywhere");
     ASSERT_TRUE(pattern.HasValue());
     args.statusRegex = std::move(pattern.Value());
@@ -118,7 +118,7 @@ TEST_F(UfwStatusTest, UfwFirewallRuleMissing)
     // Set up the expectation for the ufw status command to return output with firewall rules
     EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
-    AuditUfwStatusParams args;
+    UfwStatusParams args;
     auto pattern = Pattern::Make("8080/tcp\\s+ALLOW IN\\s+Anywhere");
     ASSERT_TRUE(pattern.HasValue());
     args.statusRegex = std::move(pattern.Value());
@@ -137,7 +137,7 @@ TEST_F(UfwStatusTest, UfwNotFound)
     // Set up the expectation for the ufw status command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(Error("Command not found", 127))));
 
-    AuditUfwStatusParams args;
+    UfwStatusParams args;
     auto pattern = Pattern::Make("Status:\\s*active");
     ASSERT_TRUE(pattern.HasValue());
     args.statusRegex = std::move(pattern.Value());
