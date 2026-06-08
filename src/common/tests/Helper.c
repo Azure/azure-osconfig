@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "../commonutils/SshUtils.c"
 
 int BackupSshdConfigTest(char const* c)

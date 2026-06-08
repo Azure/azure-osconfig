@@ -1,4 +1,6 @@
 // This file is auto-generated. Do not edit manually.
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #ifndef COMPLIANCEENGINE_PROCEDURE_MAP_H
 #define COMPLIANCEENGINE_PROCEDURE_MAP_H
 

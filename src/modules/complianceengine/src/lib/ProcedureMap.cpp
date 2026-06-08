@@ -1,4 +1,6 @@
 // This file is auto-generated. Do not edit manually.
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 #include <ProcedureMap.h>
 #include <Bindings.h>
 #include <RevertMap.h>
