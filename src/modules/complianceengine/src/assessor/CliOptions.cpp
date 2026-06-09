@@ -42,10 +42,9 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
 #endif
 
     const auto* short_opts = "hVvdel:s:f:";
-    const option long_opts[] = { {"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'},
-        {"verbose", no_argument, nullptr, 'v'}, {"debug", no_argument, nullptr, 'd'}, {"continue-on-error", no_argument, nullptr, 'e'},
-        {"log-file", required_argument, nullptr, 'l'}, {"section", required_argument, nullptr, 's'}, {"format", required_argument, nullptr, 'f'},
-        {nullptr, 0, nullptr, 0} };
+    const option long_opts[] = {{"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'}, {"verbose", no_argument, nullptr, 'v'},
+        {"debug", no_argument, nullptr, 'd'}, {"continue-on-error", no_argument, nullptr, 'e'}, {"log-file", required_argument, nullptr, 'l'},
+        {"section", required_argument, nullptr, 's'}, {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
 
     auto result = Options{};
     int opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
