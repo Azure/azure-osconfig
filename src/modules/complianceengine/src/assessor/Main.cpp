@@ -92,6 +92,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <version.h>
