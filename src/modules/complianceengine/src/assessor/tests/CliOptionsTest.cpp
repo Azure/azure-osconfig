@@ -67,6 +67,14 @@ TEST(CliOptionsSmokeTest, FormatJsonIsParsed)
     EXPECT_EQ(result.Value().format.Value(), Format::Json);
 }
 
+TEST(CliOptionsSmokeTest, ContinueOnErrorIsParsed)
+{
+    ArgvHelper a{"prog", "-e", "audit"};
+    auto result = ParseCommandLine(a.Argc(), a.Argv());
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_TRUE(result.Value().continueOnError);
+}
+
 TEST(CliOptionsSmokeTest, MissingCommandIsError)
 {
     ArgvHelper a{"prog"};
