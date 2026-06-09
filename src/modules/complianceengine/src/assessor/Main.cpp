@@ -23,9 +23,11 @@
 //
 //    2. open(O_RDONLY|O_NOFOLLOW|O_CLOEXEC): the kernel refuses symlinks in
 //       the final path component atomically (ELOOP), eliminating the
-//       lstat-then-open TOCTOU window. Note: symlinks in intermediate path
-//       components are not checked; the operator is trusted to supply a
-//       straightforward path.
+//       lstat-then-open TOCTOU window. Symlinks are intentionally rejected
+//       rather than accepted-with-a-warning; callers that stage input via a
+//       symlink must resolve the link before passing the path. Note: symlinks
+//       in intermediate path components are not checked; the operator is
+//       trusted to supply a straightforward path.
 //
 //    3. fstat on the open fd: ownership and mode are verified against the
 //       inode we actually hold, not a potentially-swapped path entry. The
