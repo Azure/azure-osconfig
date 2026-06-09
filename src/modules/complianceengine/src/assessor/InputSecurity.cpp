@@ -49,11 +49,13 @@ bool RefuseWritableParentDir(const std::string& path, OsConfigLogHandle logHandl
         dir = path.substr(0, slash);
     }
 
-    struct stat st;
-    if (::stat(dir.c_str(), &st) != 0)
-    {
-        return false; // cannot check; proceed
-    }
+struct stat st;
+if (::stat(dir.c_str(), &st) != 0)
+{
+    const std::string msg = std::strerror(errno);
+    OsConfigLogError(logHandle, "Refusing to use path '%s': failed to stat parent directory '%s': %s", path.c_str(), dir.c_str(), msg.c_str());
+    return true;
+}
     if (st.st_uid != 0)
     {
         OsConfigLogError(logHandle, "Refusing to read input file '%s': parent directory '%s' not owned by root (uid %u).", path.c_str(), dir.c_str(),
