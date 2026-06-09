@@ -73,7 +73,12 @@ bool RefuseWritableParentDir(const std::string& path, OsConfigLogHandle logHandl
 
 Result<int> OpenVerifiedInput(const std::string& path, OsConfigLogHandle logHandle)
 {
-    const int fd = ::open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    // O_NONBLOCK prevents open() from blocking on a FIFO: without it,
+    // O_RDONLY on a FIFO stalls until a writer appears, which would hang the
+    // assessor indefinitely. For regular files O_NONBLOCK has no effect on
+    // Linux (reads always complete immediately). Non-regular files are rejected
+    // by the S_ISREG fstat check below once the fd is in hand.
+    const int fd = ::open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
     if (fd < 0)
     {
         if (errno == ELOOP)

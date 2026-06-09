@@ -28,6 +28,9 @@ bool RefuseWritableParentDir(const std::string& path, OsConfigLogHandle logHandl
 //   - O_NOFOLLOW causes the kernel to refuse a symlink in the final path
 //     component atomically (returns ELOOP), eliminating the lstat-then-open
 //     TOCTOU window.
+//   - O_NONBLOCK prevents the open() call from blocking on a FIFO (without
+//     it, O_RDONLY on a FIFO stalls until a writer appears). For regular
+//     files O_NONBLOCK has no effect on Linux reads.
 //   - fstat() checks the inode we actually hold, not a potentially-swapped
 //     path entry. The file must be a regular file, root-owned, and not
 //     group/world-writable. Non-regular files (FIFOs, devices) are refused so
