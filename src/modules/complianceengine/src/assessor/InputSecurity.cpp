@@ -141,13 +141,18 @@ bool RefuseUnsafeLogFile(const std::string& path, OsConfigLogHandle logHandle)
         return true;
     }
 
-    struct stat st;
-    if (::lstat(path.c_str(), &st) != 0)
+struct stat st;
+if (::lstat(path.c_str(), &st) != 0)
+{
+    if (errno == ENOENT)
     {
-        // Does not exist yet (or cannot be inspected); it will be created in
-        // the parent directory already verified to be root-owned and safe.
+        // Does not exist yet; it will be created in the parent directory already verified to be root-owned and safe.
         return false;
     }
+    const std::string msg = std::strerror(errno);
+    OsConfigLogError(logHandle, "Refusing to use log file '%s': failed to inspect path: %s", path.c_str(), msg.c_str());
+    return true;
+}
     if (S_ISLNK(st.st_mode))
     {
         OsConfigLogError(logHandle, "Refusing to use log file '%s': path is a symlink.", path.c_str());
