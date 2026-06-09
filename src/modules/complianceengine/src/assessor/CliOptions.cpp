@@ -65,6 +65,9 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
             case 'd':
                 result.debug = true;
                 break;
+            case 'e':
+                result.continueOnError = true;
+                break;
             case 'l':
                 result.logFile = std::string(optarg);
                 break;
