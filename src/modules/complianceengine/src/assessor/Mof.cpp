@@ -89,7 +89,7 @@ Result<SemVer> SemVer::Parse(const std::string& version)
     }
 }
 
-Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
+Result<Resource> Resource::ParseSingleEntry(std::istream& stream, size_t& bytesConsumed, size_t maxBytes)
 {
     string line;
     Optional<std::string> resourceID;
@@ -100,6 +100,12 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
     Optional<std::string> payload;
     while (std::getline(stream, line))
     {
+        bytesConsumed += line.size() + 1;
+        if (bytesConsumed > maxBytes)
+        {
+            return Error("MOF input exceeds maximum size");
+        }
+
         if (line.size() > kMaxLineLength)
         {
             return Error("MOF line exceeds maximum length");

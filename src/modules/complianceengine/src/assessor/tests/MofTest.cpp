@@ -4,6 +4,7 @@
 // MOF parser-rework PR along with their own tests.
 
 #include <Mof.hpp>
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
@@ -26,7 +27,8 @@ constexpr const char* kValidBody = R"(    ResourceID = "Some Rule";
 TEST(MofSmokeTest, ParseSingleEntryHappyPath)
 {
     std::istringstream s(kValidBody);
-    auto result = Resource::ParseSingleEntry(s);
+    size_t bytesConsumed = 0;
+    auto result = Resource::ParseSingleEntry(s, bytesConsumed, SIZE_MAX);
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
     EXPECT_EQ(result.Value().resourceID, "Some Rule");
     EXPECT_EQ(result.Value().ruleName, "MyRule");
@@ -52,7 +54,8 @@ TEST(MofSmokeTest, JsonEscapedDesiredObjectValue)
         "    DesiredObjectValue = \"{\\\"mountPoint\\\":\\\"/tmp\\\"}\";\n"
         "};\n";
     std::istringstream s(body);
-    auto result = Resource::ParseSingleEntry(s);
+    size_t bytesConsumed = 0;
+    auto result = Resource::ParseSingleEntry(s, bytesConsumed, SIZE_MAX);
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
     ASSERT_TRUE(result.Value().payload.HasValue());
     EXPECT_EQ(result.Value().payload.Value(), "{\"mountPoint\":\"/tmp\"}");

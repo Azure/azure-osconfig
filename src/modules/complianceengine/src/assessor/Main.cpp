@@ -308,11 +308,12 @@ int main(int argc, char* argv[])
     string line;
     auto status = Status::Compliant;
     bool hasError = false;
-    // Bytes consumed from the outer scan loop. The --input path is already
-    // bounded by kMaxInputBytes above; this counter applies the same ceiling
-    // to the stdin path without buffering all of stdin (per the planned MOF
-    // streaming rework). Per-entry line-length and entry-count limits are
-    // enforced inside Resource::ParseSingleEntry.
+    // Total bytes consumed from the input stream (outer scan loop + all lines
+    // read inside Resource::ParseSingleEntry). The --input path is already
+    // bounded by kMaxInputBytes above; this shared counter applies the same
+    // ceiling to the stdin path without buffering all of stdin (per the
+    // planned MOF streaming rework). Per-entry line-length and entry-count
+    // limits are also enforced inside Resource::ParseSingleEntry.
     size_t bytesConsumed = 0;
     size_t entryCount = 0;
     while (std::getline(inputStream, line))
@@ -335,7 +336,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        auto mofParsingResult = Resource::ParseSingleEntry(inputStream);
+        auto mofParsingResult = Resource::ParseSingleEntry(inputStream, bytesConsumed, kMaxInputBytes);
         if (!mofParsingResult.HasValue())
         {
             OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", mofParsingResult.Error().message.c_str());
