@@ -1,5 +1,8 @@
 #!/bin/sh -l
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 output=$(pmc \
     --base-url $PMC_CLI_BASE_URL \
     --auth-type msal \

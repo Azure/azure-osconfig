@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #ifndef COMPLIANCE_ENGINE_ASSESOR_MOF_HPP
 #define COMPLIANCE_ENGINE_ASSESOR_MOF_HPP
 

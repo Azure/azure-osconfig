@@ -26,6 +26,10 @@ on:
         required: true
         default: true
 
+permissions:
+  contents: read
+  packages: read
+
 env:
   MOUNT: /kompli
   REGISTRY: ghcr.io

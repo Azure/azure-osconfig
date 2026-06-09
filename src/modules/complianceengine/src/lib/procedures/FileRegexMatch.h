@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 #ifndef COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H
 #define COMPLIANCEENGINE_PROCEDURES_FILE_REGEX_MATCH_H

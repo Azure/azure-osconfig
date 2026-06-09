@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #ifndef COMPLIANCE_ENGINE_COMPACT_LIST_FORMATTER_HPP
 #define COMPLIANCE_ENGINE_COMPACT_LIST_FORMATTER_HPP
 

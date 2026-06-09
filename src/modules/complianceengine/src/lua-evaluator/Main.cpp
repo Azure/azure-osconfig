@@ -1,4 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include <AssessorContext.h>
+#include <CommonContext.h>
 #include <Logging.h>
 #include <LuaEvaluator.h>
 #include <Optional.h>

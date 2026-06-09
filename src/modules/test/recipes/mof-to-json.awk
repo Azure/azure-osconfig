@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 # Initialize variables to hold values

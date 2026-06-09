@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
 #ifndef COMPLIANCEENGINE_LUAEVALUATOR_H
 #define COMPLIANCEENGINE_LUAEVALUATOR_H
 

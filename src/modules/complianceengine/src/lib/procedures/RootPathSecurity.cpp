@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include <CommonUtils.h>
 #include <RootPathSecurity.h>
 #include <pwd.h>

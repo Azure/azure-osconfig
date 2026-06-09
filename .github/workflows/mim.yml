@@ -6,6 +6,9 @@ on:
       - src/modules/mim/*.json
       - src/modules/schema/mim.schema.json
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest

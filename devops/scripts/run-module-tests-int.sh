@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 BUILDDIR=$1
 SRCDIR=`pwd`
 mkdir -p /etc/osconfig

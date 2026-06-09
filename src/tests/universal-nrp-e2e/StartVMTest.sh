@@ -1,6 +1,8 @@
 #!/bin/bash
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# StartMCTest.sh
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# StartVMTest.sh
 # Description: This script orchestrates tests on particular disk image for testing purposes.
 #              It configures the VM with a specified image and places all required test artifacts in
 #              addition to installing dependencies, running tests, and collecting logs/reports.

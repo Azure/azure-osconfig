@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 if [ $# -ne 2 ]; then
 	echo "Usage: $0 <sources_path> <build_path>"
 	echo "  sources_path: path to the sources directory"

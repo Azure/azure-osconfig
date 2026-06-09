@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Ensures there are no world-writable regular files and that all world-writable directories have the sticky bit set.
 // World-writable: (mode & 0002). Sticky bit required on dirs: (mode & S_ISVTX) when (S_IWOTH) is set.
 

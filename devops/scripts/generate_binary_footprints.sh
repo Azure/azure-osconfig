@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # Generates the binary footprints used to check for binary size issues
 # By default, uses the latest published package (prod/insiders-fast) unless
 # regex filter is given.

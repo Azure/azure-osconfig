@@ -1,5 +1,8 @@
 #!/bin/bash
-# Copyright (c) Microsoft Corporation. All rights reserved.
+#
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
 # StartLocalTest.sh
 # Description: This script orchestrates tests on a local machine. Installs dependencies,
 #              runs tests, and collects logs/reports. Returns an error code if any stage fails.

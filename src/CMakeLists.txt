@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 # VCPKG integration
@@ -106,12 +106,12 @@ execute_process(COMMAND git rev-parse --short HEAD
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(OsConfigProjectName "osconfig")
-set(OsConfigProjectLongName "Azure OSConfig")
-set(OsConfigProjectDescription "Azure OSConfig is a modular security configuration stack for Linux Edge devices that supports multi-authority device management over Azure, GitOps, as well as local management.")
+set(OsConfigProjectName "kompli")
+set(OsConfigProjectLongName "Microsoft Kompli")
+set(OsConfigProjectDescription "Microsoft Kompli is a modular security configuration stack for Linux Edge devices that supports multi-authority device management over Azure, GitOps, as well as local management.")
 set(OsConfigProjectVendor "Microsoft")
-set(OsConfigProjectEmail "osconfigcore@microsoft.com")
-set(OsConfigProjectUrl "https://github.com/Azure/azure-osconfig/")
+set(OsConfigProjectEmail "kompli@microsoft.com")
+set(OsConfigProjectUrl "https://github.com/microsoft/kompli/")
 set(OsConfigHashAlgorithm "SHA256")
 set(OsConfigVersionString ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}.${CMAKE_PROJECT_VERSION_TWEAK})
 set(OsConfigVersionStringFull "${OsConfigVersionString}-g${GIT_COMMIT_ID}")
