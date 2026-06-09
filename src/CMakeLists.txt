@@ -113,7 +113,7 @@ if (RUN_VCPKG_INSTALL)
         return()
     endif()
 else()
-    message(STATUS "Skipping initall vcpkg install (dependencies already up to date).")
+    message(STATUS "Skipping initial vcpkg install (dependencies already up to date).")
 endif()
 
 cmake_minimum_required(VERSION 3.21)
