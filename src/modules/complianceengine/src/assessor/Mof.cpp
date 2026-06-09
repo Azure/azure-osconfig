@@ -13,6 +13,13 @@ using std::string;
 
 namespace
 {
+// Upper bound on a single MOF line. MOF values (notably the base64-encoded
+// ProcedureObjectValue) can be long, but a multi-megabyte line indicates a
+// malformed or hostile input rather than a real benchmark entry. Bounding the
+// line length keeps a single getline() from exhausting memory while we run as
+// root.
+constexpr size_t kMaxLineLength = static_cast<size_t>(4) * 1024 * 1024;
+
 string GetValue(const std::string& line)
 {
     const auto start = line.find('"');
@@ -93,6 +100,11 @@ Result<Resource> Resource::ParseSingleEntry(std::istream& stream)
     Optional<std::string> payload;
     while (std::getline(stream, line))
     {
+        if (line.size() > kMaxLineLength)
+        {
+            return Error("MOF line exceeds maximum length");
+        }
+
         if (line.find("ResourceID") != string::npos)
         {
             resourceID = GetValue(line);
