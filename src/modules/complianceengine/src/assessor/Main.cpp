@@ -426,6 +426,11 @@ int main(int argc, char* argv[])
                 {
                     OsConfigLogError(logHandle.get(), "Cannot remediate '%s': missing DesiredObjectValue.", mofEntry.resourceID.c_str());
                     status = Status::NonCompliant;
+                    if (!options.continueOnError)
+                    {
+                        return 1;
+                    }
+                    hasError = true;
                     continue;
                 }
                 auto ruleName = string("remediate") + mofEntry.ruleName;
