@@ -28,7 +28,7 @@ The coding style is described in a separate [style document](docs/style.md).
 ```bash
 python3 -m pre_commit run --all-files
 ```
-6. From your fork, create a PR that targets the `dev` branch. [Learn more about pull requests](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/creating-an-issue-or-pull-request#creating-a-pull-request).
+6. From your fork, create a PR that targets the `main` branch. [Learn more about pull requests](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/creating-an-issue-or-pull-request#creating-a-pull-request).
 7. The PR triggers a series of GitHub actions that will validate the new submitted changes.
 
 The Kompli team will respond to a PR that passes all checks in 3 business days.
