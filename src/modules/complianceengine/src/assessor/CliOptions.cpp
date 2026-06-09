@@ -19,6 +19,7 @@ void PrintHelp(const std::string& programName)
     std::cout << "\t-V, --version\tShow software version and exit.\n";
     std::cout << "\t-v, --verbose\tRun in verbose mode.\n";
     std::cout << "\t-d, --debug\tRun in debug mode.\n";
+    std::cout << "\t-e, --continue-on-error\tSkip rules that fail due to engine errors and continue processing. Returns 1 if any error occurred.\n";
     std::cout << "\t-l, --log-file\tSpecify a log file. Default: print log entries to standard output.\n";
     std::cout << "\t-s, --section\tProcess only specific sections. Default: process all available rules.\n";
     std::cout << "\n";
