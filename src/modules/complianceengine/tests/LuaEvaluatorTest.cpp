@@ -8,7 +8,9 @@
 #include "MockContext.h"
 #include "Result.h"
 
+#include <fstream>
 #include <gtest/gtest.h>
+#include <iterator>
 #include <memory>
 #include <string>
 
