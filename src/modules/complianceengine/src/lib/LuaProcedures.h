@@ -49,10 +49,10 @@ struct LuaCallContext
 //   - Snapshot semantics: iterator holds shared_ptr<const FSCache>; unaffected by background refresh.
 //   - Arguments outside unsigned 32-bit range produce Lua error.
 //
-//   ce.log.info(message)    -- log at informational level via OsConfigLogInfo
-//   ce.log.warning(message) -- log at warning level via OsConfigLogWarning
-//   ce.log.error(message)   -- log at error level via OsConfigLogError
-//   ce.log.debug(message)   -- log at debug level via OsConfigLogDebug
+//   ce.log.info(message)    -- log at informational level
+//   ce.log.warning(message) -- log at warning level
+//   ce.log.error(message)   -- log at error level
+//   ce.log.debug(message)   -- log at debug level
 //     message: string (required, non-empty) text to emit; prefixed with "[Lua] " in the log output.
 // Behavior:
 //   - Routes to the OsConfigLog* macros using the log handle from the current call context.
