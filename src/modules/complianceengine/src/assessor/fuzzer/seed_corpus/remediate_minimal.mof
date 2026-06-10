@@ -1,0 +1,18 @@
+instance of OsConfigResource as $OsConfigResource0ref
+{
+    ResourceID = "1.1.1 Sample Rule";
+    PayloadKey = "/cis/ubuntu/22.04/v2.0.0/1/1/1";
+    RuleId = "00000000-0000-0000-0000-000000000000";
+    ComponentName = "ComplianceEngine";
+    ProcedureObjectName = "procedureSample";
+    ProcedureObjectValue = "eyJhdWRpdCI6e319";
+    InitObjectName = "initSample";
+    ReportedObjectName = "auditSample";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateSample";
+    DesiredObjectValue = "{}";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "ComplianceEngine";
+    SourceInfo = "::4::5::OsConfigResource";
+};
