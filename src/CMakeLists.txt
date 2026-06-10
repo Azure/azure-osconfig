@@ -5,13 +5,115 @@
 if (DEFINED ENV{VCPKG_ROOT})
     message (FATAL_ERROR "VCPKG_ROOT found, please unset the environment variable to use the git submodule version of vcpkg")
 endif()
-if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake)
-        set (CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
-        message (STATUS "VCPKG_ROOT not found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
-    else()
-        message (ERROR "Ensure git submodules are initialized or VCPKG_ROOT is set and install the vcpkg ports")
+
+set(VCPKG_SOURCE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg")
+set(VCPKG_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/vcpkg_root")
+set(VCPKG_TOOLCHAIN_FILE_PATH "${VCPKG_ROOT_DIR}/scripts/buildsystems/vcpkg.cmake")
+set(VCPKG_EXECUTABLE_PATH "${VCPKG_ROOT_DIR}/vcpkg")
+
+function(initialize_vcpkg_submodule)
+    if(NOT EXISTS "${VCPKG_SOURCE_ROOT_DIR}/bootstrap-vcpkg.sh")
+        message(STATUS "Initializing external/vcpkg submodule")
+        execute_process(
+            COMMAND git submodule init external/vcpkg
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+            RESULT_VARIABLE SUBMODULE_INIT_RESULT
+        )
+        if(NOT SUBMODULE_INIT_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed: git submodule init external/vcpkg (exit code: ${SUBMODULE_INIT_RESULT})")
+            return()
+        endif()
+
+        execute_process(
+            COMMAND git submodule update --recursive external/vcpkg
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+            RESULT_VARIABLE SUBMODULE_UPDATE_RESULT
+        )
+        if(NOT SUBMODULE_UPDATE_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed: git submodule update --recursive external/vcpkg (exit code: ${SUBMODULE_UPDATE_RESULT})")
+            return()
+        endif()
     endif()
+
+    if(NOT EXISTS "${VCPKG_SOURCE_ROOT_DIR}/bootstrap-vcpkg.sh")
+        message(FATAL_ERROR "Failed: ${VCPKG_SOURCE_ROOT_DIR}/bootstrap-vcpkg.sh not found after submodule initialization")
+        return()
+    endif()
+endfunction()
+
+function(initialize_vcpkg_submodule_and_bootstrap)
+    initialize_vcpkg_submodule()
+
+    if(NOT EXISTS "${VCPKG_ROOT_DIR}")
+        message(STATUS "Copying external/vcpkg to ${VCPKG_ROOT_DIR}")
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${VCPKG_SOURCE_ROOT_DIR}" "${VCPKG_ROOT_DIR}"
+            RESULT_VARIABLE VCPKG_COPY_RESULT
+        )
+        if(NOT VCPKG_COPY_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed: copy external/vcpkg to ${VCPKG_ROOT_DIR} (exit code: ${VCPKG_COPY_RESULT})")
+            return()
+        endif()
+    endif()
+
+    # Bootstrap vcpkg
+    execute_process(
+        COMMAND bash bootstrap-vcpkg.sh
+        WORKING_DIRECTORY "${VCPKG_ROOT_DIR}"
+        RESULT_VARIABLE BOOTSTRAP_RESULT
+    )
+    if(NOT BOOTSTRAP_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed: bootstrap-vcpkg.sh (exit code: ${BOOTSTRAP_RESULT})")
+        return()
+    endif()
+endfunction()
+
+set(VCPKG_ROOT "${VCPKG_ROOT_DIR}" CACHE PATH "Build-local vcpkg root")
+
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if (EXISTS ${VCPKG_TOOLCHAIN_FILE_PATH})
+        set (CMAKE_TOOLCHAIN_FILE ${VCPKG_TOOLCHAIN_FILE_PATH} CACHE STRING "Vcpkg toolchain file")
+        message (STATUS "Using build-local vcpkg toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    else()
+        message (STATUS "Initializing external/vcpkg, creating build-local vcpkg_root, and bootstrapping vcpkg")
+        initialize_vcpkg_submodule_and_bootstrap()
+
+        if (EXISTS ${VCPKG_TOOLCHAIN_FILE_PATH})
+            set (CMAKE_TOOLCHAIN_FILE ${VCPKG_TOOLCHAIN_FILE_PATH} CACHE STRING "Vcpkg toolchain file")
+        else()
+            message(FATAL_ERROR "Failed: ${VCPKG_TOOLCHAIN_FILE_PATH} not found after bootstrap-vcpkg.sh")
+            return()
+        endif()
+    endif()
+endif()
+
+# Run vcpkg install only when needed.
+set(VCPKG_STATUS_FILE "${CMAKE_BINARY_DIR}/vcpkg_installed/vcpkg/status")
+set(VCPKG_MANIFEST_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg.json")
+set(VCPKG_CONFIGURATION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg-configuration.json")
+set(RUN_VCPKG_INSTALL OFF)
+
+if (NOT EXISTS ${VCPKG_STATUS_FILE})
+    set(RUN_VCPKG_INSTALL ON)
+elseif (EXISTS ${VCPKG_MANIFEST_FILE} AND ${VCPKG_MANIFEST_FILE} IS_NEWER_THAN ${VCPKG_STATUS_FILE})
+    set(RUN_VCPKG_INSTALL ON)
+elseif (EXISTS ${VCPKG_CONFIGURATION_FILE} AND ${VCPKG_CONFIGURATION_FILE} IS_NEWER_THAN ${VCPKG_STATUS_FILE})
+    set(RUN_VCPKG_INSTALL ON)
+endif()
+
+if (RUN_VCPKG_INSTALL)
+    message(STATUS "Running vcpkg install (first run or manifest changed).")
+    execute_process(
+        COMMAND ${VCPKG_EXECUTABLE_PATH} install
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        RESULT_VARIABLE VCPKG_INSTALL_RESULT
+    )
+    if(NOT VCPKG_INSTALL_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed: vcpkg install (exit code: ${VCPKG_INSTALL_RESULT})")
+        return()
+    endif()
+else()
+    message(STATUS "Skipping initial vcpkg install (dependencies already up to date).")
 endif()
 
 cmake_minimum_required(VERSION 3.21)
