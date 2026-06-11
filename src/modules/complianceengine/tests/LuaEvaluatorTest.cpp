@@ -752,6 +752,48 @@ TEST_F(LuaEvaluatorTest, Log_E2E_WritesToLogFile)
     EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] debug message"));
 }
 
+// Test that format specifiers in log messages are emitted verbatim and not interpreted
+TEST_F(LuaEvaluatorTest, Log_E2E_FormatSpecifiersPassedVerbatim)
+{
+    const std::string logPath = mContext.GetTempdirPath() + "/lua_fmt_test.log";
+    OsConfigLogHandle logHandle = OpenLog(logPath.c_str(), nullptr);
+    ASSERT_NE(nullptr, logHandle);
+
+    const LoggingLevel savedLevel = GetLoggingLevel();
+    const bool savedConsole = IsConsoleLoggingEnabled();
+    SetLoggingLevel(LoggingLevelDebug);
+    SetConsoleLoggingEnabled(false);
+
+    mContext.SetLogHandle(logHandle);
+
+    LuaEvaluator evaluator;
+    const std::string script = R"(
+        ce.log.info("%d")
+        ce.log.info("%s")
+        ce.log.info("%n")
+        ce.log.info("%%")
+        return true
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    CloseLog(&logHandle);
+    mContext.SetLogHandle(nullptr);
+    SetLoggingLevel(savedLevel);
+    SetConsoleLoggingEnabled(savedConsole);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+
+    std::ifstream logFile(logPath);
+    const std::string contents((std::istreambuf_iterator<char>(logFile)), std::istreambuf_iterator<char>());
+
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %d"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %s"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %n"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %%"));
+}
+
 // Test non-copyable nature of LuaEvaluator
 TEST_F(LuaEvaluatorTest, NonCopyable)
 {
