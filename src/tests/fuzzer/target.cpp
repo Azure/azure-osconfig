@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "UserUtils.h"
 #include "Evaluator.h"
 #include "Optional.h"
 #include "Base64.h"
@@ -247,24 +246,6 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     return 0;
 }
 
-static int CheckOrEnsureUsersDontHaveDotFiles_target(const char* data, std::size_t size) noexcept
-{
-    auto username = std::string(data, size);
-    char* reason = nullptr;
-    CheckOrEnsureUsersDontHaveDotFiles(username.c_str(), false, &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) noexcept
-{
-    auto usernames = std::string(data, size);
-    char* reason = nullptr;
-    CheckUserAccountsNotFound(usernames.c_str(), &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
@@ -280,8 +261,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
     { "Base64Decode.", Base64Decode_target },
     { "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
-    { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
-    { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
 };
 
 // libfuzzer entry point

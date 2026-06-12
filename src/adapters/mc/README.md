@@ -62,14 +62,9 @@ Scanning dependencies of target commonutils
 [ 22%] Building C object common/commonutils/CMakeFiles/commonutils.dir/CommandUtils.c.o
 [ 27%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ConfigUtils.c.o
 [ 31%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DaemonUtils.c.o
-[ 36%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DeviceInfoUtils.c.o
-[ 40%] Building C object common/commonutils/CMakeFiles/commonutils.dir/FileUtils.c.o
-[ 45%] Building C object common/commonutils/CMakeFiles/commonutils.dir/OtherUtils.c.o
-[ 50%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ProxyUtils.c.o
-[ 54%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SocketUtils.c.o
-[ 59%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SshUtils.c.o
-[ 63%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UrlUtils.c.o
-[ 68%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UserUtils.c.o
+[ 36%] Building C object common/commonutils/CMakeFiles/commonutils.dir/FileUtils.c.o
+[ 40%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SocketUtils.c.o
+[ 45%] Building C object common/commonutils/CMakeFiles/commonutils.dir/StringUtils.c.o
 [ 72%] Linking C static library libcommonutils.a
 [ 72%] Built target commonutils
 Scanning dependencies of target mpiclient
