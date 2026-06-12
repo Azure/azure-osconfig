@@ -11,9 +11,9 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 We welcome contributions to Kompli. The main way of contributing to and extending Kompli is via developing new procedure [Procedures](src/modules/complianceengine/src/lib/procedures)
 
 Pull requests with few exceptions must contain appropriate unit-tests. We cannot allow test coverage to go down. Pull requests containing code changes without accompanying unit tests may be rejected.
-Pull requests need to be formatted according to `.pre-commit-config.yaml`. Each pull request is checked by [Formatting Tests](https://github.com/microsoft/kompli/blob/dev/.github/workflows/formatting.yml).
+Pull requests need to be formatted according to `.pre-commit-config.yaml`. Each pull request is checked by [Formatting Tests](https://github.com/microsoft/kompli/blob/main/.github/workflows/formatting.yml).
 
-Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
+Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
 # Coding style
 The coding style is described in a separate [style document](docs/style.md).
