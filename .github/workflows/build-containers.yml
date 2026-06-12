@@ -19,6 +19,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 env:
   REGISTRY: ghcr.io
   BUILD_TYPE: Release
