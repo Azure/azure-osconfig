@@ -35,11 +35,7 @@ jobs:
         mkdir -p output
         analyze-build-14 --verbose \
           --status-bugs \
-          --exclude src/adapters/pnp/azure-iot-sdk-c \
-          --exclude src/adapters/pnp/PnpUtils.c \
-          --exclude src/adapters/pnp/AisUtils.c \
           --exclude src/common/parson \
-          --exclude src/modules/commandrunner/src/lib \
           --cdb build/compile_commands.json \
           --output output/scan-build
 

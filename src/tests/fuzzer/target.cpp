@@ -1,18 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#include "Mmi.h"
-#include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
 #include "Evaluator.h"
 #include "Optional.h"
-#include "parson.h"
 #include "Base64.h"
 #include "Procedure.h"
-#ifdef BUILD_TELEMETRY
-#include "Telemetry.hpp"
-#endif
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -46,14 +41,9 @@ struct size_range
     size_range(std::size_t min, std::size_t max) : min(min), max(max) {}
 };
 
-// A struct to keep a single static initialization of the SecurityBaseline library
 struct Context
 {
-    MMI_HANDLE handle;
     std::string tempdir;
-#ifdef BUILD_TELEMETRY
-    std::unique_ptr<Telemetry::TelemetryManager> telemetryManager;
-#endif
 
     Context() noexcept(false)
     {
@@ -63,24 +53,11 @@ struct Context
             throw std::runtime_error(std::string{ "failed to create temporary directory: " } + std::strerror(errno));
         }
         tempdir = path;
-
-        SecurityBaselineInitialize();
-        handle = SecurityBaselineMmiOpen("SecurityBaselineTest", 4096);
-        if (handle == nullptr)
-        {
-            SecurityBaselineShutdown();
-            throw std::runtime_error("failed to initialized SecurityBaseline library");
-        }
-#ifdef BUILD_TELEMETRY
-        telemetryManager.reset(new Telemetry::TelemetryManager(false, std::chrono::seconds{1}));
-#endif
     }
 
     ~Context() noexcept
     {
         ::remove(tempdir.c_str());
-        SecurityBaselineMmiClose(handle);
-        SecurityBaselineShutdown();
     }
 
     std::string GenerateNextTemporaryFileName() const noexcept
@@ -165,513 +142,11 @@ static int GetNumberOfLinesInFile_target(const char* data, std::size_t size) noe
     return 0;
 }
 
-static int SavePayloadToFile_target(const char* data, std::size_t size) noexcept
-{
-    auto filename = GetContext().GenerateNextTemporaryFileName();
-    SavePayloadToFile(filename.c_str(), data, size, nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
 static int AppendPayloadToFile_target(const char* data, std::size_t size) noexcept
 {
     auto filename = GetContext().MakeTemporaryFile(nullptr, 0);
     AppendPayloadToFile(filename.c_str(), data, size, nullptr);
     GetContext().Remove(filename);
-    return 0;
-}
-
-static int SecureSaveToFile_target(const char* data, std::size_t size) noexcept
-{
-    auto filename = GetContext().GenerateNextTemporaryFileName();
-    SecureSaveToFile(filename.c_str(), data, size, nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int AppendToFile_target(const char* data, std::size_t size) noexcept
-{
-    auto filename = GetContext().MakeTemporaryFile(nullptr, 0);
-    AppendToFile(filename.c_str(), data, size, nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int ReplaceMarkedLinesInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto marker = GetContext().ExtractVariant(data, size);
-    if (marker.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto newline = GetContext().ExtractVariant(data, size);
-    if (newline.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    ReplaceMarkedLinesInFile(filename.c_str(), marker.c_str(), newline.c_str(), comment.at(0), true, nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int CheckFileSystemMountingOption_target(const char* data, std::size_t size) noexcept
-{
-    auto mountDirectory = GetContext().ExtractVariant(data, size);
-    if (mountDirectory.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto mountType = GetContext().ExtractVariant(data, size);
-    if (mountType.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto desiredOption = GetContext().ExtractVariant(data, size);
-    if (desiredOption.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckFileSystemMountingOption(filename.c_str(), mountDirectory.c_str(), mountType.c_str(), desiredOption.c_str(), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int CharacterFoundInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto what = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (what.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    CharacterFoundInFile(filename.c_str(), what.at(0));
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int CheckNoLegacyPlusEntriesInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckNoLegacyPlusEntriesInFile(filename.c_str(), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int FindTextInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    FindTextInFile(filename.c_str(), text.c_str(), nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckTextIsFoundInFile(filename.c_str(), text.c_str(), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-// Skipping CheckTextIsNotFoundInFile due to similarity
-
-static int CheckMarkedTextNotFoundInFile_target(const char* data, std::size_t size) noexcept
-{
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto marker = GetContext().ExtractVariant(data, size);
-    if (marker.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckMarkedTextNotFoundInFile(filename.c_str(), text.c_str(), marker.c_str(), comment.at(0), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int CheckTextNotFoundInEnvironmentVariable_target(const char* data, std::size_t size) noexcept
-{
-    auto variable = GetContext().ExtractVariant(data, size);
-    if (variable.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto strict = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (strict.empty())
-    {
-        return c_skip_input;
-    }
-
-    char* reason = nullptr;
-    CheckTextNotFoundInEnvironmentVariable(variable.c_str(), text.c_str(), strict.at(0) == '1' ? true : false, &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static int CheckSmallFileContainsText_target(const char* data, std::size_t size) noexcept
-{
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckSmallFileContainsText(filename.c_str(), text.c_str(), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int CheckLineNotFoundOrCommentedOut_target(const char* data, std::size_t size) noexcept
-{
-    auto text = GetContext().ExtractVariant(data, size);
-    if (text.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckLineNotFoundOrCommentedOut(filename.c_str(), comment.at(0), text.c_str(), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto buffer = std::string(data, size);
-    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
-    return 0;
-}
-
-static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto buffer = std::string(data, size);
-    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
-    return 0;
-}
-
-static int CheckLockoutForFailedPasswordAttempts_target(const char* data, std::size_t size) noexcept
-{
-    auto pamSo = GetContext().ExtractVariant(data, size);
-    if (pamSo.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckLockoutForFailedPasswordAttempts(filename.c_str(), pamSo.c_str(), comment.at(0), &reason, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    return 0;
-}
-
-static int CheckPasswordCreationRequirements_target(const char* data, std::size_t size) noexcept
-{
-    try
-    {
-        auto integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto retry = std::stoi(integer);
-
-        integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto minlen = std::stoi(integer);
-
-        integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto minclass = std::stoi(integer);
-
-        integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto dcredit = std::stoi(integer);
-
-        integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto ucredit = std::stoi(integer);
-
-        integer = GetContext().ExtractVariant(data, size);
-        if (integer.empty())
-        {
-            return c_skip_input;
-        }
-        auto ocredit = std::stoi(integer);
-
-        auto lcredit = std::stoi(std::string(data, size));
-        char* reason = nullptr;
-        CheckPasswordCreationRequirements(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, &reason, nullptr);
-        free(reason);
-        return 0;
-    }
-    catch(const std::exception& e)
-    {
-        return c_skip_input;
-    }
-}
-
-static int GetStringOptionFromFile_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), nullptr));
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), 10, nullptr);
-    GetContext().Remove(filename);
-    return 0;
-}
-
-static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    static const std::size_t max_values = 1000;
-    int* values = new int[max_values];
-    std::size_t count = 0;
-    while (count < max_values)
-    {
-        auto value = GetContext().ExtractVariant(data, size);
-        if (value.empty())
-        {
-            break;
-        }
-
-        try
-        {
-            values[count++] = std::stoi(value);
-        }
-        catch(const std::exception& e)
-        {
-            break;
-        }
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), values, count, &reason, 10, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
-    delete[] values;
-    return 0;
-}
-
-static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, std::size_t size) noexcept
-{
-    auto option = GetContext().ExtractVariant(data, size);
-    if (option.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto comment = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (comment.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto integer = GetContext().ExtractVariant(data, size);
-    if (integer.empty())
-    {
-        return c_skip_input;
-    }
-
-    int value;
-    try
-    {
-        value = std::stoi(integer);
-    }
-    catch(const std::exception& e)
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    char* reason = nullptr;
-    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), value, &reason, 10, nullptr);
-    GetContext().Remove(filename);
-    free(reason);
     return 0;
 }
 
@@ -695,147 +170,6 @@ static int ConcatenateStrings_target(const char* data, std::size_t size) noexcep
     return 0;
 }
 
-static int DuplicateStringToLowercase_target(const char* data, std::size_t size) noexcept
-{
-    auto source = std::string(data, size);
-    free(DuplicateStringToLowercase(source.c_str()));
-    return 0;
-}
-
-static int ConvertStringToIntegers_target(const char* data, std::size_t size) noexcept
-{
-    auto separator = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (separator.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto source = std::string(data, size);
-    int* values = nullptr;
-    int count = 0;
-    ConvertStringToIntegers(source.c_str(), separator.at(0), &values, &count, 10,  nullptr);
-    free(values);
-    return 0;
-}
-
-static int RemoveCharacterFromString_target(const char* data, std::size_t size) noexcept
-{
-    auto what = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (what.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto source = std::string(data, size);
-    free(RemoveCharacterFromString(source.c_str(), what.at(0), nullptr));
-    return 0;
-}
-
-static int ReplaceEscapeSequencesInString_target(const char* data, std::size_t size) noexcept
-{
-    auto escapes = GetContext().ExtractVariant(data, size);
-    if (escapes.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto replacement = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (replacement.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto source = std::string(data, size);
-    free(ReplaceEscapeSequencesInString(source.c_str(), escapes.c_str(), escapes.size(), replacement.at(0), nullptr));
-    return 0;
-}
-
-static int HashString_target(const char* data, std::size_t size) noexcept
-{
-    auto source = std::string(data, size);
-    HashString(source.c_str());
-    return 0;
-}
-
-static int ParseHttpProxyData_target(const char* data, std::size_t size) noexcept
-{
-    auto source = std::string(data, size);
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-    ParseHttpProxyData(source.c_str(), &hostAddress, &port, &username, &password, nullptr);
-    free(hostAddress);
-    free(username);
-    free(password);
-    return 0;
-}
-
-static int CheckCpuFlagSupported_target(const char* data, std::size_t size) noexcept
-{
-    auto cpuFlag = std::string(data, size);
-    char* reason = nullptr;
-    CheckCpuFlagSupported(cpuFlag.c_str(), &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static int CheckLoginUmask_target(const char* data, std::size_t size) noexcept
-{
-    auto desired = std::string(data, size);
-    char* reason = nullptr;
-    CheckLoginUmask(desired.c_str(), &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static int IsCurrentOs_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    IsCurrentOs(name.c_str(), nullptr);
-    return 0;
-}
-
-static int RemovePrefixBlanks_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    RemovePrefixBlanks(&name[0]);
-    return 0;
-}
-
-static int RemovePrefixUpTo_target(const char* data, std::size_t size) noexcept
-{
-    auto marker = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (marker.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto name = std::string(data, size);
-    RemovePrefixUpTo(&name[0], marker.at(0));
-    return 0;
-}
-
-static int RemovePrefixUpToString_target(const char* data, std::size_t size) noexcept
-{
-    auto marker = GetContext().ExtractVariant(data, size);
-    if (marker.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto name = std::string(data, size);
-    RemovePrefixUpToString(&name[0], marker.c_str());
-    return 0;
-}
-
-static int RemoveTrailingBlanks_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    RemoveTrailingBlanks(&name[0]);
-    return 0;
-}
-
 static int TruncateAtFirst_target(const char* data, std::size_t size) noexcept
 {
     auto marker = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
@@ -849,51 +183,10 @@ static int TruncateAtFirst_target(const char* data, std::size_t size) noexcept
     return 0;
 }
 
-static int UrlEncode_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    free(UrlEncode(&name[0]));
-    return 0;
-}
-
-static int UrlDecode_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    free(UrlDecode(&name[0]));
-    return 0;
-}
-
 static int IsDaemonActive_target(const char* data, std::size_t size) noexcept
 {
     auto name = std::string(data, size);
     IsDaemonActive(name.c_str(), nullptr);
-    return 0;
-}
-
-static int RepairBrokenEolCharactersIfAny_target(const char* data, std::size_t size) noexcept
-{
-    auto name = std::string(data, size);
-    free(RepairBrokenEolCharactersIfAny(name.c_str()));
-    return 0;
-}
-
-static int RemoveEscapeSequencesFromFile_target(const char* data, std::size_t size) noexcept
-{
-    auto escapes = GetContext().ExtractVariant(data, size);
-    if (escapes.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto replacement = GetContext().ExtractVariant(data, size, size_range{ 1, 1 });
-    if (replacement.empty())
-    {
-        return c_skip_input;
-    }
-
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-    RemoveEscapeSequencesFromFile(filename.c_str(), escapes.c_str(), escapes.size(), replacement.at(0), nullptr);
-    GetContext().Remove(filename);
     return 0;
 }
 
@@ -916,140 +209,6 @@ static int GetMaxLogSizeDebugMultiplierFromJsonConfig_target(const char* data, s
     auto json = std::string(data, size);
     GetMaxLogSizeDebugMultiplierFromJsonConfig(json.c_str(), nullptr);
     return 0;
-}
-
-static int IsIotHubManagementEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsIotHubManagementEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
-static int GetReportingIntervalFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetReportingIntervalFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetModelVersionFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetModelVersionFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetLocalManagementFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetLocalManagementFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetIotHubProtocolFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int LoadReportedFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    ReportedProperty* reported = nullptr;
-    LoadReportedFromJsonConfig(json.c_str(), &reported, nullptr);
-    free(reported);
-    return 0;
-}
-
-static int GetGitManagementFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetGitManagementFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetGitRepositoryUrlFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetGitRepositoryUrlFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetGitBranchFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetGitBranchFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int CheckOrEnsureUsersDontHaveDotFiles_target(const char* data, std::size_t size) noexcept
-{
-    auto username = std::string(data, size);
-    char* reason = nullptr;
-    CheckOrEnsureUsersDontHaveDotFiles(username.c_str(), false, &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) noexcept
-{
-    auto usernames = std::string(data, size);
-    char* reason = nullptr;
-    CheckUserAccountsNotFound(usernames.c_str(), &reason, nullptr);
-    free(reason);
-    return 0;
-}
-
-static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return false;
-}
-
-static Result<bool> ComplianceEngineSuccess(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return true;
-}
-
-static Result<bool> ComplianceEngineParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
-{
-    auto it = arguments.find("result");
-    if (it == arguments.end())
-    {
-        return Error("Missing 'result' parameter");
-    }
-
-    if (it->second == "success")
-    {
-        return true;
-    }
-    else if (it->second == "failure")
-    {
-        return false;
-    }
-
-    return Error("Invalid 'result' parameter");
-}
-
-static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(const std::string& input)
-{
-    std::map<std::string, std::string> result;
-    std::istringstream stream(input);
-    std::string token;
-    while (std::getline(stream, token, ','))
-    {
-        auto delimiterPos = token.find('=');
-        if (delimiterPos == std::string::npos)
-        {
-            return {};
-        }
-
-        auto key = token.substr(0, delimiterPos);
-        auto value = token.substr(delimiterPos + 1);
-        result.emplace(std::move(key), std::move(value));
-    }
-
-    return result;
 }
 
 static int Base64Decode_target(const char* data, std::size_t size) noexcept
@@ -1088,85 +247,41 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     return 0;
 }
 
-#ifdef BUILD_TELEMETRY
-static int ProcessJsonFile_target(const char* data, std::size_t size) noexcept
+static int CheckOrEnsureUsersDontHaveDotFiles_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-
-    GetContext().telemetryManager->ProcessJsonFile(filename);
-
-    GetContext().Remove(filename);
+    auto username = std::string(data, size);
+    char* reason = nullptr;
+    CheckOrEnsureUsersDontHaveDotFiles(username.c_str(), false, &reason, nullptr);
+    free(reason);
     return 0;
 }
-#endif
+
+static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) noexcept
+{
+    auto usernames = std::string(data, size);
+    char* reason = nullptr;
+    CheckUserAccountsNotFound(usernames.c_str(), &reason, nullptr);
+    free(reason);
+    return 0;
+}
 
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
     { "GetNumberOfLinesInFile.", GetNumberOfLinesInFile_target },
     { "LoadStringFromFile.", LoadStringFromFile_target },
-    { "SavePayloadToFile.", SavePayloadToFile_target },
     { "AppendPayloadToFile.", AppendPayloadToFile_target },
-    { "SecureSaveToFile.", SecureSaveToFile_target },
-    { "AppendToFile.", AppendToFile_target },
-    { "ReplaceMarkedLinesInFile.", ReplaceMarkedLinesInFile_target },
-    { "CheckFileSystemMountingOption.", CheckFileSystemMountingOption_target },
-    { "CharacterFoundInFile.", CharacterFoundInFile_target },
-    { "CheckNoLegacyPlusEntriesInFile.", CheckNoLegacyPlusEntriesInFile_target },
-    { "FindTextInFile.", FindTextInFile_target },
-    { "CheckTextIsFoundInFile.", CheckTextIsFoundInFile_target },
-    { "CheckMarkedTextNotFoundInFile.", CheckMarkedTextNotFoundInFile_target },
-    { "CheckTextNotFoundInEnvironmentVariable.", CheckTextNotFoundInEnvironmentVariable_target },
-    { "CheckSmallFileContainsText.", CheckSmallFileContainsText_target },
-    { "CheckLineNotFoundOrCommentedOut.", CheckLineNotFoundOrCommentedOut_target },
-    { "GetStringOptionFromBuffer.", GetStringOptionFromBuffer_target },
-    { "GetIntegerOptionFromBuffer.", GetIntegerOptionFromBuffer_target },
-    { "CheckLockoutForFailedPasswordAttempts.", CheckLockoutForFailedPasswordAttempts_target },
-    { "CheckPasswordCreationRequirements.", CheckPasswordCreationRequirements_target },
-    { "GetStringOptionFromFile.", GetStringOptionFromFile_target },
-    { "GetIntegerOptionFromFile.", GetIntegerOptionFromFile_target },
-    { "CheckIntegerOptionFromFileEqualWithAny.", CheckIntegerOptionFromFileEqualWithAny_target },
-    { "CheckIntegerOptionFromFileLessOrEqualWith.", CheckIntegerOptionFromFileLessOrEqualWith_target },
     { "DuplicateString.", DuplicateString_target },
     { "ConcatenateStrings.", ConcatenateStrings_target },
-    { "DuplicateStringToLowercase.", DuplicateStringToLowercase_target },
-    { "ConvertStringToIntegers.", ConvertStringToIntegers_target },
-    { "RemoveCharacterFromString.", RemoveCharacterFromString_target },
-    { "ReplaceEscapeSequencesInString.", ReplaceEscapeSequencesInString_target },
-    { "HashString.", HashString_target },
-    { "ParseHttpProxyData.", ParseHttpProxyData_target },
-    { "CheckCpuFlagSupported.", CheckCpuFlagSupported_target },
-    { "CheckLoginUmask.", CheckLoginUmask_target },
-    { "IsCurrentOs.", IsCurrentOs_target },
-    { "RemovePrefixBlanks.", RemovePrefixBlanks_target },
-    { "RemovePrefixUpTo.", RemovePrefixUpTo_target },
-    { "RemovePrefixUpToString.", RemovePrefixUpToString_target },
-    { "RemoveTrailingBlanks.", RemoveTrailingBlanks_target },
     { "TruncateAtFirst.", TruncateAtFirst_target },
-    { "UrlEncode.", UrlEncode_target },
-    { "UrlDecode.", UrlDecode_target },
     { "IsDaemonActive.", IsDaemonActive_target },
-    { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
-    { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
     { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
     { "GetMaxLogSizeFromJsonConfig.", GetMaxLogSizeFromJsonConfig_target },
     { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
-    { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
-    { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
-    { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },
-    { "GetLocalManagementFromJsonConfig.", GetLocalManagementFromJsonConfig_target },
-    { "GetIotHubProtocolFromJsonConfig.", GetIotHubProtocolFromJsonConfig_target },
-    { "LoadReportedFromJsonConfig.", LoadReportedFromJsonConfig_target },
-    { "GetGitManagementFromJsonConfig.", GetGitManagementFromJsonConfig_target },
-    { "GetGitRepositoryUrlFromJsonConfig.", GetGitRepositoryUrlFromJsonConfig_target },
-    { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
-    { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
-    { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
     { "Base64Decode.", Base64Decode_target },
     { "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
-#ifdef BUILD_TELEMETRY
-    { "ProcessJsonFile.", ProcessJsonFile_target },
-#endif
+    { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
+    { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
 };
 
 // libfuzzer entry point

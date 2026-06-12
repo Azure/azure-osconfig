@@ -103,6 +103,126 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle
     return string;
 }
 
+static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+{
+    FILE* file = NULL;
+    bool result = false;
+
+    if ((NULL == fileName) || (NULL == mode) || (NULL == payload) || (0 >= payloadSizeBytes))
+    {
+        OsConfigLogError(log, "SaveToFile: invalid arguments");
+        return result;
+    }
+
+    if (NULL != (file = fopen(fileName, mode)))
+    {
+        if ((size_t)payloadSizeBytes == fwrite(payload, 1, payloadSizeBytes, file))
+        {
+            result = true;
+        }
+        else
+        {
+            OsConfigLogError(log, "SaveToFile: failed writing to '%s'", fileName);
+        }
+
+        fclose(file);
+    }
+    else
+    {
+        OsConfigLogError(log, "SaveToFile: failed to open '%s'", fileName);
+    }
+
+    return result;
+}
+
+static bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
+{
+    struct stat statStruct = {0};
+    FILE* file = NULL;
+    int status = 0;
+    bool result = false;
+
+    if ((NULL == fileName) || (0 != (status = stat(fileName, &statStruct))))
+    {
+        OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
+    }
+    else if (0 < statStruct.st_size)
+    {
+        if (NULL != (file = fopen(fileName, "r")))
+        {
+            if (0 == (status = fseek(file, -1, SEEK_END)))
+            {
+                result = (EOL == fgetc(file)) ? true : false;
+            }
+            else
+            {
+                OsConfigLogError(log, "FileEndsInEol: fseek to end of '%s' failed with %d (errno: %d)", fileName, status, errno);
+            }
+
+            fclose(file);
+        }
+        else
+        {
+            OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
+        }
+    }
+
+    return result;
+}
+
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+{
+    bool result = false;
+
+    if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
+    {
+        OsConfigLogError(log, "AppendPayloadToFile: invalid arguments");
+        return result;
+    }
+
+    if (FileExists(fileName) && (false == FileEndsInEol(fileName, log)))
+    {
+        if (false == SaveToFile(fileName, "a", "\n", 1, log))
+        {
+            OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
+        }
+    }
+
+    if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
+    {
+        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
+    }
+
+    return result;
+}
+
+static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
+{
+    unsigned int numberOf = 0;
+    FILE* file = NULL;
+    int next = 0;
+
+    if (FileExists(fileName) && (NULL != (file = fopen(fileName, "r"))))
+    {
+        while (EOF != (next = fgetc(file)))
+        {
+            if (what == next)
+            {
+                numberOf += 1;
+            }
+        }
+
+        fclose(file);
+    }
+
+    return numberOf;
+}
+
+unsigned int GetNumberOfLinesInFile(const char* fileName)
+{
+    return GetNumberOfCharacterInstancesInFile(fileName, EOL);
+}
+
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
     if (NULL == fileName)

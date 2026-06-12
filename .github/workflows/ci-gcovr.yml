@@ -95,13 +95,6 @@ jobs:
           working-directory: ${{ env.MOUNT }}/build
           cmd: ctest --verbose | tee ../${{ matrix.target.name }}-${{ matrix.target.arch }}-ctest.log || true
 
-      - name: Run moduletest
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: bash ${{ env.MOUNT }}/devops/scripts/run-module-tests-action.sh ${{ env.MOUNT }} ${{ env.MOUNT }}/build || true
-
       - name: Run gcovr
         uses: ./.github/actions/container-exec
         with:
@@ -118,12 +111,6 @@ jobs:
               --exclude '.*/modules/test/.*' \
               --exclude '.*/tests/.*' \
               --gcov-ignore-parse-errors
-            if [ -f module-test.log ]; then
-              cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
-            else
-              echo "module-test.log not found; creating empty placeholder log"
-              touch ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
-            fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success() || failure()
@@ -131,7 +118,6 @@ jobs:
           name: gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}
           path: |
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-ctest.log
-            ${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-gcovr.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}/*
 

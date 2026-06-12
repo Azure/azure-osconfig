@@ -6,21 +6,15 @@ cmake_minimum_required(VERSION 3.2)
 # Set the project name and version
 project(osconfig-fuzzer)
 
-find_package(LLVM REQUIRED)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=fuzzer")
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/common/commonutils
-    )
-add_executable(osconfig-fuzzer target.cpp)
+add_executable(osconfig-fuzzer
+    target.cpp
+    ../../common/commonutils/UserUtils.c)
+target_compile_options(osconfig-fuzzer PRIVATE -ffunction-sections -fdata-sections)
+set_source_files_properties(../../common/commonutils/UserUtils.c PROPERTIES COMPILE_DEFINITIONS FUZZ_USERUTILS_ONLY)
+target_link_options(osconfig-fuzzer PRIVATE -Wl,--gc-sections)
 target_link_libraries(osconfig-fuzzer PRIVATE
-    logging
-    mpiclient
-    asb
-    pthread
-    securitybaselinelib
     complianceenginelib
-    parsonlib
-    $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
+    commonutils
 )

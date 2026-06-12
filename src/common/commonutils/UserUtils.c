@@ -4,6 +4,8 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
+#include <shadow.h>
+
 #define MAX_GROUPS_USER_CAN_BE_IN 32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
@@ -198,6 +200,8 @@ static bool IsSystemAccount(SimplifiedUser* user)
     return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
+#ifndef FUZZ_USERUTILS_ONLY
+
 // Similar to determining if an user account is system, we identify a group to be system if either
 // has name "root" or has a GID below 1000 (and all such system groups get logged in full)
 static bool IsSystemGroup(SimplifiedGroup* group)
@@ -261,6 +265,8 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 
     return result;
 }
+
+#endif // FUZZ_USERUTILS_ONLY
 
 static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 {
@@ -445,6 +451,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
     return status;
 }
+
+#ifndef FUZZ_USERUTILS_ONLY
 
 void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
 {
@@ -2759,6 +2767,8 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
     return status;
 }
 
+#endif // FUZZ_USERUTILS_ONLY
+
 int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OsConfigLogHandle log)
 {
     const char* templateDotPath = "%s/.%s";
@@ -3104,6 +3114,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     return status;
 }
 
+#ifndef FUZZ_USERUTILS_ONLY
+
 int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 {
     SimplifiedUser simplifiedUser = {0};
@@ -3229,6 +3241,7 @@ bool GroupExists(gid_t groupId, OsConfigLogHandle log)
     return result;
 }
 
+#endif // FUZZ_USERUTILS_ONLY
 int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
 {
     struct group* groupEntry = NULL;

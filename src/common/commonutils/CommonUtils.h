@@ -39,6 +39,7 @@ extern "C"
 
 // FileUtils
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 bool FileExists(const char* fileName);
 bool DirectoryExists(const char* directoryName);
@@ -46,6 +47,7 @@ bool LockFile(FILE* file, OsConfigLogHandle log);
 bool UnlockFile(FILE* file, OsConfigLogHandle log);
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
+unsigned int GetNumberOfLinesInFile(const char* fileName);
 
 // SocketUtils
 int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log);
@@ -62,6 +64,7 @@ char* GetOsPrettyName(OsConfigLogHandle log);
 char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);
 char* FormatAllocateString(const char* format, ...);
+void TruncateAtFirst(char* target, char marker);
 
 // CommandUtils
 typedef int(*CommandCallback)(void* context);

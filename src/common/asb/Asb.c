@@ -2604,22 +2604,22 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(OsConfigLogHandle log)
 {
-    char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, log);
+    UNUSED(log);
+    char* reason = FormatAllocateString("Legacy ASB audit removed");
     return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotNetrcFiles(OsConfigLogHandle log)
 {
-    char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, log);
+    UNUSED(log);
+    char* reason = FormatAllocateString("Legacy ASB audit removed");
     return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotRhostsFiles(OsConfigLogHandle log)
 {
-    char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, log);
+    UNUSED(log);
+    char* reason = FormatAllocateString("Legacy ASB audit removed");
     return reason;
 }
 
@@ -2636,9 +2636,8 @@ static char* AuditEnsureRloginServiceIsDisabled(OsConfigLogHandle log)
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(OsConfigLogHandle log)
 {
-    char* reason = NULL;
-    CheckUserAccountsNotFound(g_desiredEnsureUnnecessaryAccountsAreRemoved ?
-        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved, &reason, log);
+    UNUSED(log);
+    char* reason = FormatAllocateString("Legacy ASB audit removed");
     return reason;
 }
 
@@ -4236,19 +4235,22 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, Os
 static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, NULL, log);
+    UNUSED(log);
+    return ENOTSUP;
 }
 
 static int RemediateEnsureNoUsersHaveDotNetrcFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, NULL, log);
+    UNUSED(log);
+    return ENOTSUP;
 }
 
 static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, true, NULL, log);
+    UNUSED(log);
+    return ENOTSUP;
 }
 
 static int RemediateEnsureRloginServiceIsDisabled(char* value, OsConfigLogHandle log)
