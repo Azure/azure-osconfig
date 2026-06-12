@@ -24,17 +24,17 @@ jobs:
         language: [cpp, csharp]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         if: matrix.language == 'cpp'
         with:
           submodules: recursive
           clean: true
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         if: matrix.language == 'csharp'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
         with:
           languages: ${{ matrix.language }}
 
@@ -53,16 +53,16 @@ jobs:
 
       - name: Setup dotnet
         if: matrix.language == 'csharp'
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@871f041373faaad213a635d9afb62905ec029bbb
         with:
           dotnet-version: 6.0.x
 
       - name: Autobuild
         if: matrix.language == 'csharp'
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
         with:
           category: '/language:${{matrix.language}}'
 
