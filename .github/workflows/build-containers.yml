@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - devops/docker/**/Dockerfile
+      - .github/workflows/build-containers.yml
   push:
     branches:
       - dev
     paths:
       - devops/docker/**/Dockerfile
+      - .github/workflows/build-containers.yml
   workflow_dispatch:
     inputs:
       distro_list:
