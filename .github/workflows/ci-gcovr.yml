@@ -41,13 +41,13 @@ jobs:
         target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
           submodules: recursive
           clean: true
 
       - name: Docker login
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -122,7 +122,7 @@ jobs:
               touch ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
             fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: success() || failure()
         with:
           name: gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}
@@ -146,7 +146,7 @@ jobs:
     if: success() || failure()
     steps:
       - name: Download gcovr artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           pattern: "*"
 

@@ -15,7 +15,7 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - uses: dorny/test-reporter@v1
+      - uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc
         with:
           artifact: e2e-report
           name: E2E Report
