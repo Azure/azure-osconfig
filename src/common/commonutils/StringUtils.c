@@ -107,3 +107,13 @@ char* FormatAllocateString(const char* format, ...)
 
     return stringToReturn;
 }
+
+void TruncateAtFirst(char* target, char marker)
+{
+    char* found = NULL;
+
+    if (NULL != target && NULL != (found = strchr(target, marker)))
+    {
+        found[0] = 0;
+    }
+}

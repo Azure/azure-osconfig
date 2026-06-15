@@ -62,14 +62,9 @@ Scanning dependencies of target commonutils
 [ 22%] Building C object common/commonutils/CMakeFiles/commonutils.dir/CommandUtils.c.o
 [ 27%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ConfigUtils.c.o
 [ 31%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DaemonUtils.c.o
-[ 36%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DeviceInfoUtils.c.o
-[ 40%] Building C object common/commonutils/CMakeFiles/commonutils.dir/FileUtils.c.o
-[ 45%] Building C object common/commonutils/CMakeFiles/commonutils.dir/OtherUtils.c.o
-[ 50%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ProxyUtils.c.o
-[ 54%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SocketUtils.c.o
-[ 59%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SshUtils.c.o
-[ 63%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UrlUtils.c.o
-[ 68%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UserUtils.c.o
+[ 36%] Building C object common/commonutils/CMakeFiles/commonutils.dir/FileUtils.c.o
+[ 40%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SocketUtils.c.o
+[ 45%] Building C object common/commonutils/CMakeFiles/commonutils.dir/StringUtils.c.o
 [ 72%] Linking C static library libcommonutils.a
 [ 72%] Built target commonutils
 Scanning dependencies of target mpiclient
@@ -256,8 +251,6 @@ Run this command on the Arc device in PowerShell. This will produce a JSON holdi
 > In the generated policy definition JSON, before creating a new policy with it, manually search and remove all instances of prefixes with the resource type wrapped in square brackets (for example: `[OsConfigResource]`).
 
 Save a copy of the generated policy definition JSON in case the policy will need to be updated later (for example, because of an updated artifacts ZIP package).
-
-An example of a generated policy definition JSON (with the SAS token and file hash removed) for the above example is available here: [LinuxSshServerSecurityBaseline_DeployIfNotExists.json](ssh/LinuxSshServerSecurityBaseline_DeployIfNotExists.json)
 
 #### 7.1.2. Creating the new policy
 
