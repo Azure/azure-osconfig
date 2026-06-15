@@ -1,6 +1,9 @@
 name: CodeQL
 
 on:
+  pull_request:
+    paths:
+      - .github/workflows/codeql.yml
   push:
     branches: [dev, main, release/*]
   schedule:
