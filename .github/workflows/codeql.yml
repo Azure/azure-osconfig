@@ -1,6 +1,9 @@
 name: CodeQL
 
 on:
+  pull_request:
+    paths:
+      - .github/workflows/codeql.yml
   push:
     branches: [dev, main, release/*]
   schedule:
@@ -18,51 +21,34 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: read
       security-events: write
 
     strategy:
       fail-fast: false
       matrix:
         # CodeQL language support https://aka.ms/codeql-docs/language-support
-        language: [cpp, csharp]
+        language: [cpp]
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
-        if: matrix.language == 'cpp'
         with:
           submodules: recursive
           clean: true
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
-        if: matrix.language == 'csharp'
+      - name: Mark workspace as safe for git in container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
         with:
           languages: ${{ matrix.language }}
 
-      - run: mkdir build
-        if: matrix.language == 'cpp'
-
       - name: Generate build
-        if: matrix.language == 'cpp'
-        working-directory: build
-        run: cmake ../src -DCMAKE_build-type=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON
+        run: cmake -S src -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_TELEMETRY=OFF
 
-      - name: Build azure-osconfig
-        if: matrix.language == 'cpp'
-        working-directory: build
-        run: cmake --build . --config Release # --parallel
-
-      - name: Setup dotnet
-        if: matrix.language == 'csharp'
-        uses: actions/setup-dotnet@871f041373faaad213a635d9afb62905ec029bbb
-        with:
-          dotnet-version: 6.0.x
-
-      - name: Autobuild
-        if: matrix.language == 'csharp'
-        uses: github/codeql-action/autobuild@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+      - name: Build
+        run: cmake --build build --config Release --parallel
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e

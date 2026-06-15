@@ -1,0 +1,166 @@
+name: Build Kompli
+
+on:
+  workflow_call:
+    secrets:
+      onedstenant:
+        required: false
+    inputs:
+      artifact:
+        description: The artifact name containing the packages from this workflow.
+        type: string
+        required: false
+        default: 'package'
+      build-type:
+        description: The type of build to perform (Debug | Release).
+        type: string
+        required: false
+        default: 'Release'
+      target:
+        description: The operating system target to build for.
+        type: string
+        required: true
+      arch:
+        description: The architecture to build for.
+        type: string
+        required: true
+      package-type:
+        description: The type of package to build (deb | rpm).
+        type: string
+      container-tag:
+        type: string
+        required: false
+        default: latest
+      ref:
+        type: string
+        required: false
+        default: ${{ github.ref }}
+      build-fuzzers:
+        description: Build fuzzers. This implies building with clang compiler and code instrumentation enabled.
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  BUILD_TYPE: Release
+  MOUNT: /kompli
+  REGISTRY: ghcr.io
+
+jobs:
+  package:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+          ref: ${{ inputs.ref }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Setup QEMU
+        if: ${{ inputs.arch != 'amd64' }}
+        uses: docker/setup-qemu-action@v3
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: microsoft/kompli/${{ inputs.target }}-${{ inputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ inputs.container-tag }}
+          args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}
+
+      - name: Set tweak
+        id: version
+        run: |
+          # Set the tweak version (YYMMDD + 2 digit run attempt)
+          now=$(date +'%Y%m%d')
+          number=$(printf '%02d' ${{ github.run_attempt }})
+          tweak="$(date +'%Y%m%d')$(printf '%02d' ${{ github.run_attempt }})"
+
+          echo date: $now
+          echo number: $number
+          echo tweak: $tweak
+
+          echo tweak=$tweak >> $GITHUB_OUTPUT
+
+      - run: mkdir build && cd build
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: |
+            if [ "${{ inputs.build-fuzzers }}" = "true" ]; then
+              cmake_args=(
+                -DCMAKE_BUILD_TYPE=Debug
+                -DCMAKE_C_COMPILER=/usr/bin/clang
+                -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+                -DTWEAK_VERSION=${{ steps.version.outputs.tweak }}
+                -Duse_prov_client=ON
+                -Dhsm_type_symm_key=ON
+                -DCOMPILE_WITH_STRICTNESS=ON
+                -DBUILD_TESTS=OFF
+                -DBUILD_MODULETEST=OFF
+                -DBUILD_SAMPLES=OFF
+                -Duse_default_uuid=ON
+                -DBUILD_ADAPTERS=ON
+                -DBUILD_FUZZER=ON
+              )
+            else
+              cmake_args=(
+                -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+                -DTWEAK_VERSION=${{ steps.version.outputs.tweak }}
+                -Duse_prov_client=ON
+                -Dhsm_type_symm_key=ON
+                -DCOMPILE_WITH_STRICTNESS=ON
+                -DBUILD_TESTS=OFF
+                -DBUILD_MODULETEST=ON
+                -DBUILD_SAMPLES=OFF
+                -Duse_default_uuid=ON
+                -DBUILD_ADAPTERS=ON
+              )
+            fi
+
+            echo "CMake arguments: ${cmake_args[*]}"
+            cmake ../src "${cmake_args[@]}"
+
+      - name: Build Azure OSConfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Run cpack
+        if: ${{ inputs.package-type }}
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cpack -G ${{ inputs.package-type }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact }}
+          path: |
+            ./build/osconfig*
+            ./build/*.zip
+            ./build/modules/test/moduletest
+            ./build/modules/bin/*.so
+            ./build/tests/fuzzer/osconfig-fuzzer

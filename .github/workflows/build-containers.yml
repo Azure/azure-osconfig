@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - dev
+      - main
     paths:
       - devops/docker/**/Dockerfile
       - .github/workflows/build-containers.yml
