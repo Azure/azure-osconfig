@@ -1,0 +1,167 @@
+name: Build Azure OSConfig Package
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/package-build.yml
+  workflow_call:
+    secrets:
+      onedstenant:
+        required: false
+    inputs:
+      artifact:
+        description: The artifact name containing the packages from this workflow.
+        type: string
+        required: false
+        default: 'package'
+      build-type:
+        description: The type of build to perform (Debug | Release).
+        type: string
+        required: false
+        default: 'Release'
+      target:
+        description: The operating system target to build for.
+        type: string
+        required: true
+      arch:
+        description: The architecture to build for.
+        type: string
+        required: true
+      package-type:
+        description: The type of package to build (deb | rpm).
+        type: string
+      test:
+        description: Include test collateral in the artifact.
+        type: boolean
+        required: false
+        default: false
+      release:
+        type: boolean
+        required: false
+        default: false
+      container-tag:
+        type: string
+        required: false
+        default: latest
+      ref:
+        type: string
+        required: false
+        default: ${{ github.ref }}
+      machine-config:
+        type: boolean
+        required: false
+        default: false
+      build-fuzzers:
+        description: Build fuzzers. This implies building with clang compiler and code instrumentation enabled.
+        type: boolean
+        required: false
+        default: false
+
+env:
+  BUILD_TYPE: Release
+  MOUNT: /kompli
+  REGISTRY: ghcr.io
+
+jobs:
+  package:
+    runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=build-infra"]') || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+          ref: ${{ inputs.ref }}
+
+      - name: Setup QEMU
+        if: ${{ inputs.arch != 'amd64' }}
+        uses: docker/setup-qemu-action@v3
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: microsoft/kompli/${{ inputs.target }}-${{ inputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ inputs.container-tag }}
+          args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}
+
+      - name: Set tweak
+        id: version
+        run: |
+          # Set the tweak version (YYMMDD + 2 digit run attempt)
+          now=$(date +'%Y%m%d')
+          number=$(printf '%02d' ${{ github.run_attempt }})
+          tweak="$(date +'%Y%m%d')$(printf '%02d' ${{ github.run_attempt }})"
+
+          echo date: $now
+          echo number: $number
+          echo tweak: $tweak
+
+          echo tweak=$tweak >> $GITHUB_OUTPUT
+
+      - run: mkdir build && cd build
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: |
+            if [ "${{ inputs.machine-config }}" = "true" ]; then
+              cmake_args="-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DVCPKG_OVERLAY_TRIPLETS='../src/triplets' -DVCPKG_TARGET_TRIPLET='x64-linux-gcc5' -DVCPKG_OVERLAY_PORTS='../src/ports-overlay'"
+            elif [ "${{ inputs.build-fuzzers }}" = "true" ]; then
+              cmake_args="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=OFF -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON -DBUILD_FUZZER=ON"
+            else
+              cmake_args="-DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION='${{ steps.version.outputs.tweak }}' -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON"
+            fi
+
+            echo "CMake arguments: $cmake_args"
+            cmake ../src $cmake_args
+
+      - name: Build Azure OSConfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Run cpack
+        if: ${{ inputs.package-type }}
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cpack -G ${{ inputs.package-type }}
+
+      - name: Binary footprint delta validation
+        if: ${{ inputs.package-type }}
+        uses: ./.github/actions/footprint-check
+        with:
+          allowedDelta: 10
+          distroName: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
+          package-type: ${{ inputs.package-type }}
+
+      - name: Copy test collateral
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}
+          cmd: |
+            mkdir -p build/modules/test/recipes
+            cp -r src/modules/test/recipes/*.json build/modules/test/recipes/
+
+            cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact }}
+          path: |
+            ./build/osconfig*
+            ./build/*.zip
+            ./build/modules/test/moduletest
+            ./build/modules/test/osconfig.json
+            ./build/modules/test/recipes/*.json
+            ./build/modules/bin/*.so
+            ./build/tests/fuzzer/osconfig-fuzzer
