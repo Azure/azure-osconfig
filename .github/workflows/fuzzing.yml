@@ -5,6 +5,8 @@ on:
   schedule:
     - cron: '0 3 * * *' # Every day at 7pm PST/4am CET
   pull_request:
+    paths:
+      - .github/workflows/fuzzing.yml
 
 permissions:
   contents: read
