@@ -140,7 +140,7 @@ jobs:
             echo "CMake arguments: ${cmake_args[*]}"
             cmake ../src "${cmake_args[@]}"
 
-      - name: Build Azure OSConfig
+      - name: Build Microsoft Kompli
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
@@ -159,8 +159,7 @@ jobs:
         with:
           name: ${{ inputs.artifact }}
           path: |
-            ./build/osconfig*
+            ./build/kompli*
             ./build/*.zip
-            ./build/modules/test/moduletest
             ./build/modules/bin/*.so
-            ./build/tests/fuzzer/osconfig-fuzzer
+            ./build/tests/fuzzer/kompli-fuzzer

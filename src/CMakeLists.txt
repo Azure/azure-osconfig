@@ -279,6 +279,7 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 
 # Common packaging
 set(CPACK_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_PACKAGE_FILE_NAME ${OsConfigProjectName}-${OsConfigVersionString}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR})
 set(CPACK_PACKAGE_HOMEPAGE_URL ${OsConfigProjectUrl})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${OsConfigProjectLongName})
 set(CPACK_PACKAGE_DESCRIPTION ${OsConfigProjectDescription})
