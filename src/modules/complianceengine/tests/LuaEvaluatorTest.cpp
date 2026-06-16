@@ -340,28 +340,34 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ReturnValueFormat)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-// Test procedure wrapper functionality with audit action restriction
+// Test procedure wrapper functionality with audit action restriction.
+//
+// Regression test for the audit-mode remediation guard: remediation closures are exposed under
+// their prefixed name (ce.Remediate<Procedure>), and the closure must carry that prefixed name in
+// upvalue 1 so the wrapper's `procedureName.substr(0, 9) == "Remediate"` guard can reject it during
+// an audit. Previously the closure stored the unprefixed name, so the guard never fired and the
+// remediation ran in audit mode. The earlier version of this test checked `ce.RemediationSuccess`
+// (the wrong, never-registered symbol), which was always nil and so passed without exercising the
+// guard at all.
 TEST_F(LuaEvaluatorTest, ProcedureWrapper_AuditModeRestriction)
 {
     LuaEvaluator evaluator;
 
-    // Test that remediation functions are not available in audit mode
+    // The remediation closure is registered even in audit mode (registration is unconditional);
+    // invoking it must be blocked by the guard.
     std::string script = R"(
-        -- Check if the remediation function exists
-        if ce.RemediationSuccess == nil then
-            return true, "Remediation function correctly not available in audit mode"
-        else
-            -- If it exists, it should throw an error when called
-            local success, message = pcall(function()
-                return ce.RemediationSuccess({message = "test"})
-            end)
-
-            if success then
-                return false, "Expected remediation function to be blocked in audit mode"
-            else
-                return true, "Remediation function correctly threw error in audit mode: " .. tostring(message)
-            end
+        if ce.RemediateRemediationSuccess == nil then
+            return false, "Remediation closure should be registered under ce.Remediate<Procedure>"
         end
+
+        local success, message = pcall(function()
+            return ce.RemediateRemediationSuccess({message = "test"})
+        end)
+
+        if success then
+            return false, "Expected remediation function to be blocked in audit mode, but it ran"
+        end
+        return true, "Remediation function correctly threw error in audit mode: " .. tostring(message)
     )";
 
     auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
@@ -533,28 +539,31 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnMissingParameter)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-// Test procedure wrapper throwing error for remediation restriction in audit mode
+// Test procedure wrapper throwing the specific guard error for remediation in audit mode.
+// Complements ProcedureWrapper_AuditModeRestriction by asserting the exact error string raised by
+// the guard, ensuring the rejection comes from the audit-mode check and not some unrelated failure.
 TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnRemediationRestriction)
 {
     LuaEvaluator evaluator;
 
-    // Test calling remediation function in audit mode (should not be available or throw error)
+    // Call the remediation function in audit mode; the guard must raise "Remediation not allowed in
+    // audit mode".
     std::string script = R"(
-        -- Check if the function exists at all in audit mode
-        if ce.RemediationSuccess == nil then
-            return true, "RemediationSuccess function correctly not available in audit mode"
+        if ce.RemediateRemediationSuccess == nil then
+            return false, "Remediation closure should be registered under ce.Remediate<Procedure>"
         end
 
-        -- If it exists, it should throw an error when called
         local success, message = pcall(function()
-            return ce.RemediationSuccess({message = "test"})
+            return ce.RemediateRemediationSuccess({message = "test"})
         end)
 
         if success then
-            return false, "Expected remediation function to be blocked in audit mode, but it succeeded"
-        else
-            return true, "Remediation function correctly threw error in audit mode: " .. tostring(message)
+            return false, "Expected remediation function to be blocked in audit mode, but it ran"
         end
+        if not string.find(tostring(message), "Remediation not allowed in audit mode") then
+            return false, "Blocked, but with an unexpected error: " .. tostring(message)
+        end
+        return true, "Remediation function correctly threw the audit-mode guard error"
     )";
 
     auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
