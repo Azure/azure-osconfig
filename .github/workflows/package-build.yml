@@ -82,7 +82,7 @@ jobs:
           container: microsoft/kompli/${{ inputs.build_target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
-          args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}
+          args: -e KompliTelemetryApiKey=${{ secrets.onedstenant }}
 
       - name: Set tweak
         id: version
