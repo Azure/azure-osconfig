@@ -216,7 +216,7 @@ set(KompliProjectEmail "kompli@microsoft.com")
 set(KompliProjectUrl "https://github.com/microsoft/kompli/")
 set(KompliHashAlgorithm "SHA256")
 set(KompliVersionString ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}.${CMAKE_PROJECT_VERSION_TWEAK})
-set(OsConfigVersionStringFull "${KompliVersionString}-g${GIT_COMMIT_ID}")
+set(KompliVersionStringFull "${KompliVersionString}-g${GIT_COMMIT_ID}")
 set(KompliRootBinaryDir ${CMAKE_BINARY_DIR})
 
 message(STATUS "${KompliProjectName} v${KompliVersionString}")
