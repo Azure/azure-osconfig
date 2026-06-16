@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "azure-osconfig",
+	"name": "kompli",
 	"build": {
 		"context": "..",
 		"dockerfile": "../devops/docker/ubuntu-24.04-amd64/Dockerfile"
@@ -25,7 +25,7 @@
 			]
 		}
 	},
-	"workspaceFolder": "/workspaces/azure-osconfig",
+	"workspaceFolder": "/workspaces/kompli-osconfig",
 	"mounts": [
 		"source=${localWorkspaceFolder}/../azcorelinux-Compliance-AugmentationEngine,target=/workspaces/azcorelinux-Compliance-AugmentationEngine,type=bind,consistency=cached"
 	],

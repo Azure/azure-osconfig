@@ -117,7 +117,7 @@ else()
 endif()
 
 cmake_minimum_required(VERSION 3.21)
-project(osconfig)
+project(kompli)
 
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
@@ -129,8 +129,8 @@ set(PATCH_VERSION "5" CACHE STRING "Patch version")
 # External Projects
 set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
 
-option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
-option(BUILD_MODULES "Build OSConfig Modules" ON)
+option(BUILD_ADAPTERS "Build Kompli Adapters" ON)
+option(BUILD_MODULES "Build Kompli Modules" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_TELEMETRY "Build telemetry" ON)
@@ -187,7 +187,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     endif()
 endif()
 
-project(osconfig)
+project(kompli)
 
 set(CMAKE_PROJECT_VERSION_MAJOR ${MAJOR_VERSION})
 set(CMAKE_PROJECT_VERSION_MINOR ${MINOR_VERSION})

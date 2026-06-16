@@ -46,7 +46,7 @@ struct Context
 
     Context() noexcept(false)
     {
-        char path[] = "/tmp/osconfig-fuzzer-XXXXXX";
+        char path[] = "/tmp/kompli-fuzzer-XXXXXX";
         if(::mkdtemp(path) == nullptr)
         {
             throw std::runtime_error(std::string{ "failed to create temporary directory: " } + std::strerror(errno));
