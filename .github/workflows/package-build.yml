@@ -16,7 +16,7 @@ on:
         type: string
         required: false
         default: 'Release'
-      target:
+      build_target:
         description: The operating system target to build for.
         type: string
         required: true
@@ -79,7 +79,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: microsoft/kompli/${{ inputs.target }}-${{ inputs.arch }}
+          container: microsoft/kompli/${{ inputs.build_target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
           args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}

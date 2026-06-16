@@ -25,7 +25,7 @@ jobs:
           ]
         arch: [amd64]
     with:
-      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      build_target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       timeout-seconds: 3600
