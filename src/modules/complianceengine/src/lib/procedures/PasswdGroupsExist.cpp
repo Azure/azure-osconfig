@@ -49,7 +49,7 @@ Result<Status> AuditPasswdGroupsExist(IndicatorsTree& indicators, ContextInterfa
     }
     status = errno;
     endpwent();
-    if (0 != errno)
+    if (0 != status)
     {
         return Error(std::string("getpwent failed: ") + strerror(status), status);
     }
