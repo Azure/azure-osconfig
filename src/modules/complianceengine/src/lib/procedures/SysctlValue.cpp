@@ -83,8 +83,11 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     }
     std::string sysctlOutput = output.Value();
 
-    // remove newline character
-    if (*sysctlOutput.rbegin() == '\n')
+    // remove trailing newline character, if any. The emptiness check is required because rbegin()
+    // on an empty string is rend(); dereferencing it is undefined behaviour (out-of-bounds read).
+    // GetFileContents can legitimately return an empty string here, e.g. for an empty sysctl leaf
+    // under /proc/sys or when the resolved path is a /proc/sys sub-directory read as zero bytes.
+    if (!sysctlOutput.empty() && *sysctlOutput.rbegin() == '\n')
     {
         sysctlOutput.erase(sysctlOutput.size() - 1);
     }
