@@ -29,8 +29,10 @@ bool RefuseWritableParentDir(const std::string& path, OsConfigLogHandle logHandl
 //     component atomically (returns ELOOP), eliminating the lstat-then-open
 //     TOCTOU window.
 //   - O_NONBLOCK prevents the open() call from blocking on a FIFO (without
-//     it, O_RDONLY on a FIFO stalls until a writer appears). For regular
-//     files O_NONBLOCK has no effect on Linux reads.
+//     it, O_RDONLY on a FIFO stalls until a writer appears). After fstat()
+//     confirms the file is a regular file, O_NONBLOCK is cleared via fcntl()
+//     so that subsequent reads have straightforward blocking semantics and the
+//     caller need not handle EAGAIN/EWOULDBLOCK.
 //   - fstat() checks the inode we actually hold, not a potentially-swapped
 //     path entry. The file must be a regular file, root-owned, and not
 //     group/world-writable. Non-regular files (FIFOs, devices) are refused so

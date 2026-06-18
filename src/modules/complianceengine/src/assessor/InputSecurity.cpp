@@ -110,6 +110,21 @@ Result<int> OpenVerifiedInput(const std::string& path, OsConfigLogHandle logHand
         ::close(fd);
         return Error("not a regular file");
     }
+
+    // O_NONBLOCK was set solely to prevent open() from blocking on a FIFO.
+    // Now that fstat() has confirmed this is a regular file, clear the flag so
+    // that subsequent reads have straightforward blocking semantics and the
+    // caller's read loop does not need to handle EAGAIN/EWOULDBLOCK.
+    {
+        const int flags = ::fcntl(fd, F_GETFL);
+        if (flags < 0 || ::fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) < 0)
+        {
+            const std::string msg = std::strerror(errno);
+            OsConfigLogError(logHandle, "Failed to clear O_NONBLOCK on input file '%s': %s", path.c_str(), msg.c_str());
+            ::close(fd);
+            return Error(msg);
+        }
+    }
     if (st.st_uid != 0)
     {
         OsConfigLogError(logHandle, "Refusing to read input file '%s': not owned by root (uid %u).", path.c_str(), static_cast<unsigned>(st.st_uid));
