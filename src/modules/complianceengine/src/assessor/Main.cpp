@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 
     if (Command::Version == options.command)
     {
-        std::cout << "Compliance Engine Assessor\nVersion: " << OSCONFIG_VERSION << "\n";
+        std::cout << "Compliance Engine Assessor\nVersion: " << KOMPLI_VERSION << "\n";
         return 0;
     }
 

@@ -23,7 +23,7 @@ using std::chrono::system_clock;
 Optional<Error> NestedListFormatter::Begin(const Action action)
 {
     mOutput << "Action: " << (action == Action::Audit ? "Audit" : "Remediation") << "\n";
-    mOutput << "OsConfig Version: " << OSCONFIG_VERSION << "\n";
+    mOutput << "OsConfig Version: " << KOMPLI_VERSION << "\n";
     mOutput << "Timestamp: " << ToISODatetime(system_clock::now()) << "\n";
     mOutput << "Rules:\n";
     return Optional<Error>();

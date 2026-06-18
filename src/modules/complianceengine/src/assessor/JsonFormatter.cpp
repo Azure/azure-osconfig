@@ -41,7 +41,7 @@ Optional<Error> JsonFormatter::Begin(const Action action)
 
     mBegin = std::chrono::steady_clock::now();
 
-    if (JSONSuccess != json_object_set_string(object, "osconfigVersion", OSCONFIG_VERSION))
+    if (JSONSuccess != json_object_set_string(object, "osconfigVersion", KOMPLI_VERSION))
     {
         return Error("Failed to set OsConfig version", ENOMEM);
     }

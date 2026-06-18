@@ -4,6 +4,6 @@
 #ifndef TELEMETRY_KEYS_H
 #define TELEMETRY_KEYS_H
 
-#define API_KEY "@OsConfigTelemetryApiKey@"
+#define API_KEY "@KompliTelemetryApiKey@"
 
 #endif // TELEMETRY_KEYS_H

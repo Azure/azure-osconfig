@@ -3,7 +3,7 @@ name: Fuzzer execution
 on:
   workflow_call:
     inputs:
-      target:
+      build_target:
         required: true
         type: string
       arch:
@@ -41,9 +41,9 @@ jobs:
       packages: read
     uses: ./.github/workflows/package-build.yml
     with:
-      target: ${{ inputs.target }}
+      build_target: ${{ inputs.build_target }}
       arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}-fuzzer
+      artifact: ${{ inputs.build_target }}-fuzzer
       package-type: ${{ inputs.package-type }}
       build-fuzzers: true
       container-tag: ${{ inputs.container-tag }}
@@ -68,14 +68,14 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         id: download
         with:
-          name: ${{ inputs.target }}-fuzzer
+          name: ${{ inputs.build_target }}-fuzzer
 
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: microsoft/kompli/${{ inputs.target }}-${{ inputs.arch }}
+          container: microsoft/kompli/${{ inputs.build_target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
 
@@ -84,17 +84,17 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/tests/fuzzer
-          cmd: mkdir -p ${{ env.MOUNT }}/output/artifacts && mkdir /tmp/corpus && cp -r ${{ env.MOUNT }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus && chmod u+x ./osconfig-fuzzer
+          cmd: mkdir -p ${{ env.MOUNT }}/output/artifacts && mkdir /tmp/corpus && cp -r ${{ env.MOUNT }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus && chmod u+x ./kompli-fuzzer
 
-      - name: Run osconfig-fuzzer
+      - name: Run kompli-fuzzer
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/tests/fuzzer
-          cmd: set -o pipefail && LSAN_OPTIONS=suppressions=${{ env.MOUNT }}/src/tests/fuzzer/lsan.suppressions ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
+          cmd: set -o pipefail && LSAN_OPTIONS=suppressions=${{ env.MOUNT }}/src/tests/fuzzer/lsan.suppressions ./kompli-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/kompli-fuzzer.log
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: success() || failure()
         with:
-          name: ${{ inputs.target }}-logs
+          name: ${{ inputs.build_target }}-logs
           path: ${{ github.workspace }}/output

@@ -79,7 +79,7 @@ jobs:
               cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
             fi
 
-      - name: Build azure-osconfig
+      - name: Build Kompli
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}

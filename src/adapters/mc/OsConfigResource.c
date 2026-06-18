@@ -41,7 +41,7 @@ static OsConfigLogHandle g_log = NULL;
 static const char* g_osconfig = "osconfig";
 static const char* g_mpiServer = "osconfig-platform";
 
-static const char version[] __attribute__((section(".version.info"))) = OSCONFIG_VERSION;
+static const char version[] __attribute__((section(".version.info"))) = KOMPLI_VERSION;
 
 OsConfigLogHandle GetLog(void)
 {

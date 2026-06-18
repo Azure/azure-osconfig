@@ -1,4 +1,4 @@
-name: Fuzzer execution
+name: Fuzzer Matrix execution
 
 on:
   workflow_dispatch:
@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/fuzzing.yml
+      - .github/workflows/fuzzing-run.yml
+      - .github/workflows/package-build.yml # transitive include from fuzzing-run
 
 permissions:
   contents: read
@@ -25,7 +27,7 @@ jobs:
           ]
         arch: [amd64]
     with:
-      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      build_target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       timeout-seconds: 3600

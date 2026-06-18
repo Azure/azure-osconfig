@@ -12,7 +12,7 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
     add_compile_options("-Wunused-variable")
 endif()
 
-set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
+set(MODULES_INSTALL_DIR "/usr/lib/kompli" CACHE FILEPATH "Directory used for installing modules")
 set(MODULES_BUILD_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE FILEPATH "Directory used to collect module binaries for testing")
 
 file(MAKE_DIRECTORY ${MODULES_BUILD_BIN_DIR})
