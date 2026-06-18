@@ -528,6 +528,75 @@ int LuaIndicatorsNonCompliant(lua_State* L)
 {
     return LuaIndicatorsAddIndicator(L, Status::NonCompliant);
 }
+
+int LuaLogImpl(lua_State* L, LoggingLevel level)
+{
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+
+    // Message parameter
+    constexpr int messageArgIndex = 1;
+    if (lua_isnoneornil(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a message");
+        return 0;
+    }
+    if (!lua_isnone(L, messageArgIndex + 1))
+    {
+        luaL_error(L, "expected a single argument");
+        return 0;
+    }
+    if (!lua_isstring(L, messageArgIndex))
+    {
+        luaL_error(L, "expected a string argument");
+        return 0;
+    }
+    const char* message = lua_tostring(L, messageArgIndex);
+    if (!message)
+    {
+        luaL_error(L, "expected a message");
+        return 0;
+    }
+    if (!::strlen(message))
+    {
+        luaL_error(L, "message must not be empty");
+        return 0;
+    }
+
+    // The message is passed as the %s argument, never as the format string,
+    // preventing format-string injection from Lua-supplied content.
+    OsConfigLog(view->ctx.GetLogHandle(), level, "[Lua] %s", message);
+    return 0;
+}
+
+int LuaLogInfo(lua_State* L)
+{
+    return LuaLogImpl(L, LoggingLevelInformational);
+}
+
+int LuaLogWarning(lua_State* L)
+{
+    return LuaLogImpl(L, LoggingLevelWarning);
+}
+
+int LuaLogError(lua_State* L)
+{
+    return LuaLogImpl(L, LoggingLevelError);
+}
+
+int LuaLogDebug(lua_State* L)
+{
+    return LuaLogImpl(L, LoggingLevelDebug);
+}
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -560,6 +629,29 @@ void RegisterLuaProcedures(lua_State* L)
 
     lua_pushcfunction(L, LuaSystemdCatConfig);
     lua_setfield(L, -2, "SystemdCatConfig");
+
+    // Get or create ce.log table
+    lua_getfield(L, -1, "log");
+    if (!lua_istable(L, -1))
+    {
+        lua_pop(L, 1);   // pop non-table
+        lua_newtable(L); // create log
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -3, "log");
+
+        lua_pushcfunction(L, LuaLogInfo);
+        lua_setfield(L, -2, "info");
+
+        lua_pushcfunction(L, LuaLogWarning);
+        lua_setfield(L, -2, "warning");
+
+        lua_pushcfunction(L, LuaLogError);
+        lua_setfield(L, -2, "error");
+
+        lua_pushcfunction(L, LuaLogDebug);
+        lua_setfield(L, -2, "debug");
+    }
+    lua_pop(L, 1); // pop log table
 
     // Get or create ce.indicators table
     lua_getfield(L, -1, "indicators");
