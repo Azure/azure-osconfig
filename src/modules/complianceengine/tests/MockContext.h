@@ -22,7 +22,12 @@ struct MockContext : public ComplianceEngine::ContextInterface
 
     OsConfigLogHandle GetLogHandle() const override
     {
-        return nullptr;
+        return mLogHandle;
+    }
+
+    void SetLogHandle(OsConfigLogHandle logHandle)
+    {
+        mLogHandle = logHandle;
     }
 
     MockContext()
@@ -155,4 +160,5 @@ private:
     std::vector<std::string> mTempfiles;
     std::map<std::string, std::string> mSpecialFilesMap;
     std::unique_ptr<ComplianceEngine::FilesystemScanner> mFsScannerp;
+    OsConfigLogHandle mLogHandle{nullptr};
 };
