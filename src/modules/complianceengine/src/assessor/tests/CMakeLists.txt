@@ -10,9 +10,14 @@ add_executable(compliance-engine-assessor-tests
     MofTest.cpp
 )
 
+target_include_directories(compliance-engine-assessor-tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../tests
+)
+
 target_link_libraries(compliance-engine-assessor-tests
     GTest::gtest
     GTest::gtest_main
+    GTest::gmock
     pthread
     compliance-engine-assessor-lib
 )
