@@ -84,20 +84,22 @@ Result<int> OpenVerifiedInput(const std::string& path, OsConfigLogHandle logHand
         if (errno == ELOOP)
         {
             OsConfigLogError(logHandle, "Refusing to open input file '%s': path is a symlink.", path.c_str());
-            return Error("path is a symlink");
+            return Error("path is a symlink", ELOOP);
         }
-        const std::string msg = std::strerror(errno);
+        const int savedErrno = errno;
+        const std::string msg = std::strerror(savedErrno);
         OsConfigLogError(logHandle, "Failed to open input file '%s': %s", path.c_str(), msg.c_str());
-        return Error(msg);
+        return Error(msg, savedErrno);
     }
 
     struct stat st;
     if (::fstat(fd, &st) != 0)
     {
-        const std::string msg = std::strerror(errno);
+        const int savedErrno = errno;
+        const std::string msg = std::strerror(savedErrno);
         OsConfigLogError(logHandle, "Failed to stat input file '%s': %s", path.c_str(), msg.c_str());
         ::close(fd);
-        return Error(msg);
+        return Error(msg, savedErrno);
     }
     if (!S_ISREG(st.st_mode))
     {
@@ -108,7 +110,7 @@ Result<int> OpenVerifiedInput(const std::string& path, OsConfigLogHandle logHand
         // which deliberately bypasses these on-disk integrity checks.
         OsConfigLogError(logHandle, "Refusing to read input file '%s': not a regular file.", path.c_str());
         ::close(fd);
-        return Error("not a regular file");
+        return Error("not a regular file", ENOTSUP);
     }
 
     // O_NONBLOCK was set solely to prevent open() from blocking on a FIFO.
@@ -119,24 +121,25 @@ Result<int> OpenVerifiedInput(const std::string& path, OsConfigLogHandle logHand
         const int flags = ::fcntl(fd, F_GETFL);
         if (flags < 0 || ::fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) < 0)
         {
-            const std::string msg = std::strerror(errno);
+            const int savedErrno = errno;
+            const std::string msg = std::strerror(savedErrno);
             OsConfigLogError(logHandle, "Failed to clear O_NONBLOCK on input file '%s': %s", path.c_str(), msg.c_str());
             ::close(fd);
-            return Error(msg);
+            return Error(msg, savedErrno);
         }
     }
     if (st.st_uid != 0)
     {
         OsConfigLogError(logHandle, "Refusing to read input file '%s': not owned by root (uid %u).", path.c_str(), static_cast<unsigned>(st.st_uid));
         ::close(fd);
-        return Error("not owned by root");
+        return Error("not owned by root", EPERM);
     }
     if (st.st_mode & (S_IWGRP | S_IWOTH))
     {
         OsConfigLogError(logHandle, "Refusing to read input file '%s': writable by group or others (mode %04o).", path.c_str(),
             static_cast<unsigned>(st.st_mode & 07777));
         ::close(fd);
-        return Error("writable by group or others");
+        return Error("writable by group or others", EPERM);
     }
     return fd;
 }
