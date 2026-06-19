@@ -318,6 +318,7 @@ int main(int argc, char* argv[])
     size_t entryCount = 0;
     while (std::getline(inputStream, line))
     {
+        // Include one byte for the newline that std::getline() discards.
         bytesConsumed += line.size() + 1;
         if (bytesConsumed > kMaxInputBytes)
         {
