@@ -72,7 +72,7 @@ jobs:
 
       - name: Setup QEMU
         if: ${{ inputs.arch != 'amd64' }}
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Run container
         id: container
