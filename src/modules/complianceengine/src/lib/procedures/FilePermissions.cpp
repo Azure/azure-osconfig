@@ -5,6 +5,7 @@
 #include <Evaluator.h>
 #include <FilePermissions.h>
 #include <Telemetry.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #include <fts.h>
 #include <grp.h>
@@ -291,8 +292,19 @@ Result<Status> AuditFilePermissions(const FilePermissionsParams& params, Indicat
 Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
-    struct stat statbuf;
-    if (stat(params.path.c_str(), &statbuf) < 0)
+
+    // Open the target without following a final-component symlink and keep the descriptor open for
+    // the whole remediation. Every subsequent metadata read and change is performed through this
+    // descriptor (fstat, and chown/chmod via the /proc/self/fd magic link), so the path is resolved
+    // exactly once and all operations act on the same pinned inode. This closes a symlink/TOCTOU
+    // privilege-escalation race: this remediation runs as root and is driven across user-owned
+    // directories (e.g. each user's home in RemediateUserDotFilePermissions), so re-resolving the
+    // path string for stat, then chown, then chmod would let an unprivileged owner of the containing
+    // directory swap the entry for a symlink to a sensitive file (e.g. /etc/shadow) between the
+    // check and the change and have root chown/chmod that file. O_PATH is used so the open works for
+    // any file type, never blocks (e.g. on a FIFO) and needs no read permission on the target.
+    int fd = open(params.path.c_str(), O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    if (fd < 0)
     {
         const int status = errno;
         if (ENOENT == status)
@@ -301,9 +313,42 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
             return indicators.NonCompliant("File '" + params.path + "' does not exist");
         }
 
+        OsConfigLogError(log, "Open error %s (%d)", strerror(status), status);
+        OSConfigTelemetryStatusTrace("open", status);
+        return Error("Open error '" + std::string(strerror(status)) + "'", status);
+    }
+    // RAII: ensure the descriptor is closed on every return path below.
+    struct FdGuard
+    {
+        int fd;
+        ~FdGuard()
+        {
+            if (fd >= 0)
+            {
+                close(fd);
+            }
+        }
+    } fdGuard{fd};
+    const std::string fdPath = "/proc/self/fd/" + std::to_string(fd);
+
+    struct stat statbuf;
+    if (fstat(fd, &statbuf) < 0)
+    {
+        const int status = errno;
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
         OSConfigTelemetryStatusTrace("stat", status);
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
+    }
+
+    // With O_PATH | O_NOFOLLOW, opening a symbolic link succeeds and yields a descriptor to the link
+    // itself (it does not fail with ELOOP). Reject that case explicitly: chown/chmod must never be
+    // applied when the final component is a symlink, otherwise an unprivileged user who swapped the
+    // entry for a link to a sensitive file could still have root change that target's metadata.
+    if (S_ISLNK(statbuf.st_mode))
+    {
+        OsConfigLogError(log, "Refusing to remediate '%s': it is a symbolic link", params.path.c_str());
+        OSConfigTelemetryStatusTrace("symlink", EPERM);
+        return indicators.NonCompliant("Refusing to remediate symbolic link '" + params.path + "'");
     }
 
     uid_t uid = statbuf.st_uid;
@@ -389,7 +434,9 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
     if (ownership_changed)
     {
         OsConfigLogInfo(log, "Changing owner of '%s' from %d:%d to %d:%d", params.path.c_str(), statbuf.st_uid, statbuf.st_gid, uid, gid);
-        if (0 != chown(params.path.c_str(), uid, gid))
+        // Operate on the already-opened inode through /proc/self/fd rather than re-resolving the
+        // path string, so the change cannot be redirected to a different file via a symlink swap.
+        if (0 != chown(fdPath.c_str(), uid, gid))
         {
             int status = errno;
             OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
@@ -420,7 +467,10 @@ Result<Status> RemediateFilePermissions(const FilePermissionsParams& params, Ind
     if (new_perms != statbuf.st_mode)
     {
         OsConfigLogInfo(log, "Changing permissions of '%s' from %o to %o", params.path.c_str(), statbuf.st_mode, new_perms);
-        if (chmod(params.path.c_str(), new_perms) < 0)
+        // Operate on the already-opened inode through /proc/self/fd. fchmod() does not work on an
+        // O_PATH descriptor, but chmod() through the magic link applies to the inode the descriptor
+        // pins (verified above not to be a symlink), so it is not subject to a symlink race.
+        if (chmod(fdPath.c_str(), new_perms) < 0)
         {
             int status = errno;
             OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);

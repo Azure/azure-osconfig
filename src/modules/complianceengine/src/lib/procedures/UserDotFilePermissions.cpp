@@ -21,6 +21,11 @@ namespace ComplianceEngine
 using std::map;
 using std::string;
 
+// NOTE: This procedure enumerates real accounts via UsersRange::Make() (hardcoded /etc/passwd)
+// and resolves groups and home directories through libc (getgrgid) and the live filesystem, with
+// no injection seam. The ".rhosts"/".forward" NonCompliant detection path therefore cannot be
+// exercised by a deterministic unit test without first refactoring the account/group/home-directory
+// lookups to accept caller-supplied sources.
 Result<Status> AuditUserDotFilePermissions(IndicatorsTree& indicators, ContextInterface& context)
 {
     const auto validShells = ListValidShells(context);
@@ -69,7 +74,7 @@ Result<Status> AuditUserDotFilePermissions(IndicatorsTree& indicators, ContextIn
                 return Status::Compliant;
             }
 
-            if (filename == ".forward" || filename == ".rhost")
+            if (filename == ".forward" || filename == ".rhosts")
             {
                 return indicators.NonCompliant("'" + filename + "' exists in home directory '" + pwd.pw_dir + "'");
             }
@@ -193,7 +198,21 @@ Result<Status> RemediateUserDotFilePermissions(IndicatorsTree& indicators, Conte
                 return Status::Compliant;
             }
 
-            if (filename == ".forward" || filename == ".rhost")
+            // Refuse to remediate a dot-file that has more than one hard link. This directory is
+            // owned and writable by the (unprivileged) user, so a multiply-linked entry here may
+            // share its inode with a sensitive root-owned file (e.g. a hard link to /etc/shadow).
+            // Since a hard link is an ordinary regular file, it passes the S_ISREG check above and
+            // is not caught by symlink protection; remediating it would change the linked file's
+            // ownership and mode too, which is a privilege-escalation vector when this runs as root.
+            if (st.st_nlink > 1)
+            {
+                OsConfigLogError(context.GetLogHandle(), "Refusing to remediate '%s/%s': file has %lu hard links", directory.c_str(), filename.c_str(),
+                    static_cast<unsigned long>(st.st_nlink));
+                OSConfigTelemetryStatusTrace("hardlink", EPERM);
+                return indicators.NonCompliant("Refusing to remediate hard-linked file '" + filename + "' in home directory '" + user.pw_dir + "'");
+            }
+
+            if (filename == ".forward" || filename == ".rhosts")
             {
                 // We don't want to remove user files, the remediation will always fail here.
                 return indicators.NonCompliant("'" + filename + "' exists in home directory '" + user.pw_dir + "'");

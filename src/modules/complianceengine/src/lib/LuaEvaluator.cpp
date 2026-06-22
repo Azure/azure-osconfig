@@ -231,7 +231,7 @@ void LuaEvaluator::RegisterProcedures()
         if (actions.remediate)
         {
             std::string remediateFunctionName = "Remediate" + procedureName;
-            lua_pushstring(L, procedureName.c_str());
+            lua_pushstring(L, remediateFunctionName.c_str());
             lua_pushlightuserdata(L, const_cast<void*>(reinterpret_cast<const void*>(&actions.remediate)));
             lua_pushcclosure(L, LuaEvaluator::LuaProcedureWrapper, 2);
             lua_setfield(L, ceTableIndex, remediateFunctionName.c_str());

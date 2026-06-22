@@ -11,6 +11,12 @@
 
 namespace ComplianceEngine
 {
+// NOTE: This procedure has no dedicated unit test. AuditPasswdGroupsExist enumerates the live
+// account and group databases directly through the NSS entry points (setpwent/getpwent,
+// setgrent/getgrent), which resolve against the host's real /etc/passwd and /etc/group. There is
+// no seam to inject fixture data, so the audit's outcome cannot be made deterministic from a test
+// without altering the system databases. The remediation-logic fix is instead covered by code
+// review against the Result<Status> contract exercised by the other procedures.
 Result<Status> AuditPasswdGroupsExist(IndicatorsTree& indicators, ContextInterface& context)
 {
     UNUSED(context);
@@ -43,7 +49,7 @@ Result<Status> AuditPasswdGroupsExist(IndicatorsTree& indicators, ContextInterfa
     }
     status = errno;
     endpwent();
-    if (0 != errno)
+    if (0 != status)
     {
         return Error(std::string("getpwent failed: ") + strerror(status), status);
     }
@@ -58,7 +64,11 @@ Result<Status> AuditPasswdGroupsExist(IndicatorsTree& indicators, ContextInterfa
 Result<Status> RemediatePasswdGroupsExist(IndicatorsTree& indicators, ContextInterface& context)
 {
     auto result = AuditPasswdGroupsExist(indicators, context);
-    if (result)
+    if (!result.HasValue())
+    {
+        return result.Error();
+    }
+    if (result.Value() == Status::Compliant)
     {
         return indicators.Compliant("Audit passed, remediation not required");
     }
