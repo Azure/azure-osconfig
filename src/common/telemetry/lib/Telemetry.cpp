@@ -51,7 +51,7 @@ TelemetryManager::TelemetryManager(std::string cacheFilePath,bool enableDebug, s
     m_logConfig[CFG_BOOL_ENABLE_DB_DROP_IF_FULL] = true;
 
     status_t status = STATUS_SUCCESS;
-    m_logManager.reset(LogManagerProvider::CreateLogManager(m_logConfig, status));
+    m_logManager = LogManagerProvider::CreateLogManager(m_logConfig, status);
     if ((STATUS_SUCCESS != status) || !m_logManager)
     {
         OsConfigLogError(m_log, "Telemetry initialization failed. status=%d", status);
@@ -72,12 +72,20 @@ TelemetryManager::~TelemetryManager() noexcept
 {
     try
     {
-        m_logManager->FlushAndTeardown();
+        if (nullptr != m_logManager)
+        {
+            m_logManager->FlushAndTeardown();
+        }
     }
     catch(...)
     {
         OsConfigLogError(m_log, "Exception during telemetry shutdown");
     }
+
+    LogManagerProvider::DestroyLogManager(TELEMETRY_NAME);
+
+    m_logger = nullptr;
+    m_logManager = nullptr;
     OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
 }
 

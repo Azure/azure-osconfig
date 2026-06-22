@@ -10,7 +10,6 @@
 #include <LogManager.hpp>
 #include <Logging.h>
 #include <chrono>
-#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -46,7 +45,7 @@ public:
 private:
     OsConfigLogHandle m_log;
     MAT::ILogConfiguration m_logConfig;
-    std::unique_ptr<MAT::ILogManager> m_logManager;
+    MAT::ILogManager* m_logManager;
     MAT::ILogger* m_logger;
 
     void EventWrite(Microsoft::Applications::Events::EventProperties event);
