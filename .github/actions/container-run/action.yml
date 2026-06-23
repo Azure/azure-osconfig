@@ -27,7 +27,7 @@ inputs:
   cosign-certificate-identity-regexp:
     description: Regexp the signing workflow identity must match (keyless cosign).
     required: false
-    default: "^https://github.com/microsoft/kompli/.github/workflows/build-containers.yml@refs/heads/.+$"
+    default: '^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/heads/(main|dev)$'
   cosign-oidc-issuer:
     description: Expected OIDC issuer of the signing identity.
     required: false
