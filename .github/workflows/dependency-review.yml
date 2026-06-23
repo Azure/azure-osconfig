@@ -1,0 +1,30 @@
+name: Dependency review
+
+# Scans pull requests for dependencies (including submodules and Docker base
+# images) that introduce known vulnerabilities or incompatible licenses, and
+# blocks the PR before the change is merged.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Allows the action to post a summary comment on the pull request.
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4.5.0
+        with:
+          # Fail the check when a moderate-or-higher severity vulnerability is
+          # introduced by the pull request.
+          fail-on-severity: moderate
+          comment-summary-in-pr: on-failure
