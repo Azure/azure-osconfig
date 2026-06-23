@@ -15,6 +15,28 @@ Pull requests need to be formatted according to `.pre-commit-config.yaml`. Each 
 
 Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
+# Contribution scope
+
+To help set expectations for external contributors and keep review focused, the following describes what is in and out of scope for community contributions.
+
+**In scope** (external contributions welcome):
+
+- New ComplianceEngine [procedures](src/modules/complianceengine/src/lib/procedures) and Lua rules, with accompanying unit tests and schema/procedure-map updates.
+- Bug fixes in the ComplianceEngine, MC adapter, and the retained common libraries (`commonutils`, `logging`, `mpiclient`, `telemetry`, `parson`).
+- Additional benchmark coverage, test fixtures, and improvements to existing test reliability.
+- Documentation fixes and clarifications.
+- Build, packaging, and CI improvements that do not change the project's supported scope.
+
+**Out of scope** (please open an issue to discuss first; PRs may be declined):
+
+- Changes to the Machine Configuration trust model or the MC channel itself, which are trusted by design and managed outside this repository.
+- New top-level modules or product areas beyond the ComplianceEngine that Kompli retains from Azure OSConfig.
+- Vendored third-party code under `external/` (for example, the vcpkg submodule); update these upstream instead.
+- Large refactors or dependency changes without a prior issue describing the motivation and approach.
+- Security vulnerability reports — do **not** file these as issues or PRs; follow [SECURITY.md](SECURITY.md) instead.
+
+If you are unsure whether a change is in scope, open an issue first so a maintainer can confirm the direction before you invest significant effort.
+
 # Coding style
 The coding style is described in a separate [style document](docs/style.md).
 
