@@ -58,6 +58,7 @@ runs:
       uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
 
     - name: Verify image signature
+      id: verify
       if: ${{ inputs.verify == 'true' }}
       shell: bash
       run: |
@@ -75,6 +76,10 @@ runs:
         cosign verify "${ref}" \
           --certificate-identity-regexp "${{ inputs.cosign-certificate-identity-regexp }}" \
           --certificate-oidc-issuer "${{ inputs.cosign-oidc-issuer }}"
+        # Export the verified, immutable reference so the run step uses exactly
+        # what was verified (avoids a TOCTOU where a mutable tag could move
+        # between verification and execution).
+        echo "ref=${ref}" >> "$GITHUB_OUTPUT"
 
     - name: Run container
       id: container
@@ -82,9 +87,13 @@ runs:
       run: |
         name="${{ steps.setup.outputs.container }}"
         tag="${{ inputs.tag }}"
-        if [[ "${tag}" =~ ^@sha256:.* ]] ; then
+        verified_ref="${{ steps.verify.outputs.ref }}"
+        if [[ -n "${verified_ref}" ]] ; then
+          # Verification ran: use the exact digest that cosign verified.
+          container_name_tag="${verified_ref}"
+        elif [[ "${tag}" =~ ^@sha256:.* ]] ; then
           container_name_tag="${name}${tag}"
-          else
+        else
           container_name_tag="${name}:${tag}"
         fi
         echo "Running container ${container_name_tag}"
