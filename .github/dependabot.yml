@@ -30,6 +30,9 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
+    ignore:
+      - dependency-name: "mirror/docker/library/*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
