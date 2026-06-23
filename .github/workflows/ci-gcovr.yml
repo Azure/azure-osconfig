@@ -64,6 +64,7 @@ jobs:
           container: microsoft/kompli/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ matrix.target.tag }}
+          verify: true
 
       - name: Generate build
         uses: ./.github/actions/container-exec

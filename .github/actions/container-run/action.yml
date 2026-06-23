@@ -20,6 +20,18 @@ inputs:
     description: Additional arguments to pass to the container.
     required: false
     default: ""
+  verify:
+    description: Verify the image's cosign signature before running it.
+    required: false
+    default: "false"
+  cosign-certificate-identity-regexp:
+    description: Regexp the signing workflow identity must match (keyless cosign).
+    required: false
+    default: "^https://github.com/microsoft/kompli/.github/workflows/build-containers.yml@refs/heads/.+$"
+  cosign-oidc-issuer:
+    description: Expected OIDC issuer of the signing identity.
+    required: false
+    default: "https://token.actions.githubusercontent.com"
 
 outputs:
   id:
@@ -40,6 +52,29 @@ runs:
 
         echo container=$image >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: Install cosign
+      if: ${{ inputs.verify == 'true' }}
+      uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
+
+    - name: Verify image signature
+      if: ${{ inputs.verify == 'true' }}
+      shell: bash
+      run: |
+        name="${{ steps.setup.outputs.container }}"
+        tag="${{ inputs.tag }}"
+        if [[ "${tag}" =~ ^@sha256:.* ]] ; then
+          # Already pinned by digest; verify exactly that content.
+          ref="${name}${tag}"
+        else
+          # Resolve the mutable tag to an immutable digest so we verify what we run.
+          digest=$(docker buildx imagetools inspect "${name}:${tag}" --format '{{json .Manifest.Digest}}' | tr -d '"')
+          ref="${name}@${digest}"
+        fi
+        echo "Verifying cosign signature for ${ref}"
+        cosign verify "${ref}" \
+          --certificate-identity-regexp "${{ inputs.cosign-certificate-identity-regexp }}" \
+          --certificate-oidc-issuer "${{ inputs.cosign-oidc-issuer }}"
 
     - name: Run container
       id: container
