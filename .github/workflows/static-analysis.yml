@@ -11,7 +11,7 @@ jobs:
     name: Analyze Static Code
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/microsoft/kompli/ubuntu-22.04-amd64@sha256:98cd5889fffd4d86eeeeb6bd730525365e05c228a64bef2070f777abbcc59373
+      image: ghcr.io/microsoft/kompli/ubuntu-22.04-amd64@sha256:006b8545d00520c1cfc83f0ac465d7aedeb876a32435c57bbe3dc94c23fdc465
 
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
