@@ -56,6 +56,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write # required for keyless cosign signing via OIDC
     strategy:
       fail-fast: false
       matrix:
@@ -113,6 +114,20 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Attach an SBOM and max-level provenance attestation to the pushed image.
+          sbom: true
+          provenance: mode=max
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
+
+      - name: Sign image with cosign (keyless)
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build_and_push.outputs.digest }}
+        run: |
+          # Sign by immutable digest using the ambient GitHub OIDC identity.
+          cosign sign --yes "${IMAGE}@${DIGEST}"
 
       - name: Save digest
         run: |
