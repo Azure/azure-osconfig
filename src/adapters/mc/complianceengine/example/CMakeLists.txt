@@ -18,7 +18,7 @@ add_custom_target(stage_create_compliance_engine_example_zip
     DEPENDS OsConfigResourceComplianceEngine ComplianceEngineExample.mof)
 
 add_custom_target(create_compliance_engine_example_zip ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineExample.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceEngineExample.zip" --format=zip .
+    BYPRODUCTS ${KompliRootBinaryDir}/ComplianceEngineExample.zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${KompliRootBinaryDir}/ComplianceEngineExample.zip" --format=zip .
     DEPENDS stage_create_compliance_engine_example_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)

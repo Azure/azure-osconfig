@@ -38,8 +38,8 @@ add_custom_target(stage_create_compliance_engine_shell_zip
     DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-external>)
 
 add_custom_target(create_compliance_engine_shell_zip ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineShell.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceEngineShell.zip" --format=zip .
+    BYPRODUCTS ${KompliRootBinaryDir}/ComplianceEngineShell.zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${KompliRootBinaryDir}/ComplianceEngineShell.zip" --format=zip .
     DEPENDS stage_create_compliance_engine_shell_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/)
 
