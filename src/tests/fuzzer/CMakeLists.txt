@@ -21,3 +21,7 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     parsonlib
     $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
 )
+
+if(BUILD_TELEMETRY)
+    add_dependencies(osconfig-fuzzer telemetry-external)
+endif()
