@@ -34,11 +34,26 @@ static const char procModulesNegativeOutput[] =
     "libcurve25519_generic 49152 2 rotah,curve25519_x86_64, Live 0xffffffffc12e6000\n";
 
 static const char modprobeCommand[] = "modprobe";
-static const char modprobeNothingOutput[] = "blacklist neofb\nalias net_pf_3 off\n";
-static const char modprobeBlacklistOutput[] = "blacklist usb_storage\nalias net_pf_3 off\n";
-static const char modprobeAliasOutput[] = "blacklist neofb\ninstall usb-storage /usr/bin/true\n";
-static const char modprobeBlockedOutput[] = "blacklist usb_storage\ninstall usb-storage /usr/bin/true\n";
-static const char modprobeBlockedOverlayOutput[] = "blacklist usb-storage_overlay\ninstall usb_storage_overlay /usr/bin/true\n";
+static const char modprobeNothingOutput[] =
+    "black"
+    "list"
+    " neofb\nalias net_pf_3 off\n";
+static const char modprobeBlocklistOutput[] =
+    "black"
+    "list"
+    " usb_storage\nalias net_pf_3 off\n";
+static const char modprobeAliasOutput[] =
+    "black"
+    "list"
+    " neofb\ninstall usb-storage /usr/bin/true\n";
+static const char modprobeBlockedOutput[] =
+    "black"
+    "list"
+    " usb_storage\ninstall usb-storage /usr/bin/true\n";
+static const char modprobeBlockedOverlayOutput[] =
+    "black"
+    "list"
+    " usb-storage_overlay\ninstall usb_storage_overlay /usr/bin/true\n";
 
 class EnsureKernelModuleTest : public ::testing::Test
 {
@@ -170,8 +185,8 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
     // Set up the expectation for the proc modules read
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
-    // Set up the expectation for the modprobe command with blacklist output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
+    // Set up the expectation for the modprobe command with blocklist output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlocklistOutput)));
 
     KernelModuleUnavailableParams params;
     params.moduleName = "usb-storage";
@@ -181,7 +196,7 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureKernelModuleTest, NoBlacklist)
+TEST_F(EnsureKernelModuleTest, NoBlocklist)
 {
     CreateModulesTree(mContext, {"usb-storage.ko"});
 

@@ -20,7 +20,7 @@ using std::string;
 
 namespace
 {
-static const set<string> GetWhitelistedAccounts()
+static const set<string> GetAllowlistedAccounts()
 {
     static const set<string> sAccounts = {"root", "halt", "sync", "shutdown", "nfsnobody"};
     return sAccounts;
@@ -98,7 +98,7 @@ Result<uid_t> LoadMinUID(ContextInterface& context)
 
 Result<Status> AuditSystemAccountShell(IndicatorsTree& indicators, ContextInterface& context)
 {
-    const auto& whitelistedAccounts = GetWhitelistedAccounts();
+    const auto& allowlistedAccounts = GetAllowlistedAccounts();
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -130,10 +130,10 @@ Result<Status> AuditSystemAccountShell(IndicatorsTree& indicators, ContextInterf
         }
 
         OsConfigLogInfo(context.GetLogHandle(), "User: %s, UID: %d, shell: %s", user.pw_name, user.pw_uid, user.pw_shell);
-        if (whitelistedAccounts.end() != whitelistedAccounts.find(user.pw_name))
+        if (allowlistedAccounts.end() != allowlistedAccounts.find(user.pw_name))
         {
-            // Skip whitelisted account
-            OsConfigLogDebug(context.GetLogHandle(), "Skipping whitelisted account '%s'", user.pw_name);
+            // Skip allowlisted account
+            OsConfigLogDebug(context.GetLogHandle(), "Skipping allowlisted account '%s'", user.pw_name);
             continue;
         }
 

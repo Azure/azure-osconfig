@@ -122,43 +122,43 @@ TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, LoginDefs_4)
     ASSERT_TRUE(result.HasValue());
 }
 
-TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_1)
+TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, AllowlistedAccount_1)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "root");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     auto result = AuditSystemAccountShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    // 'root' is whitelisted
+    // 'root' is allowlisted
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_2)
+TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, AllowlistedAccount_2)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "halt");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     auto result = AuditSystemAccountShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    // 'halt' is whitelisted
+    // 'halt' is allowlisted
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_3)
+TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, AllowlistedAccount_3)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "shutdown");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     auto result = AuditSystemAccountShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    // 'shutdown' is whitelisted
+    // 'shutdown' is allowlisted
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, WhitelistedAccount_4)
+TEST_F(EnsureSystemAccountsDoNotHaveValidShellTest, AllowlistedAccount_4)
 {
     auto filename = CreateTestPasswdFile(0, "/bin/bash", "nfsnobody");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     auto result = AuditSystemAccountShell(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    // 'nfsnobody' is whitelisted
+    // 'nfsnobody' is allowlisted
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
