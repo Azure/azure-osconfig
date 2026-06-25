@@ -4,10 +4,13 @@
 #include "LuaEvaluator.h"
 
 #include "Indicators.h"
+#include "Logging.h"
 #include "MockContext.h"
 #include "Result.h"
 
+#include <fstream>
 #include <gtest/gtest.h>
+#include <iterator>
 #include <memory>
 #include <string>
 
@@ -596,6 +599,199 @@ TEST_F(LuaEvaluatorTest, Performance_MultipleEvaluations)
         ASSERT_TRUE(result.HasValue());
         EXPECT_EQ(result.Value(), Status::Compliant);
     }
+}
+
+// Test ce.log functions exist and can be called without error
+TEST_F(LuaEvaluatorTest, Log_Callable_AllLevels)
+{
+    LuaEvaluator evaluator;
+
+    const std::string script = R"(
+        ce.log.info("info message")
+        ce.log.warning("warning message")
+        ce.log.error("error message")
+        ce.log.debug("debug message")
+        return true
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that print is no longer available in the restricted Lua environment
+TEST_F(LuaEvaluatorTest, Security_PrintBlocked)
+{
+    LuaEvaluator evaluator;
+
+    const std::string script = "if print then return 'print available' else return true end";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that ce.log.info with no argument raises a Lua error
+TEST_F(LuaEvaluatorTest, Log_InvalidUsage_NoArgument)
+{
+    LuaEvaluator evaluator;
+
+    const std::string script = R"(
+        local ok, err = pcall(function() ce.log.info() end)
+        if ok then
+            return false, "expected error for missing argument"
+        end
+        return true, tostring(err)
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that ce.log.info with a non-string, non-coercible argument raises a Lua error
+TEST_F(LuaEvaluatorTest, Log_InvalidUsage_NonStringArgument)
+{
+    LuaEvaluator evaluator;
+
+    // Boolean false is not coercible to a string in Lua
+    const std::string script = R"(
+        local ok, err = pcall(function() ce.log.info(false) end)
+        if ok then
+            return false, "expected error for non-string argument"
+        end
+        return true, tostring(err)
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that ce.log.info with more than one argument raises a Lua error
+TEST_F(LuaEvaluatorTest, Log_InvalidUsage_ExtraArguments)
+{
+    LuaEvaluator evaluator;
+
+    const std::string script = R"(
+        local ok, err = pcall(function() ce.log.info("msg", "extra") end)
+        if ok then
+            return false, "expected error for extra argument"
+        end
+        return true, tostring(err)
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// Test that ce.log.info with an empty string raises a Lua error
+TEST_F(LuaEvaluatorTest, Log_InvalidUsage_EmptyString)
+{
+    LuaEvaluator evaluator;
+
+    const std::string script = R"(
+        local ok, err = pcall(function() ce.log.info("") end)
+        if ok then
+            return false, "expected error for empty message"
+        end
+        return true, tostring(err)
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+// E2E test: verify ce.log messages are written to the log file with the [Lua] prefix
+TEST_F(LuaEvaluatorTest, Log_E2E_WritesToLogFile)
+{
+    const std::string logPath = mContext.GetTempdirPath() + "/lua_test.log";
+    OsConfigLogHandle logHandle = OpenLog(logPath.c_str(), nullptr);
+    ASSERT_NE(nullptr, logHandle);
+
+    const LoggingLevel savedLevel = GetLoggingLevel();
+    const bool savedConsole = IsConsoleLoggingEnabled();
+    SetLoggingLevel(LoggingLevelDebug);
+    SetConsoleLoggingEnabled(false);
+
+    mContext.SetLogHandle(logHandle);
+
+    LuaEvaluator evaluator;
+    const std::string script = R"(
+        ce.log.info("info message")
+        ce.log.warning("warning message")
+        ce.log.error("error message")
+        ce.log.debug("debug message")
+        return true
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    CloseLog(&logHandle);
+    mContext.SetLogHandle(nullptr);
+    SetLoggingLevel(savedLevel);
+    SetConsoleLoggingEnabled(savedConsole);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+
+    std::ifstream logFile(logPath);
+    const std::string contents((std::istreambuf_iterator<char>(logFile)), std::istreambuf_iterator<char>());
+
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] info message"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] warning message"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] error message"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] debug message"));
+}
+
+// Test that format specifiers in log messages are emitted verbatim and not interpreted
+TEST_F(LuaEvaluatorTest, Log_E2E_FormatSpecifiersPassedVerbatim)
+{
+    const std::string logPath = mContext.GetTempdirPath() + "/lua_fmt_test.log";
+    OsConfigLogHandle logHandle = OpenLog(logPath.c_str(), nullptr);
+    ASSERT_NE(nullptr, logHandle);
+
+    const LoggingLevel savedLevel = GetLoggingLevel();
+    const bool savedConsole = IsConsoleLoggingEnabled();
+    SetLoggingLevel(LoggingLevelDebug);
+    SetConsoleLoggingEnabled(false);
+
+    mContext.SetLogHandle(logHandle);
+
+    LuaEvaluator evaluator;
+    const std::string script = R"(
+        ce.log.info("%d")
+        ce.log.info("%s")
+        ce.log.info("%n")
+        ce.log.info("%%")
+        return true
+    )";
+
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
+
+    CloseLog(&logHandle);
+    mContext.SetLogHandle(nullptr);
+    SetLoggingLevel(savedLevel);
+    SetConsoleLoggingEnabled(savedConsole);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+
+    std::ifstream logFile(logPath);
+    const std::string contents((std::istreambuf_iterator<char>(logFile)), std::istreambuf_iterator<char>());
+
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %d"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %s"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %n"));
+    EXPECT_THAT(contents, ::testing::HasSubstr("[Lua] %%"));
 }
 
 // Test non-copyable nature of LuaEvaluator
