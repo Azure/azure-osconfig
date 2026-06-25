@@ -22,7 +22,7 @@ struct SysctlValueParams
 
     /// Whether to also check stored sysctl configuration files (default: true)
     /// When false, only the runtime value in /proc/sys is checked
-    Optional<bool> checkConfigFile;
+    Optional<bool> checkConfigFile = true;
 };
 
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context);

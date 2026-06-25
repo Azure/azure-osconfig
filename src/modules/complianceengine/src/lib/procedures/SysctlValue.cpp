@@ -58,6 +58,8 @@ static bool IsValidFilePath(const std::string& path)
 
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.checkConfigFile.HasValue());
+
     auto log = context.GetLogHandle();
     std::string procfsLocation = "/proc/sys";
 
@@ -100,9 +102,11 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     }
 
     // If checkConfigFile is explicitly set to false, skip config file check
-    if (params.checkConfigFile.HasValue() && !params.checkConfigFile.Value())
+    if (!params.checkConfigFile.Value())
     {
-        return indicators.Compliant("Runtime value for '" + params.sysctlName + "' is correct (config file check skipped)");
+        // The status has already been set to Compliant above, so we can return it here.
+        OsConfigLogInfo(log, "Skipping sysctl configuration file check for '%s' as per parameters", params.sysctlName.c_str());
+        return Status::Compliant;
     }
 
     // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
