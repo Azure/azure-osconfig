@@ -21,6 +21,7 @@ RUN zypper install -y \
 
 RUN python3 -m venv /opt/kompli-venv
 ENV PATH="/opt/kompli-venv/bin:${PATH}"
+RUN pip install dataclasses
 
 WORKDIR /git
 
