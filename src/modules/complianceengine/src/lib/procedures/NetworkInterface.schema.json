@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "NetworkInterface"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "NetworkInterface": {
+              "type": "object",
+              "required": [
+                "flag"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "flag": {
+                  "type": "string",
+                  "description": "Network interface flag to test for (e.g. PROMISC, UP, LOOPBACK)"
+                },
+                "interfaceName": {
+                  "type": "string",
+                  "description": "Optional interface name to restrict the check to; default: all interfaces"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
