@@ -13,6 +13,7 @@ RUN zypper install -y \
     libtool \
     make \
     libopenssl-devel \
+    python3 \
     rpm-build \
     tar \
     unzip \

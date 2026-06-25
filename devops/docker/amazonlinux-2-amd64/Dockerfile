@@ -15,6 +15,7 @@ RUN yum install -y \
     perl \
     perl-core \
     perl-IPC-Cmd \
+    python3 \
     rpm-build \
     tar \
     unzip \

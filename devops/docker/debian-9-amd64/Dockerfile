@@ -21,6 +21,7 @@ RUN apt -y update && apt-get -y install \
     jq \
     libssl-dev \
     pkg-config \
+    python3 \
     python3-jsonschema \
     tar \
     unzip \

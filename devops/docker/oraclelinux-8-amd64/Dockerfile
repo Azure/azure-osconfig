@@ -14,6 +14,7 @@ RUN yum install -y \
     openssl-devel \
     perl \
     perl-IPC-Cmd \
+    python3 \
     rpm-build
 
 WORKDIR /git

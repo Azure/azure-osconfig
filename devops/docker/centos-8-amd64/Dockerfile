@@ -24,6 +24,7 @@ RUN yum update -y && yum install -y \
     openssl-devel \
     perl \
     perl-IPC-Cmd \
+    python3 \
     rpm-build \
     tar \
     unzip \
