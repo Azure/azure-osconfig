@@ -15,11 +15,14 @@ RUN yum install -y --disableplugin=subscription-manager \
     openssl-devel \
     perl \
     perl-IPC-Cmd \
-    python3 \
+    python38 \
     rpm-build \
     tar \
     unzip \
     zip
+
+RUN python3.8 -m venv /opt/kompli-venv
+ENV PATH="/opt/kompli-venv/bin:${PATH}"
 
 WORKDIR /git
 

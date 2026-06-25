@@ -20,11 +20,15 @@ RUN apt -y update && apt-get -y install \
     ninja-build \
     pkg-config \
     python3-jsonschema \
+    python3-venv \
     tar \
     unzip \
     uuid-dev \
     wget \
     zip
+
+RUN python3 -m venv /opt/kompli-venv
+ENV PATH="/opt/kompli-venv/bin:${PATH}"
 
 RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
