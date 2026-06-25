@@ -11,6 +11,7 @@ RUN tdnf install -y \
     jq \
     perl \
     perl-IPC-Cmd \
+    python3 \
     rpm-build \
     shadow-utils \
     tar \
@@ -24,6 +25,9 @@ RUN tdnf install -y \
 
 RUN tdnf upgrade -y && \
     tdnf clean all
+
+RUN python3 -m venv /opt/kompli-venv
+ENV PATH="/opt/kompli-venv/bin:${PATH}"
 
 COPY .  /src
 WORKDIR /src

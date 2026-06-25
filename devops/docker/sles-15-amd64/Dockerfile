@@ -19,6 +19,9 @@ RUN zypper install -y \
     unzip \
     zip
 
+RUN python3 -m venv /opt/kompli-venv
+ENV PATH="/opt/kompli-venv/bin:${PATH}"
+
 WORKDIR /git
 
 # CMake

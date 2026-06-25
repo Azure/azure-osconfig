@@ -16,11 +16,15 @@ RUN apt -y update && apt-get -y install \
     libssl-dev \
     pkg-config \
     python3-jsonschema \
+    python3-venv \
     tar \
     unzip \
     uuid-dev \
     wget \
     zip
+
+RUN python3 -m venv /opt/kompli-venv
+ENV PATH="/opt/kompli-venv/bin:${PATH}"
 
 WORKDIR /git
 
