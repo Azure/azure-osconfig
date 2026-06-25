@@ -5,6 +5,7 @@
 #define COMPLIANCEENGINE_PROCEDURES_SYSCTL_VALUE_H
 
 #include <Evaluator.h>
+#include <Optional.h>
 #include <Pattern.h>
 #include <Regex.h>
 
@@ -18,6 +19,10 @@ struct SysctlValueParams
 
     /// Regex that the value of sysctl has to match
     Pattern value;
+
+    /// Whether to also check stored sysctl configuration files (default: true)
+    /// When false, only the runtime value in /proc/sys is checked
+    Optional<bool> checkConfigFile;
 };
 
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context);

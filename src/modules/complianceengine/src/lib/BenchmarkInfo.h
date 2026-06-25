@@ -14,6 +14,7 @@ namespace ComplianceEngine
 enum class BenchmarkType
 {
     CIS,
+    STIG,
 };
 
 // Defines CIS benchmark information

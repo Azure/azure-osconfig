@@ -26,6 +26,10 @@
                 "value": {
                   "type": "string",
                   "description": "Regex that the value of sysctl has to match"
+                },
+                "checkConfigFile": {
+                  "type": "string",
+                  "description": "When false, only the runtime value in /proc/sys is checked"
                 }
               }
             }

@@ -99,6 +99,12 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
         indicators.Compliant("Correct value for '" + params.sysctlName + "' in runtime configuration");
     }
 
+    // If checkConfigFile is explicitly set to false, skip config file check
+    if (params.checkConfigFile.HasValue() && !params.checkConfigFile.Value())
+    {
+        return indicators.Compliant("Runtime value for '" + params.sysctlName + "' is correct (config file check skipped)");
+    }
+
     // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
     std::string systemdSysctl;
     std::vector<std::string> systemdSysctlLocations = {"/lib/systemd/systemd-sysctl", "/usr/lib/systemd/systemd-sysctl"};

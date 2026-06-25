@@ -68,8 +68,8 @@ const char* Bindings<SshKeyPermissionsParams>::names[] = {"type"};
 // SshdOption.h:64
 const char* Bindings<SshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
 
-// SysctlValue.h:21
-const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value"};
+// SysctlValue.h:26
+const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value", "checkConfigFile"};
 
 // SystemdConfig.h:55
 const char* Bindings<SystemdConfigValueParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};

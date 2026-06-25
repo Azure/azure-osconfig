@@ -456,9 +456,9 @@ template <>
 struct Bindings<SysctlValueParams>
 {
     using T = SysctlValueParams;
-    static constexpr size_t size = 2;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
+    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value, &T::checkConfigFile);
 };
 
 // Defines the bindings for the SystemdConfigValueParams structure.
