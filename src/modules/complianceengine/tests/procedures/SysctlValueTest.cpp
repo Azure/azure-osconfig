@@ -156,6 +156,51 @@ TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
+TEST_F(SysctlValueTest, CheckConfigFileFalseSkipsConfigFileCheck)
+{
+    // When checkConfigFile is false, a correct runtime value is sufficient and the
+    // stored configuration (systemd-sysctl) must NOT be consulted.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    // The stored-config path must never be reached.
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).Times(0);
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+    params.checkConfigFile = false;
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SysctlValueTest, CheckConfigFileFalseStillEnforcesRuntimeValue)
+{
+    // checkConfigFile=false skips only the stored-config check, not the runtime check:
+    // a wrong runtime value is still NonCompliant, and the stored config is not consulted.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).Times(0);
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+    params.checkConfigFile = false;
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
 TEST_F(SysctlValueTest, HappyPathAlternativeSystemdSysctlLocation)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
