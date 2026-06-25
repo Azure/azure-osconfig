@@ -47,6 +47,9 @@ const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comp
 // MountPointExists.h:15
 const char* Bindings<MountPointExistsParams>::names[] = {"mountPoint"};
 
+// NetworkInterface.h:73
+const char* Bindings<NetworkInterfaceParams>::names[] = {"flag", "interfaceName"};
+
 // NoDuplicateEntries.h:24
 const char* Bindings<NoDuplicateEntriesParams>::names[] = {"filename", "delimiter", "column", "context"};
 
@@ -119,6 +122,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"LoginDefsOption", {MakeHandler(AuditLoginDefsOption), nullptr}},
     {"MountPointExists", {MakeHandler(AuditMountPointExists), nullptr}},
     {"MtaLocalOnly", {MakeHandler(AuditMtaLocalOnly), nullptr}},
+    {"NetworkInterface", {MakeHandler(AuditNetworkInterface), nullptr}},
     {"NoDuplicateEntries", {MakeHandler(AuditNoDuplicateEntries), nullptr}},
     {"NoShadowPrimaryGroup", {MakeHandler(AuditNoShadowPrimaryGroup), nullptr}},
     {"NoShellAccountsLocked", {MakeHandler(AuditNoShellAccountsLocked), nullptr}},
@@ -229,6 +233,18 @@ string to_string(const ComplianceEngine::GsettingsKeyType value) noexcept(false)
 string to_string(const ComplianceEngine::GsettingsOperationType value) noexcept(false)
 {
     const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::GsettingsOperationType>();
+    static const auto revmap = ComplianceEngine::RevertMap(map);
+    const auto it = revmap.find(value);
+    if (revmap.end() == it)
+    {
+        throw std::out_of_range("Invalid enum value");
+    }
+    return it->second;
+}
+
+string to_string(const ComplianceEngine::InterfaceFlag value) noexcept(false)
+{
+    const auto& map = ComplianceEngine::MapEnum<ComplianceEngine::InterfaceFlag>();
     static const auto revmap = ComplianceEngine::RevertMap(map);
     const auto it = revmap.find(value);
     if (revmap.end() == it)
