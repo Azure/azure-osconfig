@@ -137,7 +137,6 @@ static constexpr size_t kMaxInputBytes = static_cast<size_t>(8) * 1024 * 1024;
 // malformed or hostile input.
 static constexpr size_t kMaxMofEntries = 100000;
 
-
 int main(int argc, char* argv[])
 {
     // Ensure file-creation permissions are at least as restrictive as 0077
