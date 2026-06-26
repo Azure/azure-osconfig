@@ -32,7 +32,7 @@ struct Resource
     std::string ruleName;
     bool hasInitAudit = false;
 
-    static Result<Resource> ParseSingleEntry(std::istream& stream);
+    static Result<Resource> ParseSingleEntry(std::istream& stream, size_t& bytesConsumed, size_t maxBytes);
 };
 } // namespace MOF
 } // namespace ComplianceEngine

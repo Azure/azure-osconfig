@@ -19,6 +19,7 @@ set(lib_name compliance-engine-assessor-lib)
 # rebuilding it or duplicating sources.
 set(LIB_SOURCES
     CliOptions.cpp
+    InputSecurity.cpp
     Mof.cpp
     BenchmarkFormatter.cpp
     CompactListFormatter.cpp
