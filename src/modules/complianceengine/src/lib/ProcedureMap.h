@@ -407,11 +407,11 @@ struct Bindings<MountPointExistsParams>
     static constexpr auto members = std::make_tuple(&T::mountPoint);
 };
 
-// Defines the bindings for the NetworkInterfaceParams structure.
+// Defines the bindings for the NetworkInterfaceFlagParams structure.
 template <>
-struct Bindings<NetworkInterfaceParams>
+struct Bindings<NetworkInterfaceFlagParams>
 {
-    using T = NetworkInterfaceParams;
+    using T = NetworkInterfaceFlagParams;
     static constexpr size_t size = 2;
     static const char* names[];
     static constexpr auto members = std::make_tuple(&T::flag, &T::interfaceName);
@@ -494,7 +494,7 @@ struct Bindings<SysctlValueParams>
     using T = SysctlValueParams;
     static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value, &T::checkConfigFile);
+    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value, &T::runtimeOnly);
 };
 
 // Defines the bindings for the SystemdConfigValueParams structure.

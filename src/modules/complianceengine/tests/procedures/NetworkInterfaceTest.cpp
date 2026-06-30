@@ -9,11 +9,11 @@
 #include <gtest/gtest.h>
 #include <string>
 
-using ComplianceEngine::AuditNetworkInterface;
+using ComplianceEngine::AuditNetworkInterfaceFlag;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::InterfaceFlag;
-using ComplianceEngine::NetworkInterfaceParams;
+using ComplianceEngine::NetworkInterfaceFlagParams;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ::testing::Return;
@@ -44,10 +44,10 @@ TEST_F(NetworkInterfaceTest, AuditPromiscuousInterfaceDetected)
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/lo/flags")).WillRepeatedly(Return(Result<std::string>("0x9\n"))); // UP|LOOPBACK
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/eth0/flags")).WillRepeatedly(Return(Result<std::string>("0x1103\n"))); // UP|BROADCAST|PROMISC|MULTICAST
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -58,10 +58,10 @@ TEST_F(NetworkInterfaceTest, AuditNoPromiscuousInterface)
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/lo/flags")).WillRepeatedly(Return(Result<std::string>("0x9\n")));
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/eth0/flags")).WillRepeatedly(Return(Result<std::string>("0x1003\n"))); // UP|BROADCAST|MULTICAST, no PROMISC
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -72,11 +72,11 @@ TEST_F(NetworkInterfaceTest, AuditSpecificInterfaceOnly)
     EXPECT_CALL(mContext, GetFileContents("/proc/net/dev")).Times(0);
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/eth0/flags")).WillRepeatedly(Return(Result<std::string>("0x100\n"))); // PROMISC
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
     params.interfaceName = std::string("eth0");
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -85,10 +85,10 @@ TEST_F(NetworkInterfaceTest, AuditProcNetDevReadFailureIsError)
 {
     EXPECT_CALL(mContext, GetFileContents("/proc/net/dev")).WillRepeatedly(Return(Result<std::string>(Error("No such file", -1))));
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -97,10 +97,10 @@ TEST_F(NetworkInterfaceTest, AuditProcNetDevMissingIsNotApplicable)
     // Some restricted containers do not expose /proc/net/dev (no procfs); the rule cannot be assessed.
     EXPECT_CALL(mContext, GetFileContents("/proc/net/dev")).WillRepeatedly(Return(Result<std::string>(Error("No such file", ENOENT))));
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NotApplicable);
 }
@@ -113,10 +113,10 @@ TEST_F(NetworkInterfaceTest, AuditSysfsUnavailableIsNotApplicable)
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/lo/flags")).WillRepeatedly(Return(Result<std::string>(Error("No such file", ENOENT))));
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/eth0/flags")).WillRepeatedly(Return(Result<std::string>(Error("No such file", ENOENT))));
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NotApplicable);
 }
@@ -128,10 +128,10 @@ TEST_F(NetworkInterfaceTest, AuditMalformedFlagsValueIsSkipped)
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/lo/flags")).WillRepeatedly(Return(Result<std::string>("not-a-number\n")));
     EXPECT_CALL(mContext, GetFileContents("/sys/class/net/eth0/flags")).WillRepeatedly(Return(Result<std::string>("0x1103\n"))); // PROMISC
 
-    NetworkInterfaceParams params;
+    NetworkInterfaceFlagParams params;
     params.flag = InterfaceFlag::Promisc;
 
-    auto result = AuditNetworkInterface(params, indicators, mContext);
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant); // eth0 still detected despite lo being malformed
 }

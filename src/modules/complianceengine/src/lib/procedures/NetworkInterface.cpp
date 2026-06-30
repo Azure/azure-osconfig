@@ -81,7 +81,7 @@ std::vector<std::string> ParseInterfaceNames(const std::string& procNetDev)
 }
 } // namespace
 
-Result<Status> AuditNetworkInterface(const NetworkInterfaceParams& params, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     const unsigned long bit = FlagBit(params.flag);
 

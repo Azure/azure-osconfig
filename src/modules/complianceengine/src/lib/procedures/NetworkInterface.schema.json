@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "NetworkInterface"
+            "NetworkInterfaceFlag"
           ],
           "additionalProperties": false,
           "properties": {
-            "NetworkInterface": {
+            "NetworkInterfaceFlag": {
               "type": "object",
               "required": [
                 "flag"

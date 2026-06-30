@@ -63,7 +63,7 @@ enum class InterfaceFlag
     Dynamic,
 };
 
-struct NetworkInterfaceParams
+struct NetworkInterfaceFlagParams
 {
     /// Network interface flag to test for (e.g. PROMISC, UP, LOOPBACK)
     InterfaceFlag flag;
@@ -79,6 +79,6 @@ struct NetworkInterfaceParams
 // flags files are not exposed, the flag state cannot be determined and the audit returns
 // NotApplicable. Typically composed under `not` to assert a flag (e.g. PROMISC) is NOT set
 // on any interface.
-Result<Status> AuditNetworkInterface(const NetworkInterfaceParams& params, IndicatorsTree& indicators, ContextInterface& context);
+Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_PROCEDURES_NETWORK_INTERFACE_H

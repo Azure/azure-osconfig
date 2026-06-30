@@ -156,9 +156,9 @@ TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(SysctlValueTest, CheckConfigFileFalseSkipsConfigFileCheck)
+TEST_F(SysctlValueTest, RuntimeOnlySkipsConfigFileCheck)
 {
-    // When checkConfigFile is false, a correct runtime value is sufficient and the
+    // When runtimeOnly is true, a correct runtime value is sufficient and the
     // stored configuration (systemd-sysctl) must NOT be consulted.
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -172,16 +172,16 @@ TEST_F(SysctlValueTest, CheckConfigFileFalseSkipsConfigFileCheck)
     SysctlValueParams params;
     params.sysctlName = sysctlName;
     params.value = Pattern::Make("0").Value();
-    params.checkConfigFile = false;
+    params.runtimeOnly = true;
 
     auto result = AuditSysctlValue(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(SysctlValueTest, CheckConfigFileFalseStillEnforcesRuntimeValue)
+TEST_F(SysctlValueTest, RuntimeOnlyStillEnforcesRuntimeValue)
 {
-    // checkConfigFile=false skips only the stored-config check, not the runtime check:
+    // runtimeOnly=true skips only the stored-config check, not the runtime check:
     // a wrong runtime value is still NonCompliant, and the stored config is not consulted.
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
@@ -194,7 +194,7 @@ TEST_F(SysctlValueTest, CheckConfigFileFalseStillEnforcesRuntimeValue)
     SysctlValueParams params;
     params.sysctlName = sysctlName;
     params.value = Pattern::Make("0").Value();
-    params.checkConfigFile = false;
+    params.runtimeOnly = true;
 
     auto result = AuditSysctlValue(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());

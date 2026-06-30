@@ -27,9 +27,9 @@
                   "type": "string",
                   "description": "Regex that the value of sysctl has to match"
                 },
-                "checkConfigFile": {
+                "runtimeOnly": {
                   "type": "string",
-                  "description": "When false, only the runtime value in /proc/sys is checked"
+                  "description": "When false (default), also validates stored sysctl configuration files"
                 }
               }
             }

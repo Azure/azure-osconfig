@@ -20,9 +20,9 @@ struct SysctlValueParams
     /// Regex that the value of sysctl has to match
     Pattern value;
 
-    /// Whether to also check stored sysctl configuration files (default: true)
-    /// When false, only the runtime value in /proc/sys is checked
-    Optional<bool> checkConfigFile = true;
+    /// When true, only the runtime value in /proc/sys is checked (default: false)
+    /// When false (default), also validates stored sysctl configuration files
+    Optional<bool> runtimeOnly = false;
 };
 
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context);

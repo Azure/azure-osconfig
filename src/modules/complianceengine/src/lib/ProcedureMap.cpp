@@ -48,7 +48,7 @@ const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comp
 const char* Bindings<MountPointExistsParams>::names[] = {"mountPoint"};
 
 // NetworkInterface.h:73
-const char* Bindings<NetworkInterfaceParams>::names[] = {"flag", "interfaceName"};
+const char* Bindings<NetworkInterfaceFlagParams>::names[] = {"flag", "interfaceName"};
 
 // NoDuplicateEntries.h:24
 const char* Bindings<NoDuplicateEntriesParams>::names[] = {"filename", "delimiter", "column", "context"};
@@ -72,7 +72,7 @@ const char* Bindings<SshKeyPermissionsParams>::names[] = {"type"};
 const char* Bindings<SshdOptionParams>::names[] = {"option", "value", "op", "mode", "readExtraConfigs"};
 
 // SysctlValue.h:26
-const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value", "checkConfigFile"};
+const char* Bindings<SysctlValueParams>::names[] = {"sysctlName", "value", "runtimeOnly"};
 
 // SystemdConfig.h:55
 const char* Bindings<SystemdConfigValueParams>::names[] = {"parameter", "valueRegex", "op", "value", "file", "block", "dir", "passOnNotFound"};
@@ -122,7 +122,7 @@ const ProcedureMap Evaluator::mProcedureMap = {
     {"LoginDefsOption", {MakeHandler(AuditLoginDefsOption), nullptr}},
     {"MountPointExists", {MakeHandler(AuditMountPointExists), nullptr}},
     {"MtaLocalOnly", {MakeHandler(AuditMtaLocalOnly), nullptr}},
-    {"NetworkInterface", {MakeHandler(AuditNetworkInterface), nullptr}},
+    {"NetworkInterfaceFlag", {MakeHandler(AuditNetworkInterfaceFlag), nullptr}},
     {"NoDuplicateEntries", {MakeHandler(AuditNoDuplicateEntries), nullptr}},
     {"NoShadowPrimaryGroup", {MakeHandler(AuditNoShadowPrimaryGroup), nullptr}},
     {"NoShellAccountsLocked", {MakeHandler(AuditNoShellAccountsLocked), nullptr}},
