@@ -14,7 +14,7 @@ using std::string;
 void PrintHelp(const std::string& programName)
 {
     std::cout << "Usage: " + programName + "\n\n";
-    std::cout << "Available optinos:\n";
+    std::cout << "Available options:\n";
     std::cout << "\t-h, --help\tShow help and exit.\n";
     std::cout << "\t-V, --version\tShow software version and exit.\n";
     std::cout << "\t-v, --verbose\tRun in verbose mode.\n";
@@ -68,12 +68,24 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
                 result.continueOnError = true;
                 break;
             case 'l':
+                if (optarg[0] == '\0')
+                {
+                    return Error("Log file path must not be empty.");
+                }
                 result.logFile = std::string(optarg);
                 break;
             case 's':
+                if (optarg[0] == '\0')
+                {
+                    return Error("Section must not be empty.");
+                }
                 result.section = std::string(optarg);
                 break;
             case 'f': {
+                if (optarg[0] == '\0')
+                {
+                    return Error("Format must not be empty.");
+                }
                 auto formatArg = std::string(optarg);
                 std::transform(formatArg.begin(), formatArg.end(), formatArg.begin(), ::tolower);
                 if (formatArg == "nested-list")

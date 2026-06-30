@@ -17,6 +17,7 @@ Checks: >-
   -bugprone-assignment-in-if-condition,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-type-member-init,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
 WarningsAsErrors: ''
 
 CheckOptions:
