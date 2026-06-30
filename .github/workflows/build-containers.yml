@@ -118,10 +118,25 @@ jobs:
           sbom: true
           provenance: mode=max
 
+      - name: Check if PR author is an allowed container signer
+        id: team_membership
+        if: github.event_name == 'pull_request'
+        run: |
+          # Membership is defined in .github/allowed-container-signing (one GitHub
+          # username per line, comments starting with # are ignored).
+          # Comparison is case-insensitive because GitHub logins are case-insensitive.
+          pr_author="${{ github.event.pull_request.user.login }}"
+          if grep -iqxF "${pr_author}" .github/allowed-container-signing 2>/dev/null; then
+            echo "is_team_member=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_team_member=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
       - name: Sign image with cosign (keyless)
+        if: github.event_name != 'pull_request' || steps.team_membership.outputs.is_team_member == 'true'
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           DIGEST: ${{ steps.build_and_push.outputs.digest }}

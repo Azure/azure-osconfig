@@ -1,0 +1,4 @@
+# GitHub usernames allowed to trigger container signing from PR branches.
+# One username per line. Lines starting with # are ignored.
+# Comparison is case-insensitive.
+Kkanas

@@ -8,6 +8,7 @@ endif()
 
 # Find Lua via vcpkg
 find_package(Lua REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(PROCEDURES
     procedures/NoShellAccountsLocked.cpp
@@ -116,6 +117,23 @@ foreach(proc ${PROCEDURES})
         message(SEND_ERROR "Procedure ${proc} does not have a corresponding schema file: ${schema_name}")
     endif()
 endforeach()
+
+# Gather procedure headers as inputs for the interface generator
+file(GLOB PROCEDURE_HEADERS CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/procedures/*.h)
+
+# Generate ProcedureMap.h and ProcedureMap.cpp from procedure headers
+add_custom_command(
+    OUTPUT
+        ${CMAKE_CURRENT_SOURCE_DIR}/ProcedureMap.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ProcedureMap.cpp
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GenInterface.py
+    DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/GenInterface.py
+        ${PROCEDURE_HEADERS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating compliance engine interface (ProcedureMap.h/cpp)"
+    VERBATIM)
 
 add_custom_target(complianceengineschema_prep
     SOURCES ${SCHEMAS}

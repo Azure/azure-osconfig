@@ -15,7 +15,10 @@ jobs:
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
       with:
         python-version: 3.8
-    - name: Install pre-commit
-      run: pip install pre-commit
-    - name: Run pre-commit
-      run: pre-commit run --all-files
+    - name: Install clang tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format clang-tidy
+      run: |
+        devops/scripts/run-hooks.sh --install
+        devops/scripts/run-hooks.sh --all-files
