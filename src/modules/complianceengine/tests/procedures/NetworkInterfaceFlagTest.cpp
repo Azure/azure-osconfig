@@ -7,6 +7,7 @@
 #include <NetworkInterfaceFlag.h>
 #include <cerrno>
 #include <gtest/gtest.h>
+#include <net/if.h>
 #include <string>
 #include <vector>
 
@@ -149,4 +150,49 @@ TEST_F(NetworkInterfaceFlagTest, AuditNamedInterfaceNotFoundIsNonCompliant)
     auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(NetworkInterfaceFlagTest, AuditEnumerationEpermIsNotApplicable)
+{
+    // EPERM means the caller lacks permission to query netlink (e.g. a restrictive seccomp
+    // filter); the interface state is indeterminate so the rule does not apply.
+    EXPECT_CALL(mContext, GetNetworkInterfaces()).WillRepeatedly(Return(Result<std::vector<InterfaceInfo>>(Error("permission denied", EPERM))));
+
+    NetworkInterfaceFlagParams params;
+    params.flag = InterfaceFlag::Promisc;
+
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NotApplicable);
+}
+
+TEST_F(NetworkInterfaceFlagTest, AuditEnumerationEnosysIsNotApplicable)
+{
+    // ENOSYS means the kernel does not implement the required netlink operation;
+    // same indeterminate treatment as EAFNOSUPPORT.
+    EXPECT_CALL(mContext, GetNetworkInterfaces()).WillRepeatedly(Return(Result<std::vector<InterfaceInfo>>(Error("not implemented", ENOSYS))));
+
+    NetworkInterfaceFlagParams params;
+    params.flag = InterfaceFlag::Promisc;
+
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NotApplicable);
+}
+
+TEST_F(NetworkInterfaceFlagTest, AuditMultipleMatchingInterfacesAreCompliant)
+{
+    // Both interfaces carry the flag; the procedure must aggregate all names and return Compliant.
+    std::vector<InterfaceInfo> interfaces = {
+        Iface("eth0", IFF_PROMISC),
+        Iface("eth1", IFF_PROMISC),
+    };
+    EXPECT_CALL(mContext, GetNetworkInterfaces()).WillRepeatedly(Return(Result<std::vector<InterfaceInfo>>(interfaces)));
+
+    NetworkInterfaceFlagParams params;
+    params.flag = InterfaceFlag::Promisc;
+
+    auto result = AuditNetworkInterfaceFlag(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }

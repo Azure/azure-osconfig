@@ -7,6 +7,7 @@
 #include <ProcedureMap.h>
 #include <StringTools.h>
 #include <cerrno>
+#include <net/if.h>
 #include <string>
 #include <vector>
 
@@ -14,43 +15,43 @@ namespace ComplianceEngine
 {
 namespace
 {
-// Map an interface flag to its IFF_* bit value (see <linux/if.h>).
-unsigned long FlagBit(InterfaceFlag flag)
+// Map an interface flag to its IFF_* bit value (see <net/if.h>).
+unsigned int FlagBit(InterfaceFlag flag)
 {
     switch (flag)
     {
         case InterfaceFlag::Up:
-            return 0x1;
+            return IFF_UP;
         case InterfaceFlag::Broadcast:
-            return 0x2;
+            return IFF_BROADCAST;
         case InterfaceFlag::Debug:
-            return 0x4;
+            return IFF_DEBUG;
         case InterfaceFlag::Loopback:
-            return 0x8;
+            return IFF_LOOPBACK;
         case InterfaceFlag::PointToPoint:
-            return 0x10;
+            return IFF_POINTOPOINT;
         case InterfaceFlag::NoTrailers:
-            return 0x20;
+            return IFF_NOTRAILERS;
         case InterfaceFlag::Running:
-            return 0x40;
+            return IFF_RUNNING;
         case InterfaceFlag::NoArp:
-            return 0x80;
+            return IFF_NOARP;
         case InterfaceFlag::Promisc:
-            return 0x100;
+            return IFF_PROMISC;
         case InterfaceFlag::AllMulti:
-            return 0x200;
+            return IFF_ALLMULTI;
         case InterfaceFlag::Master:
-            return 0x400;
+            return IFF_MASTER;
         case InterfaceFlag::Slave:
-            return 0x800;
+            return IFF_SLAVE;
         case InterfaceFlag::Multicast:
-            return 0x1000;
+            return IFF_MULTICAST;
         case InterfaceFlag::PortSel:
-            return 0x2000;
+            return IFF_PORTSEL;
         case InterfaceFlag::AutoMedia:
-            return 0x4000;
+            return IFF_AUTOMEDIA;
         case InterfaceFlag::Dynamic:
-            return 0x8000;
+            return IFF_DYNAMIC;
     }
     return 0;
 }
@@ -58,7 +59,7 @@ unsigned long FlagBit(InterfaceFlag flag)
 
 Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    const unsigned long bit = FlagBit(params.flag);
+    const unsigned int bit = FlagBit(params.flag);
 
     auto interfacesResult = context.GetNetworkInterfaces();
     if (!interfacesResult.HasValue())
