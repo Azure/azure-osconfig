@@ -70,6 +70,7 @@ Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& param
         const int code = interfacesResult.Error().code;
         if (code == EAFNOSUPPORT || code == EPERM || code == ENOSYS)
         {
+            OsConfigLogInfo(context.GetLogHandle(), "Network interfaces cannot be enumerated in this environment: %s", interfacesResult.Error().message.c_str());
             return indicators.NotApplicable("Network interfaces cannot be enumerated in this environment: " + interfacesResult.Error().message);
         }
         return Error("Failed to enumerate network interfaces: " + interfacesResult.Error().message, code);
@@ -104,6 +105,7 @@ Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& param
         {
             list += (i == 0 ? "" : ", ") + matching[i];
         }
+        OsConfigLogDebug(context.GetLogHandle(), "Flag '%s' is set on interface(s): %s", std::to_string(params.flag).c_str(), list.c_str());
         return indicators.Compliant("Flag '" + std::to_string(params.flag) + "' is set on interface(s): " + list);
     }
 
