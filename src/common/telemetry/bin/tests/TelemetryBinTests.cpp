@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+#include "../main.h"
+
+#include <Logging.h>
+#include <ScopeGuard.h>
+#include <Telemetry.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -10,11 +15,6 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
-
-#include <Logging.h>
-#include <ScopeGuard.h>
-#include <Telemetry.hpp>
-#include "../main.h"
 
 using ::testing::HasSubstr;
 
