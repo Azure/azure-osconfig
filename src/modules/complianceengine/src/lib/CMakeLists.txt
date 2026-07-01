@@ -30,7 +30,7 @@ set(PROCEDURES
     procedures/LogFilePermissions.cpp
     procedures/LoginDefsOption.cpp
     procedures/MountPointExists.cpp
-    procedures/NetworkInterface.cpp
+    procedures/NetworkInterfaceFlag.cpp
     procedures/MtaLocalOnly.cpp
     procedures/NoDuplicateEntries.cpp
     procedures/NoShadowPrimaryGroup.cpp
@@ -76,7 +76,7 @@ set(SCHEMAS
     procedures/LogFilePermissions.schema.json
     procedures/LoginDefsOption.schema.json
     procedures/MountPointExists.schema.json
-    procedures/NetworkInterface.schema.json
+    procedures/NetworkInterfaceFlag.schema.json
     procedures/MtaLocalOnly.schema.json
     procedures/NoDuplicateEntries.schema.json
     procedures/NoShadowPrimaryGroup.schema.json

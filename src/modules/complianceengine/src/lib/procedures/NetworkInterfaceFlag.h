@@ -73,12 +73,14 @@ struct NetworkInterfaceFlagParams
 };
 
 // Audit is Compliant when at least one (matching) interface has the given flag set,
-// and NonCompliant otherwise. It is read-only: it enumerates interfaces from
-// /proc/net/dev and reads /sys/class/net/<iface>/flags (a hex IFF_* bitmask); it never
-// shells out. In restricted container environments where /proc/net/dev or the per-interface
-// flags files are not exposed, the flag state cannot be determined and the audit returns
-// NotApplicable. Typically composed under `not` to assert a flag (e.g. PROMISC) is NOT set
-// on any interface.
+// and NonCompliant otherwise. It is read-only: it enumerates interfaces and their IFF_*
+// flags through ContextInterface::GetNetworkInterfaces() (backed by getifaddrs()); it never
+// shells out or reads procfs/sysfs directly. A successful enumeration that yields no matching
+// interface (no interfaces at all, or a named interface that is absent) is a determinate
+// NonCompliant result -- no matching interface carries the flag. NotApplicable is returned
+// only when interfaces cannot be enumerated at all (e.g. the netlink socket getifaddrs()
+// relies on is unavailable in a restricted sandbox), which is indeterminate. Typically
+// composed under `not` to assert a flag (e.g. PROMISC) is NOT set on any interface.
 Result<Status> AuditNetworkInterfaceFlag(const NetworkInterfaceFlagParams& params, IndicatorsTree& indicators, ContextInterface& context);
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_PROCEDURES_NETWORK_INTERFACE_H

@@ -19,7 +19,7 @@
 #include <LoginDefsOption.h>
 #include <MountPointExists.h>
 #include <MtaLocalOnly.h>
-#include <NetworkInterface.h>
+#include <NetworkInterfaceFlag.h>
 #include <NoDuplicateEntries.h>
 #include <NoShadowPrimaryGroup.h>
 #include <NoShellAccountsLocked.h>

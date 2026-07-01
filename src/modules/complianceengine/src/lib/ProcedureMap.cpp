@@ -47,7 +47,7 @@ const char* Bindings<LoginDefsOptionParams>::names[] = {"option", "value", "comp
 // MountPointExists.h:15
 const char* Bindings<MountPointExistsParams>::names[] = {"mountPoint"};
 
-// NetworkInterface.h:73
+// NetworkInterfaceFlag.h:73
 const char* Bindings<NetworkInterfaceFlagParams>::names[] = {"flag", "interfaceName"};
 
 // NoDuplicateEntries.h:24
