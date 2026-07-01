@@ -2,12 +2,19 @@ name: Code Formatting
 
 on: [push, pull_request]
 
+# Cancel any in-progress run for the same branch/PR when a new push arrives.
+# This prevents stale runs (e.g. from before a force-push) from continuing to
+# execute against files that no longer exist in the repository.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   code-formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -19,6 +26,5 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y clang-format clang-tidy
-      run: |
-        devops/scripts/run-hooks.sh --install
+        yes | devops/scripts/run-hooks.sh --install
         devops/scripts/run-hooks.sh --all-files

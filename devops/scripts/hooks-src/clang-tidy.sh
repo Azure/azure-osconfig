@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-readonly HOOK_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+readonly HOOK_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 readonly REPO_ROOT="$(env -u GIT_DIR git -C "$HOOK_DIR" rev-parse --show-toplevel)"
 # shellcheck source=common.sh
 source "$HOOK_DIR/common.sh"
