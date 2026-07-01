@@ -66,16 +66,22 @@ runs:
       if: ${{ inputs.verify == 'true' }}
       shell: bash
       run: |
-        # Allow PR-branch signatures for authors listed in .github/allowed-container-signing.
-        # Comparison is case-insensitive because GitHub logins are case-insensitive.
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+        expanded='regexp=^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/(heads/(main|dev)|pull/[0-9]+/merge)$'
+        if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+          # Non-PR events (schedule, push to main): containers in test-matrix.json
+          # may have been built and signed on a PR branch by an approved author and
+          # their digests merged to main.  Accept both main/dev and PR-branch sigs.
+          echo "${expanded}" >> "$GITHUB_OUTPUT"
+        else
+          # PR events: expand only for authors in .github/allowed-container-signing.
+          # Comparison is case-insensitive because GitHub logins are case-insensitive.
           pr_author="${{ github.event.pull_request.user.login }}"
           if grep -iqxF "${pr_author}" "${GITHUB_WORKSPACE}/.github/allowed-container-signing" 2>/dev/null; then
-            echo 'regexp=^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/(heads/(main|dev)|pull/[0-9]+/merge)$' >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "${expanded}" >> "$GITHUB_OUTPUT"
+          else
+            echo 'regexp=${{ inputs.cosign-certificate-identity-regexp }}' >> "$GITHUB_OUTPUT"
           fi
         fi
-        echo 'regexp=${{ inputs.cosign-certificate-identity-regexp }}' >> "$GITHUB_OUTPUT"
 
     - name: Install cosign
       if: ${{ inputs.verify == 'true' }}

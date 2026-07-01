@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 #include "Telemetry.hpp"
+
 #include "ParameterSets.hpp"
 
+#include <ScopeGuard.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -12,7 +14,6 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <ScopeGuard.h>
 #include <sstream>
 #include <thread>
 
@@ -22,9 +23,9 @@ namespace Telemetry
 {
 
 TelemetryManager::TelemetryManager(bool enableDebug, std::chrono::seconds teardownTime, OsConfigLogHandle logHandle)
-    : m_log(logHandle)
-    , m_logManager(nullptr)
-    , m_logger(nullptr)
+    : m_log(logHandle),
+      m_logManager(nullptr),
+      m_logger(nullptr)
 {
     m_logConfig["name"] = TELEMETRY_NAME;
     m_logConfig["version"] = TELEMETRY_VERSION;
@@ -61,7 +62,7 @@ TelemetryManager::~TelemetryManager() noexcept
     {
         m_logManager->FlushAndTeardown();
     }
-    catch(...)
+    catch (...)
     {
         OsConfigLogError(m_log, "Exception during telemetry shutdown");
     }
@@ -138,8 +139,7 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
             continue; // Skip the event name field
         }
 
-        if (requiredParams.find(jsonKey) == requiredParams.end() &&
-            optionalParams.find(jsonKey) == optionalParams.end())
+        if (requiredParams.find(jsonKey) == requiredParams.end() && optionalParams.find(jsonKey) == optionalParams.end())
         {
             OsConfigLogError(m_log, "Unexpected parameter '%s' for event '%s'", jsonKey.c_str(), eventName.c_str());
             return false;
@@ -158,17 +158,17 @@ bool TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     {
         jsonObject = nlohmann::json::parse(jsonLine);
     }
-    catch(const nlohmann::json::exception& e)
+    catch (const nlohmann::json::exception& e)
     {
         OsConfigLogError(m_log, "JSON exception: %s", e.what());
         return false;
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
         OsConfigLogError(m_log, "Exception during JSON parsing: %s", e.what());
         return false;
     }
-    catch(...)
+    catch (...)
     {
         OsConfigLogError(m_log, "Unknown exception during JSON parsing");
         return false;

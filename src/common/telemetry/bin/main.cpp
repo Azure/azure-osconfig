@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include "main.h"
+
 #include "Telemetry.h"
 
 #include <Logging.h>
 #include <Telemetry.hpp>
-
 #include <string>
 
 static OsConfigLogHandle g_log;

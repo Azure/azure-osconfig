@@ -3,9 +3,9 @@
 
 #include "main.h"
 
+#include <Logging.h>
 #include <getopt.h>
 #include <iostream>
-#include <Logging.h>
 
 void PrintUsage(const char* program_name)
 {
@@ -33,18 +33,14 @@ bool ParseCommandLineArgs(int argc, char* argv[], CommandLineArgs& args, OsConfi
     args.filepath.clear();
 
     static struct option long_options[] = {
-        {"file", required_argument, 0, 'f'},
-        {"verbose", no_argument, 0, 'v'},
-        {"teardown", required_argument, 0, 't'},
-        {0, 0, 0, 0}
-    };
+        {"file", required_argument, 0, 'f'}, {"verbose", no_argument, 0, 'v'}, {"teardown", required_argument, 0, 't'}, {0, 0, 0, 0}};
 
     // Parse options
     // Reset getopt state for multiple calls in the same process (important for tests)
     // GNU getopt requires these to be reset between calls
-    optind = 0;  // Forces reinitialization in GNU getopt
-    opterr = 0;  // Suppress error messages
-    optopt = 0;  // Reset last parsed option
+    optind = 0; // Forces reinitialization in GNU getopt
+    opterr = 0; // Suppress error messages
+    optopt = 0; // Reset last parsed option
 
     int opt;
     while ((opt = getopt_long(argc, argv, "f:vt:", long_options, nullptr)) != -1)

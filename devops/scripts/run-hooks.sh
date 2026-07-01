@@ -68,7 +68,9 @@ if $INSTALL; then
     echo "Select hooks to activate (Enter = keep current state):"
     for src in "$HOOKS_SRC_DIR"/*.sh; do
         name="$(basename "$src" .sh)"
-        [[ "$name" == "common" ]] && continue   # shared library, not a hook
+        if [[ "$name" == "common" ]] ; then
+                ln -sf "$(realpath --relative-to="$HOOKS_DIR" "$src")" "$dest"
+        fi
 
         dest="$HOOKS_DIR/$name.sh"
         if [[ -L "$dest" ]]; then
@@ -129,6 +131,8 @@ for hook in "$HOOKS_DIR"/*.sh; do
     [[ -x "$hook" ]] || continue
 
     hook_name="$(basename "$hook" .sh)"
+    [[ "$hook_name" == "common" ]] && continue
+
     printf '\n==> %s\n' "$hook_name"
 
     if "$hook" "${FILES[@]+"${FILES[@]}"}"; then
