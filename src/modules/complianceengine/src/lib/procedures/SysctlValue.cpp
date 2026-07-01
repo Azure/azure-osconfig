@@ -106,7 +106,7 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     {
         // The status has already been set to Compliant above, so we can return it here.
         OsConfigLogInfo(log, "Skipping sysctl configuration file check for '%s' as per parameters", params.sysctlName.c_str());
-        return Status::Compliant;
+        return indicators.Compliant("Runtime-only check for '" + params.sysctlName + "' passed");
     }
 
     // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
