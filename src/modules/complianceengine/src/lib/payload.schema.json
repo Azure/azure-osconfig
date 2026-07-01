@@ -204,6 +204,12 @@
           "$ref": "procedures/MtaLocalOnly.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/NetworkInterface.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/NetworkInterfaceFlag.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/NoDuplicateEntries.schema.json#/definitions/audit"
         },
         {
@@ -335,6 +341,12 @@
         },
         {
           "$ref": "procedures/MtaLocalOnly.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NetworkInterface.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/NetworkInterfaceFlag.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/NoDuplicateEntries.schema.json#/definitions/remediation"

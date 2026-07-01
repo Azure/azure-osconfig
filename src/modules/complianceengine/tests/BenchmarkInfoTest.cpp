@@ -117,6 +117,16 @@ TEST_F(BenchmarkInfoTest, Valid_1)
     EXPECT_EQ(std::to_string(result.Value()), "/cis/ubuntu/20.04/v1.0.0/x/y/z");
 }
 
+TEST_F(BenchmarkInfoTest, Valid_Stig)
+{
+    auto result = CISBenchmarkInfo::Parse("/stig/rhel/9/V2R7/SV-257777");
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value().distribution, LinuxDistribution::RHEL);
+    EXPECT_EQ(result.Value().version, std::string("9"));
+    EXPECT_EQ(result.Value().benchmarkVersion, std::string("V2R7"));
+    EXPECT_EQ(result.Value().section, "SV-257777");
+}
+
 TEST_F(BenchmarkInfoTest, Match_1)
 {
     auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0/x/y/z");

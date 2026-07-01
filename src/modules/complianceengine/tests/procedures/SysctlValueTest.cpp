@@ -156,6 +156,51 @@ TEST_F(SysctlValueTest, HappyPathSysctlValueEqualConfigurationNoOverride)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
+TEST_F(SysctlValueTest, RuntimeOnlySkipsConfigFileCheck)
+{
+    // When runtimeOnly is true, a correct runtime value is sufficient and the
+    // stored configuration (systemd-sysctl) must NOT be consulted.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    // The stored-config path must never be reached.
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).Times(0);
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+    params.runtimeOnly = true;
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SysctlValueTest, RuntimeOnlyStillEnforcesRuntimeValue)
+{
+    // runtimeOnly=true skips only the stored-config check, not the runtime check:
+    // a wrong runtime value is still NonCompliant, and the stored config is not consulted.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).Times(0);
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).Times(0);
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+    params.runtimeOnly = true;
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
 TEST_F(SysctlValueTest, HappyPathAlternativeSystemdSysctlLocation)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
@@ -660,4 +705,43 @@ TEST_F(SysctlValueTest, SecurityAcceptsValidSysctlName)
     auto result = AuditSysctlValue(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(SysctlValueTest, RuntimeValueEmptyStringIsNonCompliant)
+{
+    // GetFileContents returning an empty string (no trailing newline) triggers UB via
+    // *rbegin() on an empty std::string in unpatched code; the fix guards with !empty().
+    // The empty value does not match the expected pattern, so the result is NonCompliant.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("")));
+
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(SysctlValueTest, SystemdSysctlNotFoundAtEitherLocation)
+{
+    // When neither systemd-sysctl location responds, the procedure must return an Error
+    // rather than silently reporting Compliant or NonCompliant.
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>(Error("not found", ENOENT))));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).WillRepeatedly(Return(Result<std::string>(Error("not found", ENOENT))));
+
+    SysctlValueParams params;
+    params.sysctlName = sysctlName;
+    params.value = Pattern::Make("0").Value();
+
+    auto result = AuditSysctlValue(params, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().code, ENOENT);
 }
