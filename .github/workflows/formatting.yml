@@ -1,6 +1,6 @@
 name: Code Formatting
 
-on: [push, pull_request]
+on: [push, pull_request, merge_group]
 
 # Cancel any in-progress run for the same branch/PR when a new push arrives.
 # This prevents stale runs (e.g. from before a force-push) from continuing to
