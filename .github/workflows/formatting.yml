@@ -5,8 +5,11 @@ on: [push, pull_request, merge_group]
 # Cancel any in-progress run for the same branch/PR when a new push arrives.
 # This prevents stale runs (e.g. from before a force-push) from continuing to
 # execute against files that no longer exist in the repository.
+# Include event_name so that a push to the merge-queue temporary branch does
+# not share a concurrency group with the merge_group event for the same ref,
+# which would cause one to cancel the other and leave the required check unreported.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
