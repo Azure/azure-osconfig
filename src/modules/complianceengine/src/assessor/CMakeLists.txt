@@ -55,3 +55,7 @@ install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if (BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+if (BUILD_FUZZER)
+    add_subdirectory(fuzzer)
+endif()
