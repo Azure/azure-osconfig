@@ -362,7 +362,7 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
 
     // Locate the next entry header, skipping blank lines between entries. A
     // clean end of input here means there are no more entries.
-    Optional<string> headerLine;
+    string header;
     while (true)
     {
         auto read = readLine();
@@ -374,14 +374,12 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
         {
             return Optional<Resource>(); // Clean EOF — no more entries.
         }
-        if (!TrimWhiteSpaces(read.Value().Value()).empty())
+        header = TrimWhiteSpaces(read.Value().Value());
+        if (!header.empty())
         {
-            headerLine = std::move(read.Value());
             break;
         }
     }
-
-    const string header = TrimWhiteSpaces(headerLine.Value());
     const size_t prefixLen = sizeof(kHeaderPrefix) - 1;
     const size_t suffixLen = sizeof(kHeaderSuffix) - 1;
     if (header.size() < prefixLen + suffixLen || header.compare(0, prefixLen, kHeaderPrefix) != 0 ||
