@@ -324,6 +324,10 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
             const std::istream::int_type ch = stream.get();
             if (ch == std::istream::traits_type::eof())
             {
+                if (stream.bad())
+                {
+                    return Error("I/O error reading MOF input", EIO);
+                }
                 if (line.empty())
                 {
                     return Optional<string>(); // Clean EOF.
@@ -332,6 +336,11 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
             }
             if (ch == '\n')
             {
+                // Strip a trailing '\r' to handle CRLF line endings.
+                if (!line.empty() && line.back() == '\r')
+                {
+                    line.pop_back();
+                }
                 // Count the line terminator alongside the content.
                 if (++mBytesConsumed > kMaxInputBytes)
                 {

@@ -494,6 +494,53 @@ TEST(MofParserTest, TruncatedNoNewlineAtEofIsRejected)
     EXPECT_EQ(result.Error().code, EIO);
 }
 
+TEST(MofParserTest, IoErrorOnReadIsReportedWithEio)
+{
+    // When the underlying streambuf throws during get(), istream sets badbit
+    // and returns EOF. The parser must detect stream.bad() and return an I/O
+    // error rather than misreporting the state as a clean EOF or truncation.
+    struct ErrorBuf : std::streambuf
+    {
+        int_type underflow() override
+        {
+            throw std::ios_base::failure("simulated I/O error");
+        }
+    } buf;
+    std::istream stream(&buf);
+    // Suppress exceptions so that istream catches the throw and sets badbit.
+    stream.exceptions(std::ios_base::goodbit);
+    auto rangeResult = MofResourceRange::Make(stream, nullptr);
+    ASSERT_TRUE(rangeResult.HasValue());
+    auto& range = rangeResult.Value();
+    auto it = range.begin();
+    ASSERT_TRUE(it != range.end());
+    ASSERT_FALSE((*it).HasValue());
+    EXPECT_EQ((*it).Error().code, EIO);
+    EXPECT_NE((*it).Error().message.find("I/O error"), std::string::npos);
+}
+
+TEST(MofParserTest, CrlfLineEndingsAreAccepted)
+{
+    // MOF files may carry Windows-style CRLF line endings. The parser must
+    // strip the trailing '\r' so that field keys, values, and block delimiters
+    // are recognised correctly.
+    std::string text = Render(DefaultFields());
+    // Replace every \n with \r\n.
+    std::string crlf;
+    crlf.reserve(text.size() + std::count(text.begin(), text.end(), '\n'));
+    for (char c : text)
+    {
+        if (c == '\n')
+        {
+            crlf += '\r';
+        }
+        crlf += c;
+    }
+    auto result = ParseFirst(crlf);
+    ASSERT_TRUE(result.HasValue()) << result.Error().message;
+    EXPECT_EQ(result.Value().ruleName, "MyRule");
+}
+
 // ---------------------------------------------------------------------------
 // Make(istream&) overload and operator->
 // ---------------------------------------------------------------------------
