@@ -1,4 +1,4 @@
-# OSConfig Universal Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC)
+# Kompli Universal Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC)
 
 ## 1. About Machine Configuration
 
@@ -9,15 +9,15 @@ Read about Azure Automanage Machine Configuration (formerly called Azure Policy 
 To regenerate code, see [codegen.cmd](codegen.cmd).
 
  > **Warning**
- > Regenerating code will overwrite all customizations and additions specific to OSConfig.
+ > Regenerating code will overwrite all customizations and additions specific to Kompli.
 
-## 3. Building the OSConfig Universal NRP
+## 3. Building the Kompli Universal NRP
 
-The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
+The Kompli Universal NRP binary (libOsConfigResource.so) is built with rest of Kompli.
 
 ### 3.1. Building the universal NRP binary on Ubuntu 14
 
-The OSConfig Universal NRP binary is built on Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
+The Kompli Universal NRP binary is minimal build requirement is Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
 
 Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)).
 
@@ -32,7 +32,7 @@ Verify that gcc is 4.8:
 ```bash
 gcc --version
 ```
-Clone OSConfig locally and build from the main branch using the following simplified commands:
+Clone Kompli locally and build from the main branch using the following simplified commands:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
@@ -46,7 +46,8 @@ $ cmake ../src -DCMAKE_BUILD_TYPE=Release
 -- The C compiler identification is GNU 4.8.4
 ...
 -- Distro: Linux Ubuntu 14.04 trusty
--- osconfig v1.0.5.20231208
+-- kompli v1.0.5.20260703
+
 ...
 
 $ sudo cmake --build . --config Release  --target all
@@ -81,16 +82,18 @@ Scanning dependencies of target stage_create_zip
 [100%] Built target stage_create_zip
 Scanning dependencies of target create_zip
 .
-./OsConfigPolicy.mof
-./Modules
-./Modules/DscNativeResources
-./Modules/DscNativeResources/OsConfigResource
-./Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-./OsConfigPolicy.metaconfig.json
+cd kompli/build/adapters/mc/complianceengine/StagingComplianceEngineShell && /usr/bin/cmake -E tar cfv kompli/build/ComplianceEngineShell.zip --format=zip .
+ComplianceEngineSchema.zip
+Modules
+Modules/DscNativeResources
+Modules/DscNativeResources/OsConfigResource
+Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
+ComplianceEngineShell.mof
+ComplianceEngineShell.metaconfig.json
 [100%] Built target create_zip
 ```
 
-## 4. Validating the OSConfig Universal NRP locally with PowerShell and the MC Agent
+## 4. Validating the Kompli Universal NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup).
 
@@ -117,18 +120,19 @@ Get-Command -Module 'GuestConfiguration'
 
 ### 4.3. Running the validation
 
-Copy the build generated artifacts ZIP package OsConfigPolicy.zip to a new folder or invoke it directly from the build location.
+Copy the build generated artifacts ZIP package ComplianceEngineShell.zip to a new folder or invoke it directly from the build location.
 
 ```bash
 sudo pwsh
-Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
-Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
+Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/ComplianceEngineShell.zip
+-Verbose
+Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/ComplianceEngineShell.zip -Verbose
 ```
 To view the resource class parameters returned by the Get function:
 
 ```bash
 sudo pwsh
-$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
+$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>./ComplianceEngineShell.zip -Verbose
 $x.resources[0].properties
 ```
 In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_mc_nrp.log`.
