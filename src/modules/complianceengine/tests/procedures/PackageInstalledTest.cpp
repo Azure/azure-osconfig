@@ -135,8 +135,8 @@ TEST_F(PackageInstalledTest, NoPackageManagerDetected)
 
     auto result = AuditPackageInstalled(params, mIndicators, mContext);
 
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "No package manager found");
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NotApplicable);
 }
 
 TEST_F(PackageInstalledTest, SpecifiedPackageManagerOverridesDetection)
