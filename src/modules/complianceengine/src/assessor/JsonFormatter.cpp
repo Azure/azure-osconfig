@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+#include <Engine.h>
 #include <JsonFormatter.hpp>
 #include <parson.h>
 #include <sstream>

@@ -1,23 +1,103 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+//
+// compliance-engine-assessor
+//
+// Threat model
+// ------------
+// This tool is intended to run as root on Linux endpoints to perform CIS
+// benchmark audit and remediation. The trust boundary is the invoking
+// operator: the input MOF file, the log-file path, and command-line arguments
+// are treated as operator-supplied (trusted to be benign in intent, but not
+// to be free of bugs or accidental hostile content).
+//
+//  - The input MOF parser is strict and streaming (see MofResourceRange): it
+//    validates the fixed field set the augmentation engine emits, rejects
+//    unknown fields, and bounds line length, total size, and entry count. It
+//    owns the input file and encapsulates the integrity checks below. A fuzzer
+//    target exercises it; extend the corpus when changing the format.
+//
+//  - Input file integrity (when --input is used; stdin bypasses all checks):
+//
+//    1. Parent directory (stat): must be root-owned and not writable by
+//       group or others. A writable directory enables a rename-swap attack:
+//       an attacker can unlink the validated file and place a hostile one
+//       before the process reads it.
+//
+//    2. open(O_RDONLY|O_NOFOLLOW|O_CLOEXEC): the kernel refuses symlinks in
+//       the final path component atomically (ELOOP), eliminating the
+//       lstat-then-open TOCTOU window. Symlinks are intentionally rejected
+//       rather than accepted-with-a-warning; callers that stage input via a
+//       symlink must resolve the link before passing the path. Note: symlinks
+//       in intermediate path components are not checked; the operator is
+//       trusted to supply a straightforward path.
+//
+//    3. fstat on the open fd: ownership and mode are verified against the
+//       inode we actually hold, not a potentially-swapped path entry. The
+//       file must be a regular file (FIFOs, devices, sockets are refused so
+//       they cannot block the read or stream unbounded data), root-owned, and
+//       not group/world-writable.
+//
+//    4. The verified fd is wrapped in a stream and read incrementally (never
+//       slurped whole). The fd keeps the inode reachable across the read even
+//       if the directory entry is concurrently renamed or unlinked. The total
+//       bytes read, per-line length, and entry count are all bounded inside the
+//       streaming parser to keep memory use bounded.
+//
+//  - stdin (--input not supplied): all file integrity checks are bypassed.
+//    Streaming inputs (pipes, process substitution) must use stdin. The bytes
+//    consumed, per-line length, and total entry count are still bounded inside
+//    the streaming MOF parser. Callers in automated pipelines should always use
+//    --input with a root-owned, non-world-writable file.
+//
+//  - umask is tightened to at least S_IRWXG|S_IRWXO (preserving any stricter
+//    inherited mask). The log file when --log-file is supplied is the primary
+//    case.
+//
+//  - The --log-file path is validated before opening (RefuseUnsafeLogFile):
+//    the shared logging code opens it with a symlink-following append and
+//    chmod's it while we run as root, so a symlink, non-root-owned target, or
+//    writable parent directory is refused to prevent redirecting root's writes
+//    onto a sensitive file.
+//
+//    Residual TOCTOU (known limitation): unlike --input, the log file is NOT
+//    verified via fstat() on a held fd. The shared OpenLog() API is path-only
+//    (no fd-accepting entry point) and TrimLog() re-opens the path with
+//    fopen() on every log rotation, so a pinned, pre-verified fd cannot be
+//    handed to the logging layer; both the initial open and each rotation
+//    re-resolve the path with symlink-following fopen(). RefuseUnsafeLogFile()
+//    therefore checks the path with lstat() shortly before OpenLog() resolves
+//    it again, leaving a small check-to-use window. That window is closed in
+//    practice by the parent-directory check: requiring the parent to be
+//    root-owned and not group/world-writable prevents an attacker from
+//    creating, renaming, or swapping the entry at all, so the path cannot be
+//    pointed at a new target between the check and any (re-)open. Fully
+//    eliminating the window (fd-based open with O_NOFOLLOW handed to the
+//    logger) would require changing the shared logging library, which is
+//    out of scope here as it affects every azure-osconfig binary.
+//
+//  - The PATH/IFS environment is inherited and used by procedure scripts the
+//    engine spawns. Sanitizing the environment is the engine's
+//    responsibility, not the assessor's.
+
+#include "CliOptions.hpp"
+#include "CompactListFormatter.hpp"
+#include "DebugFormatter.hpp"
+#include "InputSecurity.hpp"
+#include "JsonFormatter.hpp"
+#include "Mof.hpp"
+#include "NestedListFormatter.hpp"
+
 #include <AssessorContext.h>
-#include <CliOptions.hpp>
 #include <CommonContext.h>
-#include <CompactListFormatter.hpp>
-#include <DebugFormatter.hpp>
 #include <Engine.h>
-#include <InputSecurity.hpp>
-#include <JsonFormatter.hpp>
 #include <Logging.h>
-#include <Mof.hpp>
-#include <NestedListFormatter.hpp>
 #include <Optional.h>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -34,33 +114,17 @@ using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ComplianceEngine::Assessor::Command;
 using ComplianceEngine::Assessor::Format;
-using ComplianceEngine::Assessor::OpenVerifiedInput;
 using ComplianceEngine::Assessor::Options;
 using ComplianceEngine::Assessor::ParseCommandLine;
 using ComplianceEngine::Assessor::PrintHelp;
-using ComplianceEngine::Assessor::RefusePathTraversal;
 using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
-using ComplianceEngine::Assessor::RefuseWritableParentDir;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
 using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
 using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
 using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
 using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
-using ComplianceEngine::MOF::Resource;
-using std::istream;
+using ComplianceEngine::MOF::MofResourceRange;
 using std::string;
-
-// Upper bound on the total bytes accepted from either --input or stdin. A
-// real benchmark MOF is far smaller; the cap prevents a malformed or hostile
-// input (or a pipe that never ends) from exhausting memory while we run as
-// root. NOTE: when MOF parsing is reworked to stream both file and stdin
-// inputs, this byte-accounting moves into the streaming parser.
-static constexpr size_t kMaxInputBytes = static_cast<size_t>(8) * 1024 * 1024;
-
-// Upper bound on the number of MOF entries processed from a single input. A
-// real benchmark has a few hundred rules; a vastly larger count indicates a
-// malformed or hostile input.
-static constexpr size_t kMaxMofEntries = 100000;
 
 int main(int argc, char* argv[])
 {
@@ -171,105 +235,31 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::istringstream fileStream;
-    if (!options.input.empty())
+    // Open the input as a strictly-validated, streaming MOF range. For --input
+    // the range encapsulates the full input-hardening posture (path-traversal
+    // rejection, root-owned non-writable parent directory, O_NOFOLLOW open, and
+    // regular-file/ownership/mode checks) and owns the file; for stdin it
+    // streams without those on-disk checks. Size, line, and entry caps are
+    // enforced inside the range.
+    auto rangeResult = options.input.empty() ? MofResourceRange::Make(std::cin, logHandle.get()) : MofResourceRange::Make(options.input, logHandle.get());
+    if (!rangeResult.HasValue())
     {
-        if (RefusePathTraversal(options.input, logHandle.get()))
-        {
-            return 1;
-        }
-        if (RefuseWritableParentDir(options.input, logHandle.get()))
-        {
-            return 1;
-        }
-        const auto inputFdResult = OpenVerifiedInput(options.input, logHandle.get());
-        if (!inputFdResult.HasValue())
-        {
-            return 1;
-        }
-        const int inputFd = inputFdResult.Value();
-        std::string content;
-        char buf[4096];
-        ssize_t n = 0;
-        bool tooLarge = false;
-        while (true)
-        {
-            n = ::read(inputFd, buf, sizeof(buf));
-            if (n > 0)
-            {
-                if (content.size() + static_cast<size_t>(n) > kMaxInputBytes)
-                {
-                    tooLarge = true;
-                    break;
-                }
-                content.append(buf, static_cast<size_t>(n));
-            }
-            else if (n == 0)
-            {
-                break; // EOF
-            }
-            else if (errno != EINTR)
-            {
-                break; // real error
-            }
-            // EINTR: signal interrupted the syscall; retry
-        }
-        const int savedErrno = errno;
-        ::close(inputFd);
-        if (tooLarge)
-        {
-            OsConfigLogError(logHandle.get(), "Refusing to read input file '%s': exceeds maximum size of %zu bytes.", options.input.c_str(), kMaxInputBytes);
-            return 1;
-        }
-        if (n < 0)
-        {
-            OsConfigLogError(logHandle.get(), "Failed to read input file '%s': %s", options.input.c_str(), std::strerror(savedErrno));
-            return 1;
-        }
-        fileStream.str(content);
+        OsConfigLogError(logHandle.get(), "Failed to open MOF input: %s", rangeResult.Error().message.c_str());
+        return 1;
     }
+    auto& mofRange = rangeResult.Value();
 
-    istream& inputStream = options.input.empty() ? std::cin : fileStream;
-    string line;
     auto status = Status::Compliant;
     bool hasError = false;
-    // Total bytes consumed from the input stream (outer scan loop + all lines
-    // read inside Resource::ParseSingleEntry). The --input path is already
-    // bounded by kMaxInputBytes above; this shared counter applies the same
-    // ceiling to the stdin path without buffering all of stdin (per the
-    // planned MOF streaming rework). Per-entry line-length and entry-count
-    // limits are also enforced inside Resource::ParseSingleEntry.
-    size_t bytesConsumed = 0;
-    size_t entryCount = 0;
-    while (std::getline(inputStream, line))
+    for (const auto& entryResult : mofRange)
     {
-        // Include one byte for the newline that std::getline() discards.
-        bytesConsumed += line.size() + 1;
-        if (bytesConsumed > kMaxInputBytes)
+        if (!entryResult.HasValue())
         {
-            OsConfigLogError(logHandle.get(), "Refusing to process input: exceeds maximum size of %zu bytes.", kMaxInputBytes);
+            OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", entryResult.Error().message.c_str());
             return 1;
         }
 
-        if (line.find("instance of OsConfigResource as") == std::string::npos)
-        {
-            continue;
-        }
-
-        if (++entryCount > kMaxMofEntries)
-        {
-            OsConfigLogError(logHandle.get(), "Refusing to process input: exceeds maximum of %zu MOF entries.", kMaxMofEntries);
-            return 1;
-        }
-
-        auto mofParsingResult = Resource::ParseSingleEntry(inputStream, bytesConsumed, kMaxInputBytes);
-        if (!mofParsingResult.HasValue())
-        {
-            OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", mofParsingResult.Error().message.c_str());
-            return 1;
-        }
-
-        auto mofEntry = std::move(mofParsingResult.Value());
+        const auto& mofEntry = entryResult.Value();
         if (options.section.HasValue())
         {
             if (mofEntry.benchmarkInfo.section.find(options.section.Value()) != 0)
@@ -348,19 +338,13 @@ int main(int argc, char* argv[])
             }
 
             case Command::Remediate: {
-                if (!mofEntry.payload.HasValue())
-                {
-                    OsConfigLogError(logHandle.get(), "Cannot remediate '%s': missing DesiredObjectValue.", mofEntry.resourceID.c_str());
-                    status = Status::NonCompliant;
-                    if (!options.continueOnError)
-                    {
-                        return 1;
-                    }
-                    hasError = true;
-                    continue;
-                }
+                // The augmentation engine emits an empty DesiredObjectValue for
+                // every rule (modelled here as an absent payload); fall back to
+                // an empty JSON object so remediation can still run, mirroring
+                // the audit-init path above.
+                const string remediatePayload = mofEntry.payload.HasValue() ? mofEntry.payload.Value() : string("{}");
                 auto ruleName = string("remediate") + mofEntry.ruleName;
-                auto result = engine.MmiSet(ruleName.c_str(), mofEntry.payload.Value());
+                auto result = engine.MmiSet(ruleName.c_str(), remediatePayload);
                 if (!result.HasValue())
                 {
                     OsConfigLogError(logHandle.get(), "Failed to remediate: %s", result.Error().message.c_str());
