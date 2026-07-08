@@ -26,6 +26,7 @@ set(PROCEDURES
     procedures/UniqueGroupIdTest.cpp
     procedures/GsettingsValueTest.cpp
     procedures/MountPointExistsTest.cpp
+    procedures/NetworkInterfaceFlagTest.cpp
     procedures/MtaLocalOnlyTest.cpp
     procedures/NoDuplicateEntriesTest.cpp
     procedures/NoWorldWritableFilesTest.cpp

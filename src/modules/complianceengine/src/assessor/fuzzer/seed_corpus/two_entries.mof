@@ -1,0 +1,36 @@
+instance of OsConfigResource as $OsConfigResource0ref
+{
+    ResourceID = "1.1.1 Rule A";
+    PayloadKey = "/cis/ubuntu/22.04/v2.0.0/1/1/1";
+    RuleId = "00000000-0000-0000-0000-000000000000";
+    ComponentName = "ComplianceEngine";
+    ProcedureObjectName = "procedureRuleA";
+    ProcedureObjectValue = "eyJhdWRpdCI6e319";
+    InitObjectName = "initRuleA";
+    ReportedObjectName = "auditRuleA";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateRuleA";
+    DesiredObjectValue = "";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "ComplianceEngine";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+instance of OsConfigResource as $OsConfigResource1ref
+{
+    ResourceID = "1.1.2 Rule B";
+    PayloadKey = "/cis/ubuntu/22.04/v2.0.0/1/1/2";
+    RuleId = "00000000-0000-0000-0000-000000000001";
+    ComponentName = "ComplianceEngine";
+    ProcedureObjectName = "procedureRuleB";
+    ProcedureObjectValue = "eyJhdWRpdCI6e319";
+    InitObjectName = "initRuleB";
+    ReportedObjectName = "auditRuleB";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateRuleB";
+    DesiredObjectValue = "";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "ComplianceEngine";
+    SourceInfo = "::4::5::OsConfigResource";
+};
