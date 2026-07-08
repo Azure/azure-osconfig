@@ -485,6 +485,13 @@ Result<Status> AuditPackageInstalled(const PackageInstalledParams& params, Indic
         auto result = DetectPackageManager(context);
         if (!result.HasValue())
         {
+            OsConfigLogInfo(log, "Failed to detect package manager: %s", result.Error().message.c_str());
+            if (result.Error().code == ENOENT)
+            {
+                // Failed to detect package manager, return the NotApplicable indicator instead of an error, since this is a valid state for some systems.
+                return indicators.NotApplicable(result.Error().message);
+            }
+
             return result.Error();
         }
 
