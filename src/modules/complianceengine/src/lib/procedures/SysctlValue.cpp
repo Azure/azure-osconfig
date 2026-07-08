@@ -58,6 +58,8 @@ static bool IsValidFilePath(const std::string& path)
 
 Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
+    assert(params.runtimeOnly.HasValue());
+
     auto log = context.GetLogHandle();
     std::string procfsLocation = "/proc/sys";
 
@@ -81,6 +83,7 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
 
         return output.Error();
     }
+
     std::string sysctlOutput = output.Value();
 
     // remove trailing newline character, if any. The emptiness check is required because rbegin()
@@ -92,6 +95,8 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
         sysctlOutput.erase(sysctlOutput.size() - 1);
     }
 
+    sysctlOutput = TrimWhiteSpaces(sysctlOutput);
+
     if (regex_search(sysctlOutput, params.value.GetRegex()) == false)
     {
         return indicators.NonCompliant("Expected '" + params.sysctlName + "' value '" + std::to_string(params.value) + "' got '" + sysctlOutput +
@@ -100,6 +105,14 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     else
     {
         indicators.Compliant("Correct value for '" + params.sysctlName + "' in runtime configuration");
+    }
+
+    // If runtimeOnly is set to true, skip config file check
+    if (params.runtimeOnly.Value())
+    {
+        // The status has already been set to Compliant above, so we can return it here.
+        OsConfigLogInfo(log, "Skipping sysctl configuration file check for '%s' as per parameters", params.sysctlName.c_str());
+        return indicators.Compliant("Runtime-only check for '" + params.sysctlName + "' passed");
     }
 
     // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
@@ -143,6 +156,10 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
     bool found = false;
     bool invalid = false;
     auto lines = sysctlConfigLines.rbegin();
+
+    // TODO(kkanas) consider using regex_match when we have all platforms with up to date support
+    static const auto nameValuePattern = regex("\\s*([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)\\s*=\\s*(.*)");
+
     // Iterate sysctlConfigLines backwards, when last value matches expected valueRegex
     // we are done.
     for (; !found && lines != sysctlConfigLines.rend(); ++lines)
@@ -158,8 +175,6 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
             continue;
         }
 
-        // TODO(kkanas) consider using regex_match when we have all platforms with up to date support
-        auto nameValuePattern = regex("\\s*([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)\\s*=\\s*(.*)");
         if (regex_search(line, nameValuePattern))
         {
             size_t eqPos = line.find('=');
@@ -189,13 +204,14 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
         return indicators.Compliant("Correct value for '" + params.sysctlName + "' in stored configuration");
     }
 
+    // TODO(kkanas) consider using regex_match when we have all platforms with up to date support
+    static const auto fileNamePattern = regex("^\\s*#\\s*(\\/.*\\.conf)$");
+
     // lines are iterated backwards so filename is before last value marked by lines
     std::string fileName;
     for (; lines != sysctlConfigLines.rend(); ++lines)
     {
         line = *lines;
-        // TODO(kkanas) consider using regex_match when we have all platforms with up to date support
-        regex fileNamePattern("^\\s*#\\s*(\\/.*\\.conf)$");
         if (regex_search(line, fileNamePattern))
         {
             size_t comment = line.find('#');
@@ -208,7 +224,7 @@ Result<Status> AuditSysctlValue(const SysctlValueParams& params, IndicatorsTree&
             {
                 continue;
             }
-            fileName = line.substr(slash, line.size() - slash + 1);
+            fileName = line.substr(slash);
             break;
         }
     }

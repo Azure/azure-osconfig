@@ -6,30 +6,24 @@
         {
           "type": "object",
           "required": [
-            "SysctlValue"
+            "NetworkInterfaceFlag"
           ],
           "additionalProperties": false,
           "properties": {
-            "SysctlValue": {
+            "NetworkInterfaceFlag": {
               "type": "object",
               "required": [
-                "sysctlName",
-                "value"
+                "flag"
               ],
               "additionalProperties": false,
               "properties": {
-                "sysctlName": {
+                "flag": {
                   "type": "string",
-                  "description": "Name of the sysctl",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+))$|(^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$))"
+                  "description": "Network interface flag to test for (e.g. PROMISC, UP, LOOPBACK)"
                 },
-                "value": {
+                "interfaceName": {
                   "type": "string",
-                  "description": "Regex that the value of sysctl has to match"
-                },
-                "runtimeOnly": {
-                  "type": "string",
-                  "description": "When false (default), also validates stored sysctl configuration files"
+                  "description": "Optional interface name to restrict the check to; default: all interfaces"
                 }
               }
             }
