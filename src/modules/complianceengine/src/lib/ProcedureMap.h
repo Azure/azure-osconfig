@@ -22,6 +22,7 @@
 #include <LoginDefsOption.h>
 #include <MountPointExists.h>
 #include <MtaLocalOnly.h>
+#include <NetworkInterfaceFlag.h>
 #include <NoDuplicateEntries.h>
 #include <NoShadowPrimaryGroup.h>
 #include <NoShellAccountsLocked.h>
@@ -141,6 +142,31 @@ inline const std::map<std::string, GsettingsOperationType>& MapEnum<GsettingsOpe
         {"lt", GsettingsOperationType::LessThan},
         {"gt", GsettingsOperationType::GreaterThan},
         {"is-unlocked", GsettingsOperationType::IsUnlocked},
+    };
+    return map;
+}
+
+// Maps the InterfaceFlag enum labels to the enum values.
+template <>
+inline const std::map<std::string, InterfaceFlag>& MapEnum<InterfaceFlag>()
+{
+    static const std::map<std::string, InterfaceFlag> map = {
+        {"UP", InterfaceFlag::Up},
+        {"BROADCAST", InterfaceFlag::Broadcast},
+        {"DEBUG", InterfaceFlag::Debug},
+        {"LOOPBACK", InterfaceFlag::Loopback},
+        {"POINTOPOINT", InterfaceFlag::PointToPoint},
+        {"NOTRAILERS", InterfaceFlag::NoTrailers},
+        {"RUNNING", InterfaceFlag::Running},
+        {"NOARP", InterfaceFlag::NoArp},
+        {"PROMISC", InterfaceFlag::Promisc},
+        {"ALLMULTI", InterfaceFlag::AllMulti},
+        {"MASTER", InterfaceFlag::Master},
+        {"SLAVE", InterfaceFlag::Slave},
+        {"MULTICAST", InterfaceFlag::Multicast},
+        {"PORTSEL", InterfaceFlag::PortSel},
+        {"AUTOMEDIA", InterfaceFlag::AutoMedia},
+        {"DYNAMIC", InterfaceFlag::Dynamic},
     };
     return map;
 }
@@ -384,6 +410,16 @@ struct Bindings<MountPointExistsParams>
     static constexpr auto members = std::make_tuple(&T::mountPoint);
 };
 
+// Defines the bindings for the NetworkInterfaceFlagParams structure.
+template <>
+struct Bindings<NetworkInterfaceFlagParams>
+{
+    using T = NetworkInterfaceFlagParams;
+    static constexpr size_t size = 2;
+    static const char* names[];
+    static constexpr auto members = std::make_tuple(&T::flag, &T::interfaceName);
+};
+
 // Defines the bindings for the NoDuplicateEntriesParams structure.
 template <>
 struct Bindings<NoDuplicateEntriesParams>
@@ -459,9 +495,9 @@ template <>
 struct Bindings<SysctlValueParams>
 {
     using T = SysctlValueParams;
-    static constexpr size_t size = 2;
+    static constexpr size_t size = 3;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value);
+    static constexpr auto members = std::make_tuple(&T::sysctlName, &T::value, &T::runtimeOnly);
 };
 
 // Defines the bindings for the SystemdConfigValueParams structure.
@@ -568,6 +604,9 @@ string to_string(ComplianceEngine::GsettingsKeyType value) noexcept(false); // N
 
 // Returns a string representation of the GsettingsOperationType enum value.
 string to_string(ComplianceEngine::GsettingsOperationType value) noexcept(false); // NOLINT(*-identifier-naming)
+
+// Returns a string representation of the InterfaceFlag enum value.
+string to_string(ComplianceEngine::InterfaceFlag value) noexcept(false); // NOLINT(*-identifier-naming)
 
 // Returns a string representation of the PackageManagerType enum value.
 string to_string(ComplianceEngine::PackageManagerType value) noexcept(false); // NOLINT(*-identifier-naming)

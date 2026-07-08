@@ -9,6 +9,7 @@
 #include "Result.h"
 
 #include <string>
+#include <vector>
 
 namespace ComplianceEngine
 {
@@ -30,6 +31,7 @@ public:
 
     Result<std::string> ExecuteCommand(const std::string& cmd) const override;
     Result<std::string> GetFileContents(const std::string& filePath) const override;
+    Result<std::vector<InterfaceInfo>> GetNetworkInterfaces() const override;
     OsConfigLogHandle GetLogHandle() const override
     {
         return mLog;
