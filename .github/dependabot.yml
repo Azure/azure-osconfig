@@ -8,6 +8,10 @@ updates:
       time: "06:00"
       timezone: "UTC"
     open-pull-requests-limit: 10
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
       - "github-actions"
@@ -24,6 +28,10 @@ updates:
       time: "06:00"
       timezone: "UTC"
     open-pull-requests-limit: 10
+    groups:
+      docker-containers:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
       - "docker"
@@ -42,6 +50,10 @@ updates:
       time: "06:00"
       timezone: "UTC"
     open-pull-requests-limit: 10
+    groups:
+      git-submodules:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
       - "submodules"
