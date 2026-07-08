@@ -6,6 +6,7 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 add_executable(telemetrybin main.cpp args.cpp)
+add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
 
 target_link_libraries(telemetrybin PRIVATE telemetrylib)
 target_include_directories(telemetrybin

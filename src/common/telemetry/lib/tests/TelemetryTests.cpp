@@ -28,7 +28,8 @@ protected:
         if (!m_testDir.empty())
         {
             std::string cmd = "rm -rf " + m_testDir;
-            system(cmd.c_str());
+            auto ret = system(cmd.c_str());
+            (void)ret;
         }
     }
 
