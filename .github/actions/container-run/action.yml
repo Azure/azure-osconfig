@@ -24,18 +24,10 @@ inputs:
     description: Verify the image's cosign signature before running it.
     required: false
     default: "false"
-  github-token:
-    description: |
-      GitHub token used to check team membership when running on a pull request.
-      Requires read:org scope to verify @microsoft/team-kompli membership.
-      When the PR author is confirmed as a team member, images signed from
-      pull-request refs are also accepted during verification.
-    required: false
-    default: ${{ github.token }}
   cosign-certificate-identity-regexp:
-    description: Regexp the signing workflow identity must match (keyless cosign). Ignored when allow-pr-signing is 'true'.
+    description: Regexp the signing workflow identity must match (keyless cosign).
     required: false
-    default: '^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/heads/(main|dev)$'
+    default: '^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/(heads/(main|dev)|pull/[0-9]+/merge)$'
   cosign-oidc-issuer:
     description: Expected OIDC issuer of the signing identity.
     required: false
@@ -61,28 +53,6 @@ runs:
         echo container=$image >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Resolve cosign identity regexp
-      id: cosign_regexp
-      if: ${{ inputs.verify == 'true' }}
-      shell: bash
-      run: |
-        expanded='regexp=^https://github\.com/microsoft/kompli/\.github/workflows/build-containers\.yml@refs/(heads/(main|dev)|pull/[0-9]+/merge)$'
-        if [[ "${{ github.event_name }}" != "pull_request" ]]; then
-          # Non-PR events (schedule, push to main): containers in test-matrix.json
-          # may have been built and signed on a PR branch by an approved author and
-          # their digests merged to main.  Accept both main/dev and PR-branch sigs.
-          echo "${expanded}" >> "$GITHUB_OUTPUT"
-        else
-          # PR events: expand only for authors in .github/allowed-container-signing.
-          # Comparison is case-insensitive because GitHub logins are case-insensitive.
-          pr_author="${{ github.event.pull_request.user.login }}"
-          if grep -iqxF "${pr_author}" "${GITHUB_WORKSPACE}/.github/allowed-container-signing" 2>/dev/null; then
-            echo "${expanded}" >> "$GITHUB_OUTPUT"
-          else
-            echo 'regexp=${{ inputs.cosign-certificate-identity-regexp }}' >> "$GITHUB_OUTPUT"
-          fi
-        fi
-
     - name: Install cosign
       if: ${{ inputs.verify == 'true' }}
       uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -104,7 +74,7 @@ runs:
         fi
         echo "Verifying cosign signature for ${ref}"
         cosign verify "${ref}" \
-          --certificate-identity-regexp "${{ steps.cosign_regexp.outputs.regexp }}" \
+          --certificate-identity-regexp "${{ inputs.cosign-certificate-identity-regexp }}" \
           --certificate-oidc-issuer "${{ inputs.cosign-oidc-issuer }}"
         # Export the verified, immutable reference so the run step uses exactly
         # what was verified (avoids a TOCTOU where a mutable tag could move

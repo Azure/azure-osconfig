@@ -31,6 +31,41 @@ env:
   MOUNT: /kompli
 
 jobs:
+  pr-author-permission:
+    name: PR author permission
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      is_collaborator: ${{ steps.permission.outputs.is_collaborator }}
+    steps:
+      - name: Check PR author repository permission
+        id: permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          ACTOR: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          # For non-PR events (push, dispatch) there is no PR author; fall back to
+          # the triggering actor.  Both must be collaborators with write-level access.
+          user="${PR_AUTHOR:-${ACTOR}}"
+          permission=$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPOSITORY}/collaborators/${user}/permission" \
+            | jq -r '.permission')
+
+          case "${permission}" in
+            admin|maintain|write)
+              echo "is_collaborator=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "is_collaborator=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
   modified-containers:
     name: Modified containers
     runs-on: ubuntu-latest
@@ -51,7 +86,8 @@ jobs:
 
   docker-build:
     name: Docker
-    needs: modified-containers
+    needs: [modified-containers, pr-author-permission]
+    if: github.event_name == 'pull_request' || needs.pr-author-permission.outputs.is_collaborator == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,13 +117,13 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c
 
       - name: Docker login (ghcr.io)
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -95,7 +131,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
           images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           tags: |
@@ -106,7 +142,7 @@ jobs:
 
       - name: Build and push
         id: build_and_push
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
         with:
           context: .
           file: ${{ steps.image.outputs.path }}/Dockerfile
@@ -118,25 +154,11 @@ jobs:
           sbom: true
           provenance: mode=max
 
-      - name: Check if PR author is an allowed container signer
-        id: team_membership
-        if: github.event_name == 'pull_request'
-        run: |
-          # Membership is defined in .github/allowed-container-signing (one GitHub
-          # username per line, comments starting with # are ignored).
-          # Comparison is case-insensitive because GitHub logins are case-insensitive.
-          pr_author="${{ github.event.pull_request.user.login }}"
-          if grep -iqxF "${pr_author}" .github/allowed-container-signing 2>/dev/null; then
-            echo "is_team_member=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_team_member=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
       - name: Sign image with cosign (keyless)
-        if: github.event_name != 'pull_request' || steps.team_membership.outputs.is_team_member == 'true'
+        if: needs.pr-author-permission.outputs.is_collaborator == 'true'
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           DIGEST: ${{ steps.build_and_push.outputs.digest }}
