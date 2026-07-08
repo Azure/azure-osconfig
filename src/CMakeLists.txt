@@ -140,6 +140,7 @@ option(BUILD_FUZZER "Build fuzzer" OFF)
 option(BUILD_COMPLIANCE_ENGINE_ASSESSOR "Build the compliance engine assessor tool" ON)
 
 add_compile_options("-Wno-psabi;-fPIC")
+add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
