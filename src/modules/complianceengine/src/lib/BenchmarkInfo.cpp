@@ -19,7 +19,7 @@ using std::map;
 using std::string;
 
 static const map<string, BenchmarkType> sBenchmarkTypeMap = {
-    {"cis", BenchmarkType::CIS},
+    {"cis", BenchmarkType::CIS}, {"stig", BenchmarkType::STIG},
     // Add more benchmark types as needed
 };
 
