@@ -60,6 +60,32 @@ TEST_F(DistributionInfoTest, ValidEtcOsReleaseFile_WithComments)
     EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="20.04")");
 }
 
+TEST_F(DistributionInfoTest, ValidEtcOsReleaseFile_AzureContainerLinux)
+{
+    // Mirrors the os-release Azure Container Linux emits (RPM/ACL mode): ID is
+    // azurelinux, with extra ID_LIKE/VARIANT_ID/BUILD_ID fields and a date-based
+    // patch in VERSION_ID that must be preserved for the `4.*` benchmark glob.
+    std::string content =
+        "NAME=\"Microsoft Azure Container Linux\"\n"
+        "ID=azurelinux\n"
+        "ID_LIKE=\"flatcar\"\n"
+        "VARIANT=\"Azure Container Linux\"\n"
+        "VARIANT_ID=azurecontainerlinux\n"
+        "VERSION_ID=4.0.20260709\n"
+        "BUILD_ID=103000-abcdef\n"
+        "SYSEXT_LEVEL=1.0\n"
+        "HOME_URL=\"https://aka.ms/azurelinux\"\n";
+    auto filePath = mContext.MakeTempfile(content);
+
+    auto result = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value().osType, ComplianceEngine::OSType::Linux);
+    EXPECT_EQ(result.Value().architecture, ComplianceEngine::Architecture::x86_64);
+    EXPECT_EQ(result.Value().distribution, ComplianceEngine::LinuxDistribution::AzureLinux);
+    EXPECT_EQ(result.Value().version, "4.0.20260709");
+    EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="azurelinux" VERSION="4.0.20260709")");
+}
+
 TEST_F(DistributionInfoTest, InvalidKey_1)
 {
     auto filePath = mContext.MakeTempfile("=x\n");

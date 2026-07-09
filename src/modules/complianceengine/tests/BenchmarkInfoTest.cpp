@@ -330,3 +330,64 @@ TEST_F(BenchmarkInfoTest, DistroMatrix_Suse)
 
     EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
 }
+
+// Azure Linux 4 reports ID=azurelinux with a simple major.minor VERSION_ID.
+// The augmentation engine keys the benchmark to the `4.*` version glob.
+TEST_F(BenchmarkInfoTest, DistroMatrix_AzureLinux4)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ(benchmarkInfo->distribution, LinuxDistribution::AzureLinux);
+    EXPECT_EQ(benchmarkInfo->version, "4.*");
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=4.0");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// Azure Container Linux 4 also reports ID=azurelinux, but its VERSION_ID carries
+// a date-based patch component (e.g. 4.0.20260709). The `4.*` glob must still
+// match so the Azure Container Linux 4 benchmark is considered applicable.
+TEST_F(BenchmarkInfoTest, DistroMatrix_AzureContainerLinux4)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ(benchmarkInfo->distribution, LinuxDistribution::AzureLinux);
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=4.0.20260709");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// A `4.*` benchmark must not match an Azure Linux 3 system: the major version
+// glob differs even though the distribution is the same.
+TEST_F(BenchmarkInfoTest, Match_AzureLinux4_DoesNotMatchAzureLinux3)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=3.0");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_FALSE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// When the distribution IDs differ, Match must return false regardless of the
+// version glob. This is the branch the assessor relies on to skip a benchmark
+// that targets a different OS than the one it is running on.
+TEST_F(BenchmarkInfoTest, Match_DistributionMismatch)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+
+    const auto filePath = mContext.MakeTempfile("ID=ubuntu\nVERSION_ID=24.04");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_FALSE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}

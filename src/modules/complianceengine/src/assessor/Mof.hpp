@@ -26,9 +26,10 @@ struct Resource
     // ResourceID, e.g. "1.1.1.1 Ensure cramfs kernel module is not available".
     std::string resourceID;
 
-    // Benchmark info parsed from the PayloadKey. Only `.section` is consumed
-    // (section filtering in the main loop and the JSON formatter), but the whole
-    // struct is retained so the formatters need no changes.
+    // Benchmark info parsed from the PayloadKey. `.distribution` and `.version`
+    // drive the applicability check in the main loop (Match against the detected
+    // system), `.section` drives section filtering (main loop and JSON
+    // formatter); the whole struct is retained so the formatters need no changes.
     CISBenchmarkInfo benchmarkInfo;
 
     // Base64-encoded rule payload (ProcedureObjectValue). The parser does NOT
