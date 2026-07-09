@@ -46,7 +46,8 @@ int main(int argc, char* argv[])
         OsConfigLogInfo(g_log, "%s", init_message.c_str());
 
         OsConfigLogInfo(g_log, "Telemetry initializing...");
-        Telemetry::TelemetryManager telemetryManager(args.verbose, args.teardown_time, g_log);
+        std::string cacheFilePath(Telemetry::TelemetryManager::TELEMETRY_CACHE_FILE_NAME);
+        Telemetry::TelemetryManager telemetryManager(cacheFilePath, args.verbose, args.teardown_time, g_log);
 
         (void)(telemetryManager.ProcessJsonFile(args.filepath));
         OsConfigLogInfo(g_log, "Processed telemetry JSON file: %s", args.filepath.c_str());
