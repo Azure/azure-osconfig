@@ -17,7 +17,7 @@ The Universal NRP binary (libOsConfigResource.so) is built with rest of Kompli.
 
 ### 3.1. Building the universal NRP binary on Ubuntu 14
 
-The Kompli Universal NRP binary is minimal build requirement is Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
+The Universal NRP binary is minimal build requirement is Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
 
 Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)).
 
