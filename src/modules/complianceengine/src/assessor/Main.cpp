@@ -264,6 +264,7 @@ int main(int argc, char* argv[])
 
     auto status = Status::Compliant;
     bool hasError = false;
+    bool skippedInapplicable = false;
     for (const auto& entryResult : mofRange)
     {
         if (!entryResult.HasValue())
@@ -289,6 +290,7 @@ int main(int argc, char* argv[])
             overridden.version = mofEntry.benchmarkInfo.SanitizedVersion();
             OsConfigLogInfo(logHandle.get(), "To override this detection, place the following line inside the '%s' file: %s",
                 DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
+            skippedInapplicable = true;
             continue;
         }
 
@@ -421,5 +423,5 @@ int main(int argc, char* argv[])
     }
 
     std::cout << result.Value() << "\n";
-    return hasError ? 1 : 0;
+    return (hasError || skippedInapplicable) ? 1 : 0;
 }
