@@ -13,7 +13,7 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
 
 ## 3. Building the Kompli Universal NRP
 
-The Kompli Universal NRP binary (libOsConfigResource.so) is built with rest of Kompli.
+The Universal NRP binary (libOsConfigResource.so) is built with rest of Kompli.
 
 ### 3.1. Building the universal NRP binary on Ubuntu 14
 
