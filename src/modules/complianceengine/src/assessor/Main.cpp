@@ -1,19 +1,105 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+//
+// compliance-engine-assessor
+//
+// Threat model
+// ------------
+// This tool is intended to run as root on Linux endpoints to perform CIS
+// benchmark audit and remediation. The trust boundary is the invoking
+// operator: the input MOF file, the log-file path, and command-line arguments
+// are treated as operator-supplied (trusted to be benign in intent, but not
+// to be free of bugs or accidental hostile content).
+//
+//  - The input MOF parser is strict and streaming (see MofResourceRange): it
+//    validates the fixed field set the augmentation engine emits, rejects
+//    unknown fields, and bounds line length, total size, and entry count. It
+//    owns the input file and encapsulates the integrity checks below. A fuzzer
+//    target exercises it; extend the corpus when changing the format.
+//
+//  - Input file integrity (when --input is used; stdin bypasses all checks):
+//
+//    1. Parent directory (stat): must be root-owned and not writable by
+//       group or others. A writable directory enables a rename-swap attack:
+//       an attacker can unlink the validated file and place a hostile one
+//       before the process reads it.
+//
+//    2. open(O_RDONLY|O_NOFOLLOW|O_CLOEXEC): the kernel refuses symlinks in
+//       the final path component atomically (ELOOP), eliminating the
+//       lstat-then-open TOCTOU window. Symlinks are intentionally rejected
+//       rather than accepted-with-a-warning; callers that stage input via a
+//       symlink must resolve the link before passing the path. Note: symlinks
+//       in intermediate path components are not checked; the operator is
+//       trusted to supply a straightforward path.
+//
+//    3. fstat on the open fd: ownership and mode are verified against the
+//       inode we actually hold, not a potentially-swapped path entry. The
+//       file must be a regular file (FIFOs, devices, sockets are refused so
+//       they cannot block the read or stream unbounded data), root-owned, and
+//       not group/world-writable.
+//
+//    4. The verified fd is wrapped in a stream and read incrementally (never
+//       slurped whole). The fd keeps the inode reachable across the read even
+//       if the directory entry is concurrently renamed or unlinked. The total
+//       bytes read, per-line length, and entry count are all bounded inside the
+//       streaming parser to keep memory use bounded.
+//
+//  - stdin (--input not supplied): all file integrity checks are bypassed.
+//    Streaming inputs (pipes, process substitution) must use stdin. The bytes
+//    consumed, per-line length, and total entry count are still bounded inside
+//    the streaming MOF parser. Callers in automated pipelines should always use
+//    --input with a root-owned, non-world-writable file.
+//
+//  - umask is tightened to at least S_IRWXG|S_IRWXO (preserving any stricter
+//    inherited mask). The log file when --log-file is supplied is the primary
+//    case.
+//
+//  - The --log-file path is validated before opening (RefuseUnsafeLogFile):
+//    the shared logging code opens it with a symlink-following append and
+//    chmod's it while we run as root, so a symlink, non-root-owned target, or
+//    writable parent directory is refused to prevent redirecting root's writes
+//    onto a sensitive file.
+//
+//    Residual TOCTOU (known limitation): unlike --input, the log file is NOT
+//    verified via fstat() on a held fd. The shared OpenLog() API is path-only
+//    (no fd-accepting entry point) and TrimLog() re-opens the path with
+//    fopen() on every log rotation, so a pinned, pre-verified fd cannot be
+//    handed to the logging layer; both the initial open and each rotation
+//    re-resolve the path with symlink-following fopen(). RefuseUnsafeLogFile()
+//    therefore checks the path with lstat() shortly before OpenLog() resolves
+//    it again, leaving a small check-to-use window. That window is closed in
+//    practice by the parent-directory check: requiring the parent to be
+//    root-owned and not group/world-writable prevents an attacker from
+//    creating, renaming, or swapping the entry at all, so the path cannot be
+//    pointed at a new target between the check and any (re-)open. Fully
+//    eliminating the window (fd-based open with O_NOFOLLOW handed to the
+//    logger) would require changing the shared logging library, which is
+//    out of scope here as it affects every azure-osconfig binary.
+//
+//  - The PATH/IFS environment is inherited and used by procedure scripts the
+//    engine spawns. Sanitizing the environment is the engine's
+//    responsibility, not the assessor's.
+
+#include "CliOptions.hpp"
+#include "CompactListFormatter.hpp"
+#include "DebugFormatter.hpp"
+#include "InputSecurity.hpp"
+#include "JsonFormatter.hpp"
+#include "Mof.hpp"
+#include "NestedListFormatter.hpp"
+
 #include <AssessorContext.h>
-#include <CompactListFormatter.hpp>
-#include <DebugFormatter.hpp>
 #include <Engine.h>
-#include <JsonFormatter.hpp>
 #include <Logging.h>
-#include <Mof.hpp>
-#include <NestedListFormatter.hpp>
 #include <Optional.h>
-#include <algorithm>
-#include <cassert>
-#include <fstream>
-#include <getopt.h>
+#include <cerrno>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <version.h>
 
 using ComplianceEngine::Action;
@@ -24,174 +110,26 @@ using ComplianceEngine::Optional;
 using ComplianceEngine::PayloadFormatter;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
+using ComplianceEngine::Assessor::Command;
+using ComplianceEngine::Assessor::Format;
+using ComplianceEngine::Assessor::Options;
+using ComplianceEngine::Assessor::ParseCommandLine;
+using ComplianceEngine::Assessor::PrintHelp;
+using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
 using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
 using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
 using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
 using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
-using ComplianceEngine::MOF::Resource;
-using std::ifstream;
-using std::istream;
+using ComplianceEngine::MOF::MofResourceRange;
 using std::string;
-
-namespace
-{
-enum class Command
-{
-    Help,
-    Version,
-    Audit,
-    Remediate
-};
-
-enum class Format
-{
-    NestedList,
-    CompactList,
-    Json,
-    Debug
-};
-
-struct Options
-{
-    bool verbose = false;
-    bool debug = false;
-    bool continueOnError = false;
-    Optional<string> logFile;
-    Optional<Format> format;
-    Command command = Command::Help;
-    std::string input;
-    Optional<string> section;
-};
-
-void PrintHelp(const std::string& programName)
-{
-    std::cout << "Usage: " + programName + "\n\n";
-    std::cout << "Available optinos:\n";
-    std::cout << "\t-h, --help\tShow help and exit.\n";
-    std::cout << "\t-V, --version\tShow software version and exit.\n";
-    std::cout << "\t-v, --verbose\tRun in verbose mode.\n";
-    std::cout << "\t-d, --debug\tRun in debug mode.\n";
-    std::cout << "\t-e, --continue-on-error\tSkip rules that fail due to engine errors and continue processing. Returns 1 if any error occurred.\n";
-    std::cout << "\t-l, --log-file\tSpecify a log file. Default: print log entries to standard output.\n";
-    std::cout << "\t-s, --section\tProcess only specific sections. Default: process all available rules.\n";
-    std::cout << "\n";
-    std::cout << "Positional arguments:\n";
-    std::cout << "\tcommand\t\tDetermine whether to run in audit or remediation mode. Allowed values: {audit|remediate}.\n";
-    std::cout << "\tfilename\tProcess the specified MOF file. Optional: if skipped or the value is -, the program reads standard input\n";
-}
-
-// Command line parser using getopt_long
-Result<Options> ParseCommandLine(const int argc, char* argv[])
-{
-    const auto* short_opts = "hVvdel:s:f:";
-    const option long_opts[] = {{"help", no_argument, nullptr, 'h'}, {"version", no_argument, nullptr, 'V'}, {"verbose", no_argument, nullptr, 'v'},
-        {"debug", no_argument, nullptr, 'd'}, {"continue-on-error", no_argument, nullptr, 'e'}, {"log-file", required_argument, nullptr, 'l'},
-        {"section", required_argument, nullptr, 's'}, {"format", required_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
-
-    auto result = Options{};
-    int opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
-    while (opt != -1)
-    {
-        switch (opt)
-        {
-            case 'h':
-                result.command = Command::Help;
-                return result;
-            case 'V':
-                result.command = Command::Version;
-                return result;
-            case 'v':
-                result.verbose = true;
-                break;
-            case 'd':
-                result.debug = true;
-                break;
-            case 'e':
-                result.continueOnError = true;
-                break;
-            case 'l':
-                result.logFile = std::string(optarg);
-                break;
-            case 's':
-                result.section = std::string(optarg);
-                break;
-            case 'f': {
-                auto formatArg = std::string(optarg);
-                std::transform(formatArg.begin(), formatArg.end(), formatArg.begin(), ::tolower);
-                if (formatArg == "nested-list")
-                {
-                    result.format = Format::NestedList;
-                }
-                else if (formatArg == "compact-list")
-                {
-                    result.format = Format::CompactList;
-                }
-                else if (formatArg == "json")
-                {
-                    result.format = Format::Json;
-                }
-                else if (formatArg == "debug")
-                {
-                    result.format = Format::Debug;
-                }
-                else
-                {
-                    return Error("Invalid format: " + formatArg);
-                }
-                break;
-            }
-            default:
-                return Error("Unknown option.");
-        }
-
-        opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
-    }
-
-    // After options, parse the positional arguments
-    if (optind < argc)
-    {
-        const std::string arg = argv[optind];
-        if (arg == "audit")
-        {
-            result.command = Command::Audit;
-        }
-        else if (arg == "remediate")
-        {
-            result.command = Command::Remediate;
-        }
-        else
-        {
-            return Error("Invalid command: '" + arg + "'. Must be 'audit' or 'remediate'.");
-        }
-        ++optind;
-    }
-    else
-    {
-        return Error("Missing required command: 'audit' or 'remediate'.");
-    }
-
-    // Input filename
-    if (optind < argc)
-    {
-        const std::string arg = argv[optind];
-        result.input = arg;
-        ++optind;
-    }
-
-    // End of positional arguments
-    if (optind < argc)
-    {
-        return Error("Too many arguments provided.");
-    }
-
-    return result;
-}
-
-} // anonymous namespace
 
 int main(int argc, char* argv[])
 {
+    // Ensure file-creation permissions are at least as restrictive as 0077
+    // without overriding a stricter inherited mask.
+    ::umask(::umask(0) | S_IRWXG | S_IRWXO);
+
     const auto optionsResult = ParseCommandLine(argc, argv);
     if (!optionsResult.HasValue())
     {
@@ -213,7 +151,6 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    std::cerr << "Compliance Engine Assessor\n";
     std::unique_ptr<BenchmarkFormatter> benchmarkFormatter;
     std::unique_ptr<PayloadFormatter> payloadFormatter;
     if (options.format.HasValue())
@@ -250,6 +187,20 @@ int main(int argc, char* argv[])
         benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
     }
 
+    // Validate the log-file path before opening it. The shared logging code
+    // opens the log with a symlink-following append and chmod's it while we run
+    // as root, so an attacker-controlled symlink or writable parent directory
+    // could redirect those writes. No log handle exists yet, so failures are
+    // reported to stderr.
+    if (options.logFile.HasValue())
+    {
+        if (options.logFile->empty() || RefuseUnsafeLogFile(options.logFile.Value(), nullptr))
+        {
+            std::cerr << "Error: refusing to use unsafe log file path." << std::endl;
+            return 1;
+        }
+    }
+
     std::unique_ptr<OsConfigLog, void (*)(OsConfigLog*)> logHandle(options.logFile.HasValue() ? OpenLog(options.logFile->c_str(), nullptr) : nullptr,
         [](OsConfigLog* h) {
             OsConfigLogHandle tmp = h;
@@ -282,36 +233,31 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    ifstream file;
-    if (!options.input.empty())
+    // Open the input as a strictly-validated, streaming MOF range. For --input
+    // the range encapsulates the full input-hardening posture (path-traversal
+    // rejection, root-owned non-writable parent directory, O_NOFOLLOW open, and
+    // regular-file/ownership/mode checks) and owns the file; for stdin it
+    // streams without those on-disk checks. Size, line, and entry caps are
+    // enforced inside the range.
+    auto rangeResult = options.input.empty() ? MofResourceRange::Make(std::cin, logHandle.get()) : MofResourceRange::Make(options.input, logHandle.get());
+    if (!rangeResult.HasValue())
     {
-        file.open(options.input);
-        if (!file.is_open())
-        {
-            OsConfigLogError(logHandle.get(), "Failed to open input file: %s", options.input.c_str());
-            return 1;
-        }
+        OsConfigLogError(logHandle.get(), "Failed to open MOF input: %s", rangeResult.Error().message.c_str());
+        return 1;
     }
+    auto& mofRange = rangeResult.Value();
 
-    istream& inputStream = options.input.empty() ? std::cin : file;
-    string line;
     auto status = Status::Compliant;
     bool hasError = false;
-    while (std::getline(inputStream, line))
+    for (const auto& entryResult : mofRange)
     {
-        if (line.find("instance of OsConfigResource as") == std::string::npos)
+        if (!entryResult.HasValue())
         {
-            continue;
-        }
-
-        auto mofParsingResult = Resource::ParseSingleEntry(inputStream);
-        if (!mofParsingResult.HasValue())
-        {
-            OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", mofParsingResult.Error().message.c_str());
+            OsConfigLogError(logHandle.get(), "Failed to parse MOF entry: %s", entryResult.Error().message.c_str());
             return 1;
         }
 
-        auto mofEntry = std::move(mofParsingResult.Value());
+        const auto& mofEntry = entryResult.Value();
         if (options.section.HasValue())
         {
             if (mofEntry.benchmarkInfo.section.find(options.section.Value()) != 0)
@@ -339,7 +285,11 @@ int main(int argc, char* argv[])
             case Command::Audit: {
                 if (mofEntry.hasInitAudit)
                 {
-                    auto result = engine.MmiSet((string("init") + mofEntry.ruleName).c_str(), mofEntry.payload.Value());
+                    // If the producer flagged InitObject support but supplied no
+                    // DesiredObjectValue, fall back to an empty JSON object so
+                    // we don't deref an empty Optional.
+                    const string initPayload = mofEntry.payload.HasValue() ? mofEntry.payload.Value() : string("{}");
+                    auto result = engine.MmiSet((string("init") + mofEntry.ruleName).c_str(), initPayload);
                     if (!result.HasValue())
                     {
                         OsConfigLogError(logHandle.get(), "Failed to init audit: %s", result.Error().message.c_str());
@@ -386,8 +336,13 @@ int main(int argc, char* argv[])
             }
 
             case Command::Remediate: {
+                // The augmentation engine emits an empty DesiredObjectValue for
+                // every rule (modelled here as an absent payload); fall back to
+                // an empty JSON object so remediation can still run, mirroring
+                // the audit-init path above.
+                const string remediatePayload = mofEntry.payload.HasValue() ? mofEntry.payload.Value() : string("{}");
                 auto ruleName = string("remediate") + mofEntry.ruleName;
-                auto result = engine.MmiSet(ruleName.c_str(), mofEntry.payload.Value());
+                auto result = engine.MmiSet(ruleName.c_str(), remediatePayload);
                 if (!result.HasValue())
                 {
                     OsConfigLogError(logHandle.get(), "Failed to remediate: %s", result.Error().message.c_str());

@@ -1,3 +1,4 @@
+#include <Engine.h>
 #include <JsonFormatter.hpp>
 #include <parson.h>
 #include <sstream>
