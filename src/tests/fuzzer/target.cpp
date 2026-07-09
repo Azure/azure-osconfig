@@ -17,7 +17,12 @@
 #include <stdexcept>
 #include <limits>
 #include <vector>
+#include <memory>
 #include <sstream>
+
+#ifdef BUILD_TELEMETRY
+#include "Telemetry.hpp"
+#endif
 
 using ComplianceEngine::Optional;
 using ComplianceEngine::Result;
@@ -43,6 +48,10 @@ struct size_range
 struct Context
 {
     std::string tempdir;
+#ifdef BUILD_TELEMETRY
+    std::string telemetryCache;
+    std::unique_ptr<Telemetry::TelemetryManager> telemetryManager;
+#endif
 
     Context() noexcept(false)
     {
@@ -52,10 +61,17 @@ struct Context
             throw std::runtime_error(std::string{ "failed to create temporary directory: " } + std::strerror(errno));
         }
         tempdir = path;
+#ifdef BUILD_TELEMETRY
+        telemetryCache = tempdir + "/telemetry_cache_db";
+        telemetryManager.reset(new Telemetry::TelemetryManager(telemetryCache, false, std::chrono::seconds{1}));
+#endif
     }
 
     ~Context() noexcept
     {
+#ifdef BUILD_TELEMETRY
+        ::remove(telemetryCache.c_str());
+#endif
         ::remove(tempdir.c_str());
     }
 
