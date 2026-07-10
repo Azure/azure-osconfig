@@ -91,6 +91,7 @@
 
 #include <AssessorContext.h>
 #include <CommonContext.h>
+#include <DistributionInfo.h>
 #include <Engine.h>
 #include <Logging.h>
 #include <Optional.h>
@@ -106,6 +107,7 @@
 
 using ComplianceEngine::Action;
 using ComplianceEngine::AssessorContext;
+using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
 using ComplianceEngine::Optional;
@@ -228,6 +230,19 @@ int main(int argc, char* argv[])
     auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle.get()));
     Engine engine(std::move(context), std::move(payloadFormatter));
 
+    // Determine the OS this tool is running on so rules that target a different
+    // distribution/version can be skipped. LoadDistributionInfo prefers the
+    // operator-supplied override file and falls back to /etc/os-release. If the
+    // OS cannot be identified (e.g. an unmapped distribution ID and no override
+    // file), abort rather than silently running rules meant for another system.
+    auto distributionError = engine.LoadDistributionInfo();
+    if (distributionError)
+    {
+        OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionError.Value().message.c_str());
+        OsConfigLogError(logHandle.get(), "To specify the OS identity explicitly, place an override in the '%s' file", DistributionInfo::cDefaultOverrideFilePath);
+        return 1;
+    }
+
     auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);
     if (error)
     {
@@ -260,6 +275,27 @@ int main(int argc, char* argv[])
         }
 
         const auto& mofEntry = entryResult.Value();
+
+        // Abort as soon as we encounter a rule that does not target the detected
+        // distribution/version. This mirrors ComplianceEngineCheckApplicability
+        // in the module interface: the benchmark's distribution must match and
+        // its version glob must match the running system's VERSION_ID. Every
+        // entry in a MOF belongs to the same benchmark, so a single mismatch
+        // means the whole MOF targets another system (or this system was
+        // misdetected); running any of its rules would report spurious results.
+        const auto& distributionInfo = engine.GetDistributionInfo().Value();
+        if (!mofEntry.benchmarkInfo.Match(distributionInfo))
+        {
+            OsConfigLogError(logHandle.get(), "Aborting on entry %s: benchmark is not applicable for the current distribution", mofEntry.resourceID.c_str());
+            OsConfigLogError(logHandle.get(), "Current system identification: %s", std::to_string(distributionInfo).c_str());
+            auto overridden = distributionInfo;
+            overridden.distribution = mofEntry.benchmarkInfo.distribution;
+            overridden.version = mofEntry.benchmarkInfo.SanitizedVersion();
+            OsConfigLogError(logHandle.get(), "To override this detection, place the following line inside the '%s' file: %s",
+                DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
+            return 1;
+        }
+
         if (options.section.HasValue())
         {
             if (mofEntry.benchmarkInfo.section.find(options.section.Value()) != 0)

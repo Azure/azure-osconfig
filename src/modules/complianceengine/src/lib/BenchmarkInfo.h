@@ -47,6 +47,21 @@ struct CISBenchmarkInfo
         std::string result;
         for (auto it = version.begin(); it != version.end(); ++it)
         {
+            if (*it == '\\')
+            {
+                // fnmatch treats '\' as an escape: the following character is a
+                // literal. Emit that literal (dropping the backslash) so the
+                // sanitized version still satisfies the benchmark's fnmatch()
+                // check, e.g. the pattern "3\.*" yields "3." rather than "3\.".
+                // A trailing lone backslash is dropped.
+                if (it + 1 != version.end())
+                {
+                    ++it;
+                    result += *it;
+                }
+                continue;
+            }
+
             if (*it == '*')
             {
                 continue;
