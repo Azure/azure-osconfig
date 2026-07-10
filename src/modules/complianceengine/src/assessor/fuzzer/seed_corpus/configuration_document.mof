@@ -1,0 +1,25 @@
+instance of OMI_ConfigurationDocument
+{
+    Version = "3.0.0";                     CompatibleVersionAdditionalProperties = {"Omi_BaseResource:ConfigurationName"};
+    Author = "Microsoft";
+    GenerationDate = "07/10/2026 04:11:24 UTC";
+    Name = "ComplianceEngine";
+};
+instance of OsConfigResource as $OsConfigResource0ref
+{
+    ResourceID = "1.1.1 Rule A";
+    PayloadKey = "/cis/ubuntu/22.04/v2.0.0/1/1/1";
+    RuleId = "00000000-0000-0000-0000-000000000000";
+    ComponentName = "ComplianceEngine";
+    ProcedureObjectName = "procedureRuleA";
+    ProcedureObjectValue = "eyJhdWRpdCI6e319";
+    InitObjectName = "initRuleA";
+    ReportedObjectName = "auditRuleA";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateRuleA";
+    DesiredObjectValue = "";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "ComplianceEngine";
+    SourceInfo = "::4::5::OsConfigResource";
+};
