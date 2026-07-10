@@ -281,11 +281,12 @@ int main(int argc, char* argv[])
         // match the running system's VERSION_ID. A MOF may bundle rules for a
         // benchmark that does not apply here (or be run on the wrong system);
         // running those rules would report spurious results.
-        if (!mofEntry.benchmarkInfo.Match(engine.GetDistributionInfo().Value()))
+        const auto& distributionInfo = engine.GetDistributionInfo().Value();
+        if (!mofEntry.benchmarkInfo.Match(distributionInfo))
         {
             OsConfigLogInfo(logHandle.get(), "Skipping entry %s: benchmark is not applicable for the current distribution", mofEntry.resourceID.c_str());
-            OsConfigLogInfo(logHandle.get(), "Current system identification: %s", std::to_string(engine.GetDistributionInfo().Value()).c_str());
-            auto overridden = engine.GetDistributionInfo().Value();
+            OsConfigLogInfo(logHandle.get(), "Current system identification: %s", std::to_string(distributionInfo).c_str());
+            auto overridden = distributionInfo;
             overridden.distribution = mofEntry.benchmarkInfo.distribution;
             overridden.version = mofEntry.benchmarkInfo.SanitizedVersion();
             OsConfigLogInfo(logHandle.get(), "To override this detection, place the following line inside the '%s' file: %s",

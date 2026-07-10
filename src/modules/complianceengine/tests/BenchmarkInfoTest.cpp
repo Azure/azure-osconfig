@@ -206,6 +206,18 @@ TEST_F(BenchmarkInfoTest, SanitizedGlobbing_1)
     EXPECT_EQ(fnmatch("foo?bar*baz", "fooxbarbaz", 0), 0);
 }
 
+TEST_F(BenchmarkInfoTest, SanitizedGlobbing_EscapedDot)
+{
+    // Real benchmarks encode versions like "3\.*". The sanitized version must
+    // drop the fnmatch escape backslash so the produced literal still satisfies
+    // the benchmark's fnmatch() check (used for the override-file suggestion).
+    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/3\\.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ("3\\.*", benchmarkInfo->version);
+    EXPECT_EQ("3.", benchmarkInfo->SanitizedVersion());
+    EXPECT_EQ(fnmatch(benchmarkInfo->version.c_str(), benchmarkInfo->SanitizedVersion().c_str(), 0), 0);
+}
+
 TEST_F(BenchmarkInfoTest, DistroMatrix_AlmaLinux)
 {
     const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/almalinux/9\\.*/v1.0.0/x/y/z");
