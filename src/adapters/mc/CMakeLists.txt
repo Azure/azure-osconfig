@@ -21,6 +21,10 @@ if (BUILD_TELEMETRY)
             -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
         )
     endif()
+    # Pre-compute binary dir so it can be declared as BUILD_BYPRODUCTS (required for
+    # Ninja to know that libtelemetrylib.a and libmat.a are produced by this target).
+    set(_telemetry_binary_dir ${CMAKE_CURRENT_BINARY_DIR}/telemetry-external-prefix/src/telemetry-external-build)
+
     ExternalProject_Add(
         telemetry-external
         INSTALL_COMMAND ""  # No install target on telemetry target
@@ -37,6 +41,9 @@ if (BUILD_TELEMETRY)
             -DBUILD_TESTS=${BUILD_TESTS}
             -DGTEST_OUTPUT_DIR=${GTEST_OUTPUT_DIR}
             -DONEDS_CPP_SDK_VERSION=${ONEDS_CPP_SDK_VERSION}
+        BUILD_BYPRODUCTS
+            ${_telemetry_binary_dir}/lib/libtelemetrylib.a
+            ${_telemetry_binary_dir}/1ds_install/lib/libmat.a
     )
     ExternalProject_Get_Property(telemetry-external BINARY_DIR)
 

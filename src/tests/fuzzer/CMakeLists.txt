@@ -14,3 +14,7 @@ target_link_libraries(kompli-fuzzer PRIVATE
     complianceenginelib
     commonutils
 )
+
+if(BUILD_TELEMETRY)
+    add_dependencies(osconfig-fuzzer telemetry-external)
+endif()
