@@ -281,6 +281,22 @@ TEST(MofParserTest, TruncatedConfigurationDocumentBlockIsRejected)
     EXPECT_FALSE((*it).HasValue());
 }
 
+TEST(MofParserTest, ConfigurationDocumentMissingBraceDoesNotSwallowNextEntry)
+{
+    // A document block missing its opening '{' must be rejected, not consumed up
+    // to the following real entry's '};'. Without requiring the brace, the skip
+    // loop would silently swallow the resource below and drop it.
+    const std::string text = std::string("instance of OMI_ConfigurationDocument\n") + Render(DefaultFields());
+    std::istringstream stream(text);
+    auto rangeResult = MofResourceRange::MakeFromStream(stream, nullptr);
+    ASSERT_TRUE(rangeResult.HasValue());
+    auto& range = rangeResult.Value();
+    auto it = range.begin();
+    ASSERT_TRUE(it != range.end());
+    ASSERT_FALSE((*it).HasValue());
+    EXPECT_EQ((*it).Error().message, "Expected '{' after OMI_ConfigurationDocument header");
+}
+
 TEST(MofParserTest, IterationStopsAfterError)
 {
     // A malformed first entry must surface an error and halt iteration rather

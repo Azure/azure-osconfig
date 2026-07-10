@@ -389,6 +389,19 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
         if (header == kConfigurationDocumentHeader)
         {
             // Consume the block ('{' ... '};') and resume the header search.
+            // The opening brace is required on its own line, exactly as for a
+            // normal resource entry; without this check a malformed block
+            // missing its '{' would swallow lines up to the next entry's '};'
+            // and silently drop that entry.
+            auto openRead = readLine();
+            if (!openRead.HasValue())
+            {
+                return openRead.Error();
+            }
+            if (!openRead.Value().HasValue() || TrimWhiteSpaces(openRead.Value().Value()) != "{")
+            {
+                return Error("Expected '{' after OMI_ConfigurationDocument header", EINVAL);
+            }
             while (true)
             {
                 auto blockRead = readLine();
