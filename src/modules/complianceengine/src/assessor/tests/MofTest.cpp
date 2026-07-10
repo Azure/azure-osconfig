@@ -221,6 +221,66 @@ TEST(MofParserTest, WhitespaceOnlyInputHasNoEntries)
     EXPECT_TRUE(range.begin() == range.end());
 }
 
+TEST(MofParserTest, ConfigurationDocumentBlockIsSkipped)
+{
+    // The augmentation engine emits an OMI_ConfigurationDocument metadata block
+    // that carries no resource data. It must be skipped, not rejected. The
+    // Version line intentionally packs a second field on the same line to match
+    // the exact shape our generator produces.
+    const std::string document =
+        "instance of OMI_ConfigurationDocument\n"
+        "{\n"
+        "    Version = \"3.0.0\";                     CompatibleVersionAdditionalProperties = {\"Omi_BaseResource:ConfigurationName\"};\n"
+        "    Author = \"Microsoft\";\n"
+        "    GenerationDate = \"07/10/2026 04:11:24 UTC\";\n"
+        "    Name = \"ComplianceEngine\";\n"
+        "};\n";
+
+    std::string text = Render(DefaultFields()) + document + Render(DefaultFields());
+    std::istringstream stream(text);
+    auto rangeResult = MofResourceRange::MakeFromStream(stream, nullptr);
+    ASSERT_TRUE(rangeResult.HasValue());
+    auto& range = rangeResult.Value();
+    int count = 0;
+    for (const auto& entry : range)
+    {
+        ASSERT_TRUE(entry.HasValue()) << entry.Error().message;
+        ++count;
+    }
+    EXPECT_EQ(count, 2);
+}
+
+TEST(MofParserTest, ConfigurationDocumentOnlyInputHasNoEntries)
+{
+    const std::string text =
+        "instance of OMI_ConfigurationDocument\n"
+        "{\n"
+        "    Version = \"3.0.0\";\n"
+        "    Name = \"ComplianceEngine\";\n"
+        "};\n";
+    std::istringstream stream(text);
+    auto rangeResult = MofResourceRange::MakeFromStream(stream, nullptr);
+    ASSERT_TRUE(rangeResult.HasValue());
+    auto& range = rangeResult.Value();
+    EXPECT_TRUE(range.begin() == range.end());
+}
+
+TEST(MofParserTest, TruncatedConfigurationDocumentBlockIsRejected)
+{
+    // A document block without its closing '};' is a truncated input error.
+    const std::string text =
+        "instance of OMI_ConfigurationDocument\n"
+        "{\n"
+        "    Version = \"3.0.0\";\n";
+    std::istringstream stream(text);
+    auto rangeResult = MofResourceRange::MakeFromStream(stream, nullptr);
+    ASSERT_TRUE(rangeResult.HasValue());
+    auto& range = rangeResult.Value();
+    auto it = range.begin();
+    ASSERT_TRUE(it != range.end());
+    EXPECT_FALSE((*it).HasValue());
+}
+
 TEST(MofParserTest, IterationStopsAfterError)
 {
     // A malformed first entry must surface an error and halt iteration rather
