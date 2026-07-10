@@ -206,6 +206,74 @@ TEST_F(BenchmarkInfoTest, SanitizedGlobbing_1)
     EXPECT_EQ(fnmatch("foo?bar*baz", "fooxbarbaz", 0), 0);
 }
 
+TEST_F(BenchmarkInfoTest, SanitizedGlobbing_EscapedDot)
+{
+    // Real benchmarks encode versions like "3\.*". The sanitized version must
+    // drop the fnmatch escape backslash so the produced literal still satisfies
+    // the benchmark's fnmatch() check (used for the override-file suggestion).
+    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/3\\.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ("3\\.*", benchmarkInfo->version);
+    EXPECT_EQ("3.", benchmarkInfo->SanitizedVersion());
+    EXPECT_EQ(fnmatch(benchmarkInfo->version.c_str(), benchmarkInfo->SanitizedVersion().c_str(), 0), 0);
+}
+
+TEST_F(BenchmarkInfoTest, SuggestedOverrideSatisfiesMatch)
+{
+    // End-to-end check of the override suggestion for the PayloadKey forms that
+    // appear in real generated MOFs (e.g. "/cis/rhel/8.*/...", "/cis/sles/15.*/...",
+    // "/cis/ubuntu/22.04/..."). This mirrors, without parsing logs, the suggestion
+    // built in Main.cpp / ComplianceEngineInterface.cpp when a benchmark does not
+    // apply to the detected system:
+    //
+    //     auto overridden = detected;
+    //     overridden.distribution = benchmark->distribution;
+    //     overridden.version      = benchmark->SanitizedVersion();
+    //
+    // A user who copies that suggestion into the override file must then pass the
+    // distribution check (Match) so the benchmark is allowed to run.
+    struct Case
+    {
+        const char* payloadKey;
+        LinuxDistribution distribution;
+    };
+    const Case cases[] = {
+        // Real, unescaped-dot globs as emitted by the augmentation engine today.
+        {"/cis/rhel/8.*/v3.0.0/1/1/1/1", LinuxDistribution::RHEL},
+        {"/cis/ol/8.*/v4.0.0/1/1/1/1", LinuxDistribution::OracleLinux},
+        {"/cis/sles/15.*/v2.0.1/1/1/1/1", LinuxDistribution::SUSE},
+        {"/cis/almalinux/9.*/v2.0.0/1/1/1/1", LinuxDistribution::AlmaLinux},
+        {"/cis/rocky/10.*/v1.0.0/1/1/1/1", LinuxDistribution::RockyLinux},
+        {"/cis/azurelinux/3.*/v1.0.0/1/1/1/1", LinuxDistribution::AzureLinux},
+        // Exact (non-glob) versions used by Ubuntu/Debian benchmarks.
+        {"/cis/ubuntu/22.04/v3.0.0/1/1/1/1", LinuxDistribution::Ubuntu},
+        {"/cis/debian/12/v1.1.0/1/1/1/1", LinuxDistribution::Debian},
+        // Escaped-dot form (the reviewer's concern): must round-trip too.
+        {"/cis/rhel/8\\.*/v3.0.0/1/1/1/1", LinuxDistribution::RHEL},
+    };
+
+    for (const auto& c : cases)
+    {
+        auto benchmark = CISBenchmarkInfo::Parse(c.payloadKey);
+        ASSERT_TRUE(benchmark.HasValue()) << c.payloadKey;
+        EXPECT_EQ(benchmark->distribution, c.distribution) << c.payloadKey;
+
+        // A detected system that does not match the benchmark (bogus version).
+        DistributionInfo detected;
+        detected.distribution = c.distribution;
+        detected.version = "0.0";
+        ASSERT_FALSE(benchmark->Match(detected)) << "precondition (should not match): " << c.payloadKey;
+
+        // Build the suggested override exactly as the production code does.
+        DistributionInfo overridden = detected;
+        overridden.distribution = benchmark->distribution;
+        overridden.version = benchmark->SanitizedVersion();
+
+        // The suggested override must now satisfy the distribution check.
+        EXPECT_TRUE(benchmark->Match(overridden)) << "suggested override version '" << overridden.version << "' for " << c.payloadKey;
+    }
+}
+
 TEST_F(BenchmarkInfoTest, DistroMatrix_AlmaLinux)
 {
     const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/almalinux/9\\.*/v1.0.0/x/y/z");
@@ -329,4 +397,65 @@ TEST_F(BenchmarkInfoTest, DistroMatrix_Suse)
     ASSERT_TRUE(distributionInfo.HasValue());
 
     EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// Azure Linux 4 reports ID=azurelinux with a simple major.minor VERSION_ID.
+// The augmentation engine keys the benchmark to the `4.*` version glob.
+TEST_F(BenchmarkInfoTest, DistroMatrix_AzureLinux4)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ(benchmarkInfo->distribution, LinuxDistribution::AzureLinux);
+    EXPECT_EQ(benchmarkInfo->version, "4.*");
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=4.0");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// Azure Container Linux 4 also reports ID=azurelinux, but its VERSION_ID carries
+// a date-based patch component (e.g. 4.0.20260709). The `4.*` glob must still
+// match so the Azure Container Linux 4 benchmark is considered applicable.
+TEST_F(BenchmarkInfoTest, DistroMatrix_AzureContainerLinux4)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    EXPECT_EQ(benchmarkInfo->distribution, LinuxDistribution::AzureLinux);
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=4.0.20260709");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// A `4.*` benchmark must not match an Azure Linux 3 system: the major version
+// glob differs even though the distribution is the same.
+TEST_F(BenchmarkInfoTest, Match_AzureLinux4_DoesNotMatchAzureLinux3)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+
+    const auto filePath = mContext.MakeTempfile("ID=azurelinux\nVERSION_ID=3.0");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_FALSE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+// When the distribution IDs differ, Match must return false regardless of the
+// version glob. This is the branch the assessor relies on to skip a benchmark
+// that targets a different OS than the one it is running on.
+TEST_F(BenchmarkInfoTest, Match_DistributionMismatch)
+{
+    const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/azurelinux/4.*/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+
+    const auto filePath = mContext.MakeTempfile("ID=ubuntu\nVERSION_ID=24.04");
+    const auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+
+    EXPECT_FALSE(benchmarkInfo.Value().Match(distributionInfo.Value()));
 }
