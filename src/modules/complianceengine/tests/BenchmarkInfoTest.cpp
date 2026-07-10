@@ -218,6 +218,62 @@ TEST_F(BenchmarkInfoTest, SanitizedGlobbing_EscapedDot)
     EXPECT_EQ(fnmatch(benchmarkInfo->version.c_str(), benchmarkInfo->SanitizedVersion().c_str(), 0), 0);
 }
 
+TEST_F(BenchmarkInfoTest, SuggestedOverrideSatisfiesMatch)
+{
+    // End-to-end check of the override suggestion for the PayloadKey forms that
+    // appear in real generated MOFs (e.g. "/cis/rhel/8.*/...", "/cis/sles/15.*/...",
+    // "/cis/ubuntu/22.04/..."). This mirrors, without parsing logs, the suggestion
+    // built in Main.cpp / ComplianceEngineInterface.cpp when a benchmark does not
+    // apply to the detected system:
+    //
+    //     auto overridden = detected;
+    //     overridden.distribution = benchmark->distribution;
+    //     overridden.version      = benchmark->SanitizedVersion();
+    //
+    // A user who copies that suggestion into the override file must then pass the
+    // distribution check (Match) so the benchmark is allowed to run.
+    struct Case
+    {
+        const char* payloadKey;
+        LinuxDistribution distribution;
+    };
+    const Case cases[] = {
+        // Real, unescaped-dot globs as emitted by the augmentation engine today.
+        {"/cis/rhel/8.*/v3.0.0/1/1/1/1", LinuxDistribution::RHEL},
+        {"/cis/ol/8.*/v4.0.0/1/1/1/1", LinuxDistribution::OracleLinux},
+        {"/cis/sles/15.*/v2.0.1/1/1/1/1", LinuxDistribution::SUSE},
+        {"/cis/almalinux/9.*/v2.0.0/1/1/1/1", LinuxDistribution::AlmaLinux},
+        {"/cis/rocky/10.*/v1.0.0/1/1/1/1", LinuxDistribution::RockyLinux},
+        {"/cis/azurelinux/3.*/v1.0.0/1/1/1/1", LinuxDistribution::AzureLinux},
+        // Exact (non-glob) versions used by Ubuntu/Debian benchmarks.
+        {"/cis/ubuntu/22.04/v3.0.0/1/1/1/1", LinuxDistribution::Ubuntu},
+        {"/cis/debian/12/v1.1.0/1/1/1/1", LinuxDistribution::Debian},
+        // Escaped-dot form (the reviewer's concern): must round-trip too.
+        {"/cis/rhel/8\\.*/v3.0.0/1/1/1/1", LinuxDistribution::RHEL},
+    };
+
+    for (const auto& c : cases)
+    {
+        auto benchmark = CISBenchmarkInfo::Parse(c.payloadKey);
+        ASSERT_TRUE(benchmark.HasValue()) << c.payloadKey;
+        EXPECT_EQ(benchmark->distribution, c.distribution) << c.payloadKey;
+
+        // A detected system that does not match the benchmark (bogus version).
+        DistributionInfo detected;
+        detected.distribution = c.distribution;
+        detected.version = "0.0";
+        ASSERT_FALSE(benchmark->Match(detected)) << "precondition (should not match): " << c.payloadKey;
+
+        // Build the suggested override exactly as the production code does.
+        DistributionInfo overridden = detected;
+        overridden.distribution = benchmark->distribution;
+        overridden.version = benchmark->SanitizedVersion();
+
+        // The suggested override must now satisfy the distribution check.
+        EXPECT_TRUE(benchmark->Match(overridden)) << "suggested override version '" << overridden.version << "' for " << c.payloadKey;
+    }
+}
+
 TEST_F(BenchmarkInfoTest, DistroMatrix_AlmaLinux)
 {
     const auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/almalinux/9\\.*/v1.0.0/x/y/z");
