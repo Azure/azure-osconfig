@@ -264,7 +264,6 @@ int main(int argc, char* argv[])
 
     auto status = Status::Compliant;
     bool hasError = false;
-    bool skippedInapplicable = false;
     for (const auto& entryResult : mofRange)
     {
         if (!entryResult.HasValue())
@@ -275,24 +274,24 @@ int main(int argc, char* argv[])
 
         const auto& mofEntry = entryResult.Value();
 
-        // Skip rules that do not target the detected distribution/version. This
-        // mirrors ComplianceEngineCheckApplicability in the module interface:
-        // the benchmark's distribution must match and its version glob must
-        // match the running system's VERSION_ID. A MOF may bundle rules for a
-        // benchmark that does not apply here (or be run on the wrong system);
-        // running those rules would report spurious results.
+        // Abort as soon as we encounter a rule that does not target the detected
+        // distribution/version. This mirrors ComplianceEngineCheckApplicability
+        // in the module interface: the benchmark's distribution must match and
+        // its version glob must match the running system's VERSION_ID. Every
+        // entry in a MOF belongs to the same benchmark, so a single mismatch
+        // means the whole MOF targets another system (or this system was
+        // misdetected); running any of its rules would report spurious results.
         const auto& distributionInfo = engine.GetDistributionInfo().Value();
         if (!mofEntry.benchmarkInfo.Match(distributionInfo))
         {
-            OsConfigLogInfo(logHandle.get(), "Skipping entry %s: benchmark is not applicable for the current distribution", mofEntry.resourceID.c_str());
-            OsConfigLogInfo(logHandle.get(), "Current system identification: %s", std::to_string(distributionInfo).c_str());
+            OsConfigLogError(logHandle.get(), "Aborting on entry %s: benchmark is not applicable for the current distribution", mofEntry.resourceID.c_str());
+            OsConfigLogError(logHandle.get(), "Current system identification: %s", std::to_string(distributionInfo).c_str());
             auto overridden = distributionInfo;
             overridden.distribution = mofEntry.benchmarkInfo.distribution;
             overridden.version = mofEntry.benchmarkInfo.SanitizedVersion();
-            OsConfigLogInfo(logHandle.get(), "To override this detection, place the following line inside the '%s' file: %s",
+            OsConfigLogError(logHandle.get(), "To override this detection, place the following line inside the '%s' file: %s",
                 DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
-            skippedInapplicable = true;
-            continue;
+            return 1;
         }
 
         if (options.section.HasValue())
@@ -424,5 +423,5 @@ int main(int argc, char* argv[])
     }
 
     std::cout << result.Value() << "\n";
-    return (hasError || skippedInapplicable) ? 1 : 0;
+    return hasError ? 1 : 0;
 }
