@@ -4,6 +4,7 @@
 project(telemetryexetests)
 
 cmake_minimum_required(VERSION 3.2.0)
+add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result;-Wno-unused-parameter")
 
 include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
