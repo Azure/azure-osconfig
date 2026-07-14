@@ -25,6 +25,7 @@ set(LIB_SOURCES
     CompactListFormatter.cpp
     DebugFormatter.cpp
     JsonFormatter.cpp
+    JUnitRenderer.cpp
     NestedListFormatter.cpp
 )
 

@@ -81,12 +81,10 @@
 //    responsibility, not the assessor's.
 
 #include "CliOptions.hpp"
-#include "CompactListFormatter.hpp"
-#include "DebugFormatter.hpp"
 #include "InputSecurity.hpp"
+#include "JUnitRenderer.hpp"
 #include "JsonFormatter.hpp"
 #include "Mof.hpp"
-#include "NestedListFormatter.hpp"
 
 #include <AssessorContext.h>
 #include <DistributionInfo.h>
@@ -96,6 +94,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -115,19 +114,82 @@ using ComplianceEngine::PayloadFormatter;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ComplianceEngine::Assessor::Command;
-using ComplianceEngine::Assessor::Format;
 using ComplianceEngine::Assessor::Options;
 using ComplianceEngine::Assessor::ParseCommandLine;
 using ComplianceEngine::Assessor::PrintHelp;
 using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
+using ComplianceEngine::Assessor::RenderJUnit;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
-using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
-using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
 using ComplianceEngine::BenchmarkFormatters::HostInfo;
 using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
-using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
 using ComplianceEngine::MOF::MofResourceRange;
 using std::string;
+
+namespace
+{
+// Upper bound on a canonical result JSON fed to `format`. Generous (results for
+// a full benchmark are well under this) but bounds memory for a hostile input.
+constexpr std::size_t kMaxResultJsonBytes = 256u * 1024u * 1024u;
+
+// Reads an entire stream into a string, refusing inputs larger than the cap.
+Result<string> ReadAllBounded(std::istream& stream, std::size_t cap)
+{
+    string content;
+    char buffer[64 * 1024];
+    while (stream.read(buffer, sizeof(buffer)) || stream.gcount() > 0)
+    {
+        content.append(buffer, static_cast<std::size_t>(stream.gcount()));
+        if (content.size() > cap)
+        {
+            return Error("Input exceeds the maximum allowed size", EFBIG);
+        }
+    }
+    if (stream.bad())
+    {
+        return Error("Failed to read input", EIO);
+    }
+    return content;
+}
+
+// Renders a canonical result JSON (read from stdin or a file) into the format
+// selected on the `format` subcommand. Runs without root and touches no system
+// state, so it needs none of the MOF input hardening `audit`/`remediate` apply.
+int RunFormat(const Options& options)
+{
+    Result<string> jsonResult = Error("uninitialized");
+    if (options.input.empty() || options.input == "-")
+    {
+        jsonResult = ReadAllBounded(std::cin, kMaxResultJsonBytes);
+    }
+    else
+    {
+        std::ifstream file(options.input, std::ios::binary);
+        if (!file.is_open())
+        {
+            std::cerr << "Error: failed to open input file '" << options.input << "'." << std::endl;
+            return 1;
+        }
+        jsonResult = ReadAllBounded(file, kMaxResultJsonBytes);
+    }
+    if (!jsonResult.HasValue())
+    {
+        std::cerr << "Error: " << jsonResult.Error().message << std::endl;
+        return 1;
+    }
+
+    const string suiteName = options.suiteName.HasValue() ? options.suiteName.Value() : string("compliance");
+
+    // Junit is the only renderer wired today; the parser defaults format to it.
+    auto rendered = RenderJUnit(jsonResult.Value(), suiteName);
+    if (!rendered.HasValue())
+    {
+        std::cerr << "Error: " << rendered.Error().message << std::endl;
+        return 1;
+    }
+    std::cout << rendered.Value();
+    return 0;
+}
+} // anonymous namespace
 
 int main(int argc, char* argv[])
 {
@@ -156,41 +218,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    std::unique_ptr<BenchmarkFormatter> benchmarkFormatter;
-    std::unique_ptr<PayloadFormatter> payloadFormatter;
-    if (options.format.HasValue())
+    // `format` is a pure, root-free transformation of a canonical result JSON;
+    // it needs neither the engine nor the MOF input path, so dispatch it early.
+    if (Command::Format == options.command)
     {
-        switch (options.format.Value())
-        {
-            case Format::NestedList:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new NestedListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::NestedListFormatter());
-                break;
-            case Format::CompactList:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new CompactListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::CompactListFormatter());
-                break;
-            case Format::Json:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
-                break;
-            case Format::Debug:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new DebugFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::DebugFormatter());
-                break;
-            default:
-                std::cerr << "Invalid format specified.\n";
-                return 1;
-        }
+        return RunFormat(options);
     }
-    if (!payloadFormatter)
-    {
-        payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
-    }
-    if (!benchmarkFormatter)
-    {
-        benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
-    }
+
+    // `audit` / `remediate` always emit the canonical JSON: one JSON benchmark
+    // formatter for the envelope, and the JSON payload formatter for the engine's
+    // per-rule indicators. Presentation is the `format` subcommand's job.
+    std::unique_ptr<BenchmarkFormatter> benchmarkFormatter(new JsonFormatter());
+    std::unique_ptr<PayloadFormatter> payloadFormatter(new ComplianceEngine::JsonFormatter());
 
     // Validate the log-file path before opening it. The shared logging code
     // opens the log with a symlink-following append and chmod's it while we run

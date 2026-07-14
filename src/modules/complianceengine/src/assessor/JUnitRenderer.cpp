@@ -1,0 +1,201 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include <JUnitRenderer.hpp>
+#include <cerrno>
+#include <parson.h>
+#include <sstream>
+#include <string>
+
+namespace ComplianceEngine
+{
+namespace Assessor
+{
+using std::string;
+
+namespace
+{
+// Escapes the five XML entities and neutralises control characters that are
+// illegal in XML 1.0 text (everything below 0x20 except tab/newline/carriage
+// return), so arbitrary indicator/parameter text cannot produce malformed XML.
+string EscapeXml(const string& in)
+{
+    string out;
+    out.reserve(in.size());
+    for (const char ch : in)
+    {
+        switch (ch)
+        {
+            case '&':
+                out += "&amp;";
+                break;
+            case '<':
+                out += "&lt;";
+                break;
+            case '>':
+                out += "&gt;";
+                break;
+            case '"':
+                out += "&quot;";
+                break;
+            case '\'':
+                out += "&apos;";
+                break;
+            default:
+                if (static_cast<unsigned char>(ch) < 0x20 && ch != '\t' && ch != '\n' && ch != '\r')
+                {
+                    out += ' ';
+                }
+                else
+                {
+                    out += ch;
+                }
+                break;
+        }
+    }
+    return out;
+}
+
+string SafeString(const char* s)
+{
+    return (nullptr == s) ? string() : string(s);
+}
+
+// Recursively renders an indicators array into the readable indented style used
+// by tests/reporting/junit.py: "{indent*depth}  - {label} [{status}]". A node's
+// label is its message (leaf) or its procedure (branch); children are rendered
+// one level deeper.
+void AppendIndicators(const JSON_Array* indicators, size_t depth, std::ostringstream& body)
+{
+    if (nullptr == indicators)
+    {
+        return;
+    }
+    const size_t count = json_array_get_count(indicators);
+    for (size_t i = 0; i < count; ++i)
+    {
+        const JSON_Object* node = json_array_get_object(indicators, i);
+        if (nullptr == node)
+        {
+            continue;
+        }
+        string label = SafeString(json_object_get_string(node, "message"));
+        if (label.empty())
+        {
+            label = SafeString(json_object_get_string(node, "procedure"));
+        }
+        const string status = SafeString(json_object_get_string(node, "status"));
+        body << string(depth * 2, ' ') << "  - " << label;
+        if (!status.empty())
+        {
+            body << " [" << status << "]";
+        }
+        body << "\n";
+        AppendIndicators(json_object_get_array(node, "indicators"), depth + 1, body);
+    }
+}
+
+// Builds the human-readable failure body for a rule: a Parameters section
+// (present when the canonical JSON carries per-rule parameters) followed by an
+// indented Indicators tree.
+string BuildBody(const JSON_Object* rule)
+{
+    std::ostringstream body;
+
+    const JSON_Object* parameters = json_object_get_object(rule, "parameters");
+    body << "Parameters:\n";
+    if (nullptr != parameters)
+    {
+        const size_t count = json_object_get_count(parameters);
+        for (size_t i = 0; i < count; ++i)
+        {
+            const string key = SafeString(json_object_get_name(parameters, i));
+            const JSON_Value* value = json_object_get_value_at(parameters, i);
+            string valueStr = SafeString(json_value_get_string(value));
+            if (valueStr.empty() && nullptr != value && json_value_get_type(value) != JSONString)
+            {
+                char* serialized = json_serialize_to_string(value);
+                if (nullptr != serialized)
+                {
+                    valueStr = serialized;
+                    json_free_serialized_string(serialized);
+                }
+            }
+            body << "  - " << key << ": " << valueStr << "\n";
+        }
+    }
+
+    body << "\nIndicators:\n";
+    AppendIndicators(json_object_get_array(rule, "indicators"), 0, body);
+    return body.str();
+}
+} // anonymous namespace
+
+Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
+{
+    JSON_Value* root = json_parse_string(canonicalJson.c_str());
+    if (nullptr == root)
+    {
+        return Error("Failed to parse canonical result JSON", EINVAL);
+    }
+    // Own the parsed document for the duration of this function.
+    struct RootGuard
+    {
+        JSON_Value* v;
+        ~RootGuard()
+        {
+            json_value_free(v);
+        }
+    } guard{root};
+
+    const JSON_Object* rootObject = json_value_get_object(root);
+    if (nullptr == rootObject)
+    {
+        return Error("Canonical result JSON is not an object", EINVAL);
+    }
+    const JSON_Array* rules = json_object_get_array(rootObject, "rules");
+    if (nullptr == rules)
+    {
+        return Error("Canonical result JSON has no 'rules' array", EINVAL);
+    }
+
+    const size_t ruleCount = json_array_get_count(rules);
+    size_t failureCount = 0;
+    std::ostringstream cases;
+    for (size_t i = 0; i < ruleCount; ++i)
+    {
+        const JSON_Object* rule = json_array_get_object(rules, i);
+        if (nullptr == rule)
+        {
+            return Error("Canonical result JSON 'rules' entry is not an object", EINVAL);
+        }
+        const string section = SafeString(json_object_get_string(rule, "section"));
+        const string ruleName = SafeString(json_object_get_string(rule, "ruleName"));
+        const string status = SafeString(json_object_get_string(rule, "status"));
+
+        cases << "  <testcase classname=\"" << EscapeXml(section) << "\" name=\"" << EscapeXml(ruleName) << "\"";
+        if (status == "NonCompliant")
+        {
+            ++failureCount;
+            cases << ">\n";
+            cases << "    <failure message=\"Rule is non-compliant\" type=\"NonCompliant\">" << EscapeXml(BuildBody(rule)) << "</failure>\n";
+            cases << "  </testcase>\n";
+        }
+        else
+        {
+            cases << "/>\n";
+        }
+    }
+
+    std::ostringstream out;
+    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    out << "<testsuites>\n";
+    out << "  <testsuite name=\"" << EscapeXml(suiteName) << "\" tests=\"" << ruleCount << "\" failures=\"" << failureCount << "\">\n";
+    out << cases.str();
+    out << "  </testsuite>\n";
+    out << "</testsuites>\n";
+    return out.str();
+}
+
+} // namespace Assessor
+} // namespace ComplianceEngine

@@ -15,15 +15,21 @@ enum class Command
     Help,
     Version,
     Audit,
-    Remediate
+    Remediate,
+    Format
 };
 
+// Presentation formats produced by the `format` subcommand. `audit` / `remediate`
+// no longer select a format: they always emit the canonical JSON. The list/debug
+// renderers are retained for a later port under `format`; only Junit is wired
+// today.
 enum class Format
 {
     NestedList,
     CompactList,
     Json,
-    Debug
+    Debug,
+    Junit
 };
 
 struct Options
@@ -36,6 +42,9 @@ struct Options
     Command command = Command::Help;
     std::string input;
     Optional<std::string> section;
+    // `format` only: the JUnit <testsuite name>. The assessor does not know which
+    // benchmark package it came from, so the caller supplies this.
+    Optional<std::string> suiteName;
 };
 
 void PrintHelp(const std::string& programName);

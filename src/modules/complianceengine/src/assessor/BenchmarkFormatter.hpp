@@ -17,8 +17,8 @@ namespace BenchmarkFormatters
 // is recorded in the result (not the definition) for multi-arch traceability.
 struct HostInfo
 {
-    std::string arch;               // uname(2) machine, e.g. "x86_64" / "aarch64"
-    std::string distribution;       // /etc/os-release-derived distribution
+    std::string arch;                // uname(2) machine, e.g. "x86_64" / "aarch64"
+    std::string distribution;        // /etc/os-release-derived distribution
     std::string distributionVersion; // /etc/os-release VERSION_ID
 };
 

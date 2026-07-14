@@ -7,6 +7,8 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(compliance-engine-assessor-tests
     CliOptionsTest.cpp
     InputSecurityTest.cpp
+    JsonFormatterTest.cpp
+    JUnitRendererTest.cpp
     MofTest.cpp
 )
 
