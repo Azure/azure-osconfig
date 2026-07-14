@@ -93,6 +93,7 @@
 #include <Engine.h>
 #include <Logging.h>
 #include <Optional.h>
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
@@ -100,6 +101,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 #include <version.h>
 
@@ -121,6 +123,7 @@ using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
 using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
 using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
+using ComplianceEngine::BenchmarkFormatters::HostInfo;
 using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
 using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
 using ComplianceEngine::MOF::MofResourceRange;
@@ -239,6 +242,34 @@ int main(int argc, char* argv[])
         OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionError.Value().message.c_str());
         OsConfigLogError(logHandle.get(), "To specify the OS identity explicitly, place an override in the '%s' file", DistributionInfo::cDefaultOverrideFilePath);
         return 1;
+    }
+
+    // Gather host provenance for the result. Architecture comes straight from
+    // uname(2): the DistributionInfo Architecture enum only models x86_64, so it
+    // cannot represent aarch64, whereas uname reports the true machine string.
+    // Distribution/version come from the detected system. The benchmark
+    // definitions are architecture-agnostic, so this provenance lives only in
+    // the result, for multi-arch traceability.
+    {
+        HostInfo hostInfo;
+        struct utsname uts;
+        if (0 == ::uname(&uts))
+        {
+            hostInfo.arch = uts.machine;
+        }
+        const auto& distributionInfo = engine.GetDistributionInfo().Value();
+        try
+        {
+            hostInfo.distribution = std::to_string(distributionInfo.distribution);
+        }
+        catch (const std::exception&)
+        {
+            hostInfo.distribution.clear();
+        }
+        std::transform(hostInfo.distribution.begin(), hostInfo.distribution.end(), hostInfo.distribution.begin(),
+            [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+        hostInfo.distributionVersion = distributionInfo.version;
+        benchmarkFormatter->SetHostInfo(std::move(hostInfo));
     }
 
     auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);

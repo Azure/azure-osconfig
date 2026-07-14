@@ -127,6 +127,7 @@ TEST(MofParserTest, ParsesValidEntry)
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
     const auto& res = result.Value();
     EXPECT_EQ(res.resourceID, "1.1.1 Some Rule");
+    EXPECT_EQ(res.ruleId, "00000000-0000-0000-0000-000000000000");
     EXPECT_EQ(res.ruleName, "MyRule");
     EXPECT_EQ(res.procedure, "base64data==");
     EXPECT_TRUE(res.hasInitAudit);

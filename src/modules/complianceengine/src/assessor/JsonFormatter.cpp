@@ -65,6 +65,31 @@ Optional<Error> JsonFormatter::Begin(const Action action)
         return Error("Failed to set action", ENOMEM);
     }
 
+    // Record host provenance: the benchmark definitions are architecture-agnostic,
+    // so the arch/distribution the scan actually ran on lives in the result for
+    // multi-arch traceability.
+    if (mHostInfo.HasValue())
+    {
+        auto* hostValue = json_value_init_object();
+        if (nullptr == hostValue)
+        {
+            return Error("Failed to initialize host JSON object", ENOMEM);
+        }
+        auto* hostObject = json_value_get_object(hostValue);
+        if (nullptr == hostObject || JSONSuccess != json_object_set_string(hostObject, "arch", mHostInfo->arch.c_str()) ||
+            JSONSuccess != json_object_set_string(hostObject, "distribution", mHostInfo->distribution.c_str()) ||
+            JSONSuccess != json_object_set_string(hostObject, "distributionVersion", mHostInfo->distributionVersion.c_str()))
+        {
+            json_value_free(hostValue);
+            return Error("Failed to set host info", ENOMEM);
+        }
+        if (JSONSuccess != json_object_set_value(object, "host", hostValue))
+        {
+            json_value_free(hostValue);
+            return Error("Failed to set host info", ENOMEM);
+        }
+    }
+
     auto* arrayValue = json_value_init_array();
     if (nullptr == arrayValue)
     {
@@ -110,9 +135,14 @@ Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status
         return Error("Failed to set JSON payload", ENOMEM);
     }
 
-    if (JSONSuccess != json_object_set_string(object, "resourceID", entry.resourceID.c_str()))
+    if (JSONSuccess != json_object_set_string(object, "title", entry.resourceID.c_str()))
     {
-        return Error("Failed to set JSON resourceID", ENOMEM);
+        return Error("Failed to set JSON title", ENOMEM);
+    }
+
+    if (JSONSuccess != json_object_set_string(object, "ruleId", entry.ruleId.c_str()))
+    {
+        return Error("Failed to set JSON ruleId", ENOMEM);
     }
 
     if (JSONSuccess != json_object_set_string(object, "section", entry.benchmarkInfo.section.c_str()))
