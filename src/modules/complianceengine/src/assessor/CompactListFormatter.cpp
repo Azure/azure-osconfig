@@ -22,7 +22,7 @@ Optional<Error> CompactListFormatter::Begin(const Action action)
     return Optional<Error>();
 }
 
-Optional<Error> CompactListFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload)
+Optional<Error> CompactListFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload, const std::map<std::string, std::string>&)
 {
     mOutput << entry.resourceID << ":\n";
     mOutput << payload;

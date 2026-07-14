@@ -173,6 +173,23 @@ TEST_F(EngineTest, MmiSet_setProcedure_4)
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
 
+TEST_F(EngineTest, GetParametersReturnsPayloadDefaults)
+{
+    std::string payload = R"({"audit":{}, "parameters":{"mask":"0177","owner":"root"}})";
+    auto result = mEngine.MmiSet("procedureMyRule", payload);
+    ASSERT_TRUE(result);
+
+    auto params = mEngine.GetParameters("MyRule");
+    ASSERT_EQ(params.size(), 2u);
+    EXPECT_EQ(params["mask"], "0177");
+    EXPECT_EQ(params["owner"], "root");
+}
+
+TEST_F(EngineTest, GetParametersForUnknownRuleIsEmpty)
+{
+    EXPECT_TRUE(mEngine.GetParameters("NeverSet").empty());
+}
+
 TEST_F(EngineTest, MmiSet_initAudit_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("initX", "");

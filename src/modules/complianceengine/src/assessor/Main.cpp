@@ -421,7 +421,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value().status, result.Value().payload);
+                error = benchmarkFormatter->AddEntry(mofEntry, result.Value().status, result.Value().payload, engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
@@ -460,7 +460,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value(), "[]");
+                error = benchmarkFormatter->AddEntry(mofEntry, result.Value(), "[]", engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());

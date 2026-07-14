@@ -6,6 +6,7 @@
 #include <Optional.h>
 #include <Result.h>
 #include <chrono>
+#include <map>
 #include <string>
 
 namespace ComplianceEngine
@@ -43,7 +44,8 @@ struct BenchmarkFormatter
     }
 
     virtual Optional<Error> Begin(Action action) = 0;
-    virtual Optional<Error> AddEntry(const MOF::Resource& entry, Status status, const std::string& payload) = 0;
+    virtual Optional<Error> AddEntry(const MOF::Resource& entry, Status status, const std::string& payload,
+        const std::map<std::string, std::string>& parameters) = 0;
     virtual Result<std::string> Finish(Status status) = 0;
 
 protected:

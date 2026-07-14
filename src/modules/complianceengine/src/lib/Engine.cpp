@@ -104,6 +104,16 @@ const Optional<DistributionInfo>& Engine::GetDistributionInfo() const noexcept
     return mDistributionInfo;
 }
 
+std::map<std::string, std::string> Engine::GetParameters(const std::string& ruleName) const
+{
+    auto it = mDatabase.find(ruleName);
+    if (it == mDatabase.end())
+    {
+        return {};
+    }
+    return it->second.Parameters();
+}
+
 const char* Engine::GetModuleInfo() noexcept
 {
     return cModuleInfo;

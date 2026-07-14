@@ -7,6 +7,7 @@
 #include <JsonFormatter.hpp>
 #include <Mof.hpp>
 #include <gtest/gtest.h>
+#include <map>
 #include <parson.h>
 #include <string>
 
@@ -149,7 +150,7 @@ TEST(JsonFormatterTest, AddEntryEmitsTitleRuleIdSectionRuleNameStatus)
     JsonFormatter formatter;
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1.1", "1.1.1 Ensure something", "1234abcd-0000-0000-0000-000000000000", "EnsureSomething");
-    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]").HasValue());
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]", {}).HasValue());
     auto result = formatter.Finish(Status::Compliant);
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
 
@@ -167,6 +168,7 @@ TEST(JsonFormatterTest, AddEntryEmitsTitleRuleIdSectionRuleNameStatus)
     EXPECT_STREQ(json_object_get_string(rule, "ruleName"), "EnsureSomething");
     EXPECT_STREQ(json_object_get_string(rule, "status"), "Compliant");
     EXPECT_EQ(json_value_get_type(json_object_get_value(rule, "indicators")), JSONArray);
+    EXPECT_EQ(json_value_get_type(json_object_get_value(rule, "parameters")), JSONObject);
     // The legacy alias must be gone.
     EXPECT_EQ(json_object_has_value(rule, "resourceID"), 0) << "resourceID must be renamed to title";
 }
@@ -177,7 +179,7 @@ TEST(JsonFormatterTest, IndicatorsPayloadIsEmbeddedVerbatim)
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("2.3", "2.3 Rule", "id", "Rule");
     const std::string indicators = R"([{"message":"checked /etc/passwd","status":"Compliant"}])";
-    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, indicators).HasValue());
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, indicators, {}).HasValue());
     auto result = formatter.Finish(Status::Compliant);
     ASSERT_TRUE(result.HasValue());
 
@@ -199,7 +201,7 @@ TEST(JsonFormatterTest, NonCompliantEntryIsLabelled)
     JsonFormatter formatter;
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("3.1", "3.1 Rule", "id", "Rule");
-    ASSERT_FALSE(formatter.AddEntry(entry, Status::NonCompliant, "[]").HasValue());
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::NonCompliant, "[]", {}).HasValue());
     auto result = formatter.Finish(Status::NonCompliant);
     ASSERT_TRUE(result.HasValue());
 
@@ -214,8 +216,8 @@ TEST(JsonFormatterTest, MultipleEntriesArePreservedInOrder)
     JsonFormatter formatter;
     formatter.SetHostInfo(HostInfo{"x86_64", "ubuntu", "24.04"});
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
-    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.1", "1.1 First", "id1", "First"), Status::Compliant, "[]").HasValue());
-    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.2", "1.2 Second", "id2", "Second"), Status::NonCompliant, "[]").HasValue());
+    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.1", "1.1 First", "id1", "First"), Status::Compliant, "[]", {}).HasValue());
+    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.2", "1.2 Second", "id2", "Second"), Status::NonCompliant, "[]", {}).HasValue());
     auto result = formatter.Finish(Status::NonCompliant);
     ASSERT_TRUE(result.HasValue());
 
@@ -235,7 +237,7 @@ TEST(JsonFormatterTest, AddEntryRejectsNonArrayPayload)
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
     // A JSON object (not an array) must be rejected.
-    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "{}").HasValue());
+    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "{}", {}).HasValue());
 }
 
 TEST(JsonFormatterTest, AddEntryRejectsMalformedPayload)
@@ -243,5 +245,25 @@ TEST(JsonFormatterTest, AddEntryRejectsMalformedPayload)
     JsonFormatter formatter;
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
-    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "not json").HasValue());
+    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "not json", {}).HasValue());
+}
+
+TEST(JsonFormatterTest, EffectiveParametersAreEmitted)
+{
+    JsonFormatter formatter;
+    ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
+    auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
+    const std::map<std::string, std::string> params{{"mask", "0600"}, {"owner", "root"}};
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]", params).HasValue());
+    auto result = formatter.Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    JSON_Object* p = json_object_get_object(rule, "parameters");
+    ASSERT_NE(p, nullptr);
+    EXPECT_STREQ(json_object_get_string(p, "mask"), "0600");
+    EXPECT_STREQ(json_object_get_string(p, "owner"), "root");
 }

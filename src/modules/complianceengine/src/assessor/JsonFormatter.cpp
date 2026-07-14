@@ -104,7 +104,7 @@ Optional<Error> JsonFormatter::Begin(const Action action)
     return Optional<Error>();
 }
 
-Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload)
+Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status status, const string& payload, const std::map<std::string, std::string>& parameters)
 {
     auto resultWrapper = JsonWrapper::MakeObject();
     if (!resultWrapper.HasValue())
@@ -158,6 +158,33 @@ Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status
     if (JSONSuccess != json_object_set_string(object, "status", status == ComplianceEngine::Status::Compliant ? "Compliant" : "NonCompliant"))
     {
         return Error("Failed to set JSON status", ENOMEM);
+    }
+
+    // Surface the effective parameters (payload defaults merged with any user
+    // overrides) so renderers can show them without decoding the procedure blob.
+    auto* parametersValue = json_value_init_object();
+    if (nullptr == parametersValue)
+    {
+        return Error("Failed to initialize parameters JSON object", ENOMEM);
+    }
+    auto* parametersObject = json_value_get_object(parametersValue);
+    if (nullptr == parametersObject)
+    {
+        json_value_free(parametersValue);
+        return Error("Failed to get parameters JSON object", ENOMEM);
+    }
+    for (const auto& parameter : parameters)
+    {
+        if (JSONSuccess != json_object_set_string(parametersObject, parameter.first.c_str(), parameter.second.c_str()))
+        {
+            json_value_free(parametersValue);
+            return Error("Failed to set parameter value", ENOMEM);
+        }
+    }
+    if (JSONSuccess != json_object_set_value(object, "parameters", parametersValue))
+    {
+        json_value_free(parametersValue);
+        return Error("Failed to set parameters", ENOMEM);
     }
 
     object = json_value_get_object(mJson.get());
