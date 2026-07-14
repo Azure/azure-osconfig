@@ -11,8 +11,7 @@ namespace BenchmarkFormatters
 struct CompactListFormatter : public BenchmarkFormatter
 {
     Optional<Error> Begin(Action action) override;
-    Optional<Error> AddEntry(const MOF::Resource& entry, Status status, const std::string& payload,
-        const std::map<std::string, std::string>& parameters) override;
+    Optional<Error> AddEntry(const MOF::Resource& entry, Status status, const std::string& payload, const std::map<std::string, std::string>& parameters) override;
     Result<std::string> Finish(Status status) override;
 
 private:
