@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified benchmark-definition file",
+  "description": "One native definition file per benchmark: identity + inline rule payloads + generic metadata + flat axis:value tags. Produced by the Compliance Augmentation Engine and consumed by the compliance-engine-assessor as its input (replacing the MOF, which is retained only for Machine Configuration).",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "benchmark",
+    "rules"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this benchmark-definition format."
+    },
+    "benchmark": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "framework",
+        "name",
+        "version",
+        "os",
+        "distribution",
+        "distributionVersion"
+      ],
+      "properties": {
+        "id": {
+          "type": ["string", "null"],
+          "description": "Stable benchmark identifier (the benchmark selector label)."
+        },
+        "framework": {
+          "type": ["string", "null"],
+          "description": "Compliance framework, e.g. 'cis' or 'stig'."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Human-readable benchmark name."
+        },
+        "version": {
+          "type": ["string", "null"],
+          "description": "Benchmark version."
+        },
+        "os": {
+          "type": ["string", "null"],
+          "description": "OS selector label, e.g. 'ubuntu22'."
+        },
+        "distribution": {
+          "type": ["string", "null"],
+          "description": "Distribution the benchmark targets, e.g. 'ubuntu'. Architecture-agnostic; the scanned host's arch is recorded in the assessor result, not here."
+        },
+        "distributionVersion": {
+          "type": ["string", "null"],
+          "description": "Distribution version, e.g. '22.04'."
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "One entry per rule in the selected benchmark.",
+      "items": {
+        "$ref": "#/definitions/rule"
+      }
+    }
+  },
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "section",
+        "ruleId",
+        "ruleName",
+        "title",
+        "payloadKey",
+        "tags",
+        "metadata",
+        "payload"
+      ],
+      "properties": {
+        "section": {
+          "type": "string",
+          "description": "Externally-quoted per-rule identifier (dotted CIS number or STIG id). Unique within a benchmark."
+        },
+        "ruleId": {
+          "type": "string",
+          "description": "Stable, benchmark-agnostic rule identifier (UUID derived from the payload key)."
+        },
+        "ruleName": {
+          "type": "string",
+          "description": "PascalCase ComplianceEngine rule name."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable rule title (section prefix + rule name)."
+        },
+        "payloadKey": {
+          "type": "string",
+          "description": "The rule's payload key, e.g. '/cis/ubuntu/22.04/v2.0.0/1/1/1/1'."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Flat, sparse set of framework-agnostic 'axis:value' tags.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+:.+$"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "description",
+            "rationale",
+            "fixtext",
+            "severity",
+            "references"
+          ],
+          "properties": {
+            "description": { "type": "string" },
+            "rationale": { "type": "string" },
+            "fixtext": { "type": "string" },
+            "severity": { "type": "string" },
+            "references": { "type": "string" }
+          }
+        },
+        "payload": {
+          "$ref": "payload.schema.json"
+        }
+      }
+    }
+  }
+}
