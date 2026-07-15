@@ -12,7 +12,7 @@ namespace ComplianceEngine
 namespace Assessor
 {
 // Human-readable text presentations produced by the `render` subcommand from a
-// over the JSON).
+// canonical result JSON (emitted by `audit` / `remediate`).
 enum class TextStyle
 {
     // Per-rule header line plus an indented indicator tree.
