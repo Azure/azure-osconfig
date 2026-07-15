@@ -117,7 +117,9 @@ string BuildBody(const JSON_Object* rule)
                 char* serialized = json_serialize_to_string(value);
                 if (nullptr != serialized)
                 {
-                    valueStr = serialized;
+                    // Deliberately deep-copy into our own std::string before
+                    // freeing parson's buffer, so the value survives the free.
+                    valueStr = std::string(serialized);
                     json_free_serialized_string(serialized);
                 }
             }

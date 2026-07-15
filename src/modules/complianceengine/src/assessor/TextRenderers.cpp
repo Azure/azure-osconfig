@@ -68,7 +68,23 @@ string JoinParameters(const JSON_Object* rule)
         {
             out << ", ";
         }
-        out << SafeString(json_object_get_name(parameters, i)) << "=" << SafeString(json_value_get_string(json_object_get_value_at(parameters, i)));
+        const JSON_Value* value = json_object_get_value_at(parameters, i);
+        // Prefer the raw string; for non-string JSON values (numbers, bools)
+        // json_value_get_string returns null, so serialize them instead of
+        // losing them to an empty string (mirrors JUnitRenderer's BuildBody).
+        string valueStr = SafeString(json_value_get_string(value));
+        if (valueStr.empty() && nullptr != value && json_value_get_type(value) != JSONString)
+        {
+            char* serialized = json_serialize_to_string(value);
+            if (nullptr != serialized)
+            {
+                // Deliberately deep-copy into our own std::string before
+                // freeing parson's buffer, so the value survives the free.
+                valueStr = std::string(serialized);
+                json_free_serialized_string(serialized);
+            }
+        }
+        out << SafeString(json_object_get_name(parameters, i)) << "=" << valueStr;
     }
     return out.str();
 }

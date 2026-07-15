@@ -65,6 +65,23 @@ TEST(TextRenderersTest, DebugRendersIdentityTitleParametersAndIndicators)
     EXPECT_TRUE(Contains(r.Value(), "      - bad thing [NonCompliant]"));
 }
 
+TEST(TextRenderersTest, DebugSerializesNonStringParameterValues)
+{
+    // Numbers and booleans have no JSON string form; they must be serialized,
+    // not dropped to an empty value (mirrors JUnit's NonStringParameter test).
+    const char* result = R"({"action":"Audit","timestamp":"t","durationMs":0,"status":"NonCompliant",)"
+                         R"("rules":[{"section":"1","ruleName":"R","ruleId":"id","title":"T","status":"NonCompliant",)"
+                         R"("parameters":{"count":5,"enabled":true,"name":"root"},"indicators":[]}]})";
+    auto r = RenderText(result, TextStyle::Debug);
+    ASSERT_TRUE(r.HasValue()) << r.Error().message;
+    EXPECT_TRUE(Contains(r.Value(), "count=5"));
+    EXPECT_TRUE(Contains(r.Value(), "enabled=true"));
+    EXPECT_TRUE(Contains(r.Value(), "name=root"));
+    // The number/bool must not collapse to an empty value.
+    EXPECT_FALSE(Contains(r.Value(), "count=,"));
+    EXPECT_FALSE(Contains(r.Value(), "enabled=,"));
+}
+
 TEST(TextRenderersTest, InvalidJsonIsError)
 {
     EXPECT_FALSE(RenderText("not json", TextStyle::CompactList).HasValue());
