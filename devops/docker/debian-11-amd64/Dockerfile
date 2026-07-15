@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye
+FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye@sha256:6cb68b1be980a0e5b19be25582b34b5cf9cb466d52d08ab4354b79051f2cd298
 
 ARG CMAKE_VERSION=v3.30.1
 ARG DEBIAN_FRONTEND=noninteractive
