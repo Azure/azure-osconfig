@@ -93,6 +93,7 @@
 #include <Logging.h>
 #include <Optional.h>
 #include <algorithm>
+#include <cctype>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
