@@ -40,7 +40,7 @@ struct Options
     Command command = Command::Help;
     std::string input;
     Optional<std::string> section;
-    // `format` only: the JUnit <testsuite name>. The assessor does not know which
+    // `render` only: the JUnit <testsuite name>. The assessor does not know which
     // benchmark package it came from, so the caller supplies this.
     Optional<std::string> suiteName;
 };
