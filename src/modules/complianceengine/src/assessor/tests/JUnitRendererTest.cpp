@@ -20,7 +20,7 @@ TEST(JUnitRendererTest, EmptyRulesProduceEmptySuite)
     auto r = RenderJUnit(R"({"action":"Audit","rules":[]})", "mysuite");
     ASSERT_TRUE(r.HasValue()) << r.Error().message;
     EXPECT_TRUE(Contains(r.Value(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-    EXPECT_TRUE(Contains(r.Value(), "<testsuite name=\"mysuite\" tests=\"0\" failures=\"0\">"));
+    EXPECT_TRUE(Contains(r.Value(), "<testsuite name=\"mysuite\" tests=\"0\" failures=\"0\" skipped=\"0\">"));
     EXPECT_TRUE(Contains(r.Value(), "</testsuites>"));
 }
 
@@ -102,6 +102,18 @@ TEST(JUnitRendererTest, MixedRulesCountFailuresCorrectly)
     auto r = RenderJUnit(json, "s");
     ASSERT_TRUE(r.HasValue()) << r.Error().message;
     EXPECT_TRUE(Contains(r.Value(), "tests=\"3\" failures=\"2\""));
+}
+
+TEST(JUnitRendererTest, NotApplicableRuleIsSkipped)
+{
+    const std::string json = R"({"rules":[{"section":"4.1","ruleName":"R","status":"NotApplicable",)"
+                             R"("indicators":[{"message":"n/a on this distro","status":"NotApplicable"}]}]})";
+    auto r = RenderJUnit(json, "s");
+    ASSERT_TRUE(r.HasValue()) << r.Error().message;
+    EXPECT_TRUE(Contains(r.Value(), "<skipped message=\"Rule is not applicable\">"));
+    EXPECT_TRUE(Contains(r.Value(), "- n/a on this distro [NotApplicable]"));
+    EXPECT_TRUE(Contains(r.Value(), "skipped=\"1\""));
+    EXPECT_FALSE(Contains(r.Value(), "<failure"));
 }
 
 TEST(JUnitRendererTest, InvalidJsonIsError)

@@ -15,6 +15,25 @@ enum class Status
     NotApplicable
 };
 
+// Combines two statuses under allOf (conjunction) three-valued logic, matching
+// Evaluator::EvaluateList(ListAction::AllOf): NonCompliant dominates, then
+// NotApplicable is sticky, then Compliant. This is the single definition of the
+// engine's allOf status algebra, reused by the assessor to aggregate independent
+// per-rule results into an overall benchmark status the same way the engine
+// aggregates a rule's allOf sub-results.
+inline Status CombineAllOf(Status a, Status b) noexcept
+{
+    if (Status::NonCompliant == a || Status::NonCompliant == b)
+    {
+        return Status::NonCompliant;
+    }
+    if (Status::NotApplicable == a || Status::NotApplicable == b)
+    {
+        return Status::NotApplicable;
+    }
+    return Status::Compliant;
+}
+
 struct AuditResult
 {
     Status status = Status::NonCompliant;

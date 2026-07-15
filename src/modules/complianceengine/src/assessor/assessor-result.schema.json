@@ -6,8 +6,6 @@
   "type": "object",
   "additionalProperties": true,
   "required": [
-    "osconfigVersion",
-    "module",
     "timestamp",
     "action",
     "host",
@@ -16,14 +14,6 @@
     "status"
   ],
   "properties": {
-    "osconfigVersion": {
-      "type": "string",
-      "description": "Version of the OSConfig build that produced the result."
-    },
-    "module": {
-      "type": "object",
-      "description": "ComplianceEngine module info (MmiGetInfo payload)."
-    },
     "timestamp": {
       "type": "string",
       "description": "ISO 8601 UTC time the run started."
@@ -59,8 +49,8 @@
     },
     "status": {
       "type": "string",
-      "enum": ["Compliant", "NonCompliant"],
-      "description": "Overall status: NonCompliant if any rule is NonCompliant."
+      "enum": ["Compliant", "NonCompliant", "NotApplicable"],
+      "description": "Overall status, aggregated across rules with the engine's allOf three-valued logic: NonCompliant if any rule is NonCompliant; otherwise NotApplicable if any applicable rule is NotApplicable; otherwise Compliant."
     },
     "rules": {
       "type": "array",
@@ -106,7 +96,8 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Compliant", "NonCompliant"]
+          "enum": ["Compliant", "NonCompliant", "NotApplicable"],
+          "description": "Per-rule status. NotApplicable rules are neutral and do not affect the overall status."
         },
         "parameters": {
           "type": "object",

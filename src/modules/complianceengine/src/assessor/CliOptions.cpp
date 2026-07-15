@@ -17,7 +17,7 @@ void PrintHelp(const std::string& programName)
     std::cout << "Commands:\n";
     std::cout << "\taudit\t\tEvaluate a benchmark and emit the canonical result JSON.\n";
     std::cout << "\tremediate\tRemediate a benchmark and emit the canonical result JSON.\n";
-    std::cout << "\tformat\t\tRender a canonical result JSON into a presentation format.\n";
+    std::cout << "\trender\t\tRender a canonical result JSON into a presentation format.\n";
     std::cout << "\n";
     std::cout << "Common options:\n";
     std::cout << "\t-h, --help\tShow help and exit.\n";
@@ -31,8 +31,8 @@ void PrintHelp(const std::string& programName)
     std::cout << "\t-s, --section\tProcess only specific sections. Default: process all available rules.\n";
     std::cout << "\tfilename\tProcess the specified MOF file. Optional: if skipped or the value is '-', the program reads standard input.\n";
     std::cout << "\n";
-    std::cout << "format options:\n";
-    std::cout << "\t-f, --format\tPresentation format. Allowed values: {junit}. Default: junit.\n";
+    std::cout << "render options:\n";
+    std::cout << "\t-f, --format\tPresentation format. Allowed values: {junit, nested-list, compact-list, debug}. Default: junit.\n";
     std::cout << "\t    --suite-name\tName for the JUnit <testsuite>. Default: compliance.\n";
     std::cout << "\tfilename\tRead the canonical result JSON from this file. Optional: if skipped or '-', reads standard input.\n";
 }
@@ -109,9 +109,21 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
                 {
                     result.format = Format::Junit;
                 }
+                else if (formatArg == "nested-list")
+                {
+                    result.format = Format::NestedList;
+                }
+                else if (formatArg == "compact-list")
+                {
+                    result.format = Format::CompactList;
+                }
+                else if (formatArg == "debug")
+                {
+                    result.format = Format::Debug;
+                }
                 else
                 {
-                    return Error("Invalid format: " + formatArg + ". Allowed values: {junit}.");
+                    return Error("Invalid format: " + formatArg + ". Allowed values: {junit, nested-list, compact-list, debug}.");
                 }
                 break;
             }
@@ -141,19 +153,19 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
         {
             result.command = Command::Remediate;
         }
-        else if (arg == "format")
+        else if (arg == "render")
         {
-            result.command = Command::Format;
+            result.command = Command::Render;
         }
         else
         {
-            return Error("Invalid command: '" + arg + "'. Must be 'audit', 'remediate' or 'format'.");
+            return Error("Invalid command: '" + arg + "'. Must be 'audit', 'remediate' or 'render'.");
         }
         ++optind;
     }
     else
     {
-        return Error("Missing required command: 'audit', 'remediate' or 'format'.");
+        return Error("Missing required command: 'audit', 'remediate' or 'render'.");
     }
 
     // Input filename
@@ -171,13 +183,13 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
     }
 
     // Cross-option validation: keep the audit/remediate surface (which always
-    // emits canonical JSON) free of presentation flags, and keep format free of
+    // emits canonical JSON) free of presentation flags, and keep render free of
     // scan flags.
-    if (Command::Format == result.command)
+    if (Command::Render == result.command)
     {
         if (result.section.HasValue())
         {
-            return Error("--section is not valid for the 'format' subcommand.");
+            return Error("--section is not valid for the 'render' subcommand.");
         }
         // Default the renderer when none was supplied.
         if (!result.format.HasValue())
@@ -189,11 +201,11 @@ Result<Options> ParseCommandLine(const int argc, char* argv[])
     {
         if (result.format.HasValue())
         {
-            return Error("--format is only valid for the 'format' subcommand; 'audit' and 'remediate' always emit the canonical JSON.");
+            return Error("--format is only valid for the 'render' subcommand; 'audit' and 'remediate' always emit the canonical JSON.");
         }
         if (result.suiteName.HasValue())
         {
-            return Error("--suite-name is only valid for the 'format' subcommand.");
+            return Error("--suite-name is only valid for the 'render' subcommand.");
         }
     }
 

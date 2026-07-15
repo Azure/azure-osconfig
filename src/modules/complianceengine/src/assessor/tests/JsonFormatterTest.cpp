@@ -93,14 +93,15 @@ TEST(JsonFormatterTest, EnvelopeContainsRequiredTopLevelFields)
     ParsedJson doc(result.Value());
     ASSERT_NE(doc.object, nullptr) << "output is not valid JSON: " << result.Value();
 
-    EXPECT_NE(json_object_get_string(doc.object, "osconfigVersion"), nullptr);
-    EXPECT_NE(json_object_get_value(doc.object, "module"), nullptr);
     EXPECT_NE(json_object_get_string(doc.object, "timestamp"), nullptr);
     EXPECT_STREQ(json_object_get_string(doc.object, "action"), "Audit");
     EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "rules")), JSONArray);
     EXPECT_STREQ(json_object_get_string(doc.object, "status"), "Compliant");
     // durationMs is a number added by Finish.
     EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "durationMs")), JSONNumber);
+    // These were removed from the output.
+    EXPECT_EQ(json_object_has_value(doc.object, "osconfigVersion"), 0);
+    EXPECT_EQ(json_object_has_value(doc.object, "module"), 0);
 }
 
 TEST(JsonFormatterTest, RemediationActionIsLabelled)
@@ -209,6 +210,21 @@ TEST(JsonFormatterTest, NonCompliantEntryIsLabelled)
     JSON_Array* rules = json_object_get_array(doc.object, "rules");
     JSON_Object* rule = json_array_get_object(rules, 0);
     EXPECT_STREQ(json_object_get_string(rule, "status"), "NonCompliant");
+}
+
+TEST(JsonFormatterTest, NotApplicableEntryIsLabelled)
+{
+    JsonFormatter formatter;
+    ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
+    auto entry = MakeResource("4.1", "4.1 Rule", "id", "Rule");
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::NotApplicable, "[]", {}).HasValue());
+    auto result = formatter.Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    EXPECT_STREQ(json_object_get_string(rule, "status"), "NotApplicable");
 }
 
 TEST(JsonFormatterTest, MultipleEntriesArePreservedInOrder)

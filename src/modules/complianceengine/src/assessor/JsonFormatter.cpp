@@ -1,8 +1,7 @@
-#include <Engine.h>
 #include <JsonFormatter.hpp>
+#include <cerrno>
 #include <parson.h>
 #include <sstream>
-#include <version.h>
 
 namespace ComplianceEngine
 {
@@ -16,9 +15,18 @@ using std::chrono::system_clock;
 
 namespace
 {
-Result<JsonWrapper> GetModuleInfo()
+const char* StatusToString(const Status status)
 {
-    return JsonWrapper::FromString(Engine::GetModuleInfo());
+    switch (status)
+    {
+        case Status::Compliant:
+            return "Compliant";
+        case Status::NotApplicable:
+            return "NotApplicable";
+        case Status::NonCompliant:
+        default:
+            return "NonCompliant";
+    }
 }
 } // anonymous namespace
 
@@ -38,22 +46,6 @@ Optional<Error> JsonFormatter::Begin(const Action action)
     }
 
     mBegin = std::chrono::steady_clock::now();
-
-    if (JSONSuccess != json_object_set_string(object, "osconfigVersion", OSCONFIG_VERSION))
-    {
-        return Error("Failed to set OsConfig version", ENOMEM);
-    }
-
-    auto moduleInfo = GetModuleInfo();
-    if (!moduleInfo.HasValue())
-    {
-        return moduleInfo.Error();
-    }
-
-    if (JSONSuccess != json_object_set_value(object, "module", moduleInfo.Value().release()))
-    {
-        return Error("Failed to set module info", ENOMEM);
-    }
 
     if (JSONSuccess != json_object_set_string(object, "timestamp", ToISODatetime(system_clock::now()).c_str()))
     {
@@ -155,7 +147,7 @@ Optional<Error> JsonFormatter::AddEntry(const MOF::Resource& entry, const Status
         return Error("Failed to set JSON ruleName", ENOMEM);
     }
 
-    if (JSONSuccess != json_object_set_string(object, "status", status == ComplianceEngine::Status::Compliant ? "Compliant" : "NonCompliant"))
+    if (JSONSuccess != json_object_set_string(object, "status", StatusToString(status)))
     {
         return Error("Failed to set JSON status", ENOMEM);
     }
@@ -220,7 +212,7 @@ Result<string> JsonFormatter::Finish(ComplianceEngine::Status status)
         return Error("Failed to set JSON duration", ENOMEM);
     }
 
-    if (JSONSuccess != json_object_set_string(object, "status", status == ComplianceEngine::Status::Compliant ? "Compliant" : "NonCompliant"))
+    if (JSONSuccess != json_object_set_string(object, "status", StatusToString(status)))
     {
         return Error("Failed to set JSON status", ENOMEM);
     }

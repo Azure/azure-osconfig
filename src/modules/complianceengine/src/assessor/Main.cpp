@@ -85,6 +85,7 @@
 #include "JUnitRenderer.hpp"
 #include "JsonFormatter.hpp"
 #include "Mof.hpp"
+#include "TextRenderers.hpp"
 
 #include <AssessorContext.h>
 #include <DistributionInfo.h>
@@ -106,6 +107,7 @@
 
 using ComplianceEngine::Action;
 using ComplianceEngine::AssessorContext;
+using ComplianceEngine::CombineAllOf;
 using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
@@ -114,11 +116,14 @@ using ComplianceEngine::PayloadFormatter;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ComplianceEngine::Assessor::Command;
+using ComplianceEngine::Assessor::Format;
 using ComplianceEngine::Assessor::Options;
 using ComplianceEngine::Assessor::ParseCommandLine;
 using ComplianceEngine::Assessor::PrintHelp;
 using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
 using ComplianceEngine::Assessor::RenderJUnit;
+using ComplianceEngine::Assessor::RenderText;
+using ComplianceEngine::Assessor::TextStyle;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
 using ComplianceEngine::BenchmarkFormatters::HostInfo;
 using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
@@ -127,9 +132,9 @@ using std::string;
 
 namespace
 {
-// Upper bound on a canonical result JSON fed to `format`. Generous (results for
+// Upper bound on a canonical result JSON fed to `render`. Generous (results for
 // a full benchmark are well under this) but bounds memory for a hostile input.
-constexpr std::size_t kMaxResultJsonBytes = 256u * 1024u * 1024u;
+constexpr std::size_t kMaxResultJsonBytes = static_cast<std::size_t>(256) * 1024 * 1024;
 
 // Reads an entire stream into a string, refusing inputs larger than the cap.
 Result<string> ReadAllBounded(std::istream& stream, std::size_t cap)
@@ -152,9 +157,9 @@ Result<string> ReadAllBounded(std::istream& stream, std::size_t cap)
 }
 
 // Renders a canonical result JSON (read from stdin or a file) into the format
-// selected on the `format` subcommand. Runs without root and touches no system
+// selected on the `render` subcommand. Runs without root and touches no system
 // state, so it needs none of the MOF input hardening `audit`/`remediate` apply.
-int RunFormat(const Options& options)
+int RunRender(const Options& options)
 {
     Result<string> jsonResult = Error("uninitialized");
     if (options.input.empty() || options.input == "-")
@@ -179,8 +184,24 @@ int RunFormat(const Options& options)
 
     const string suiteName = options.suiteName.HasValue() ? options.suiteName.Value() : string("compliance");
 
-    // Junit is the only renderer wired today; the parser defaults format to it.
-    auto rendered = RenderJUnit(jsonResult.Value(), suiteName);
+    // The parser defaults the format to Junit when none is supplied.
+    const Format format = options.format.HasValue() ? options.format.Value() : Format::Junit;
+    Result<string> rendered = Error("uninitialized");
+    switch (format)
+    {
+        case Format::Junit:
+            rendered = RenderJUnit(jsonResult.Value(), suiteName);
+            break;
+        case Format::NestedList:
+            rendered = RenderText(jsonResult.Value(), TextStyle::NestedList);
+            break;
+        case Format::CompactList:
+            rendered = RenderText(jsonResult.Value(), TextStyle::CompactList);
+            break;
+        case Format::Debug:
+            rendered = RenderText(jsonResult.Value(), TextStyle::Debug);
+            break;
+    }
     if (!rendered.HasValue())
     {
         std::cerr << "Error: " << rendered.Error().message << std::endl;
@@ -218,18 +239,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    // `format` is a pure, root-free transformation of a canonical result JSON;
+    // `render` is a pure, root-free transformation of a canonical result JSON;
     // it needs neither the engine nor the MOF input path, so dispatch it early.
-    if (Command::Format == options.command)
+    if (Command::Render == options.command)
     {
-        return RunFormat(options);
+        return RunRender(options);
     }
 
-    // `audit` / `remediate` always emit the canonical JSON: one JSON benchmark
-    // formatter for the envelope, and the JSON payload formatter for the engine's
-    // per-rule indicators. Presentation is the `format` subcommand's job.
+    // `audit` / `remediate` always emit the canonical JSON. The benchmark
+    // formatter builds the result envelope; the engine is separately given a
+    // JSON payload formatter (at its construction, below) to render each rule's
+    // indicators. Presentation is the `render` subcommand's job.
     std::unique_ptr<BenchmarkFormatter> benchmarkFormatter(new JsonFormatter());
-    std::unique_ptr<PayloadFormatter> payloadFormatter(new ComplianceEngine::JsonFormatter());
 
     // Validate the log-file path before opening it. The shared logging code
     // opens the log with a symlink-following append and chmod's it while we run
@@ -268,7 +289,11 @@ int main(int argc, char* argv[])
     }
 
     auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle.get()));
-    Engine engine(std::move(context), std::move(payloadFormatter));
+    // The Engine takes ownership of a PayloadFormatter and uses it polymorphically
+    // to render each rule's indicators. Pass the JSON one explicitly: the
+    // constructor's default is a DebugFormatter, whose text output could not be
+    // embedded as the canonical result's indicators array.
+    Engine engine(std::move(context), std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter()));
 
     // Determine the OS this tool is running on so rules that target a different
     // distribution/version can be skipped. LoadDistributionInfo prefers the
@@ -433,10 +458,10 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                if (result.Value().status != Status::Compliant)
-                {
-                    status = Status::NonCompliant;
-                }
+                // Aggregate the overall benchmark status the same way the engine
+                // aggregates an allOf (CombineAllOf): NonCompliant dominates,
+                // NotApplicable is sticky, otherwise Compliant.
+                status = CombineAllOf(status, result.Value().status);
 
                 break;
             }
@@ -472,10 +497,8 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                if (result.Value() != Status::Compliant)
-                {
-                    status = Status::NonCompliant;
-                }
+                // Same allOf aggregation as the audit path.
+                status = CombineAllOf(status, result.Value());
 
                 break;
             }

@@ -16,18 +16,16 @@ enum class Command
     Version,
     Audit,
     Remediate,
-    Format
+    Render
 };
 
-// Presentation formats produced by the `format` subcommand. `audit` / `remediate`
-// no longer select a format: they always emit the canonical JSON. The list/debug
-// renderers are retained for a later port under `format`; only Junit is wired
-// today.
+// Presentation formats produced by the `render` subcommand. `audit` / `remediate`
+// no longer select a format: they always emit the canonical JSON, which `render`
+// turns into one of these.
 enum class Format
 {
     NestedList,
     CompactList,
-    Json,
     Debug,
     Junit
 };

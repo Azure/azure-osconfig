@@ -161,6 +161,7 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
 
     const size_t ruleCount = json_array_get_count(rules);
     size_t failureCount = 0;
+    size_t skippedCount = 0;
     std::ostringstream cases;
     for (size_t i = 0; i < ruleCount; ++i)
     {
@@ -181,6 +182,15 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
             cases << "    <failure message=\"Rule is non-compliant\" type=\"NonCompliant\">" << EscapeXml(BuildBody(rule)) << "</failure>\n";
             cases << "  </testcase>\n";
         }
+        else if (status == "NotApplicable")
+        {
+            // A not-applicable rule is neither a pass nor a failure; JUnit models
+            // this as a skipped test case.
+            ++skippedCount;
+            cases << ">\n";
+            cases << "    <skipped message=\"Rule is not applicable\">" << EscapeXml(BuildBody(rule)) << "</skipped>\n";
+            cases << "  </testcase>\n";
+        }
         else
         {
             cases << "/>\n";
@@ -190,7 +200,8 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
     std::ostringstream out;
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     out << "<testsuites>\n";
-    out << "  <testsuite name=\"" << EscapeXml(suiteName) << "\" tests=\"" << ruleCount << "\" failures=\"" << failureCount << "\">\n";
+    out << "  <testsuite name=\"" << EscapeXml(suiteName) << "\" tests=\"" << ruleCount << "\" failures=\"" << failureCount << "\" skipped=\""
+        << skippedCount << "\">\n";
     out << cases.str();
     out << "  </testsuite>\n";
     out << "</testsuites>\n";

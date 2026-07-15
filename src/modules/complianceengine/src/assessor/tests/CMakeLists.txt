@@ -11,6 +11,7 @@ add_executable(compliance-engine-assessor-tests
     JsonFormatterTest.cpp
     JUnitRendererTest.cpp
     MofTest.cpp
+    TextRenderersTest.cpp
 )
 
 target_include_directories(compliance-engine-assessor-tests PRIVATE
