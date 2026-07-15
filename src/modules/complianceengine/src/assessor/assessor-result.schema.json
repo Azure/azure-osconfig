@@ -50,7 +50,7 @@
     "status": {
       "type": "string",
       "enum": ["Compliant", "NonCompliant", "NotApplicable"],
-      "description": "Overall status, aggregated across rules with the engine's allOf three-valued logic: NonCompliant if any rule is NonCompliant; otherwise NotApplicable if any applicable rule is NotApplicable; otherwise Compliant."
+      "description": "Overall status, aggregated across rules with the engine's allOf three-valued logic: NonCompliant if any rule is NonCompliant; otherwise NotApplicable if any rule is NotApplicable; otherwise Compliant."
     },
     "rules": {
       "type": "array",
@@ -97,7 +97,7 @@
         "status": {
           "type": "string",
           "enum": ["Compliant", "NonCompliant", "NotApplicable"],
-          "description": "Per-rule status. NotApplicable rules are neutral and do not affect the overall status."
+          "description": "Per-rule status. Overall status is aggregated with the engine's allOf three-valued logic (CombineAllOf): NonCompliant dominates; otherwise NotApplicable propagates; otherwise Compliant."
         },
         "parameters": {
           "type": "object",

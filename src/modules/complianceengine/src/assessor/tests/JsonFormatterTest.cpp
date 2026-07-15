@@ -20,6 +20,13 @@ using ComplianceEngine::MOF::Resource;
 
 namespace
 {
+// The JSON formatter now requires host info before Begin(); tests that do not
+// specifically exercise host provenance use this stand-in.
+HostInfo TestHost()
+{
+    return HostInfo{"x86_64", "ubuntu", "22.04"};
+}
+
 Resource MakeResource(const std::string& section, const std::string& resourceID, const std::string& ruleId, const std::string& ruleName)
 {
     Resource r;
@@ -86,6 +93,7 @@ struct ParsedJson
 TEST(JsonFormatterTest, EnvelopeContainsRequiredTopLevelFields)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto result = formatter.Finish(Status::Compliant);
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
@@ -107,6 +115,7 @@ TEST(JsonFormatterTest, EnvelopeContainsRequiredTopLevelFields)
 TEST(JsonFormatterTest, RemediationActionIsLabelled)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Remediate).HasValue());
     auto result = formatter.Finish(Status::NonCompliant);
     ASSERT_TRUE(result.HasValue()) << result.Error().message;
@@ -117,16 +126,14 @@ TEST(JsonFormatterTest, RemediationActionIsLabelled)
     EXPECT_STREQ(json_object_get_string(doc.object, "status"), "NonCompliant");
 }
 
-TEST(JsonFormatterTest, HostBlockOmittedWhenNotSet)
+TEST(JsonFormatterTest, BeginFailsWhenHostInfoNotSet)
 {
     JsonFormatter formatter;
-    ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
-    auto result = formatter.Finish(Status::Compliant);
-    ASSERT_TRUE(result.HasValue());
-
-    ParsedJson doc(result.Value());
-    ASSERT_NE(doc.object, nullptr);
-    EXPECT_EQ(json_object_has_value(doc.object, "host"), 0) << "host must be absent when SetHostInfo was not called";
+    // host is a mandatory field of the canonical result, so Begin() must refuse
+    // to produce a schema-invalid document when SetHostInfo was not called.
+    auto error = formatter.Begin(Action::Audit);
+    ASSERT_TRUE(error.HasValue()) << "Begin must fail when host info is not set";
+    EXPECT_EQ(error.Value().code, EINVAL);
 }
 
 TEST(JsonFormatterTest, HostBlockIsEmittedWhenSet)
@@ -149,6 +156,7 @@ TEST(JsonFormatterTest, HostBlockIsEmittedWhenSet)
 TEST(JsonFormatterTest, AddEntryEmitsTitleRuleIdSectionRuleNameStatus)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1.1", "1.1.1 Ensure something", "1234abcd-0000-0000-0000-000000000000", "EnsureSomething");
     ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]", {}).HasValue());
@@ -177,6 +185,7 @@ TEST(JsonFormatterTest, AddEntryEmitsTitleRuleIdSectionRuleNameStatus)
 TEST(JsonFormatterTest, IndicatorsPayloadIsEmbeddedVerbatim)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("2.3", "2.3 Rule", "id", "Rule");
     const std::string indicators = R"([{"message":"checked /etc/passwd","status":"Compliant"}])";
@@ -200,6 +209,7 @@ TEST(JsonFormatterTest, IndicatorsPayloadIsEmbeddedVerbatim)
 TEST(JsonFormatterTest, NonCompliantEntryIsLabelled)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("3.1", "3.1 Rule", "id", "Rule");
     ASSERT_FALSE(formatter.AddEntry(entry, Status::NonCompliant, "[]", {}).HasValue());
@@ -215,6 +225,7 @@ TEST(JsonFormatterTest, NonCompliantEntryIsLabelled)
 TEST(JsonFormatterTest, NotApplicableEntryIsLabelled)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("4.1", "4.1 Rule", "id", "Rule");
     ASSERT_FALSE(formatter.AddEntry(entry, Status::NotApplicable, "[]", {}).HasValue());
@@ -250,6 +261,7 @@ TEST(JsonFormatterTest, MultipleEntriesArePreservedInOrder)
 TEST(JsonFormatterTest, AddEntryRejectsNonArrayPayload)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
     // A JSON object (not an array) must be rejected.
@@ -259,6 +271,7 @@ TEST(JsonFormatterTest, AddEntryRejectsNonArrayPayload)
 TEST(JsonFormatterTest, AddEntryRejectsMalformedPayload)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
     EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "not json", {}).HasValue());
@@ -267,6 +280,7 @@ TEST(JsonFormatterTest, AddEntryRejectsMalformedPayload)
 TEST(JsonFormatterTest, EffectiveParametersAreEmitted)
 {
     JsonFormatter formatter;
+    formatter.SetHostInfo(TestHost());
     ASSERT_FALSE(formatter.Begin(Action::Audit).HasValue());
     auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
     const std::map<std::string, std::string> params{{"mask", "0600"}, {"owner", "root"}};

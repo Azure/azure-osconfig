@@ -35,9 +35,9 @@ struct BenchmarkFormatter
     BenchmarkFormatter(BenchmarkFormatter&&) = default;
     BenchmarkFormatter& operator=(BenchmarkFormatter&&) = default;
 
-    // Supplies host provenance to be recorded in the output. Only the JSON
-    // formatter emits it today; the other formatters ignore it. Set before
-    // Begin().
+    // Supplies host provenance to be recorded in the output. The JSON formatter
+    // requires it and fails Begin() if it is unset (host is a mandatory field of
+    // the canonical result); the other formatters ignore it. Set before Begin().
     void SetHostInfo(HostInfo info)
     {
         mHostInfo = std::move(info);

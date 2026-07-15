@@ -174,6 +174,13 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
         const string ruleName = SafeString(json_object_get_string(rule, "ruleName"));
         const string status = SafeString(json_object_get_string(rule, "status"));
 
+        // Guard against schema drift / upstream bugs: an unrecognised or missing
+        // status must not be silently rendered as a passing test case.
+        if (status != "Compliant" && status != "NonCompliant" && status != "NotApplicable")
+        {
+            return Error("Canonical result JSON rule has invalid 'status' value: '" + status + "'", EINVAL);
+        }
+
         cases << "  <testcase classname=\"" << EscapeXml(section) << "\" name=\"" << EscapeXml(ruleName) << "\"";
         if (status == "NonCompliant")
         {
@@ -193,6 +200,7 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
         }
         else
         {
+            // status == "Compliant": a bare passing test case.
             cases << "/>\n";
         }
     }

@@ -59,8 +59,12 @@ Optional<Error> JsonFormatter::Begin(const Action action)
 
     // Record host provenance: the benchmark definitions are architecture-agnostic,
     // so the arch/distribution the scan actually ran on lives in the result for
-    // multi-arch traceability.
-    if (mHostInfo.HasValue())
+    // multi-arch traceability. Host info is mandatory in the canonical result
+    // (see assessor-result.schema.json); refuse to emit a schema-invalid result.
+    if (!mHostInfo.HasValue())
+    {
+        return Error("Host info is required before Begin(); call SetHostInfo() first", EINVAL);
+    }
     {
         auto* hostValue = json_value_init_object();
         if (nullptr == hostValue)

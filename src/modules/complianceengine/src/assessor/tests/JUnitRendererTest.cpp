@@ -131,6 +131,22 @@ TEST(JUnitRendererTest, NonObjectRootIsError)
     EXPECT_FALSE(RenderJUnit(R"([1,2,3])", "s").HasValue());
 }
 
+TEST(JUnitRendererTest, UnknownRuleStatusIsError)
+{
+    // An unrecognised status must be rejected, not silently rendered as a pass.
+    const std::string json = R"({"rules":[{"section":"1","ruleName":"R","status":"Bogus","indicators":[]}]})";
+    auto r = RenderJUnit(json, "s");
+    EXPECT_FALSE(r.HasValue());
+}
+
+TEST(JUnitRendererTest, MissingRuleStatusIsError)
+{
+    // A missing status field must be rejected rather than treated as a pass.
+    const std::string json = R"({"rules":[{"section":"1","ruleName":"R","indicators":[]}]})";
+    auto r = RenderJUnit(json, "s");
+    EXPECT_FALSE(r.HasValue());
+}
+
 TEST(JUnitRendererTest, ControlCharactersAreNeutralised)
 {
     // A control character (U+0001) in a message must not corrupt the XML; it is
