@@ -256,6 +256,7 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
     {
         for (auto& param : proc.Parameters())
         {
+            (void) param;
             // printf("Parameter: %s = %s\n", param.first.c_str(), param.second.c_str());
         }
     }
