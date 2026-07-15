@@ -182,14 +182,7 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
             return Status::NonCompliant;
         }
 
-        if (listAction == ListAction::AllOf)
-        {
-            // allOf conjunction: NonCompliant already short-circuited above, so
-            // fold the remaining Compliant/NotApplicable results through the
-            // shared allOf status algebra (NotApplicable is sticky).
-            accumulated = CombineAllOf(accumulated, result.Value());
-        }
-        else if (result.Value() == Status::NotApplicable)
+        if (result.Value() == Status::NotApplicable)
         {
             accumulated = Status::NotApplicable;
         }
