@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <JUnitRenderer.hpp>
+#include <StringTools.h>
 #include <cerrno>
 #include <parson.h>
 #include <sstream>
@@ -56,11 +57,6 @@ string EscapeXml(const string& in)
     return out;
 }
 
-string SafeString(const char* s)
-{
-    return (nullptr == s) ? string() : string(s);
-}
-
 // Recursively renders an indicators array into the readable indented style used
 // by tests/reporting/junit.py: "{indent*depth}  - {label} [{status}]". A node's
 // label is its message (leaf) or its procedure (branch); children are rendered
@@ -79,12 +75,12 @@ void AppendIndicators(const JSON_Array* indicators, size_t depth, std::ostringst
         {
             continue;
         }
-        string label = SafeString(json_object_get_string(node, "message"));
+        string label = StringOrEmpty(json_object_get_string(node, "message"));
         if (label.empty())
         {
-            label = SafeString(json_object_get_string(node, "procedure"));
+            label = StringOrEmpty(json_object_get_string(node, "procedure"));
         }
-        const string status = SafeString(json_object_get_string(node, "status"));
+        const string status = StringOrEmpty(json_object_get_string(node, "status"));
         body << string(depth * 2, ' ') << "  - " << label;
         if (!status.empty())
         {
@@ -109,9 +105,9 @@ string BuildBody(const JSON_Object* rule)
         const size_t count = json_object_get_count(parameters);
         for (size_t i = 0; i < count; ++i)
         {
-            const string key = SafeString(json_object_get_name(parameters, i));
+            const string key = StringOrEmpty(json_object_get_name(parameters, i));
             const JSON_Value* value = json_object_get_value_at(parameters, i);
-            string valueStr = SafeString(json_value_get_string(value));
+            string valueStr = StringOrEmpty(json_value_get_string(value));
             if (valueStr.empty() && nullptr != value && json_value_get_type(value) != JSONString)
             {
                 char* serialized = json_serialize_to_string(value);
@@ -172,9 +168,9 @@ Result<string> RenderJUnit(const string& canonicalJson, const string& suiteName)
         {
             return Error("Canonical result JSON 'rules' entry is not an object", EINVAL);
         }
-        const string section = SafeString(json_object_get_string(rule, "section"));
-        const string ruleName = SafeString(json_object_get_string(rule, "ruleName"));
-        const string status = SafeString(json_object_get_string(rule, "status"));
+        const string section = StringOrEmpty(json_object_get_string(rule, "section"));
+        const string ruleName = StringOrEmpty(json_object_get_string(rule, "ruleName"));
+        const string status = StringOrEmpty(json_object_get_string(rule, "status"));
 
         // Guard against schema drift / upstream bugs: an unrecognised or missing
         // status must not be silently rendered as a passing test case.

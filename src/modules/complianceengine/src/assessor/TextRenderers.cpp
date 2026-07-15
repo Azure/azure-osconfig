@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <StringTools.h>
 #include <TextRenderers.hpp>
 #include <cerrno>
 #include <parson.h>
@@ -15,11 +16,6 @@ using std::string;
 
 namespace
 {
-string SafeString(const char* s)
-{
-    return (nullptr == s) ? string() : string(s);
-}
-
 // Recursively appends an indicator tree as indented "<label> [<status>]" lines,
 // starting at `baseIndent` spaces and adding two per depth level. A node's label
 // is its message (leaf) or its procedure (branch).
@@ -37,12 +33,12 @@ void AppendIndicators(const JSON_Array* indicators, size_t depth, size_t baseInd
         {
             continue;
         }
-        string label = SafeString(json_object_get_string(node, "message"));
+        string label = StringOrEmpty(json_object_get_string(node, "message"));
         if (label.empty())
         {
-            label = SafeString(json_object_get_string(node, "procedure"));
+            label = StringOrEmpty(json_object_get_string(node, "procedure"));
         }
-        const string status = SafeString(json_object_get_string(node, "status"));
+        const string status = StringOrEmpty(json_object_get_string(node, "status"));
         out << string(baseIndent + depth * 2, ' ') << "- " << label;
         if (!status.empty())
         {
@@ -72,7 +68,7 @@ string JoinParameters(const JSON_Object* rule)
         // Prefer the raw string; for non-string JSON values (numbers, bools)
         // json_value_get_string returns null, so serialize them instead of
         // losing them to an empty string (mirrors JUnitRenderer's BuildBody).
-        string valueStr = SafeString(json_value_get_string(value));
+        string valueStr = StringOrEmpty(json_value_get_string(value));
         if (valueStr.empty() && nullptr != value && json_value_get_type(value) != JSONString)
         {
             char* serialized = json_serialize_to_string(value);
@@ -84,7 +80,7 @@ string JoinParameters(const JSON_Object* rule)
                 json_free_serialized_string(serialized);
             }
         }
-        out << SafeString(json_object_get_name(parameters, i)) << "=" << valueStr;
+        out << StringOrEmpty(json_object_get_name(parameters, i)) << "=" << valueStr;
     }
     return out.str();
 }
@@ -118,8 +114,8 @@ Result<string> RenderText(const string& canonicalJson, const TextStyle style)
     }
 
     std::ostringstream out;
-    out << "Action: " << SafeString(json_object_get_string(rootObject, "action")) << "\n";
-    out << "Timestamp: " << SafeString(json_object_get_string(rootObject, "timestamp")) << "\n";
+    out << "Action: " << StringOrEmpty(json_object_get_string(rootObject, "action")) << "\n";
+    out << "Timestamp: " << StringOrEmpty(json_object_get_string(rootObject, "timestamp")) << "\n";
     out << "Rules:\n";
 
     const size_t ruleCount = json_array_get_count(rules);
@@ -130,9 +126,9 @@ Result<string> RenderText(const string& canonicalJson, const TextStyle style)
         {
             return Error("Canonical result JSON 'rules' entry is not an object", EINVAL);
         }
-        const string section = SafeString(json_object_get_string(rule, "section"));
-        const string ruleName = SafeString(json_object_get_string(rule, "ruleName"));
-        const string status = SafeString(json_object_get_string(rule, "status"));
+        const string section = StringOrEmpty(json_object_get_string(rule, "section"));
+        const string ruleName = StringOrEmpty(json_object_get_string(rule, "ruleName"));
+        const string status = StringOrEmpty(json_object_get_string(rule, "status"));
 
         switch (style)
         {
@@ -146,8 +142,8 @@ Result<string> RenderText(const string& canonicalJson, const TextStyle style)
                 break;
 
             case TextStyle::Debug: {
-                out << "  " << section << " " << ruleName << " (ruleId=" << SafeString(json_object_get_string(rule, "ruleId")) << ") [" << status << "]\n";
-                out << "    title: " << SafeString(json_object_get_string(rule, "title")) << "\n";
+                out << "  " << section << " " << ruleName << " (ruleId=" << StringOrEmpty(json_object_get_string(rule, "ruleId")) << ") [" << status << "]\n";
+                out << "    title: " << StringOrEmpty(json_object_get_string(rule, "title")) << "\n";
                 const string parameters = JoinParameters(rule);
                 if (!parameters.empty())
                 {
@@ -160,7 +156,7 @@ Result<string> RenderText(const string& canonicalJson, const TextStyle style)
     }
 
     out << "Duration: " << static_cast<long long>(json_object_get_number(rootObject, "durationMs")) << " ms\n";
-    out << "Status: " << SafeString(json_object_get_string(rootObject, "status")) << "\n";
+    out << "Status: " << StringOrEmpty(json_object_get_string(rootObject, "status")) << "\n";
     out << "End of Report\n";
     return out.str();
 }
