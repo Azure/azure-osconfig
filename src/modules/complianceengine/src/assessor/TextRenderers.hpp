@@ -11,9 +11,7 @@ namespace ComplianceEngine
 {
 namespace Assessor
 {
-// Human-readable text presentations produced by the `format` subcommand from a
-// canonical assessor result JSON (the successors to the old streaming
-// nested-list / compact-list / debug benchmark formatters, now pure functions
+// Human-readable text presentations produced by the `render` subcommand from a
 // over the JSON).
 enum class TextStyle
 {
