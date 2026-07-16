@@ -1,5 +1,5 @@
 # TODO: Add mcr.io retagged images
-FROM registry.access.redhat.com/ubi8/ubi
+FROM registry.access.redhat.com/ubi8/ubi@sha256:8e573e1d76ff27f9e1219b33c114e48b0f7b86f2e6858cd8861e84431c7416e4
 
 ARG CMAKE_VERSION=v3.30.1
 

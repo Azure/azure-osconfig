@@ -1,5 +1,5 @@
 # TODO: Add mcr.io retagged images
-FROM almalinux:9
+FROM almalinux:9@sha256:d2515c769e7b73f95c4fde38c0a505336ff38f14990c0b7253b77060a049a743
 
 ARG CMAKE_VERSION=v3.30.1
 
