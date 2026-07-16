@@ -421,7 +421,7 @@
           "$ref": "procedures/XdmcpDisabled.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "#definitions/auditProcedure"
+          "$ref": "#/definitions/auditProcedure"
         }
       ]
     }
