@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified benchmark-definition file",
+  "description": "One native definition file per benchmark, as a Kubernetes-style resource (apiVersion / kind / metadata / spec) consistent with the other compliancectl data files. Carries identity + inline rule payloads + generic metadata + flat axis:value tags. Produced by the Compliance Augmentation Engine and consumed by the compliance-engine-assessor as its input (replacing the MOF, which is retained only for Machine Configuration).",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "description": "Versioned resource API group, e.g. 'compliance.osconfig.azure.com/v1'. Versions the file format, independently of the benchmark's own version."
+    },
+    "kind": {
+      "type": "string",
+      "const": "NativeBenchmark",
+      "description": "Resource kind."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Stable benchmark identifier (the benchmark selector label)."
+        },
+        "labels": {
+          "type": "object",
+          "description": "Selectable identity axes (framework, os, distribution, distributionVersion, ...). Architecture-agnostic; the scanned host's arch is recorded in the assessor result, not here.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Non-selectable descriptive fields (e.g. displayName, benchmarkVersion).",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "rules"
+      ],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "One entry per rule in the selected benchmark.",
+          "items": {
+            "$ref": "#/definitions/rule"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "section",
+        "ruleId",
+        "ruleName",
+        "title",
+        "payloadKey",
+        "tags",
+        "metadata",
+        "payload"
+      ],
+      "properties": {
+        "section": {
+          "type": "string",
+          "description": "Externally-quoted per-rule identifier (dotted CIS number or STIG id). Unique within a benchmark."
+        },
+        "ruleId": {
+          "type": "string",
+          "description": "Stable, benchmark-agnostic rule identifier (UUID derived from the payload key)."
+        },
+        "ruleName": {
+          "type": "string",
+          "description": "PascalCase ComplianceEngine rule name."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable rule title (section prefix + rule name)."
+        },
+        "payloadKey": {
+          "type": "string",
+          "description": "The rule's payload key, e.g. '/cis/ubuntu/22.04/v2.0.0/1/1/1/1'."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Flat, sparse set of framework-agnostic 'axis:value' tags.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+:.+$"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "description",
+            "rationale",
+            "fixtext",
+            "severity",
+            "references"
+          ],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "fixtext": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string"
+            },
+            "references": {
+              "type": "string"
+            }
+          }
+        },
+        "payload": {
+          "$ref": "payload.schema.json"
+        }
+      }
+    }
+  }
+}
