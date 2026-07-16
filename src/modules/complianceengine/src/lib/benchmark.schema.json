@@ -1,67 +1,66 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Unified benchmark-definition file",
-  "description": "One native definition file per benchmark: identity + inline rule payloads + generic metadata + flat axis:value tags. Produced by the Compliance Augmentation Engine and consumed by the compliance-engine-assessor as its input (replacing the MOF, which is retained only for Machine Configuration).",
+  "description": "One native definition file per benchmark, as a Kubernetes-style resource (apiVersion / kind / metadata / spec) consistent with the other compliancectl data files. Carries identity + inline rule payloads + generic metadata + flat axis:value tags. Produced by the Compliance Augmentation Engine and consumed by the compliance-engine-assessor as its input (replacing the MOF, which is retained only for Machine Configuration).",
   "type": "object",
   "additionalProperties": true,
   "required": [
-    "schemaVersion",
-    "benchmark",
-    "rules"
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
   ],
   "properties": {
-    "schemaVersion": {
+    "apiVersion": {
       "type": "string",
-      "description": "Version of this benchmark-definition format."
+      "description": "Versioned resource API group, e.g. 'compliance.osconfig.azure.com/v1'. Versions the file format, independently of the benchmark's own version."
     },
-    "benchmark": {
+    "kind": {
+      "type": "string",
+      "const": "NativeBenchmark",
+      "description": "Resource kind."
+    },
+    "metadata": {
       "type": "object",
       "additionalProperties": true,
       "required": [
-        "id",
-        "framework",
-        "name",
-        "version",
-        "os",
-        "distribution",
-        "distributionVersion"
+        "name"
       ],
       "properties": {
-        "id": {
-          "type": ["string", "null"],
+        "name": {
+          "type": "string",
           "description": "Stable benchmark identifier (the benchmark selector label)."
         },
-        "framework": {
-          "type": ["string", "null"],
-          "description": "Compliance framework, e.g. 'cis' or 'stig'."
+        "labels": {
+          "type": "object",
+          "description": "Selectable identity axes (framework, os, distribution, distributionVersion, ...). Architecture-agnostic; the scanned host's arch is recorded in the assessor result, not here.",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
-        "name": {
-          "type": ["string", "null"],
-          "description": "Human-readable benchmark name."
-        },
-        "version": {
-          "type": ["string", "null"],
-          "description": "Benchmark version."
-        },
-        "os": {
-          "type": ["string", "null"],
-          "description": "OS selector label, e.g. 'ubuntu22'."
-        },
-        "distribution": {
-          "type": ["string", "null"],
-          "description": "Distribution the benchmark targets, e.g. 'ubuntu'. Architecture-agnostic; the scanned host's arch is recorded in the assessor result, not here."
-        },
-        "distributionVersion": {
-          "type": ["string", "null"],
-          "description": "Distribution version, e.g. '22.04'."
+        "annotations": {
+          "type": "object",
+          "description": "Non-selectable descriptive fields (e.g. displayName, benchmarkVersion).",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
-    "rules": {
-      "type": "array",
-      "description": "One entry per rule in the selected benchmark.",
-      "items": {
-        "$ref": "#/definitions/rule"
+    "spec": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "rules"
+      ],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "One entry per rule in the selected benchmark.",
+          "items": {
+            "$ref": "#/definitions/rule"
+          }
+        }
       }
     }
   },
@@ -119,11 +118,21 @@
             "references"
           ],
           "properties": {
-            "description": { "type": "string" },
-            "rationale": { "type": "string" },
-            "fixtext": { "type": "string" },
-            "severity": { "type": "string" },
-            "references": { "type": "string" }
+            "description": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "fixtext": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string"
+            },
+            "references": {
+              "type": "string"
+            }
           }
         },
         "payload": {
