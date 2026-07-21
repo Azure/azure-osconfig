@@ -46,4 +46,21 @@ struct AuditResult
 };
 } // namespace ComplianceEngine
 
+namespace std
+{
+inline std::string to_string(ComplianceEngine::Status status) // NOLINT(*-identifier-naming)
+{
+    switch (status)
+    {
+        case ComplianceEngine::Status::Compliant:
+            return "Compliant";
+        case ComplianceEngine::Status::NotApplicable:
+            return "NotApplicable";
+        case ComplianceEngine::Status::NonCompliant:
+        default:
+            return "NonCompliant";
+    }
+}
+} // namespace std
+
 #endif // COMPLIANCEENGINE_MMI_RESULTS_H

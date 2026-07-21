@@ -31,7 +31,7 @@
       "properties": {
         "arch": {
           "type": "string",
-          "description": "uname(2) machine, e.g. \"x86_64\" or \"aarch64\"."
+          "description": "System architecture derived from DistributionInfo, e.g. \"x86_64\"."
         },
         "distribution": {
           "type": "string",

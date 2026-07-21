@@ -12,7 +12,6 @@
 #include <BenchmarkFormatter.hpp>
 #include <BenchmarkInfo.h>
 #include <Evaluator.h>
-#include <JsonFormatter.hpp>
 #include <Mof.hpp>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -26,10 +25,10 @@
 #endif
 
 using ComplianceEngine::Action;
+using ComplianceEngine::Architecture;
 using ComplianceEngine::LinuxDistribution;
 using ComplianceEngine::Status;
-using ComplianceEngine::BenchmarkFormatters::HostInfo;
-using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
+using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
 using ComplianceEngine::MOF::Resource;
 
 namespace
@@ -73,13 +72,17 @@ void ExpectAllRequiredPresent(const JSON_Object* object, const JSON_Array* requi
 // no parameters and one non-compliant rule with parameters.
 std::string GenerateResult()
 {
-    JsonFormatter formatter;
-    formatter.SetHostInfo(HostInfo{"aarch64", "ubuntu", "24.04"});
-    EXPECT_FALSE(formatter.Begin(Action::Audit).HasValue());
+    ComplianceEngine::DistributionInfo distInfo;
+    distInfo.distribution = LinuxDistribution::Ubuntu;
+    distInfo.architecture = Architecture::x86_64;
+    distInfo.version = "24.04";
+    auto formatterResult = BenchmarkFormatter::Begin(distInfo, Action::Audit);
+    EXPECT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
     EXPECT_FALSE(formatter.AddEntry(MakeResource("1.1", "1.1 First", "id1", "First"), Status::Compliant, "[]", {}).HasValue());
     const std::map<std::string, std::string> params{{"mask", "0600"}};
     EXPECT_FALSE(formatter.AddEntry(MakeResource("1.2", "1.2 Second", "id2", "Second"), Status::NonCompliant, "[]", params).HasValue());
-    auto result = formatter.Finish(Status::NonCompliant);
+    auto result = std::move(formatter).Finish(Status::NonCompliant);
     EXPECT_TRUE(result.HasValue());
     return result.HasValue() ? result.Value() : std::string();
 }

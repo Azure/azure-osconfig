@@ -80,10 +80,10 @@
 //    engine spawns. Sanitizing the environment is the engine's
 //    responsibility, not the assessor's.
 
+#include "BenchmarkFormatter.hpp"
 #include "CliOptions.hpp"
 #include "InputSecurity.hpp"
 #include "JUnitRenderer.hpp"
-#include "JsonFormatter.hpp"
 #include "Mof.hpp"
 #include "TextRenderers.hpp"
 
@@ -92,8 +92,6 @@
 #include <Engine.h>
 #include <Logging.h>
 #include <Optional.h>
-#include <algorithm>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -102,7 +100,6 @@
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
 #include <unistd.h>
 #include <version.h>
 
@@ -126,8 +123,6 @@ using ComplianceEngine::Assessor::RenderJUnit;
 using ComplianceEngine::Assessor::RenderText;
 using ComplianceEngine::Assessor::TextStyle;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
-using ComplianceEngine::BenchmarkFormatters::HostInfo;
-using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
 using ComplianceEngine::MOF::MofResourceRange;
 using std::string;
 
@@ -247,12 +242,6 @@ int main(int argc, char* argv[])
         return RunRender(options);
     }
 
-    // `audit` / `remediate` always emit the canonical JSON. The benchmark
-    // formatter builds the result envelope; the engine is separately given a
-    // JSON payload formatter (at its construction, below) to render each rule's
-    // indicators. Presentation is the `render` subcommand's job.
-    std::unique_ptr<BenchmarkFormatter> benchmarkFormatter(new JsonFormatter());
-
     // Validate the log-file path before opening it. The shared logging code
     // opens the log with a symlink-following append and chmod's it while we run
     // as root, so an attacker-controlled symlink or writable parent directory
@@ -301,48 +290,26 @@ int main(int argc, char* argv[])
     // operator-supplied override file and falls back to /etc/os-release. If the
     // OS cannot be identified (e.g. an unmapped distribution ID and no override
     // file), abort rather than silently running rules meant for another system.
-    auto distributionError = engine.LoadDistributionInfo();
-    if (distributionError)
+    auto distributionInfoError = engine.LoadDistributionInfo();
+    if (distributionInfoError)
     {
-        OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionError.Value().message.c_str());
+        OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionInfoError.Value().message.c_str());
         OsConfigLogError(logHandle.get(), "To specify the OS identity explicitly, place an override in the '%s' file", DistributionInfo::cDefaultOverrideFilePath);
         return 1;
     }
 
-    // Gather host provenance for the result. Architecture comes straight from
-    // uname(2): the DistributionInfo Architecture enum only models x86_64, so it
-    // cannot represent aarch64, whereas uname reports the true machine string.
-    // Distribution/version come from the detected system. The benchmark
-    // definitions are architecture-agnostic, so this provenance lives only in
-    // the result, for multi-arch traceability.
+    // `audit` / `remediate` always emit the canonical JSON. The benchmark
+    // formatter builds the result envelope; the engine is separately given a
+    // JSON payload formatter (at its construction, above) to render each rule's
+    // indicators. Presentation is the `render` subcommand's job.
+    const auto& distributionInfo = engine.GetDistributionInfo().Value();
+    auto formatterResult = BenchmarkFormatter::Begin(distributionInfo, options.command == Command::Audit ? Action::Audit : Action::Remediate);
+    if (!formatterResult.HasValue())
     {
-        HostInfo hostInfo;
-        struct utsname uts;
-        if (0 == ::uname(&uts))
-        {
-            hostInfo.arch = uts.machine;
-        }
-        const auto& distributionInfo = engine.GetDistributionInfo().Value();
-        try
-        {
-            hostInfo.distribution = std::to_string(distributionInfo.distribution);
-        }
-        catch (const std::exception&)
-        {
-            hostInfo.distribution.clear();
-        }
-        std::transform(hostInfo.distribution.begin(), hostInfo.distribution.end(), hostInfo.distribution.begin(),
-            [](unsigned char c) { return static_cast<char>(::tolower(c)); });
-        hostInfo.distributionVersion = distributionInfo.version;
-        benchmarkFormatter->SetHostInfo(std::move(hostInfo));
-    }
-
-    auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);
-    if (error)
-    {
-        OsConfigLogError(logHandle.get(), "Failed to begin formatted output: %s", error.Value().message.c_str());
+        OsConfigLogError(logHandle.get(), "Failed to begin formatted output: %s", formatterResult.Error().message.c_str());
         return 1;
     }
+    auto& benchmarkFormatter = formatterResult.Value();
 
     // Open the input as a strictly-validated, streaming MOF range. For --input
     // the range encapsulates the full input-hardening posture (path-traversal
@@ -447,7 +414,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value().status, result.Value().payload, engine.GetParameters(mofEntry.ruleName));
+                auto error = benchmarkFormatter.AddEntry(mofEntry, result.Value().status, result.Value().payload, engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
@@ -486,7 +453,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value(), "[]", engine.GetParameters(mofEntry.ruleName));
+                auto error = benchmarkFormatter.AddEntry(mofEntry, result.Value(), "[]", engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
@@ -509,7 +476,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    auto result = benchmarkFormatter->Finish(status);
+    auto result = std::move(benchmarkFormatter).Finish(status);
     if (!result.HasValue())
     {
         OsConfigLogError(logHandle.get(), "Failed to finish formatted output: %s", result.Error().message.c_str());

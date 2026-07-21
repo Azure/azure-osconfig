@@ -61,9 +61,15 @@ string EscapeXml(const string& in)
 // by tests/reporting/junit.py: "{indent*depth}  - {label} [{status}]". A node's
 // label is its message (leaf) or its procedure (branch); children are rendered
 // one level deeper.
+//
+// Recursion is bounded to guard against pathologically deep (or maliciously
+// crafted) indicator trees causing stack exhaustion; nodes below the limit are
+// silently dropped from the rendered output.
+constexpr size_t cMaxIndicatorDepth = 16;
+
 void AppendIndicators(const JSON_Array* indicators, size_t depth, std::ostringstream& body)
 {
-    if (nullptr == indicators)
+    if (nullptr == indicators || depth >= cMaxIndicatorDepth)
     {
         return;
     }

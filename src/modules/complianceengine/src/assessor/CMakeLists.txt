@@ -22,7 +22,6 @@ set(LIB_SOURCES
     InputSecurity.cpp
     Mof.cpp
     BenchmarkFormatter.cpp
-    JsonFormatter.cpp
     JUnitRenderer.cpp
     TextRenderers.cpp
 )

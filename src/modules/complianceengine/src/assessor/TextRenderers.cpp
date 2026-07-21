@@ -19,9 +19,15 @@ namespace
 // Recursively appends an indicator tree as indented "<label> [<status>]" lines,
 // starting at `baseIndent` spaces and adding two per depth level. A node's label
 // is its message (leaf) or its procedure (branch).
+//
+// Recursion is bounded to guard against pathologically deep (or maliciously
+// crafted) indicator trees causing stack exhaustion; nodes below the limit are
+// silently dropped from the rendered output.
+constexpr size_t cMaxIndicatorDepth = 16;
+
 void AppendIndicators(const JSON_Array* indicators, size_t depth, size_t baseIndent, std::ostringstream& out)
 {
-    if (nullptr == indicators)
+    if (nullptr == indicators || depth >= cMaxIndicatorDepth)
     {
         return;
     }
