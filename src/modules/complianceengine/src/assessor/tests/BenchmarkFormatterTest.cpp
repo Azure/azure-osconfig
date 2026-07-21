@@ -1,0 +1,335 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include <BenchmarkFormatter.hpp>
+#include <BenchmarkInfo.h>
+#include <DistributionInfo.h>
+#include <Evaluator.h>
+#include <Mof.hpp>
+#include <Regex.h>
+#include <gtest/gtest.h>
+#include <map>
+#include <parson.h>
+#include <string>
+
+using ComplianceEngine::Action;
+using ComplianceEngine::Architecture;
+using ComplianceEngine::DistributionInfo;
+using ComplianceEngine::LinuxDistribution;
+using ComplianceEngine::Status;
+using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
+using ComplianceEngine::MOF::Resource;
+
+namespace
+{
+// Minimal DistributionInfo suitable for unit tests.
+DistributionInfo TestDistribution()
+{
+    return DistributionInfo{};
+}
+
+Resource MakeResource(const std::string& section, const std::string& resourceID, const std::string& ruleId, const std::string& ruleName)
+{
+    Resource r;
+    r.resourceID = resourceID;
+    r.ruleId = ruleId;
+    r.ruleName = ruleName;
+    r.benchmarkInfo.distribution = LinuxDistribution::Ubuntu;
+    r.benchmarkInfo.version = "22.04";
+    r.benchmarkInfo.benchmarkVersion = "v1.0.0";
+    r.benchmarkInfo.section = section;
+    return r;
+}
+
+// Owns a parsed JSON document and exposes the root object.
+struct ParsedJson
+{
+    JSON_Value* value = nullptr;
+    JSON_Object* object = nullptr;
+
+    explicit ParsedJson(const std::string& text)
+        : value(json_parse_string(text.c_str()))
+    {
+        if (value != nullptr)
+        {
+            object = json_value_get_object(value);
+        }
+    }
+    ~ParsedJson()
+    {
+        if (value != nullptr)
+        {
+            json_value_free(value);
+        }
+    }
+    ParsedJson(const ParsedJson&) = delete;
+    ParsedJson& operator=(const ParsedJson&) = delete;
+    ParsedJson(ParsedJson&& other) noexcept
+        : value(other.value),
+          object(other.object)
+    {
+        other.value = nullptr;
+        other.object = nullptr;
+    }
+    ParsedJson& operator=(ParsedJson&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        if (value != nullptr)
+        {
+            json_value_free(value);
+        }
+        value = other.value;
+        object = other.object;
+        other.value = nullptr;
+        other.object = nullptr;
+        return *this;
+    }
+};
+} // namespace
+
+TEST(BenchmarkFormatterTest, EnvelopeContainsRequiredTopLevelFields)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue()) << result.Error().message;
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr) << "output is not valid JSON: " << result.Value();
+
+    EXPECT_NE(json_object_get_string(doc.object, "timestamp"), nullptr);
+    // Validate timestamp is ISO 8601 UTC: YYYY-MM-DDTHH:MM:SSZ
+    {
+        const char* ts = json_object_get_string(doc.object, "timestamp");
+        ASSERT_NE(ts, nullptr);
+        EXPECT_TRUE(regex_match(ts, regex(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)"))) << "timestamp not ISO 8601 UTC: " << ts;
+    }
+    EXPECT_STREQ(json_object_get_string(doc.object, "action"), "Audit");
+    EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "host")), JSONObject);
+    EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "rules")), JSONArray);
+    EXPECT_STREQ(json_object_get_string(doc.object, "status"), "Compliant");
+    // durationMs is a number added by Finish.
+    EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "durationMs")), JSONNumber);
+    EXPECT_GE(json_object_get_number(doc.object, "durationMs"), 0.0);
+    // These were removed from the output.
+    EXPECT_EQ(json_object_has_value(doc.object, "osconfigVersion"), 0);
+    EXPECT_EQ(json_object_has_value(doc.object, "module"), 0);
+}
+
+TEST(BenchmarkFormatterTest, RemediationActionIsLabelled)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Remediate);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto result = std::move(formatter).Finish(Status::NonCompliant);
+    ASSERT_TRUE(result.HasValue()) << result.Error().message;
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    EXPECT_STREQ(json_object_get_string(doc.object, "action"), "Remediation");
+    EXPECT_STREQ(json_object_get_string(doc.object, "status"), "NonCompliant");
+}
+
+TEST(BenchmarkFormatterTest, HostBlockHasNoExtraFields)
+{
+    // host has additionalProperties:false in the schema — verify only the three
+    // declared fields are present.
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Object* host = json_object_get_object(doc.object, "host");
+    ASSERT_NE(host, nullptr);
+    EXPECT_EQ(json_object_get_count(host), 3u) << "host must have exactly arch, distribution, distributionVersion";
+    EXPECT_NE(json_object_get_string(host, "arch"), nullptr);
+    EXPECT_NE(json_object_get_string(host, "distribution"), nullptr);
+    EXPECT_NE(json_object_get_string(host, "distributionVersion"), nullptr);
+}
+
+TEST(BenchmarkFormatterTest, NotApplicableOverallStatusIsLabelled)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto result = std::move(formatter).Finish(Status::NotApplicable);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    EXPECT_STREQ(json_object_get_string(doc.object, "status"), "NotApplicable");
+}
+
+TEST(BenchmarkFormatterTest, HostBlockIsPopulatedFromDistributionInfo)
+{
+    DistributionInfo distInfo;
+    distInfo.distribution = LinuxDistribution::Ubuntu;
+    distInfo.architecture = Architecture::x86_64;
+    distInfo.version = "22.04";
+    auto formatterResult = BenchmarkFormatter::Begin(distInfo, Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Object* host = json_object_get_object(doc.object, "host");
+    ASSERT_NE(host, nullptr) << "host block missing";
+    EXPECT_STREQ(json_object_get_string(host, "arch"), "x86_64");
+    EXPECT_STREQ(json_object_get_string(host, "distribution"), "ubuntu");
+    EXPECT_STREQ(json_object_get_string(host, "distributionVersion"), "22.04");
+}
+
+TEST(BenchmarkFormatterTest, AddEntryEmitsTitleRuleIdSectionRuleNameStatus)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("1.1.1", "1.1.1 Ensure something", "1234abcd-0000-0000-0000-000000000000", "EnsureSomething");
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]", {}).HasValue());
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue()) << result.Error().message;
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    ASSERT_NE(rules, nullptr);
+    ASSERT_EQ(json_array_get_count(rules), 1u);
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    ASSERT_NE(rule, nullptr);
+
+    EXPECT_STREQ(json_object_get_string(rule, "title"), "1.1.1 Ensure something");
+    EXPECT_STREQ(json_object_get_string(rule, "ruleId"), "1234abcd-0000-0000-0000-000000000000");
+    EXPECT_STREQ(json_object_get_string(rule, "section"), "1.1.1");
+    EXPECT_STREQ(json_object_get_string(rule, "ruleName"), "EnsureSomething");
+    EXPECT_STREQ(json_object_get_string(rule, "status"), "Compliant");
+    EXPECT_EQ(json_value_get_type(json_object_get_value(rule, "indicators")), JSONArray);
+    EXPECT_EQ(json_value_get_type(json_object_get_value(rule, "parameters")), JSONObject);
+    // The legacy alias must be gone.
+    EXPECT_EQ(json_object_has_value(rule, "resourceID"), 0) << "resourceID must be renamed to title";
+}
+
+TEST(BenchmarkFormatterTest, IndicatorsPayloadIsEmbeddedVerbatim)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("2.3", "2.3 Rule", "id", "Rule");
+    const std::string indicators = R"([{"message":"checked /etc/passwd","status":"Compliant"}])";
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, indicators, {}).HasValue());
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    ASSERT_EQ(json_array_get_count(rules), 1u);
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    JSON_Array* ind = json_object_get_array(rule, "indicators");
+    ASSERT_NE(ind, nullptr);
+    ASSERT_EQ(json_array_get_count(ind), 1u);
+    JSON_Object* first = json_array_get_object(ind, 0);
+    EXPECT_STREQ(json_object_get_string(first, "message"), "checked /etc/passwd");
+    EXPECT_STREQ(json_object_get_string(first, "status"), "Compliant");
+}
+
+TEST(BenchmarkFormatterTest, NonCompliantEntryIsLabelled)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("3.1", "3.1 Rule", "id", "Rule");
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::NonCompliant, "[]", {}).HasValue());
+    auto result = std::move(formatter).Finish(Status::NonCompliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    EXPECT_STREQ(json_object_get_string(rule, "status"), "NonCompliant");
+}
+
+TEST(BenchmarkFormatterTest, NotApplicableEntryIsLabelled)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("4.1", "4.1 Rule", "id", "Rule");
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::NotApplicable, "[]", {}).HasValue());
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    EXPECT_STREQ(json_object_get_string(rule, "status"), "NotApplicable");
+}
+
+TEST(BenchmarkFormatterTest, MultipleEntriesArePreservedInOrder)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.1", "1.1 First", "id1", "First"), Status::Compliant, "[]", {}).HasValue());
+    ASSERT_FALSE(formatter.AddEntry(MakeResource("1.2", "1.2 Second", "id2", "Second"), Status::NonCompliant, "[]", {}).HasValue());
+    auto result = std::move(formatter).Finish(Status::NonCompliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    ASSERT_EQ(json_array_get_count(rules), 2u);
+    EXPECT_STREQ(json_object_get_string(json_array_get_object(rules, 0), "ruleId"), "id1");
+    EXPECT_STREQ(json_object_get_string(json_array_get_object(rules, 1), "ruleId"), "id2");
+    EXPECT_STREQ(json_object_get_string(json_array_get_object(rules, 0), "section"), "1.1");
+    EXPECT_STREQ(json_object_get_string(json_array_get_object(rules, 1), "section"), "1.2");
+}
+
+TEST(BenchmarkFormatterTest, AddEntryRejectsNonArrayPayload)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
+    // A JSON object (not an array) must be rejected.
+    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "{}", {}).HasValue());
+}
+
+TEST(BenchmarkFormatterTest, AddEntryRejectsMalformedPayload)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
+    EXPECT_TRUE(formatter.AddEntry(entry, Status::Compliant, "not json", {}).HasValue());
+}
+
+TEST(BenchmarkFormatterTest, EffectiveParametersAreEmitted)
+{
+    auto formatterResult = BenchmarkFormatter::Begin(TestDistribution(), Action::Audit);
+    ASSERT_TRUE(formatterResult.HasValue());
+    auto& formatter = formatterResult.Value();
+    auto entry = MakeResource("1.1", "1.1 Rule", "id", "Rule");
+    const std::map<std::string, std::string> params{{"mask", "0600"}, {"owner", "root"}};
+    ASSERT_FALSE(formatter.AddEntry(entry, Status::Compliant, "[]", params).HasValue());
+    auto result = std::move(formatter).Finish(Status::Compliant);
+    ASSERT_TRUE(result.HasValue());
+
+    ParsedJson doc(result.Value());
+    ASSERT_NE(doc.object, nullptr);
+    JSON_Array* rules = json_object_get_array(doc.object, "rules");
+    JSON_Object* rule = json_array_get_object(rules, 0);
+    JSON_Object* p = json_object_get_object(rule, "parameters");
+    ASSERT_NE(p, nullptr);
+    EXPECT_STREQ(json_object_get_string(p, "mask"), "0600");
+    EXPECT_STREQ(json_object_get_string(p, "owner"), "root");
+}
