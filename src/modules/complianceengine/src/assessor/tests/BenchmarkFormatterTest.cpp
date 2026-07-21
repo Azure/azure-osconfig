@@ -107,7 +107,7 @@ TEST(BenchmarkFormatterTest, EnvelopeContainsRequiredTopLevelFields)
     {
         const char* ts = json_object_get_string(doc.object, "timestamp");
         ASSERT_NE(ts, nullptr);
-        EXPECT_TRUE(regex_match(ts, regex(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)"))) << "timestamp not ISO 8601 UTC: " << ts;
+        EXPECT_TRUE(regex_match(ts, regex(R"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)"))) << "timestamp not ISO 8601 UTC: " << ts;
     }
     EXPECT_STREQ(json_object_get_string(doc.object, "action"), "Audit");
     EXPECT_EQ(json_value_get_type(json_object_get_value(doc.object, "host")), JSONObject);
