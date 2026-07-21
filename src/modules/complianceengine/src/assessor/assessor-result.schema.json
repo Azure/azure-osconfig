@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/Azure/azure-osconfig/main/src/modules/complianceengine/src/assessor/assessor-result.schema.json",
   "title": "Compliance Engine Assessor Result",
   "description": "Canonical result JSON emitted by `compliance-engine-assessor audit` / `remediate`. This is the Phase 1 shape; per-rule `tags` and inline `metadata` are added when the unified benchmark-definition input lands (Phase 3), which is why additional properties are permitted at the top level and per rule.",
   "type": "object",
