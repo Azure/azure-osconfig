@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 using ComplianceEngine::action_func_t;
+using ComplianceEngine::CombineAllOf;
 using ComplianceEngine::DebugFormatter;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
@@ -171,6 +172,40 @@ TEST_F(EngineTest, MmiSet_setProcedure_4)
     auto result = mEngine.MmiSet("procedureX", payload);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EngineTest, GetParametersReturnsPayloadDefaults)
+{
+    std::string payload = R"({"audit":{}, "parameters":{"mask":"0177","owner":"root"}})";
+    auto result = mEngine.MmiSet("procedureMyRule", payload);
+    ASSERT_TRUE(result);
+
+    auto params = mEngine.GetParameters("MyRule");
+    ASSERT_EQ(params.size(), 2u);
+    EXPECT_EQ(params["mask"], "0177");
+    EXPECT_EQ(params["owner"], "root");
+}
+
+TEST_F(EngineTest, GetParametersForUnknownRuleIsEmpty)
+{
+    EXPECT_TRUE(mEngine.GetParameters("NeverSet").empty());
+}
+
+// The allOf status algebra shared by the engine's Evaluator and the assessor's
+// overall aggregation: NonCompliant dominates, NotApplicable is sticky over
+// Compliant, and the operation is commutative.
+TEST(CombineAllOfTest, ThreeValuedTruthTable)
+{
+    EXPECT_EQ(CombineAllOf(Status::Compliant, Status::Compliant), Status::Compliant);
+    EXPECT_EQ(CombineAllOf(Status::Compliant, Status::NonCompliant), Status::NonCompliant);
+    EXPECT_EQ(CombineAllOf(Status::NonCompliant, Status::Compliant), Status::NonCompliant);
+    EXPECT_EQ(CombineAllOf(Status::Compliant, Status::NotApplicable), Status::NotApplicable);
+    EXPECT_EQ(CombineAllOf(Status::NotApplicable, Status::Compliant), Status::NotApplicable);
+    EXPECT_EQ(CombineAllOf(Status::NonCompliant, Status::NonCompliant), Status::NonCompliant);
+    // NonCompliant dominates NotApplicable in either order.
+    EXPECT_EQ(CombineAllOf(Status::NonCompliant, Status::NotApplicable), Status::NonCompliant);
+    EXPECT_EQ(CombineAllOf(Status::NotApplicable, Status::NonCompliant), Status::NonCompliant);
+    EXPECT_EQ(CombineAllOf(Status::NotApplicable, Status::NotApplicable), Status::NotApplicable);
 }
 
 TEST_F(EngineTest, MmiSet_initAudit_InvalidArgument_1)

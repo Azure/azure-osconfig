@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Compliance Engine Assessor Result",
+  "description": "Canonical result JSON emitted by `compliance-engine-assessor audit` / `remediate`. This is the Phase 1 shape; per-rule `tags` and inline `metadata` are added when the unified benchmark-definition input lands (Phase 3), which is why additional properties are permitted at the top level and per rule.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "timestamp",
+    "action",
+    "host",
+    "rules",
+    "durationMs",
+    "status"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 UTC time the run started."
+    },
+    "action": {
+      "type": "string",
+      "enum": ["Audit", "Remediation"],
+      "description": "Which operation produced the result."
+    },
+    "host": {
+      "type": "object",
+      "description": "Provenance of the scanned host. Benchmark definitions are architecture-agnostic, so the arch/distribution a result was produced on is recorded here for multi-arch traceability.",
+      "additionalProperties": false,
+      "required": ["arch", "distribution", "distributionVersion"],
+      "properties": {
+        "arch": {
+          "type": "string",
+          "description": "System architecture derived from DistributionInfo, e.g. \"x86_64\"."
+        },
+        "distribution": {
+          "type": "string",
+          "description": "Detected distribution, e.g. \"ubuntu\"."
+        },
+        "distributionVersion": {
+          "type": "string",
+          "description": "Detected distribution version, e.g. \"24.04\"."
+        }
+      }
+    },
+    "durationMs": {
+      "type": "number",
+      "description": "Wall-clock duration of the run in milliseconds."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Compliant", "NonCompliant", "NotApplicable"],
+      "description": "Overall status, aggregated across rules with the engine's allOf three-valued logic: NonCompliant if any rule is NonCompliant; otherwise NotApplicable if any rule is NotApplicable; otherwise Compliant."
+    },
+    "rules": {
+      "type": "array",
+      "description": "One entry per evaluated rule, in evaluation order.",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "indicators",
+        "title",
+        "ruleId",
+        "section",
+        "ruleName",
+        "status",
+        "parameters"
+      ],
+      "properties": {
+        "indicators": {
+          "type": "array",
+          "description": "The engine's step-by-step reasoning tree for the rule."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable rule title (the ResourceID; reuses the definition's field name)."
+        },
+        "ruleId": {
+          "type": "string",
+          "description": "Stable, benchmark-agnostic rule identifier (UUID derived from the payload key)."
+        },
+        "section": {
+          "type": "string",
+          "description": "Externally-quoted per-rule identifier (dotted CIS number or STIG id)."
+        },
+        "ruleName": {
+          "type": "string",
+          "description": "PascalCase engine rule name."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Compliant", "NonCompliant", "NotApplicable"],
+          "description": "Per-rule status. Overall status is aggregated with the engine's allOf three-valued logic (CombineAllOf): NonCompliant dominates; otherwise NotApplicable propagates; otherwise Compliant."
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Effective parameters (payload defaults merged with any user overrides).",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -52,6 +52,12 @@ public:
     Optional<Error> LoadDistributionInfo();
     const Optional<DistributionInfo>& GetDistributionInfo() const noexcept;
 
+    // Returns the effective parameters (payload defaults merged with any user
+    // overrides applied via InitAudit/UpdateUserParameters) for a rule whose
+    // procedure has been set, or an empty map if the rule is unknown. Used by
+    // the assessor to surface parameters in the canonical result output.
+    std::map<std::string, std::string> GetParameters(const std::string& ruleName) const;
+
     static const char* GetModuleInfo() noexcept;
 
     Result<AuditResult> MmiGet(const char* objectName);

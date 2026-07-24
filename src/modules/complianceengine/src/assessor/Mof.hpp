@@ -19,12 +19,20 @@ namespace MOF
 // Only the fields actually consumed by the assessor's main loop and output
 // formatters are stored. The parser validates every field the augmentation
 // engine emits (see MofResourceRange), but deliberately discards the ones the
-// assessor does not use (RuleId, the constant ComponentName/ExpectedObjectValue/
+// assessor does not use (the constant ComponentName/ExpectedObjectValue/
 // ConfigurationName/ModuleName fields, ModuleVersion, SourceInfo, etc.).
 struct Resource
 {
     // ResourceID, e.g. "1.1.1.1 Ensure cramfs kernel module is not available".
+    // Emitted in the canonical result JSON as `title` (the human-readable rule
+    // title), reusing the definition's field name.
     std::string resourceID;
+
+    // RuleId: the stable, benchmark-agnostic rule identifier (a UUID derived
+    // from the payload key by the augmentation engine). Retained and emitted in
+    // the canonical result JSON as `ruleId` so tooling can join to a rule
+    // reliably rather than matching on ruleName/section.
+    std::string ruleId;
 
     // Benchmark info parsed from the PayloadKey. `.distribution` and `.version`
     // drive the applicability check in the main loop (Match against the detected
