@@ -82,11 +82,9 @@ TEST_F(EnsureSshdOptionTest, InitialCommandFails)
     params.value = "no";
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
-    auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[NonCompliant]") != std::string::npos);
-    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("Failed to execute sshd") != std::string::npos);
+    // A failure to run sshd -T is an evaluation error, not a compliance verdict.
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
@@ -149,10 +147,9 @@ TEST_F(EnsureSshdOptionTest, CommandFailure)
     params.value = "no";
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
-    ASSERT_TRUE(formatted.find("Failed to execute sshd -T") != std::string::npos);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd -T") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, WithMatchGroupConfig)
@@ -185,10 +182,9 @@ TEST_F(EnsureSshdOptionTest, HostnameCommandFailure)
     params.value = "no";
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
-    ASSERT_TRUE(formatted.find("Failed to execute hostname command") != std::string::npos);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(result.Error().message.find("Failed to execute hostname command") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
@@ -204,10 +200,9 @@ TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
     params.value = "no";
 
     auto result = AuditSshdOption(params, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
-    ASSERT_TRUE(formatted.find("Failed to get host address") != std::string::npos);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(result.Error().message.find("Failed to get host address") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, RegexMatches)
@@ -721,7 +716,54 @@ TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-// ========================= Tests for readExtraConfigs parameter =========================
+// Reproduces the aadsshlogin failure: the installer appends
+//   Match User *@*,<uuid>    # Added by aadsshlogin installer
+// to sshd_config. The comma separates a *pattern list* for the Match User
+// criterion. When all_matches mode feeds that value verbatim into
+// `sshd -T -C user=<value>`, sshd treats the comma as the separator between
+// connection-spec `key=value` pairs, so the tail after the comma is parsed as
+// a bogus spec item and sshd aborts with
+//   "Invalid test mode specification <uuid>".
+// The connection spec must carry a single concrete user, so the pattern list
+// is split into one match context per pattern: `sshd -T -C user=*@*` and
+// `sshd -T -C user=<uuid>` are simulated independently.
+static const char sshdConfigWithAadMatchUser[] =
+    "Port 22\n"
+    "Match User *@*,\?\?\?\?\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?\?\?\?\?\?\?\?\?    # Added by aadsshlogin installer\n";
+
+static const char sshdMatchUserAadFirstPatternCommand[] = "sshd -T -C user=*@*";
+static const char sshdMatchUserAadSecondPatternCommand[] = "sshd -T -C user=\?\?\?\?\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?\?\?\?\?\?\?\?\?";
+static const char sshdMatchUserAadBrokenCommand[] = "sshd -T -C user=*@*,\?\?\?\?\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?\?\?\?\?\?\?\?\?";
+
+TEST_F(EnsureSshdOptionTest, Match_UserPatternListWithComma_SplitsIntoOneContextPerPattern)
+{
+    EXPECT_CALL(mContext, GetFileContents("/etc/ssh/sshd_config")).WillOnce(Return(Result<std::string>(sshdConfigWithAadMatchUser)));
+
+    // The forbidden call: passing the whole comma-separated pattern list to
+    // `sshd -T -C user=...` is what triggers "Invalid test mode specification".
+    EXPECT_CALL(mContext, ExecuteCommand(sshdMatchUserAadBrokenCommand)).Times(0);
+
+    // The correct behaviour: each pattern of the comma-separated list is simulated
+    // as its own connection spec.
+    EXPECT_CALL(mContext, ExecuteCommand(sshdMatchUserAadFirstPatternCommand)).WillOnce(Return(Result<std::string>("banner /etc/issue.net\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdMatchUserAadSecondPatternCommand)).WillOnce(Return(Result<std::string>("banner /etc/issue.net\n")));
+
+    SshdOptionParams params;
+    params.option = {{"banner"}};
+    params.value = "/etc/issue.net";
+    params.op = SshdOptionOperation::Match;
+    params.mode = SshdOptionMode::AllMatches;
+
+    auto result = AuditSshdOption(params, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("All options are compliant") != std::string::npos);
+    // Each per-pattern result is qualified with its own Match context so the two
+    // otherwise-identical compliant messages are distinguishable.
+    ASSERT_TRUE(formatted.find("(Match context 'user=*@*')") != std::string::npos);
+    ASSERT_TRUE(formatted.find("(Match context 'user=\?\?\?\?\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?-\?\?\?\?\?\?\?\?\?\?\?\?')") != std::string::npos);
+}
 TEST_F(EnsureSshdOptionTest, ReadExtraConfigs_AppendsExtraOptionsToSshdCommand)
 {
     using ::testing::InSequence;
