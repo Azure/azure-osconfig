@@ -5,13 +5,22 @@ include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(compliance-engine-assessor-tests
+    AssessorResultSchemaTest.cpp
+    BenchmarkFormatterTest.cpp
     CliOptionsTest.cpp
     InputSecurityTest.cpp
+    JUnitRendererTest.cpp
     MofTest.cpp
+    TextRenderersTest.cpp
 )
 
 target_include_directories(compliance-engine-assessor-tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../tests
+)
+
+# The schema conformance test reads the shipped schema from the source tree.
+target_compile_definitions(compliance-engine-assessor-tests PRIVATE
+    ASSESSOR_RESULT_SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../assessor-result.schema.json"
 )
 
 target_link_libraries(compliance-engine-assessor-tests

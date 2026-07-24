@@ -22,10 +22,8 @@ set(LIB_SOURCES
     InputSecurity.cpp
     Mof.cpp
     BenchmarkFormatter.cpp
-    CompactListFormatter.cpp
-    DebugFormatter.cpp
-    JsonFormatter.cpp
-    NestedListFormatter.cpp
+    JUnitRenderer.cpp
+    TextRenderers.cpp
 )
 
 add_library(${lib_name} STATIC ${LIB_SOURCES})

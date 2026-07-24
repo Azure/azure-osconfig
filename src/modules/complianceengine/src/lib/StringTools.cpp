@@ -33,6 +33,11 @@ std::string EscapeForShell(const std::string& str)
     return escapedStr;
 }
 
+std::string StringOrEmpty(const char* s)
+{
+    return (nullptr == s) ? std::string() : std::string(s);
+}
+
 std::string TrimWhiteSpaces(const std::string& str)
 {
     auto start = std::find_if_not(str.begin(), str.end(), ::isspace);

@@ -218,6 +218,7 @@ Result<Resource> BuildResource(const map<string, string>& fields)
 
     Resource resource;
     resource.resourceID = fields.at("ResourceID");
+    resource.ruleId = fields.at("RuleId");
     resource.benchmarkInfo = std::move(benchmarkInfo.Value());
     // The section in the payload key is '/'-separated (e.g. "1/1/1/1"); the rest
     // of the assessor expects dotted notation (e.g. "1.1.1.1").

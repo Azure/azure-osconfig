@@ -81,13 +81,12 @@
 //    engine spawns. Sanitizing the environment is the engine's
 //    responsibility, not the assessor's.
 
+#include "BenchmarkFormatter.hpp"
 #include "CliOptions.hpp"
-#include "CompactListFormatter.hpp"
-#include "DebugFormatter.hpp"
 #include "InputSecurity.hpp"
-#include "JsonFormatter.hpp"
+#include "JUnitRenderer.hpp"
 #include "Mof.hpp"
-#include "NestedListFormatter.hpp"
+#include "TextRenderers.hpp"
 
 #include <AssessorContext.h>
 #include <CommonContext.h>
@@ -97,6 +96,7 @@
 #include <Optional.h>
 #include <cerrno>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -107,6 +107,7 @@
 
 using ComplianceEngine::Action;
 using ComplianceEngine::AssessorContext;
+using ComplianceEngine::CombineAllOf;
 using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
 using ComplianceEngine::Error;
@@ -120,13 +121,94 @@ using ComplianceEngine::Assessor::Options;
 using ComplianceEngine::Assessor::ParseCommandLine;
 using ComplianceEngine::Assessor::PrintHelp;
 using ComplianceEngine::Assessor::RefuseUnsafeLogFile;
+using ComplianceEngine::Assessor::RenderJUnit;
+using ComplianceEngine::Assessor::RenderText;
+using ComplianceEngine::Assessor::TextStyle;
 using ComplianceEngine::BenchmarkFormatters::BenchmarkFormatter;
-using ComplianceEngine::BenchmarkFormatters::CompactListFormatter;
-using ComplianceEngine::BenchmarkFormatters::DebugFormatter;
-using ComplianceEngine::BenchmarkFormatters::JsonFormatter;
-using ComplianceEngine::BenchmarkFormatters::NestedListFormatter;
 using ComplianceEngine::MOF::MofResourceRange;
 using std::string;
+
+namespace
+{
+// Upper bound on a canonical result JSON fed to `render`. Generous (results for
+// a full benchmark are well under this) but bounds memory for a hostile input.
+constexpr std::size_t kMaxResultJsonBytes = static_cast<std::size_t>(256) * 1024 * 1024;
+
+// Reads an entire stream into a string, refusing inputs larger than the cap.
+Result<string> ReadAllBounded(std::istream& stream, std::size_t cap)
+{
+    string content;
+    char buffer[64 * 1024];
+    while (stream.read(buffer, sizeof(buffer)) || stream.gcount() > 0)
+    {
+        content.append(buffer, static_cast<std::size_t>(stream.gcount()));
+        if (content.size() > cap)
+        {
+            return Error("Input exceeds the maximum allowed size", EFBIG);
+        }
+    }
+    if (stream.bad())
+    {
+        return Error("Failed to read input", EIO);
+    }
+    return content;
+}
+
+// Renders a canonical result JSON (read from stdin or a file) into the format
+// selected on the `render` subcommand. Runs without root and touches no system
+// state, so it needs none of the MOF input hardening `audit`/`remediate` apply.
+int RunRender(const Options& options)
+{
+    Result<string> jsonResult = Error("uninitialized");
+    if (options.input.empty() || options.input == "-")
+    {
+        jsonResult = ReadAllBounded(std::cin, kMaxResultJsonBytes);
+    }
+    else
+    {
+        std::ifstream file(options.input, std::ios::binary);
+        if (!file.is_open())
+        {
+            std::cerr << "Error: failed to open input file '" << options.input << "'." << std::endl;
+            return 1;
+        }
+        jsonResult = ReadAllBounded(file, kMaxResultJsonBytes);
+    }
+    if (!jsonResult.HasValue())
+    {
+        std::cerr << "Error: " << jsonResult.Error().message << std::endl;
+        return 1;
+    }
+
+    const string suiteName = options.suiteName.HasValue() ? options.suiteName.Value() : string("compliance");
+
+    // The parser defaults the format to Junit when none is supplied.
+    const Format format = options.format.HasValue() ? options.format.Value() : Format::Junit;
+    Result<string> rendered = Error("uninitialized");
+    switch (format)
+    {
+        case Format::Junit:
+            rendered = RenderJUnit(jsonResult.Value(), suiteName);
+            break;
+        case Format::NestedList:
+            rendered = RenderText(jsonResult.Value(), TextStyle::NestedList);
+            break;
+        case Format::CompactList:
+            rendered = RenderText(jsonResult.Value(), TextStyle::CompactList);
+            break;
+        case Format::Debug:
+            rendered = RenderText(jsonResult.Value(), TextStyle::Debug);
+            break;
+    }
+    if (!rendered.HasValue())
+    {
+        std::cerr << "Error: " << rendered.Error().message << std::endl;
+        return 1;
+    }
+    std::cout << rendered.Value();
+    return 0;
+}
+} // anonymous namespace
 
 int main(int argc, char* argv[])
 {
@@ -155,40 +237,11 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    std::unique_ptr<BenchmarkFormatter> benchmarkFormatter;
-    std::unique_ptr<PayloadFormatter> payloadFormatter;
-    if (options.format.HasValue())
+    // `render` is a pure, root-free transformation of a canonical result JSON;
+    // it needs neither the engine nor the MOF input path, so dispatch it early.
+    if (Command::Render == options.command)
     {
-        switch (options.format.Value())
-        {
-            case Format::NestedList:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new NestedListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::NestedListFormatter());
-                break;
-            case Format::CompactList:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new CompactListFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::CompactListFormatter());
-                break;
-            case Format::Json:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
-                break;
-            case Format::Debug:
-                benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new DebugFormatter());
-                payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::DebugFormatter());
-                break;
-            default:
-                std::cerr << "Invalid format specified.\n";
-                return 1;
-        }
-    }
-    if (!payloadFormatter)
-    {
-        payloadFormatter = std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter());
-    }
-    if (!benchmarkFormatter)
-    {
-        benchmarkFormatter = std::unique_ptr<BenchmarkFormatter>(new JsonFormatter());
+        return RunRender(options);
     }
 
     // Validate the log-file path before opening it. The shared logging code
@@ -228,27 +281,37 @@ int main(int argc, char* argv[])
     }
 
     auto context = std::unique_ptr<AssessorContext>(new AssessorContext(logHandle.get()));
-    Engine engine(std::move(context), std::move(payloadFormatter));
+    // The Engine takes ownership of a PayloadFormatter and uses it polymorphically
+    // to render each rule's indicators. Pass the JSON one explicitly: the
+    // constructor's default is a DebugFormatter, whose text output could not be
+    // embedded as the canonical result's indicators array.
+    Engine engine(std::move(context), std::unique_ptr<PayloadFormatter>(new ComplianceEngine::JsonFormatter()));
 
     // Determine the OS this tool is running on so rules that target a different
     // distribution/version can be skipped. LoadDistributionInfo prefers the
     // operator-supplied override file and falls back to /etc/os-release. If the
     // OS cannot be identified (e.g. an unmapped distribution ID and no override
     // file), abort rather than silently running rules meant for another system.
-    auto distributionError = engine.LoadDistributionInfo();
-    if (distributionError)
+    auto distributionInfoError = engine.LoadDistributionInfo();
+    if (distributionInfoError)
     {
-        OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionError.Value().message.c_str());
+        OsConfigLogError(logHandle.get(), "Failed to determine system distribution: %s", distributionInfoError.Value().message.c_str());
         OsConfigLogError(logHandle.get(), "To specify the OS identity explicitly, place an override in the '%s' file", DistributionInfo::cDefaultOverrideFilePath);
         return 1;
     }
 
-    auto error = benchmarkFormatter->Begin(options.command == Command::Audit ? Action::Audit : Action::Remediate);
-    if (error)
+    // `audit` / `remediate` always emit the canonical JSON. The benchmark
+    // formatter builds the result envelope; the engine is separately given a
+    // JSON payload formatter (at its construction, above) to render each rule's
+    // indicators. Presentation is the `render` subcommand's job.
+    const auto& distributionInfo = engine.GetDistributionInfo().Value();
+    auto formatterResult = BenchmarkFormatter::Begin(distributionInfo, options.command == Command::Audit ? Action::Audit : Action::Remediate);
+    if (!formatterResult.HasValue())
     {
-        OsConfigLogError(logHandle.get(), "Failed to begin formatted output: %s", error.Value().message.c_str());
+        OsConfigLogError(logHandle.get(), "Failed to begin formatted output: %s", formatterResult.Error().message.c_str());
         return 1;
     }
+    auto& benchmarkFormatter = formatterResult.Value();
 
     // Open the input as a strictly-validated, streaming MOF range. For --input
     // the range encapsulates the full input-hardening posture (path-traversal
@@ -353,7 +416,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value().status, result.Value().payload);
+                auto error = benchmarkFormatter.AddEntry(mofEntry, result.Value().status, result.Value().payload, engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
@@ -365,10 +428,10 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                if (result.Value().status != Status::Compliant)
-                {
-                    status = Status::NonCompliant;
-                }
+                // Aggregate the overall benchmark status the same way the engine
+                // aggregates an allOf (CombineAllOf): NonCompliant dominates,
+                // NotApplicable is sticky, otherwise Compliant.
+                status = CombineAllOf(status, result.Value().status);
 
                 break;
             }
@@ -392,7 +455,7 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                error = benchmarkFormatter->AddEntry(mofEntry, result.Value(), "[]");
+                auto error = benchmarkFormatter.AddEntry(mofEntry, result.Value(), "[]", engine.GetParameters(mofEntry.ruleName));
                 if (error)
                 {
                     OsConfigLogError(logHandle.get(), "Failed to add entry to JSON formatter: %s", error.Value().message.c_str());
@@ -404,10 +467,8 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                if (result.Value() != Status::Compliant)
-                {
-                    status = Status::NonCompliant;
-                }
+                // Same allOf aggregation as the audit path.
+                status = CombineAllOf(status, result.Value());
 
                 break;
             }
@@ -417,7 +478,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    auto result = benchmarkFormatter->Finish(status);
+    auto result = std::move(benchmarkFormatter).Finish(status);
     if (!result.HasValue())
     {
         OsConfigLogError(logHandle.get(), "Failed to finish formatted output: %s", result.Error().message.c_str());
