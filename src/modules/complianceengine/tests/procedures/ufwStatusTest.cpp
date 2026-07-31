@@ -12,6 +12,7 @@
 #include <regex>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 using ComplianceEngine::AuditUfwStatus;
 using ComplianceEngine::Error;
@@ -26,10 +27,12 @@ static const std::string ufwCommand = "ufw status verbose";
 static const std::string ufwActiveOutput =
     "Status: active\n"
     "Logging: on (low)\n"
-    "Default: deny (incoming), allow (outgoing), disabled (routed)\n"
+    "Default: deny (incoming), deny (outgoing), disabled (routed)\n"
     "New profiles: skip\n\n"
     "To                         Action      From\n"
     "--                         ------      ----\n"
+    "Anywhere                   DENY IN     127.0.0.0/8\n"
+    "Anywhere (v6)              DENY IN     ::1\n"
     "22/tcp                     ALLOW IN    Anywhere\n"
     "80/tcp                     ALLOW IN    Anywhere\n"
     "443/tcp                    ALLOW IN    Anywhere\n"
@@ -150,4 +153,30 @@ TEST_F(UfwStatusTest, UfwNotFound)
     auto formattedResult = mFormatter.Format(mIndicators);
     ASSERT_TRUE(formattedResult.HasValue());
     ASSERT_TRUE(formattedResult.Value().find("ufw not found") != std::string::npos);
+}
+
+TEST_F(UfwStatusTest, CisAnchoredPatternsMatchIndividualOutputLines)
+{
+    const std::vector<std::string> patterns = {
+        "^[ \\t]*Status:[ \\t]+active$",
+        "^[ \\t]*Anywhere[ \\t]+DENY[ \\t]+IN[ \\t]+127\\.0\\.0\\.0\\/8\\b",
+        "^[ \\t]*Anywhere[ \\t]+\\(v6\\)[ \\t]+DENY[ \\t]+IN[ \\t]+\\:\\:1\\b",
+        "^[ \\t]*Default:[ \\t]+(deny|reject)[ \\t]+\\(incoming\\),[ \\t]*[^ \\t]+[ \\t]+\\(outgoing\\),[ \\t]*[^ \\t]+[ \\t]+\\(routed\\)",
+        "^[ \\t]*Default:[ \\t]+[^ \\t]+[ \\t]+\\(incoming\\),[ \\t]*(deny|reject)[ \\t]+\\(outgoing\\),[ \\t]*[^ \\t]+[ \\t]+\\(routed\\)",
+        "^[ \\t]*Default:[ \\t]+[^ \\t]+[ \\t]+\\(incoming\\),[ \\t]*[^ \\t]+[ \\t]+\\(outgoing\\),[ \\t]*(disabled|deny|reject)[ \\t]+\\(routed\\)",
+    };
+
+    for (const auto& patternValue : patterns)
+    {
+        EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
+
+        UfwStatusParams args;
+        auto pattern = Pattern::Make(patternValue);
+        ASSERT_TRUE(pattern.HasValue()) << patternValue;
+        args.statusRegex = std::move(pattern.Value());
+
+        auto result = AuditUfwStatus(args, mIndicators, mContext);
+        ASSERT_TRUE(result.HasValue()) << patternValue;
+        EXPECT_EQ(result.Value(), Status::Compliant) << patternValue;
+    }
 }
