@@ -1,6 +1,7 @@
 # Kompli
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/microsoft/kompli/badge)](https://scorecard.dev/viewer/?uri=github.com/microsoft/kompli)
 
 Kompli is a Linux security compliance engine for evaluating and remediating system configuration against industry benchmarks (CIS, STIG, etc.). It is derived from the [Azure OSConfig](https://github.com/Azure/azure-osconfig) project, retaining only the ComplianceEngine module and its direct dependencies.
 
