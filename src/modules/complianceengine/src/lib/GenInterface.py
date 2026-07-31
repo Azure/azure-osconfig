@@ -519,9 +519,9 @@ def generate_global_json_schema(model: Model, basedir: str):
     definitions["auditProcedure"]["anyOf"] = audits
     definitions["remediationProcedure"]["anyOf"] = remediations
     # If there's no remediation we fall back to audit
-    fallback = { "$ref": "#definitions/auditProcedure" }
+    fallback = { "$ref": "#/definitions/auditProcedure" }
     if fallback not in definitions["remediationProcedure"]["anyOf"]:
-        definitions["remediationProcedure"]["anyOf"].append( { "$ref": "#definitions/auditProcedure" })
+        definitions["remediationProcedure"]["anyOf"].append( { "$ref": "#/definitions/auditProcedure" })
     print("Dumping global schema.")
     with open(f"{basedir}/payload.schema.json", "w") as f:
         json.dump(global_schema, f, indent=2)

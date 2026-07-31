@@ -42,6 +42,20 @@ std::string EscapeForShell(const std::string& str);
 // ============================================================================
 
 /**
+ * @brief Builds a std::string from a possibly-null C string, treating null as
+ *        empty.
+ *
+ * Constructing std::string directly from a null pointer is undefined behavior
+ * (the char* constructor calls char_traits::length on the pointer). Many C APIs
+ * — e.g. parson's json_object_get_string — return nullptr for a missing value,
+ * so this helper converts such a result to an empty string safely.
+ *
+ * @param s The C string, or nullptr
+ * @return string(s) if s is non-null, otherwise an empty string
+ */
+std::string StringOrEmpty(const char* s);
+
+/**
  * @brief Removes leading and trailing whitespace from a string.
  *
  * @param str The string to trim

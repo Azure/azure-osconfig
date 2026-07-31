@@ -7,6 +7,7 @@
 #include <Evaluator.h>
 #include <Regex.h>
 #include <StringTools.h>
+#include <sstream>
 
 namespace ComplianceEngine
 {
@@ -20,7 +21,19 @@ Result<Status> AuditUfwStatus(const UfwStatusParams& params, IndicatorsTree& ind
     }
 
     OsConfigLogDebug(context.GetLogHandle(), "Command '%s' output:\n%s", cmd, output.Value().c_str());
-    if (regex_search(output.Value(), params.statusRegex.GetRegex()) == false)
+    std::istringstream outputStream(output.Value());
+    std::string line;
+    bool matched = false;
+    while (std::getline(outputStream, line))
+    {
+        if (regex_search(line, params.statusRegex.GetRegex()))
+        {
+            matched = true;
+            break;
+        }
+    }
+
+    if (!matched)
     {
         OsConfigLogInfo(context.GetLogHandle(), "Pattern '%s' did not match the output of '%s' command", params.statusRegex.GetPattern().c_str(), cmd);
         return indicators.NonCompliant("Searched value not found in UFW output");

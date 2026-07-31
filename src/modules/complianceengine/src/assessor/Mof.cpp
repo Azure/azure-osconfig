@@ -41,6 +41,11 @@ constexpr size_t kMaxMofEntries = 100000;
 constexpr char kHeaderPrefix[] = "instance of OsConfigResource as $OsConfigResource";
 constexpr char kHeaderSuffix[] = "ref";
 
+// Header of the document metadata block the augmentation engine emits once per
+// MOF (Version, Author, GenerationDate, Name). It carries no resource data and
+// is skipped by the parser.
+constexpr char kConfigurationDocumentHeader[] = "instance of OMI_ConfigurationDocument";
+
 // The complete, fixed set of field keys the Compliance Augmentation Engine
 // emits for every resource. The parser is strict: it rejects any key not in
 // this set (unknown/extra fields) and requires every key in this set to be
@@ -213,6 +218,7 @@ Result<Resource> BuildResource(const map<string, string>& fields)
 
     Resource resource;
     resource.resourceID = fields.at("ResourceID");
+    resource.ruleId = fields.at("RuleId");
     resource.benchmarkInfo = std::move(benchmarkInfo.Value());
     // The section in the payload key is '/'-separated (e.g. "1/1/1/1"); the rest
     // of the assessor expects dotted notation (e.g. "1.1.1.1").
@@ -361,7 +367,9 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
     };
 
     // Locate the next entry header, skipping blank lines between entries. A
-    // clean end of input here means there are no more entries.
+    // clean end of input here means there are no more entries. The document
+    // metadata block (OMI_ConfigurationDocument) carries no resource data and
+    // is skipped in its entirety.
     string header;
     while (true)
     {
@@ -375,10 +383,45 @@ Result<Optional<Resource>> MofResourceRange::ParseNext()
             return Optional<Resource>(); // Clean EOF — no more entries.
         }
         header = TrimWhiteSpaces(read.Value().Value());
-        if (!header.empty())
+        if (header.empty())
         {
-            break;
+            continue;
         }
+        if (header == kConfigurationDocumentHeader)
+        {
+            // Consume the block ('{' ... '};') and resume the header search.
+            // The opening brace is required on its own line, exactly as for a
+            // normal resource entry; without this check a malformed block
+            // missing its '{' would swallow lines up to the next entry's '};'
+            // and silently drop that entry.
+            auto openRead = readLine();
+            if (!openRead.HasValue())
+            {
+                return openRead.Error();
+            }
+            if (!openRead.Value().HasValue() || TrimWhiteSpaces(openRead.Value().Value()) != "{")
+            {
+                return Error("Expected '{' after OMI_ConfigurationDocument header", EINVAL);
+            }
+            while (true)
+            {
+                auto blockRead = readLine();
+                if (!blockRead.HasValue())
+                {
+                    return blockRead.Error();
+                }
+                if (!blockRead.Value().HasValue())
+                {
+                    return Error("Truncated MOF entry: missing closing '};'", EIO);
+                }
+                if (TrimWhiteSpaces(blockRead.Value().Value()) == "};")
+                {
+                    break;
+                }
+            }
+            continue;
+        }
+        break;
     }
     const size_t prefixLen = sizeof(kHeaderPrefix) - 1;
     const size_t suffixLen = sizeof(kHeaderSuffix) - 1;
