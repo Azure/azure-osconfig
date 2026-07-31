@@ -32,7 +32,13 @@ Result<Status> AuditKernelModuleUnavailable(const KernelModuleUnavailableParams&
         return indicators.NonCompliant("Module " + moduleName + " is loaded");
     }
 
-    return IsKernelModuleBlocked(moduleName, indicators, context);
+    auto inRunningKernel = IsModuleAvailableInRunningKernel(moduleName, context);
+    if (!inRunningKernel.HasValue())
+    {
+        return Result<Status>(inRunningKernel.Error());
+    }
+
+    return IsKernelModuleBlocked(moduleName, inRunningKernel.Value(), indicators, context);
 }
 
 } // namespace ComplianceEngine
