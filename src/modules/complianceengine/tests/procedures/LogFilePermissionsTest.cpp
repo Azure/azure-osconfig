@@ -50,6 +50,14 @@ protected:
         system("useradd -g adm syslog >/dev/null");
         system("groupadd systemd-journal >/dev/null");
 
+        // A daemon/service account: no valid interactive login shell.
+        system("groupadd logdaemon >/dev/null 2>&1");
+        system("useradd -M -g logdaemon -s /usr/sbin/nologin logdaemon >/dev/null 2>&1");
+
+        // A regular interactive account: has a valid login shell.
+        system("groupadd loguser >/dev/null 2>&1");
+        system("useradd -M -g loguser -s /bin/bash loguser >/dev/null 2>&1");
+
         testDir = mkdtemp(dirTemplate);
         ASSERT_FALSE(testDir.empty());
         indicators.Push("EnsureLogfileAccess");
@@ -417,4 +425,88 @@ TEST_F(EnsureLogfileAccessTest, SpecialSystemLogFiles)
     auto result = AuditLogFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+// A file matching no known pattern that is owned by a daemon/service account (one without a valid
+// login shell) only needs an acceptable permission mask; its owner/group are not constrained.
+TEST_F(EnsureLogfileAccessTest, AuditDaemonOwnedFileWithNonDefaultOwnershipIsCompliant)
+{
+    if (getpwnam("logdaemon") == nullptr)
+    {
+        GTEST_SKIP() << "requires the 'logdaemon' service account to be created";
+    }
+
+    // Constrain the set of valid login shells so that /usr/sbin/nologin is not one of them.
+    mContext.SetSpecialFilePath("/etc/shells", mContext.MakeTempfile("/bin/sh\n/bin/bash\n"));
+
+    // Default-pattern file owned by a daemon account with a mask-compliant mode (0640 & 0137 == 0).
+    CreateLogFile("customservice.log", "logdaemon", "logdaemon", 0640);
+
+    LogFilePermissionsParams params;
+    params.path = testDir;
+
+    auto result = AuditLogFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+// A root-owned file matching no known pattern is likewise only checked against the mask, regardless
+// of its group (root is treated as a daemon/service account).
+TEST_F(EnsureLogfileAccessTest, AuditRootOwnedFileWithNonDefaultGroupIsCompliant)
+{
+    mContext.SetSpecialFilePath("/etc/shells", mContext.MakeTempfile("/bin/sh\n/bin/bash\n"));
+
+    // Group is neither root nor adm, but ownership is not enforced for daemon-owned files.
+    CreateLogFile("customservice.log", "root", "bin", 0640);
+
+    LogFilePermissionsParams params;
+    params.path = testDir;
+
+    auto result = AuditLogFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+// A daemon-owned default-pattern file must still satisfy the permission mask.
+TEST_F(EnsureLogfileAccessTest, AuditDaemonOwnedFileWithBadMaskIsNonCompliant)
+{
+    if (getpwnam("logdaemon") == nullptr)
+    {
+        GTEST_SKIP() << "requires the 'logdaemon' service account to be created";
+    }
+
+    mContext.SetSpecialFilePath("/etc/shells", mContext.MakeTempfile("/bin/sh\n/bin/bash\n"));
+
+    // 0644 & 0137 != 0 (world-readable), so the mask check fails even though the owner is a daemon.
+    CreateLogFile("customservice.log", "logdaemon", "logdaemon", 0644);
+
+    LogFilePermissionsParams params;
+    params.path = testDir;
+
+    auto result = AuditLogFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+// A file matching no known pattern owned by a regular interactive account must satisfy the default
+// ownership (root|syslog : root|adm) even when the permission mask is acceptable.
+TEST_F(EnsureLogfileAccessTest, AuditInteractiveUserOwnedFileEnforcesOwnership)
+{
+    if (getpwnam("loguser") == nullptr)
+    {
+        GTEST_SKIP() << "requires the 'loguser' interactive account to be created";
+    }
+
+    // /bin/bash is a valid login shell, so 'loguser' is not treated as a daemon account.
+    mContext.SetSpecialFilePath("/etc/shells", mContext.MakeTempfile("/bin/sh\n/bin/bash\n"));
+
+    // Mask 0640 is fine, but loguser:loguser is not an allowed default owner/group.
+    CreateLogFile("customservice.log", "loguser", "loguser", 0640);
+
+    LogFilePermissionsParams params;
+    params.path = testDir;
+
+    auto result = AuditLogFilePermissions(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }

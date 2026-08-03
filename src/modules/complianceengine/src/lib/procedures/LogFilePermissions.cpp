@@ -5,11 +5,15 @@
 #include <Evaluator.h>
 #include <FilePermissions.h>
 #include <FileTreeWalk.h>
+#include <ListValidShells.h>
 #include <LogFilePermissions.h>
 #include <Result.h>
 #include <Telemetry.h>
+#include <UsersIterator.h>
 #include <fnmatch.h>
 #include <map>
+#include <pwd.h>
+#include <set>
 #include <string>
 #include <sys/stat.h>
 
@@ -45,9 +49,45 @@ const std::map<std::string, std::map<std::string, std::string>> g_logfilePattern
     {"*.journal~", {{"owner", "root"}, {"group", "root|systemd-journal"}, {"mask", "0137"}}},
 };
 
-// Default mask for files that don't match any pattern
-// TODO(wpk) add the magic related to daemon-owned files.
+// Default arguments for files that don't match any pattern.
 const std::map<std::string, std::string> g_defaultLogfileArgs = {{"owner", "root|syslog"}, {"group", "root|adm"}, {"mask", "0137"}};
+
+using DaemonUidSet = std::set<uid_t>;
+
+// Builds the set of uids that belong to root or a daemon/service account (one whose login shell is
+// not a valid interactive shell per /etc/shells). Computed once from /etc/passwd so we don't have to
+// look up each file's owner while walking the log directory.
+Result<DaemonUidSet> BuildDaemonUidSet(ContextInterface& context)
+{
+    auto validShells = ListValidShells(context);
+    if (!validShells.HasValue())
+    {
+        OsConfigLogError(context.GetLogHandle(), "Failed to list valid shells: %s", validShells.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("ListValidShells", validShells.Error().code);
+        return validShells.Error();
+    }
+
+    auto users = UsersRange::Make(context.GetSpecialFilePath("/etc/passwd"), context.GetLogHandle());
+    if (!users.HasValue())
+    {
+        OsConfigLogError(context.GetLogHandle(), "Failed to enumerate users: %s", users.Error().message.c_str());
+        OSConfigTelemetryStatusTrace("UsersRange", users.Error().code);
+        return users.Error();
+    }
+
+    DaemonUidSet daemonUids;
+    for (const auto& user : users.Value())
+    {
+        const std::string name = (user.pw_name != nullptr) ? user.pw_name : std::string();
+        const std::string shell = (user.pw_shell != nullptr) ? user.pw_shell : std::string();
+        if (name == "root" || validShells.Value().find(shell) == validShells.Value().end())
+        {
+            daemonUids.insert(user.pw_uid);
+        }
+    }
+
+    return daemonUids;
+}
 
 FilePermissionsParams GetFilePermissionsParams(const std::string& filename, std::map<std::string, std::string> args)
 {
@@ -60,7 +100,18 @@ FilePermissionsParams GetFilePermissionsParams(const std::string& filename, std:
     return result.Value();
 }
 
-FilePermissionsParams GetFilePermissionArgs(const std::string& filename, const std::string& fullPath)
+FilePermissionsParams GetDefaultFilePermissionArgs(const std::string& fullPath, const struct stat& statInfo, const DaemonUidSet& daemonUids, bool remediate)
+{
+    if (!remediate && daemonUids.find(statInfo.st_uid) != daemonUids.end())
+    {
+        return GetFilePermissionsParams(fullPath, {{"mask", "0137"}});
+    }
+
+    return GetFilePermissionsParams(fullPath, g_defaultLogfileArgs);
+}
+
+FilePermissionsParams GetFilePermissionArgs(const std::string& filename, const std::string& fullPath, const struct stat& statInfo,
+    const DaemonUidSet& daemonUids, bool remediate)
 {
     for (const auto& pattern : g_logfilePatterns)
     {
@@ -70,11 +121,11 @@ FilePermissionsParams GetFilePermissionArgs(const std::string& filename, const s
         }
     }
 
-    return GetFilePermissionsParams(fullPath, g_defaultLogfileArgs);
+    return GetDefaultFilePermissionArgs(fullPath, statInfo, daemonUids, remediate);
 }
 
-Result<Status> ProcessLogfile(const std::string& path, const std::string& filename, const struct stat& statInfo, IndicatorsTree& indicators,
-    ContextInterface& context, bool remediate)
+Result<Status> ProcessLogfile(const std::string& path, const std::string& filename, const struct stat& statInfo, const DaemonUidSet& daemonUids,
+    IndicatorsTree& indicators, ContextInterface& context, bool remediate)
 {
     if (S_ISDIR(statInfo.st_mode))
     {
@@ -93,7 +144,7 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
     }
 
     const std::string fullPath = path + "/" + filename;
-    const auto params = GetFilePermissionArgs(filename, fullPath);
+    const auto params = GetFilePermissionArgs(filename, fullPath, statInfo, daemonUids, remediate);
 
     OsConfigLogDebug(context.GetLogHandle(), "Processing logfile: %s with pattern-matched permissions", fullPath.c_str());
 
@@ -126,8 +177,14 @@ Result<Status> AuditLogFilePermissions(const LogFilePermissionsParams& params, I
     assert(params.path.HasValue());
     OsConfigLogInfo(context.GetLogHandle(), "Auditing logfile access permissions in directory: %s", params.path->c_str());
 
-    auto callback = [&indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
-        return ProcessLogfile(dirPath, filename, statInfo, indicators, context, false);
+    auto daemonUids = BuildDaemonUidSet(context);
+    if (!daemonUids.HasValue())
+    {
+        return daemonUids.Error();
+    }
+
+    auto callback = [&daemonUids, &indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
+        return ProcessLogfile(dirPath, filename, statInfo, daemonUids.Value(), indicators, context, false);
     };
 
     auto result = FileTreeWalk(params.path.Value(), callback, BreakOnNonCompliant::False, context);
@@ -154,8 +211,14 @@ Result<Status> RemediateLogFilePermissions(const LogFilePermissionsParams& param
     assert(params.path.HasValue());
     OsConfigLogInfo(context.GetLogHandle(), "Remediating logfile access permissions in directory: %s", params.path->c_str());
 
-    auto callback = [&indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
-        return ProcessLogfile(dirPath, filename, statInfo, indicators, context, true);
+    auto daemonUids = BuildDaemonUidSet(context);
+    if (!daemonUids.HasValue())
+    {
+        return daemonUids.Error();
+    }
+
+    auto callback = [&daemonUids, &indicators, &context](const std::string& dirPath, const std::string& filename, const struct stat& statInfo) -> Result<Status> {
+        return ProcessLogfile(dirPath, filename, statInfo, daemonUids.Value(), indicators, context, true);
     };
 
     auto result = FileTreeWalk(params.path.Value(), callback, BreakOnNonCompliant::False, context);

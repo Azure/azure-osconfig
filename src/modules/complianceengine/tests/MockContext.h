@@ -13,6 +13,7 @@
 #include <map>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 struct MockContext : public ComplianceEngine::ContextInterface
@@ -20,6 +21,18 @@ struct MockContext : public ComplianceEngine::ContextInterface
     MOCK_METHOD(ComplianceEngine::Result<std::string>, ExecuteCommand, (const std::string& cmd), (const, override));
     MOCK_METHOD(ComplianceEngine::Result<std::string>, GetFileContents, (const std::string& filePath), (const, override));
     MOCK_METHOD(ComplianceEngine::Result<std::vector<ComplianceEngine::InterfaceInfo>>, GetNetworkInterfaces, (), (const, override));
+
+    ComplianceEngine::Result<std::string> GetRunningKernelRelease() const override
+    {
+        return mRunningKernelRelease;
+    }
+
+    // Overrides the value returned by GetRunningKernelRelease(); pass an Error to simulate
+    // uname() failing.
+    void SetRunningKernelRelease(ComplianceEngine::Result<std::string> release)
+    {
+        mRunningKernelRelease = std::move(release);
+    }
 
     OsConfigLogHandle GetLogHandle() const override
     {
@@ -161,5 +174,6 @@ private:
     std::vector<std::string> mTempfiles;
     std::map<std::string, std::string> mSpecialFilesMap;
     std::unique_ptr<ComplianceEngine::FilesystemScanner> mFsScannerp;
+    ComplianceEngine::Result<std::string> mRunningKernelRelease{std::string("5.15.test")};
     OsConfigLogHandle mLogHandle{nullptr};
 };

@@ -73,7 +73,8 @@ protected:
 
 // TODO(kkanas) remove
 // Helper to create a fake /lib/modules tree
-static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::string>& files)
+static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::string>& files, const std::string& kernelVersion = "5.15.test",
+    const std::string& runningRelease = "5.15.test")
 {
     std::string root = ctx.GetTempdirPath() + "/modulesRoot";
     if (::mkdir(root.c_str(), 0755) != 0)
@@ -81,7 +82,7 @@ static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::st
         ADD_FAILURE() << "Failed to create root dir: " << strerror(errno);
         return "";
     }
-    std::string versionDir = root + "/5.15.test";
+    std::string versionDir = root + "/" + kernelVersion;
     if (::mkdir(versionDir.c_str(), 0755) != 0)
     {
         ADD_FAILURE() << "Failed to create version dir: " << strerror(errno);
@@ -101,6 +102,10 @@ static std::string CreateModulesTree(MockContext& ctx, const std::vector<std::st
         ofs.close();
     }
     ctx.SetSpecialFilePath("/lib/modules", root);
+
+    // Expose the running kernel release so IsModuleAvailableInRunningKernel can determine
+    // whether the module lives in the running kernel's module directory.
+    ctx.SetRunningKernelRelease(runningRelease);
     return root;
 }
 
@@ -349,4 +354,22 @@ TEST_F(EnsureKernelModuleTest, ExactDashFilenameStillMatches)
     auto result = AuditKernelModuleUnavailable(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureKernelModuleTest, ModuleOnlyInNonRunningKernelNeedsOnlyBlocklist)
+{
+    // Module exists in an installed kernel that is NOT the running one. Per CIS, only
+    // deny-listing is required in that case; the install/mask line must not be required.
+    CreateModulesTree(mContext, {"usb-storage.ko"}, "5.15.test", "6.99.running");
+
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    // Deny-listed but no install/mask line present.
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlocklistOutput)));
+
+    KernelModuleUnavailableParams params;
+    params.moduleName = "usb-storage";
+
+    auto result = AuditKernelModuleUnavailable(params, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }

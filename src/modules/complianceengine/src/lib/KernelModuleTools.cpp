@@ -10,6 +10,7 @@
 #include <dirent.h>
 #include <fts.h>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
 
@@ -140,7 +141,74 @@ Result<bool> IsKernelModuleLoaded(std::string moduleName, ContextInterface& cont
     return false;
 }
 
-Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& indicators, ContextInterface& context)
+// Returns true if the module object file is present in the currently-running
+// kernel's module directory (/lib/modules/$(uname -r)/kernel).
+//
+// CIS only requires the "install <module> /bin/false" masking when the module is
+// loadable in the running kernel. When the module exists only in a non-running
+// installed kernel (or not at all in the running kernel), deny-listing alone is
+// sufficient, so the mask must not be required in that case.
+Result<bool> IsModuleAvailableInRunningKernel(const std::string& moduleName, ContextInterface& context)
+{
+    Result<std::string> release = context.GetRunningKernelRelease();
+    if (!release.HasValue())
+    {
+        // Unable to determine the running kernel; be conservative and assume the module
+        // may be loadable so the stricter mask requirement still applies.
+        return true;
+    }
+
+    std::string kernelDirPath = context.GetSpecialFilePath("/lib/modules") + "/" + release.Value() + "/kernel";
+    struct stat st;
+    if (stat(kernelDirPath.c_str(), &st) != 0)
+    {
+        if (errno == ENOENT)
+        {
+            return false;
+        }
+        OsConfigLogError(context.GetLogHandle(), "Failed to stat %s - errno %d", kernelDirPath.c_str(), errno);
+        OSConfigTelemetryStatusTrace("stat", errno);
+        return true;
+    }
+    if (!S_ISDIR(st.st_mode))
+    {
+        return false;
+    }
+
+    char* paths[] = {const_cast<char*>(kernelDirPath.c_str()), nullptr};
+    FTS* fts = fts_open(paths, FTS_PHYSICAL, nullptr);
+    if (!fts)
+    {
+        OsConfigLogError(context.GetLogHandle(), "Failed to open %s - errno %d", kernelDirPath.c_str(), errno);
+        OSConfigTelemetryStatusTrace("fts_open", errno);
+        return false;
+    }
+    auto ftsDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(fts, fts_close);
+
+    std::string target = moduleName + ".ko";
+    std::string overlayTarget = moduleName + "_overlay.ko";
+    std::string targetUnderscore = target;
+    std::replace(targetUnderscore.begin(), targetUnderscore.end(), '-', '_');
+    std::string overlayTargetUnderscore = overlayTarget;
+    std::replace(overlayTargetUnderscore.begin(), overlayTargetUnderscore.end(), '-', '_');
+
+    FTSENT* node = nullptr;
+    while ((node = fts_read(fts)) != nullptr)
+    {
+        if (node->fts_info != FTS_F)
+        {
+            continue;
+        }
+        std::string baseName = node->fts_name;
+        if (baseName.find(target) == 0 || baseName.find(targetUnderscore) == 0 || baseName.find(overlayTarget) == 0 || baseName.find(overlayTargetUnderscore) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+Result<Status> IsKernelModuleBlocked(std::string moduleName, bool requireMask, IndicatorsTree& indicators, ContextInterface& context)
 {
     Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
     if (modprobeOutput.HasValue())
@@ -166,18 +234,21 @@ Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& ind
             return indicators.NonCompliant("Module " + moduleName + " is not blocklisted in modprobe configuration");
         }
 
-        regex modprobeInstallRegex;
-        try
+        if (requireMask)
         {
-            modprobeInstallRegex = regex("^install\\s+" + UnderscoreForRegex(moduleName) + "\\s+(/usr)?/bin/(true|false)");
-        }
-        catch (std::exception& e)
-        {
-            return Error(e.what());
-        }
-        if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
-        {
-            return indicators.NonCompliant("Module " + moduleName + " is not masked in modprobe configuration");
+            regex modprobeInstallRegex;
+            try
+            {
+                modprobeInstallRegex = regex("^install\\s+" + UnderscoreForRegex(moduleName) + "\\s+(/usr)?/bin/(true|false)");
+            }
+            catch (std::exception& e)
+            {
+                return Error(e.what());
+            }
+            if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
+            {
+                return indicators.NonCompliant("Module " + moduleName + " is not masked in modprobe configuration");
+            }
         }
     }
     else
