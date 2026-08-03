@@ -34,6 +34,12 @@ public:
     // replaces direct /proc/net/dev + /sys/class/net reads.
     virtual Result<std::vector<InterfaceInfo>> GetNetworkInterfaces() const = 0;
 
+    // Returns the currently-running kernel release (equivalent to `uname -r`, i.e. the
+    // release field returned by the uname() syscall). On failure returns an Error whose
+    // code is the underlying errno. This is the mockable seam for tests that need to
+    // control the reported running kernel version.
+    virtual Result<std::string> GetRunningKernelRelease() const = 0;
+
     virtual OsConfigLogHandle GetLogHandle() const = 0;
     virtual std::string GetSpecialFilePath(const std::string& path) const = 0;
 

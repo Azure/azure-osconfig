@@ -10,6 +10,7 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <set>
+#include <sys/utsname.h>
 
 namespace ComplianceEngine
 {
@@ -97,6 +98,18 @@ Result<std::vector<InterfaceInfo>> CommonContext::GetNetworkInterfaces() const
 
     freeifaddrs(ifap);
     return interfaces;
+}
+
+Result<std::string> CommonContext::GetRunningKernelRelease() const
+{
+    struct utsname buf;
+    if (uname(&buf) != 0)
+    {
+        int status = errno;
+        OsConfigLogError(mLog, "uname() failed: %s (%d)", strerror(status), status);
+        return Error("Failed to determine running kernel release: " + std::string(strerror(status)), status);
+    }
+    return std::string(buf.release);
 }
 
 } // namespace ComplianceEngine

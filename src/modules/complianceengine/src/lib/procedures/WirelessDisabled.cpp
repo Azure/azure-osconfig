@@ -116,7 +116,7 @@ Result<Status> AuditWirelessDisabled(IndicatorsTree& indicators, ContextInterfac
         {
             return indicators.NonCompliant("Kernel module loaded '" + module + "'");
         }
-        auto isModuleBlocked = IsKernelModuleBlocked(module, indicators, context);
+        auto isModuleBlocked = IsKernelModuleBlocked(module, true, indicators, context);
         if (!isModuleBlocked.HasValue() || isModuleBlocked.Value() == Status::NonCompliant)
         {
             return isModuleBlocked;
