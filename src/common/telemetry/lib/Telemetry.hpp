@@ -4,19 +4,14 @@
 #ifndef TELEMETRY_HPP
 #define TELEMETRY_HPP
 
-#include "ParameterSets.hpp"
-
-#include <Keys.h>
-#include <LogManager.hpp>
 #include <Logging.h>
 #include <chrono>
-#include <set>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace Telemetry
 {
+
+class TelemetryManagerImpl;
 
 class TelemetryManager
 {
@@ -43,14 +38,7 @@ public:
     bool ProcessJsonFile(const std::string& filePath);
 
 private:
-    OsConfigLogHandle m_log;
-    MAT::ILogConfiguration m_logConfig;
-    MAT::ILogManager* m_logManager;
-    MAT::ILogger* m_logger;
-
-    void EventWrite(Microsoft::Applications::Events::EventProperties event);
-    bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
-    bool ProcessJsonLine(const std::string& jsonLine);
+    TelemetryManagerImpl* m_impl;
 };
 
 } // namespace Telemetry
