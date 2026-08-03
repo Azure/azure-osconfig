@@ -16,5 +16,5 @@ target_link_libraries(kompli-fuzzer PRIVATE
 )
 
 if(BUILD_TELEMETRY)
-    add_dependencies(osconfig-fuzzer telemetry-external)
+    add_dependencies(kompli-fuzzer telemetry-external)
 endif()
