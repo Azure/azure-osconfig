@@ -39,7 +39,10 @@ updates:
       prefix: "deps"
       include: "scope"
     ignore:
-      - dependency-name: "mirror/docker/library/*"
+      # Never bump major versions for any container image (e.g. distro major
+      # version changes like almalinux 9 -> 10 or oraclelinux 8 -> 10).
+      # Only digest and minor/patch updates are allowed.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "gitsubmodule"
