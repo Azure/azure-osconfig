@@ -13,7 +13,7 @@ The architecture has three layers: **Adapters** (IoT Hub PnP agent, RC/DC watche
 ```
 src/                          # All source code
   CMakeLists.txt              # Root CMake file (project config, vcpkg integration, build options)
-  vcpkg.json                  # Dependencies: openssl, curl, lua, sqlite3, nlohmann-json, gtest
+  vcpkg.json                  # Dependencies: openssl, curl, sqlite3, nlohmann-json, gtest
   vcpkg-configuration.json    # vcpkg registry baseline
   adapters/                   # Agent adapters (PnP IoT Hub client, MC machine config)
     pnp/                      # PnP agent (main binary: /usr/bin/osconfig)
