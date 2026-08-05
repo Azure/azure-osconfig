@@ -1,6 +1,0 @@
-# Only the hand-authored *.mof seed inputs are tracked. Fuzzer-generated corpus
-# entries land here when seed_corpus is passed directly as the corpus directory,
-# but they are not source files; ignore them.
-*
-!.gitignore
-!*.mof

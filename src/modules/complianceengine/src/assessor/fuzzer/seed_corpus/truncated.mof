@@ -1,4 +1,0 @@
-instance of OsConfigResource as $OsConfigResource0ref
-{
-    ResourceID = "Truncated";
-    PayloadKey = "/cis/ubuntu/22.04/v2.0.0/1
