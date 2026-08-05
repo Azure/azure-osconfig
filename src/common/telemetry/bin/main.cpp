@@ -7,6 +7,7 @@
 
 #include <Logging.h>
 #include <Telemetry.hpp>
+#include <cassert>
 #include <string>
 
 static OsConfigLogHandle g_log;

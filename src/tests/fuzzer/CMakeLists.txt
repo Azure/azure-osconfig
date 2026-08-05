@@ -13,6 +13,7 @@ add_executable(kompli-fuzzer
 target_link_libraries(kompli-fuzzer PRIVATE
     complianceenginelib
     commonutils
+    $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
 )
 
 if(BUILD_TELEMETRY)
