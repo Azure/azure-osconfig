@@ -9,11 +9,11 @@ Read about Azure Automanage Machine Configuration (formerly called Azure Policy 
 To regenerate code, see [codegen.cmd](codegen.cmd).
 
  > **Warning**
- > Regenerating code will overwrite all customizations and additions specific to Kompli.
+ > Regenerating code will overwrite all customizations and additions specific to kompli.
 
-## 3. Building the Kompli Universal NRP
+## 3. Building the kompli Universal NRP
 
-The Universal NRP binary (libOsConfigResource.so) is built with rest of Kompli.
+The Universal NRP binary (libOsConfigResource.so) is built with rest of kompli.
 
 ### 3.1. Building the universal NRP binary on Ubuntu 14
 
@@ -32,7 +32,7 @@ Verify that gcc is 4.8:
 ```bash
 gcc --version
 ```
-Clone Kompli locally and build from the main branch using the following simplified commands:
+Clone kompli locally and build from the main branch using the following simplified commands:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
@@ -93,7 +93,7 @@ ComplianceEngineShell.metaconfig.json
 [100%] Built target create_zip
 ```
 
-## 4. Validating the Kompli Universal NRP locally with PowerShell and the MC Agent
+## 4. Validating the kompli Universal NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup).
 

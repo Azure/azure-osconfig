@@ -1,6 +1,6 @@
 # Introduction
 
-Kompli is a modular security compliance stack for Linux devices. Kompli supports multi-authority device management over Azure and Azure Portal/CLI (via Azure Policy), GitOps, as well as local management. For more information on Kompli see [Architecture](docs/architecture.md).
+Kompli is a modular security compliance stack for Linux devices. Kompli supports multi-authority device management over Azure and Azure Portal/CLI (via Azure Policy), GitOps, as well as local management. For more information on kompli see [Architecture](docs/architecture.md).
 
 # Code of conduct
 
@@ -8,7 +8,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 # Contributing
 
-We welcome contributions to Kompli. The main way of contributing to and extending Kompli is via developing new procedure [Procedures](src/modules/complianceengine/src/lib/procedures)
+We welcome contributions to kompli. The main way of contributing to and extending kompli is via developing new procedure [Procedures](src/modules/complianceengine/src/lib/procedures)
 
 Pull requests with few exceptions must contain appropriate unit-tests. We cannot allow test coverage to go down. Pull requests containing code changes without accompanying unit tests may be rejected.
 Pull requests need to be formatted according to `.pre-commit-config.yaml`. Each pull request is checked by [Formatting Tests](https://github.com/microsoft/kompli/blob/main/.github/workflows/formatting.yml).
@@ -30,7 +30,7 @@ To help set expectations for external contributors and keep review focused, the 
 **Out of scope** (please open an issue to discuss first; PRs may be declined):
 
 - Changes to the Machine Configuration trust model or the MC channel itself, which are trusted by design and managed outside this repository.
-- New top-level modules or product areas beyond the ComplianceEngine that Kompli retains from Azure OSConfig.
+- New top-level modules or product areas beyond the ComplianceEngine that kompli retains from Azure OSConfig.
 - Vendored third-party code under `external/` (for example, the vcpkg submodule); update these upstream instead.
 - Large refactors or dependency changes without a prior issue describing the motivation and approach.
 - Security vulnerability reports — do **not** file these as issues or PRs; follow [SECURITY.md](SECURITY.md) instead.
@@ -53,8 +53,8 @@ python3 -m pre_commit run --all-files
 6. From your fork, create a PR that targets the `main` branch. [Learn more about pull requests](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/creating-an-issue-or-pull-request#creating-a-pull-request).
 7. The PR triggers a series of GitHub actions that will validate the new submitted changes.
 
-The Kompli team will respond to a PR that passes all checks in 3 business days.
+The kompli team will respond to a PR that passes all checks in 3 business days.
 
 # Contact
 
-You may contact the Kompli team at [kompli@microsoft.com](mailto:kompli@microsoft.com) to ask questions about Kompli, to report bugs, to suggest new features, or inquire about any other Kompli-related topic.
+You may contact the kompli team at [kompli@microsoft.com](mailto:kompli@microsoft.com) to ask questions about kompli, to report bugs, to suggest new features, or inquire about any other kompli-related topic.

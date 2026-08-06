@@ -5,7 +5,7 @@ Kompli - North Star Architecture
 
 Kompli is a modular security configuration stack for Linux. Kompli supports management over Azure and Azure Portal and local CLI.
 
-This document describes the North Star architecture of this project. Its prime target is to guide the people who develop Kompli. The doc can be also useful to anyone who is interested to learn about this project.
+This document describes the North Star architecture of this project. Its prime target is to guide the people who develop kompli. The doc can be also useful to anyone who is interested to learn about this project.
 
 Kompli design principles are the following:
 
@@ -15,9 +15,9 @@ Kompli design principles are the following:
 - Simple and focused on what is truly needed.
 - Not permanently tied to any management authority.
 
-The main way to extend Kompli is by developing new [procedures](../src/modules/complianceengine/src/lib/procedures/).
+The main way to extend kompli is by developing new [procedures](../src/modules/complianceengine/src/lib/procedures/).
 
-# 2. Overall Kompli Architecture
+# 2. Overall kompli Architecture
 
 ## 2.1. Repository Layout
 
@@ -53,13 +53,13 @@ Kompli supports two integration scenarios that share the same ComplianceEngine m
 - **Machine Configuration (NRP)** — a standalone shared library loaded by the GC worker on demand. The augmentation engine generates MOF files that drive audit and remediation per rule.
 - **Assessor** — a standalone CLI tool (`src/modules/complianceengine/src/assessor/`) that reads a MOF file (from a file path or stdin) and directly executes audits or remediations without any platform or daemon involvement.
 
-# 3. Kompli Agent
+# 3. kompli Agent
 
 Kompli will be able to run as a standalone daemon that can evaluate policy given requests from external sources.
 
 ## 3.1. MMI
 
-The Kompli library implements MMI resource [OsConfigResource.c](../src/adapters/mc/OsConfigResource.c) using [Baseline.c](../src/adapters/mc/complianceengine/Baseline.c), which is used as entry point for MMI module in this case only [ComplianceEngineModule.c](../src/modules/complianceengine/src/so/ComplianceEngineModule.c)
+The kompli library implements MMI resource [OsConfigResource.c](../src/adapters/mc/OsConfigResource.c) using [Baseline.c](../src/adapters/mc/complianceengine/Baseline.c), which is used as entry point for MMI module in this case only [ComplianceEngineModule.c](../src/modules/complianceengine/src/so/ComplianceEngineModule.c)
 
 The MMI transports the json object payloads of settings for the module.
 
@@ -189,11 +189,11 @@ void MmiFree(MMI_JSON_STRING payload);
 ```
 
 
-# 4. Kompli Management Platform
+# 4. kompli Management Platform
 
 ## 4.1. Introduction
 
-The Kompli Management Platform runs in its own daemon process. The platform communicates with the management authority adapters the Universal NRP using MMI.
+The kompli Management Platform runs in its own daemon process. The platform communicates with the management authority adapters the Universal NRP using MMI.
 
 - MMI Client: makes MMI API calls to modules.
 
@@ -249,10 +249,10 @@ This format is following the MIM JSON payload schema described in the [OSConfig 
 
 ## 4.9. Logging
 
-Kompli provides a Logging library component that makes it easy for all Kompli components to log in a standard fashion to date and time stamped self-rolled log files.
+Kompli provides a Logging library component that makes it easy for all kompli components to log in a standard fashion to date and time stamped self-rolled log files.
 
 
-# 5. Kompli Management Modules
+# 5. kompli Management Modules
 
 ## 5.1. ComplianceEngine Module
 
@@ -311,11 +311,11 @@ Results are written to stdout in the format selected by `--format`:
 - The `--input` path is checked for path traversal and a writable parent directory before the file is opened.
 - The `--log` path is validated to refuse symlinks and attacker-writable locations before the log handle is opened.
 
-# 6. Kompli Universal Native Resource Provider (NRP)
+# 6. kompli Universal Native Resource Provider (NRP)
 
-The Kompli Universal Native Resource Provider (NRP) Adapter links Kompli to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/).
+The kompli Universal Native Resource Provider (NRP) Adapter links kompli to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/).
 
-Using MC and the Kompli Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux devices in a particular Azure subscription and Azure resource group.
+Using MC and the kompli Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux devices in a particular Azure subscription and Azure resource group.
 
 ## 6.1. Compliance NRP Adapter
 

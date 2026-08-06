@@ -129,8 +129,8 @@ set(PATCH_VERSION "5" CACHE STRING "Patch version")
 # External Projects
 set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
 
-option(BUILD_ADAPTERS "Build Kompli Adapters" ON)
-option(BUILD_MODULES "Build Kompli Modules" ON)
+option(BUILD_ADAPTERS "Build kompli Adapters" ON)
+option(BUILD_MODULES "Build kompli Modules" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_TELEMETRY "Build telemetry" OFF)
@@ -210,7 +210,7 @@ execute_process(COMMAND git rev-parse --short HEAD
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(KompliProjectName "kompli")
-set(KompliProjectLongName "Microsoft Kompli")
+set(KompliProjectLongName "Microsoft kompli")
 set(KompliProjectDescription "Kompli is an open, Linux-focused security compliance project that evaluates and enforces configuration baselines through a modular engine designed to integrate with Azure, and local device management.")
 set(KompliProjectVendor "Microsoft")
 set(KompliProjectEmail "kompli@microsoft.com")

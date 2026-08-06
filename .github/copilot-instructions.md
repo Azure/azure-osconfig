@@ -1,4 +1,4 @@
-# Copilot Coding Agent Instructions for Kompli
+# Copilot Coding Agent Instructions for kompli
 
 > Trust these instructions first. Only search the repo if information here is incomplete or found to be incorrect.
 
