@@ -21,6 +21,7 @@ RUN apt -y update && apt-get -y install \
     libssl-dev \
     libubsan1 \
     pkg-config \
+    pre-commit \
     python3-jsonschema \
     python3-venv \
     tar \

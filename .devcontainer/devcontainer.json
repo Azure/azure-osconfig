@@ -12,7 +12,6 @@
 			"installZsh": true,
 			"installOhMyZsh": true
 		},
-		"ghcr.io/devcontainers-extra/features/pre-commit:2": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	"customizations": {
