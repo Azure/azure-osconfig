@@ -10,7 +10,7 @@ with additional context instead of opening a new one.
 When the existing issues do not cover your problem, open a new issue and choose the
 type that best matches your request:
 
-- **Bug report** — include the Kompli version, the Linux distribution and version,
+- **Bug report** — include the kompli version, the Linux distribution and version,
   the procedure or benchmark involved, the exact command you ran, the relevant
   portion of the logs, and the expected versus actual behavior. A minimal
   reproduction (for example, the JSON/MOF payload or Lua snippet) makes triage much
@@ -46,6 +46,6 @@ cycles.
 
 ## Microsoft Support Policy
 
-Support for Kompli is limited to the resources listed above. For questions about
-the Kompli project that are not suited to a public issue, you may contact the team
+Support for kompli is limited to the resources listed above. For questions about
+the kompli project that are not suited to a public issue, you may contact the team
 at [kompli@microsoft.com](mailto:kompli@microsoft.com).

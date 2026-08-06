@@ -2,7 +2,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 #
-# Code-quality hook runner for Kompli.
+# Code-quality hook runner for kompli.
 #
 # Usage:
 #   devops/scripts/run-hooks.sh --help      Show this help

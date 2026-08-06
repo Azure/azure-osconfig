@@ -1,4 +1,4 @@
-name: Build Kompli
+name: Build kompli
 
 on:
   workflow_call:
@@ -140,7 +140,7 @@ jobs:
             echo "CMake arguments: ${cmake_args[*]}"
             cmake ../src "${cmake_args[@]}"
 
-      - name: Build Microsoft Kompli
+      - name: Build Microsoft kompli
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
