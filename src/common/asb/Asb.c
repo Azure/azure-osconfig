@@ -3381,30 +3381,22 @@ static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, OsConfigLogHandl
 static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return SetUserHomeDirectories(log);
+    UNUSED(log);
+    return 0;
 }
 
 static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return SetUserHomeDirectories(log);
+    UNUSED(log);
+    return 0;
 }
 
 static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLogHandle log)
 {
-    int* modes = NULL;
-    int numberOfModes = 0;
-    int status = 0;
-
-    InitEnsureRestrictedUserHomeDirectories(value);
-
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 1))
-    {
-        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log);
-    }
-
-    FREE_MEMORY(modes);
-    return status;
+    UNUSED(value);
+    UNUSED(log);
+    return 0;
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, OsConfigLogHandle log)
@@ -4218,19 +4210,9 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OsConfigLogHandle log)
 {
-    int* modes = NULL;
-    int numberOfModes = 0;
-    int status = 0;
-
-    InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
-
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 0))
-    {
-        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
-    }
-
-    FREE_MEMORY(modes);
-    return status;
+    UNUSED(value);
+    UNUSED(log);
+    return 0;
 }
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log)
