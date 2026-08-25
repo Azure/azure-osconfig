@@ -2839,14 +2839,11 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
 {
-    const char* pathTemplate = "%s/%s";
-
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
-    char* path = NULL;
-    size_t length = 0;
+    int homeFd = -1;
     bool oneGoodMode = false;
     int status = 0;
 
@@ -2865,29 +2862,27 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            // Open the home directory once without following symlinks and operate relative to that descriptor to avoid a symlink race
+            else if (0 <= (homeFd = open(userList[i].home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
             {
+                if (NULL == (home = fdopendir(homeFd)))
+                {
+                    OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: fdopendir('%s') failed (%d), skipping user %u",
+                        userList[i].home, errno, userList[i].userId);
+                    close(homeFd);
+                    homeFd = -1;
+                    continue;
+                }
+
                 while (NULL != (entry = readdir(home)))
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = malloc(length + 1)))
-                        {
-                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
-                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
-                            status = ENOMEM;
-                            break;
-                        }
-
-                        memset(path, 0, length + 1);
-                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
-
                         oneGoodMode = false;
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if (0 == CheckFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);
@@ -2908,12 +2903,12 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                                 status = ENOENT;
                             }
                         }
-
-                        FREE_MEMORY(path);
                     }
                 }
 
                 closedir(home);
+                home = NULL;
+                homeFd = -1;
             }
         }
     }
@@ -2931,14 +2926,11 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log)
 {
-    const char* pathTemplate = "%s/%s";
-
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
-    char* path = NULL;
-    size_t length = 0;
+    int homeFd = -1;
     bool oneGoodMode = false;
     int status = 0, _status = 0;
 
@@ -2957,32 +2949,30 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            // Open the home directory once without following symlinks and operate relative to that descriptor to avoid a symlink race
+            else if (0 <= (homeFd = open(userList[i].home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
             {
+                if (NULL == (home = fdopendir(homeFd)))
+                {
+                    OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fdopendir('%s') failed (%d), skipping user %u",
+                        userList[i].home, errno, userList[i].userId);
+                    close(homeFd);
+                    homeFd = -1;
+                    continue;
+                }
+
                 while (NULL != (entry = readdir(home)))
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = malloc(length + 1)))
-                        {
-                            OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
-                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
-                            status = ENOMEM;
-                            break;
-                        }
-
-                        memset(path, 0, length + 1);
-                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
-
                         oneGoodMode = false;
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if (0 == CheckFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].userId, modes[j], path);
+                                    userList[i].userId, modes[j], entry->d_name);
                                 oneGoodMode = true;
                                 break;
                             }
@@ -2990,15 +2980,15 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (false == oneGoodMode)
                         {
-                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
+                            if (0 == (_status = SetFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, mode, log)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].userId, mode, path);
+                                    userList[i].userId, mode, entry->d_name);
                             }
                             else
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user %u dot file '%s'",
-                                    mode, userList[i].userId, path);
+                                    mode, userList[i].userId, entry->d_name);
 
                                 if (0 == status)
                                 {
@@ -3006,12 +2996,12 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                                 }
                             }
                         }
-
-                        FREE_MEMORY(path);
                     }
                 }
 
                 closedir(home);
+                home = NULL;
+                homeFd = -1;
             }
         }
     }

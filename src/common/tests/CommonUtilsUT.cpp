@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <limits.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
@@ -1415,6 +1416,86 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
+TEST_F(CommonUtilsTest, FileAndDirectoryExistsRejectSymlinks)
+{
+    const char* link = "/tmp/~test.symlink";
+
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    remove(link);
+    ASSERT_EQ(0, symlink(m_path, link));
+
+    // A regular file exists, but a symlink to it (or a directory) is not a regular file
+    EXPECT_TRUE(FileExists(m_path));
+    EXPECT_FALSE(FileExists(link));
+    EXPECT_FALSE(FileExists("/tmp"));
+
+    // A real directory exists, but a symlink is not a real directory
+    EXPECT_TRUE(DirectoryExists("/tmp"));
+    EXPECT_FALSE(DirectoryExists(link));
+
+    EXPECT_EQ(0, remove(link));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, SetAndCheckFileAccessRefusesSymlink)
+{
+    const char* link = "/tmp/~test.symlink";
+
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, 0600, nullptr));
+
+    remove(link);
+    ASSERT_EQ(0, symlink(m_path, link));
+
+    // Both check and set must refuse to operate through the symlink (no following, O_NOFOLLOW)
+    EXPECT_NE(0, CheckFileAccess(link, 0, 0, 0600, nullptr, nullptr));
+    EXPECT_NE(0, SetFileAccess(link, 0, 0, 0777, nullptr));
+
+    // The target file must be untouched by the attempted operation through the symlink
+    EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, 0600, nullptr, nullptr));
+
+    EXPECT_EQ(0, remove(link));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, SetAndCheckFileAccessAt)
+{
+    const char* directory = "/tmp/~testAt";
+    const char* fileName = ".dotfile";
+    const char* link = ".symlink";
+    const char* filePath = "/tmp/~testAt/.dotfile";
+    unsigned int testModes[] = { 0600, 0640, 0644, 0700, 0750 };
+    int numTestModes = ARRAY_SIZE(testModes);
+    int directoryFd = -1;
+
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir -p /tmp/~testAt", false, false, 0, 0, nullptr, nullptr, nullptr));
+    EXPECT_TRUE(CreateTestFile(filePath, m_data));
+
+    directoryFd = open(directory, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
+    ASSERT_LE(0, directoryFd);
+
+    for (int i = 0; i < numTestModes; i++)
+    {
+        EXPECT_EQ(0, SetFileAccessAt(directoryFd, fileName, 0, 0, testModes[i], nullptr));
+        EXPECT_EQ(0, CheckFileAccessAt(directoryFd, fileName, 0, 0, testModes[i], nullptr, nullptr));
+    }
+
+    // A symlink placed in the directory must be refused by the relative operations
+    ASSERT_EQ(0, symlinkat(fileName, directoryFd, link));
+    EXPECT_NE(0, CheckFileAccessAt(directoryFd, link, 0, 0, 0600, nullptr, nullptr));
+    EXPECT_NE(0, SetFileAccessAt(directoryFd, link, 0, 0, 0777, nullptr));
+
+    // A missing name is treated as nothing to do
+    EXPECT_EQ(0, CheckFileAccessAt(directoryFd, ".missing", 0, 0, 0600, nullptr, nullptr));
+    EXPECT_EQ(0, SetFileAccessAt(directoryFd, ".missing", 0, 0, 0600, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckFileAccessAt(directoryFd, nullptr, 0, 0, 0600, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetFileAccessAt(directoryFd, nullptr, 0, 0, 0600, nullptr));
+
+    EXPECT_EQ(0, close(directoryFd));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r /tmp/~testAt", false, false, 0, 0, nullptr, nullptr, nullptr));
+}
+
 char* CheckForMountCreds(char* options);
 
 TEST_F(CommonUtilsTest, CheckForMountCreds)
@@ -1675,6 +1756,16 @@ TEST_F(CommonUtilsTest, CheckOrEnsureUsersDontHaveDotFiles)
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", true, nullptr, nullptr));
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", true, nullptr, nullptr));
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", true, nullptr, nullptr));
+}
+
+TEST_F(CommonUtilsTest, UsersRestrictedDotFilesInvalidArguments)
+{
+    unsigned int modes[] = { 0600, 0640 };
+
+    EXPECT_EQ(EINVAL, CheckUsersRestrictedDotFiles(nullptr, ARRAY_SIZE(modes), nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckUsersRestrictedDotFiles(modes, 0, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetUsersRestrictedDotFiles(nullptr, ARRAY_SIZE(modes), 0600, nullptr));
+    EXPECT_EQ(EINVAL, SetUsersRestrictedDotFiles(modes, 0, 0600, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)

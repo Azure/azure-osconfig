@@ -80,6 +80,8 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
+int CheckFileAccessAt(int directoryFd, const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
+int SetFileAccessAt(int directoryFd, const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
 int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsConfigLogHandle log);
 
