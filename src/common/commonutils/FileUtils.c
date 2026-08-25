@@ -598,12 +598,6 @@ static int OpenTrueFileOrDirectoryAt(bool directory, int dirFd, const char* name
     return fd;
 }
 
-// Opens 'name' without following symlinks and verifies the type. Returns fd, or -1 with errno set.
-static int OpenTrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
-{
-    return OpenTrueFileOrDirectoryAt(directory, AT_FDCWD, name, log);
-}
-
 static int CheckAccessByFd(bool directory, int fd, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
