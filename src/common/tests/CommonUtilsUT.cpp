@@ -1416,7 +1416,7 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
-TEST_F(CommonUtilsTest, FileAndDirectoryExistsRejectSymlinks)
+TEST_F(CommonUtilsTest, FileAndDirectoryExistsFollowSymlinks)
 {
     const char* link = "/tmp/~test.symlink";
 
@@ -1424,12 +1424,13 @@ TEST_F(CommonUtilsTest, FileAndDirectoryExistsRejectSymlinks)
     remove(link);
     ASSERT_EQ(0, symlink(m_path, link));
 
-    // A regular file exists, but a symlink to it (or a directory) is not a regular file
+    // FileExists/DirectoryExists report existence and follow symlinks; the symlink-race
+    // protection lives in the access layer (Check/SetFileAccess open with O_NOFOLLOW).
     EXPECT_TRUE(FileExists(m_path));
-    EXPECT_FALSE(FileExists(link));
-    EXPECT_FALSE(FileExists("/tmp"));
+    EXPECT_TRUE(FileExists(link));
+    EXPECT_TRUE(FileExists("/tmp"));
 
-    // A real directory exists, but a symlink is not a real directory
+    // A symlink to a regular file is not a directory
     EXPECT_TRUE(DirectoryExists("/tmp"));
     EXPECT_FALSE(DirectoryExists(link));
 

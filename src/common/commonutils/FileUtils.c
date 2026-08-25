@@ -482,12 +482,21 @@ bool IsADirectory(const char* fileName, OsConfigLogHandle log)
 
 bool FileExists(const char* fileName)
 {
-    return ((NULL != fileName) && (-1 != access(fileName, F_OK)) && IsAFile(fileName, NULL)) ? true : false;
+    return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;
 }
 
 bool DirectoryExists(const char* fileName)
 {
-    return ((NULL != fileName) && (-1 != access(fileName, F_OK)) && IsADirectory(fileName, NULL)) ? true : false;
+    DIR* directory = NULL;
+    bool result = false;
+
+    if (FileExists(fileName) && (NULL != (directory = opendir(fileName))))
+    {
+        closedir(directory);
+        result = true;
+    }
+
+    return result;
 }
 
 int CheckFileExists(const char* fileName, char** reason, OsConfigLogHandle log)
@@ -587,9 +596,13 @@ static int OpenTrueFileOrDirectoryAt(bool directory, int dirFd, const char* name
         return -1;
     }
 
-    if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == S_ISREG(statStruct.st_mode)))
+    // The directory APIs require an actual directory; the file APIs are historically applied to both
+    // regular files and directories (for example ASB permission checks on /etc/cron.d). Either way,
+    // symlinks and special files (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already
+    // rejected symlinks with ELOOP above.
+    if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
     {
-        OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name, directory ? "directory" : "regular file", statStruct.st_mode & S_IFMT);
+        OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name, directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
         close(fd);
         errno = EINVAL;
         return -1;
