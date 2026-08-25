@@ -913,7 +913,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
         {
             OsConfigLogInfo(log, "RemoveUser: removed user %u", user->userId);
 
-            if (DirectoryExists(user->home))
+            if (IsADirectory(user->home, log) && DirectoryExists(user->home))
             {
                 OsConfigLogWarning(log, "RemoveUser: home directory of user %u remains and needs to be manually deleted", user->userId);
             }
@@ -1558,7 +1558,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
             {
                 continue;
             }
-            else if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
+            else if ((NULL != userList[i].home) && (false == (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))))
             {
                 OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: the home directory for user %u is not found or is not a directory", userList[i].userId);
                 OsConfigCaptureReason(reason, "The home directory for user %u is not found or is not a directory", userList[i].userId);
@@ -1596,7 +1596,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
             else if (NULL != userList[i].home)
             {
                 // If the home directory does not exist, create it
-                if (false == DirectoryExists(userList[i].home))
+                if (false == (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home)))
                 {
                     OsConfigLogInfo(log, "SetUserHomeDirectories: user %u home directory is not found", userList[i].userId);
 
@@ -1612,7 +1612,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                 }
 
                 // If the home directory does not have correct ownership and access, correct this
-                if (true == DirectoryExists(userList[i].home))
+                if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
                 {
                     if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
                     {
@@ -1698,7 +1698,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home))
+            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
             {
                 if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
@@ -1756,7 +1756,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home))
+            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
             {
                 oneGoodMode = false;
 
@@ -1819,7 +1819,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home))
+            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
             {
                 oneGoodMode = false;
 
@@ -2798,7 +2798,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home))
+            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
             {
                 length = templateLength + strlen(userList[i].home);
 
