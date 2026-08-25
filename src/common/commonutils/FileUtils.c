@@ -614,18 +614,15 @@ static int CheckAccessByFd(bool directory, int fd, const char* name, int desired
     if (((-1 != desiredOwnerId) && ((uid_t)desiredOwnerId != statStruct.st_uid)) ||
         ((-1 != desiredGroupId) && ((gid_t)desiredGroupId != statStruct.st_gid)))
     {
-        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-            name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-        OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-            name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+        OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
         return ENOENT;
     }
 
     // Special case for the MPI Client
     if (NULL != log)
     {
-        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)",
-            name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
     }
 
     currentMode = statStruct.st_mode & 07777;
@@ -650,8 +647,7 @@ static int CheckAccessByFd(bool directory, int fd, const char* name, int desired
         OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) matches expected (0%04o)", name, currentMode, desiredMode);
     }
 
-    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%04o) and ownership (uid: %d, gid: %u)",
-        name, desiredMode, desiredOwnerId, desiredGroupId);
+    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%04o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
 
     return 0;
 }

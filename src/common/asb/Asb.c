@@ -3388,15 +3388,13 @@ static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OsConfigLogH
 static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0;
+    return SetUserHomeDirectories(log);
 }
 
 static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0;
+    return SetUserHomeDirectories(log);
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, OsConfigLogHandle log)
@@ -4210,9 +4208,19 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OsConfigLogHandle log)
 {
-    UNUSED(value);
-    UNUSED(log);
-    return 0;
+    int* modes = NULL;
+    int numberOfModes = 0;
+    int status = 0;
+
+    InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
+
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 0))
+    {
+        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
+    }
+
+    FREE_MEMORY(modes);
+    return status;
 }
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log)

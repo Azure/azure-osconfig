@@ -1642,6 +1642,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
 static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
+    int fd = -1;
     int status = 0;
 
     if ((NULL == user) || (NULL == user->home))
@@ -1650,23 +1651,34 @@ static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle l
         return EINVAL;
     }
 
-    if (DirectoryExists(user->home))
+    // Open the home directory once without following symlinks and read ownership from the descriptor to avoid a symlink race
+    if (0 <= (fd = open(user->home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
     {
-        if (0 == (status = stat(user->home, &statStruct)))
+        if (0 == fstat(fd, &statStruct))
         {
             if (((uid_t)user->userId != statStruct.st_uid) || ((gid_t)user->groupId != statStruct.st_gid))
             {
+                OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: ownership of '%s' (%u, %u) does not match expected user %u (%u, %u)",
+                    user->home, statStruct.st_uid, statStruct.st_gid, user->userId, user->userId, user->groupId);
                 status = ENOENT;
             }
         }
         else
         {
-            OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: stat('%s') failed with %d", user->home, errno);
+            status = errno ? errno : ENOENT;
+            OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: fstat('%s') failed with %d", user->home, status);
         }
+
+        close(fd);
+    }
+    else if (ENOENT == errno)
+    {
+        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' is not found, nothing to check", user->home);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' is not found, nothing to check", user->home);
+        status = errno ? errno : ENOENT;
+        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: '%s' is not a directory that can be checked (%d)", user->home, status);
     }
 
     return status;
