@@ -1457,7 +1457,7 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccessAt)
     // A regular file opened relative to the directory descriptor without following symlinks can be set through its fd
     for (int i = 0; i < numTestModes; i++)
     {
-        dotFd = OpenTrueFileOrDirectoryAt(false, false, directoryFd, fileName, nullptr);
+        dotFd = OpenTrueFileOrDirectory(false, false, directoryFd, fileName, nullptr);
         ASSERT_LE(0, dotFd);
         EXPECT_EQ(0, fchmod(dotFd, testModes[i]));
         EXPECT_EQ(0, close(dotFd));
@@ -1466,7 +1466,7 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccessAt)
 
     // A symlink placed in the directory must be refused by the relative open (O_NOFOLLOW)
     ASSERT_EQ(0, symlinkat(fileName, directoryFd, link));
-    EXPECT_GT(0, OpenTrueFileOrDirectoryAt(false, false, directoryFd, link, nullptr));
+    EXPECT_GT(0, OpenTrueFileOrDirectory(false, false, directoryFd, link, nullptr));
 
     EXPECT_EQ(0, close(directoryFd));
     EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r /tmp/~testAt", false, false, 0, 0, nullptr, nullptr, nullptr));
