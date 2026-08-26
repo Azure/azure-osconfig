@@ -1583,6 +1583,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     unsigned int defaultHomeDirAccess = 0750;
+    int homeFd = -1;
     int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
@@ -1611,14 +1612,19 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                     }
                 }
 
-                // If the home directory does not have correct ownership and access, correct this
-                if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
+                // Open the home directory once without following symlinks and correct ownership and
+                // access through that descriptor to avoid a symlink race
+                if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
                 {
-                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
+                    if ((0 != fchown(homeFd, userList[i].userId, userList[i].groupId)) || (0 != fchmod(homeFd, defaultHomeDirAccess)))
                     {
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, errno: %d, %s)",
-                            userList[i].userId, _status, errno, strerror(errno));
+                        _status = errno ? errno : ENOENT;
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, %s)",
+                            userList[i].userId, _status, strerror(_status));
                     }
+
+                    close(homeFd);
+                    homeFd = -1;
                 }
 
                 if (_status && (0 != status))
@@ -1791,6 +1797,9 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
+    unsigned int mode = 0;
+    int homeFd = -1;
+    struct stat statStruct = {0};
     bool oneGoodMode = false;
     int status = 0, _status = 0;
 
@@ -1809,13 +1818,25 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
             {
                 continue;
             }
-            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
+            // Open the home directory once without following symlinks and verify and correct it
+            // through that same descriptor to avoid a symlink race
+            else if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
             {
+                if (0 != fstat(homeFd, &statStruct))
+                {
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: fstat('%s') failed (%d) for user %u",
+                        userList[i].home, errno, userList[i].userId);
+                    close(homeFd);
+                    homeFd = -1;
+                    continue;
+                }
+
                 oneGoodMode = false;
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                    if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) &&
+                        (modes[j] == (statStruct.st_mode & 07777)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1826,15 +1847,18 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 if (false == oneGoodMode)
                 {
-                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
+                    mode = userList[i].isRoot ? modeForRoot : modeForOthers;
+
+                    if ((0 == fchown(homeFd, userList[i].userId, userList[i].groupId)) && (0 == fchmod(homeFd, mode)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u has now proper restricted access (%03o) for their assigned home directory",
-                            userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers);
+                            userList[i].userId, mode);
                     }
                     else
                     {
+                        _status = errno ? errno : ENOENT;
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%03o) for user %u assigned home directory (%d, %s)",
-                            userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers, _status, strerror(_status));
+                            userList[i].userId, mode, _status, strerror(_status));
 
                         if (0 == status)
                         {
@@ -1842,6 +1866,9 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                         }
                     }
                 }
+
+                close(homeFd);
+                homeFd = -1;
             }
         }
     }
@@ -2938,6 +2965,8 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     DIR* home = NULL;
     struct dirent* entry = NULL;
     int homeFd = -1;
+    int dotFd = -1;
+    struct stat statStruct = {0};
     bool oneGoodMode = false;
     int status = 0, _status = 0;
 
@@ -2972,11 +3001,28 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
+                        // Open the dot file once relative to the home descriptor without following symlinks,
+                        // then verify and correct it through that same descriptor to avoid a symlink race
+                        if (0 > (dotFd = OpenTrueFileOrDirectory(false, false, dirfd(home), entry->d_name, log)))
+                        {
+                            continue;
+                        }
+
+                        if (0 != fstat(dotFd, &statStruct))
+                        {
+                            OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fstat('%s') failed (%d) for user %u",
+                                entry->d_name, errno, userList[i].userId);
+                            close(dotFd);
+                            dotFd = -1;
+                            continue;
+                        }
+
                         oneGoodMode = false;
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) &&
+                                (modes[j] == (statStruct.st_mode & 07777)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);
@@ -2987,13 +3033,14 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (false == oneGoodMode)
                         {
-                            if (0 == (_status = SetFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, mode, log)))
+                            if ((0 == fchown(dotFd, userList[i].userId, userList[i].groupId)) && (0 == fchmod(dotFd, mode)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, mode, entry->d_name);
                             }
                             else
                             {
+                                _status = errno ? errno : ENOENT;
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user %u dot file '%s'",
                                     mode, userList[i].userId, entry->d_name);
 
@@ -3003,6 +3050,9 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                                 }
                             }
                         }
+
+                        close(dotFd);
+                        dotFd = -1;
                     }
                 }
 

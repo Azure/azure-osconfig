@@ -78,12 +78,10 @@ int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log
 
 bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OsConfigLogHandle log);
 
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log);
+
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
-int CheckFileAccessAt(int directoryFd, const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
-int SetFileAccessAt(int directoryFd, const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
-int CheckFileAccessFollowingSymlinks(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
-int SetFileAccessFollowingSymlinks(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
 int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsConfigLogHandle log);
 

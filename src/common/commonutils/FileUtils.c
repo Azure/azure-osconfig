@@ -572,137 +572,58 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
 
 // Opens 'name' relative to 'dirFd' and verifies its type. 'followSymlink' selects whether the final
 // component may be a symlink (followed to its target) or is opened with O_NOFOLLOW. Either way the
-// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set.
-static int OpenTrueFileOrDirectoryAt(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
+// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int flags = O_RDONLY | O_CLOEXEC | O_NONBLOCK | (followSymlink ? 0 : O_NOFOLLOW) | (directory ? O_DIRECTORY : 0);
-    int fd = -1;
-    int err = 0;
+    int err = 0, result = -1;
+    int fd = openat(dirFd, name, flags);
 
-    if (0 > (fd = openat(dirFd, name, flags)))
+    if (0 > fd)
     {
         if (ELOOP == errno)
         {
             OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is a symbolic link, refusing to use it", name);
         }
-        return -1;
-    }
-
-    if (0 != fstat(fd, &statStruct))
-    {
-        err = errno ? errno : ENOENT;
-        OsConfigLogInfo(log, "OpenTrueFileOrDirectory: fstat('%s') failed with %d", name, err);
-        close(fd);
-        errno = err;
-        return -1;
-    }
-
-    // The directory APIs require an actual directory; the file APIs are historically applied to both
-    // regular files and directories (for example ASB permission checks on /etc/cron.d). Either way,
-    // symlinks and special files (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already
-    // rejected symlinks with ELOOP above.
-    if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
-    {
-        OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name, directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
-        close(fd);
-        errno = EINVAL;
-        return -1;
-    }
-
-    return fd;
-}
-
-static int CheckAccessByFd(bool directory, int fd, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
-{
-    struct stat statStruct = {0};
-    mode_t currentMode = 0;
-    mode_t desiredMode = 0;
-    int result = ENOENT;
-
-    if (0 != (result = fstat(fd, &statStruct) ? (errno ? errno : ENOENT) : 0))
-    {
-        OsConfigLogInfo(log, "CheckAccess: fstat('%s') failed with %d", name, result);
-        return result;
-    }
-
-    if (((-1 != desiredOwnerId) && ((uid_t)desiredOwnerId != statStruct.st_uid)) ||
-        ((-1 != desiredGroupId) && ((gid_t)desiredGroupId != statStruct.st_gid)))
-    {
-        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-        OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-        return ENOENT;
-    }
-
-    // Special case for the MPI Client
-    if (NULL != log)
-    {
-        OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)", name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-    }
-
-    currentMode = statStruct.st_mode & 07777;
-    desiredMode = desiredAccess & 07777;
-
-    // S_ISVTX (01000): restricted deletion flag (for directories only)
-    if (!directory)
-    {
-        desiredMode &= ~S_ISVTX;
-    }
-
-    if (currentMode != desiredMode)
-    {
-        OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
-        OsConfigCaptureReason(reason, "Access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
-        return ENOENT;
-    }
-
-    // Special case for the MPI Client
-    if (NULL != log)
-    {
-        OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) matches expected (0%04o)", name, currentMode, desiredMode);
-    }
-
-    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%04o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
-
-    return 0;
-}
-
-static int SetAccessByFd(bool directory, int fd, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
-{
-    int result = 0;
-
-    if (0 == CheckAccessByFd(directory, fd, name, (int)desiredOwnerId, (int)desiredGroupId, desiredAccess, NULL, log))
-    {
-        OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access 0%04o) already set", name, desiredOwnerId, desiredGroupId, desiredAccess);
-        return 0;
-    }
-
-    if (0 == (result = fchown(fd, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
-    {
-        OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
-
-        if (0 == (result = fchmod(fd, desiredAccess)))
-        {
-            OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to 0%04o", name, desiredAccess);
-        }
         else
         {
-            result = errno ? errno : ENOENT;
-            OsConfigLogInfo(log, "SetAccess: 'fchmod 0%04o %s' failed with %d", desiredAccess, name, result);
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: openat for '%s' failed with %d (%s)", name, errno, strerror(errno));
         }
     }
     else
     {
-        result = errno ? errno : ENOENT;
-        OsConfigLogInfo(log, "SetAccess: fchown('%s', %u, %u) failed with %d", name, desiredOwnerId, desiredGroupId, result);
+        if (0 != fstat(fd, &statStruct))
+        {
+            err = errno ? errno : ENOENT;
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: fstat for '%s' failed with %d (%s)", name, errno, strerror(errno));
+            close(fd);
+            errno = err;
+        }
+        else
+        {
+            // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
+            // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
+            // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
+            if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
+            {
+                errno = EINVAL;
+                OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
+                    directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
+            }
+        }
     }
 
+    result = fd;
+    close(fd);
     return result;
 }
 
-static int CheckAccessAt(bool directory, bool followSymlink, int dirFd, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    int fd = -1;
+    struct stat statStruct = {0};
+    mode_t currentMode = 0;
+    mode_t desiredMode = 0;
     int result = ENOENT;
 
     if (NULL == name)
@@ -712,40 +633,80 @@ static int CheckAccessAt(bool directory, bool followSymlink, int dirFd, const ch
         return EINVAL;
     }
 
-    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, followSymlink, dirFd, name, log)))
+    if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (ENOENT == errno)
+        if (0 == (result = stat(name, &statStruct)))
         {
-            OsConfigLogInfo(log, "CheckAccess: '%s' is not found, nothing to check", name);
-            if (OsConfigIsSuccessReason(reason))
+            if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid))) ||
+                ((-1 != desiredGroupId) && (((gid_t)desiredGroupId != statStruct.st_gid))))
             {
-                OsConfigCaptureSuccessReason(reason, "'%s' is not found, nothing to check", name);
+                OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                result = ENOENT;
             }
             else
             {
-                OsConfigCaptureReason(reason, "'%s' is not found", name);
+                // Special case for the MPI Client
+                if (NULL != log)
+                {
+                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)",
+                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                }
+
+                currentMode = statStruct.st_mode & 07777;
+                desiredMode = desiredAccess & 07777;
+
+                // S_ISVTX (01000): restricted deletion flag (for directories only)
+                if (!directory)
+                {
+                    desiredMode &= ~S_ISVTX;
+                }
+
+                if (currentMode != desiredMode)
+                {
+                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
+                    result = ENOENT;
+                }
+                else
+                {
+                    // Special case for the MPI Client
+                    if (NULL != log)
+                    {
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) matches expected (0%04o)", name, currentMode, desiredMode);
+                    }
+
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%04o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    result = 0;
+                }
             }
-            return 0;
         }
-
-        OsConfigCaptureReason(reason, "'%s' is not a %s that can be checked", name, directory ? "directory" : "regular file");
-        return errno ? errno : ENOENT;
+        else
+        {
+            OsConfigLogInfo(log, "CheckAccess: stat('%s') failed with %d", name, errno);
+        }
     }
-
-    result = CheckAccessByFd(directory, fd, name, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
-    close(fd);
+    else
+    {
+        OsConfigLogInfo(log, "CheckAccess: '%s' is not found, nothing to check", name);
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' is not found, nothing to check", name);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found", name);
+        }
+        result = 0;
+    }
 
     return result;
 }
 
-static int CheckAccess(bool directory, bool followSymlink, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return CheckAccessAt(directory, followSymlink, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
-}
-
-static int SetAccessAt(bool directory, bool followSymlink, int dirFd, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
-{
-    int fd = -1;
     int result = ENOENT;
 
     if (NULL == name)
@@ -755,67 +716,63 @@ static int SetAccessAt(bool directory, bool followSymlink, int dirFd, const char
         return EINVAL;
     }
 
-    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, followSymlink, dirFd, name, log)))
+    if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (ENOENT == errno)
+        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, NULL, log))
         {
-            OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", name);
-            return 0;
+            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access 0%04o) already set",
+                name, desiredOwnerId, desiredGroupId, desiredAccess);
+            result = 0;
         }
+        else
+        {
+            if (0 == (result = chown(name, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
+            {
+                OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
 
-        OsConfigLogInfo(log, "SetAccess: '%s' is not a %s that can be modified", name, directory ? "directory" : "regular file");
-        return errno ? errno : ENOENT;
+                if (0 == (result = chmod(name, desiredAccess)))
+                {
+                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to 0%04o", name, desiredAccess);
+                }
+                else
+                {
+                    result = errno ? errno : ENOENT;
+                    OsConfigLogInfo(log, "SetAccess: 'chmod 0%04o %s' failed with %d", desiredAccess, name, result);
+                }
+            }
+            else
+            {
+                OsConfigLogInfo(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+            }
+        }
     }
-
-    result = SetAccessByFd(directory, fd, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
-    close(fd);
+    else
+    {
+        OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", name);
+        result = 0;
+    }
 
     return result;
 }
 
-static int SetAccess(bool directory, bool followSymlink, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
-{
-    return SetAccessAt(directory, followSymlink, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
-}
-
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(false, false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccess(false, false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
-}
-
-int CheckFileAccessFollowingSymlinks(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
-{
-    return CheckAccess(false, true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
-}
-
-int SetFileAccessFollowingSymlinks(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
-{
-    return SetAccess(false, true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
-}
-
-int CheckFileAccessAt(int directoryFd, const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
-{
-    return CheckAccessAt(false, false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
-}
-
-int SetFileAccessAt(int directoryFd, const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
-{
-    return SetAccessAt(false, false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(true, false, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccess(true, false, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
