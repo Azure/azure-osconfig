@@ -1608,12 +1608,12 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                     else
                     {
                         _status = (0 == errno) ? EACCES : errno;
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory for user %u,  %d (%s)", userList[i].userId, _status, strerror(_status));
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory for user %u,  %d (%s)",
+                            userList[i].userId, _status, strerror(_status));
                     }
                 }
 
-                // Open the home directory once without following symlinks and correct ownership and
-                // access through that descriptor to avoid a symlink race
+                // Open the home directory once without following symlinks and correct ownership and access through that descriptor to avoid a symlink race
                 if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
                 {
                     if ((0 != fchown(homeFd, userList[i].userId, userList[i].groupId)) || (0 != fchmod(homeFd, defaultHomeDirAccess)))
@@ -1818,14 +1818,13 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
             {
                 continue;
             }
-            // Open the home directory once without following symlinks and verify and correct it
-            // through that same descriptor to avoid a symlink race
+            // Open the home directory once without following symlinks and verify and correct it through that same descriptor to avoid a symlink race
             else if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
             {
                 if (0 != fstat(homeFd, &statStruct))
                 {
-                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: fstat('%s') failed (%d) for user %u",
-                        userList[i].home, errno, userList[i].userId);
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: fstat on '%s' failed with %d (%s) for user %u",
+                        userList[i].home, errno, strerror(errno), userList[i].userId);
                     close(homeFd);
                     homeFd = -1;
                     continue;
@@ -1835,8 +1834,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) &&
-                        (modes[j] == (statStruct.st_mode & 07777)))
+                    if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) && (modes[j] == (statStruct.st_mode & 07777)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -2990,8 +2988,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
             {
                 if (NULL == (home = fdopendir(homeFd)))
                 {
-                    OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fdopendir('%s') failed (%d), skipping user %u",
-                        userList[i].home, errno, userList[i].userId);
+                    OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fdopendir on '%s' failed with %d (%s), skipping user %u", userList[i].home, errno, strerror(errno), userList[i].userId);
                     close(homeFd);
                     homeFd = -1;
                     continue;
@@ -3001,8 +2998,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        // Open the dot file once relative to the home descriptor without following symlinks,
-                        // then verify and correct it through that same descriptor to avoid a symlink race
+                        // Open the dot file once relative to the home descriptor without following symlinks, then verify and correct it through that same descriptor to avoid a symlink race
                         if (0 > (dotFd = OpenTrueFileOrDirectory(false, false, dirfd(home), entry->d_name, log)))
                         {
                             continue;
@@ -3010,8 +3006,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (0 != fstat(dotFd, &statStruct))
                         {
-                            OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fstat('%s') failed (%d) for user %u",
-                                entry->d_name, errno, userList[i].userId);
+                            OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fstat on '%s' failed with %d (%s) for user %u", entry->d_name, errno, strerror(errno), userList[i].userId);
                             close(dotFd);
                             dotFd = -1;
                             continue;
@@ -3021,8 +3016,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) &&
-                                (modes[j] == (statStruct.st_mode & 07777)))
+                            if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) && (modes[j] == (statStruct.st_mode & 07777)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);

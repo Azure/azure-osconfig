@@ -570,55 +570,6 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-// Opens 'name' relative to 'dirFd' and verifies its type. 'followSymlink' selects whether the final
-// component may be a symlink (followed to its target) or is opened with O_NOFOLLOW. Either way the
-// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set
-int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
-{
-    struct stat statStruct = {0};
-    int flags = O_RDONLY | O_CLOEXEC | O_NONBLOCK | (followSymlink ? 0 : O_NOFOLLOW) | (directory ? O_DIRECTORY : 0);
-    int err = 0, result = -1;
-    int fd = openat(dirFd, name, flags);
-
-    if (0 > fd)
-    {
-        if (ELOOP == errno)
-        {
-            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is a symbolic link, refusing to use it", name);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: openat for '%s' failed with %d (%s)", name, errno, strerror(errno));
-        }
-    }
-    else
-    {
-        if (0 != fstat(fd, &statStruct))
-        {
-            err = errno ? errno : ENOENT;
-            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: fstat for '%s' failed with %d (%s)", name, errno, strerror(errno));
-            close(fd);
-            errno = err;
-        }
-        else
-        {
-            // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
-            // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
-            // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
-            if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
-            {
-                errno = EINVAL;
-                OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
-                    directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
-            }
-        }
-    }
-
-    result = fd;
-    close(fd);
-    return result;
-}
-
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
@@ -2111,4 +2062,53 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log)
     }
 
     return status;
+}
+
+// Opens 'name' relative to 'dirFd' and verifies its type. 'followSymlink' selects whether the final
+// component may be a symlink (followed to its target) or is opened with O_NOFOLLOW. Either way the
+// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
+{
+    struct stat statStruct = {0};
+    int flags = O_RDONLY | O_CLOEXEC | O_NONBLOCK | (followSymlink ? 0 : O_NOFOLLOW) | (directory ? O_DIRECTORY : 0);
+    int err = 0, result = -1;
+    int fd = openat(dirFd, name, flags);
+
+    if (0 > fd)
+    {
+        if (ELOOP == errno)
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is a symbolic link, refusing to use it", name);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: openat for '%s' failed with %d (%s)", name, errno, strerror(errno));
+        }
+    }
+    else
+    {
+        if (0 != fstat(fd, &statStruct))
+        {
+            err = errno ? errno : ENOENT;
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: fstat for '%s' failed with %d (%s)", name, errno, strerror(errno));
+            close(fd);
+            errno = err;
+        }
+        else
+        {
+            // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
+            // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
+            // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
+            if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
+            {
+                errno = EINVAL;
+                OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
+                    directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
+            }
+        }
+    }
+
+    result = fd;
+    close(fd);
+    return result;
 }
