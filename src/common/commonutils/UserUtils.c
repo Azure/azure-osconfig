@@ -913,7 +913,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
         {
             OsConfigLogInfo(log, "RemoveUser: removed user %u", user->userId);
 
-            if (IsADirectory(user->home, log) && DirectoryExists(user->home))
+            if (DirectoryExists(user->home))
             {
                 OsConfigLogWarning(log, "RemoveUser: home directory of user %u remains and needs to be manually deleted", user->userId);
             }
@@ -1558,7 +1558,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
             {
                 continue;
             }
-            else if ((NULL != userList[i].home) && (false == (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))))
+            else if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
             {
                 OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: the home directory for user %u is not found or is not a directory", userList[i].userId);
                 OsConfigCaptureReason(reason, "The home directory for user %u is not found or is not a directory", userList[i].userId);
@@ -1642,7 +1642,6 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
 static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
-    int fd = -1;
     int status = 0;
 
     if ((NULL == user) || (NULL == user->home))
@@ -1651,10 +1650,9 @@ static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle l
         return EINVAL;
     }
 
-    // Open the home directory once without following symlinks and read ownership from the descriptor to avoid a symlink race
-    if (0 <= (fd = open(user->home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
+    if (DirectoryExists(user->home))
     {
-        if (0 == fstat(fd, &statStruct))
+        if (0 == (status = stat(user->home, &statStruct)))
         {
             if (((uid_t)user->userId != statStruct.st_uid) || ((gid_t)user->groupId != statStruct.st_gid))
             {
@@ -1665,20 +1663,12 @@ static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle l
         }
         else
         {
-            status = errno ? errno : ENOENT;
-            OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: fstat('%s') failed with %d", user->home, status);
+            OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: stat('%s') failed with %d", user->home, errno);
         }
-
-        close(fd);
-    }
-    else if (ENOENT == errno)
-    {
-        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' is not found, nothing to check", user->home);
     }
     else
     {
-        status = errno ? errno : ENOENT;
-        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: '%s' is not a directory that can be checked (%d)", user->home, status);
+        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' is not found, nothing to check", user->home);
     }
 
     return status;
@@ -1698,7 +1688,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
             {
                 continue;
             }
-            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
+            else if (DirectoryExists(userList[i].home))
             {
                 if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
@@ -1756,7 +1746,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
             {
                 continue;
             }
-            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
+            else if (DirectoryExists(userList[i].home))
             {
                 oneGoodMode = false;
 
@@ -2798,7 +2788,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
             {
                 continue;
             }
-            else if (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home))
+            else if (DirectoryExists(userList[i].home))
             {
                 length = templateLength + strlen(userList[i].home);
 
@@ -2851,11 +2841,14 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
 {
+    const char* pathTemplate = "%s/%s";
+
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
-    int homeFd = -1;
+    char* path = NULL;
+    size_t length = 0;
     bool oneGoodMode = false;
     int status = 0;
 
@@ -2874,27 +2867,29 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
             {
                 continue;
             }
-            // Open the home directory once without following symlinks and operate relative to that descriptor to avoid a symlink race
-            else if (0 <= (homeFd = open(userList[i].home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
+            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
             {
-                if (NULL == (home = fdopendir(homeFd)))
-                {
-                    OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: fdopendir('%s') failed (%d), skipping user %u",
-                        userList[i].home, errno, userList[i].userId);
-                    close(homeFd);
-                    homeFd = -1;
-                    continue;
-                }
-
                 while (NULL != (entry = readdir(home)))
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
+                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
+                        if (NULL == (path = malloc(length + 1)))
+                        {
+                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
+                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
+                            status = ENOMEM;
+                            break;
+                        }
+
+                        memset(path, 0, length + 1);
+                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
+
                         oneGoodMode = false;
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccessAt(dirfd(home), entry->d_name, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);
@@ -2915,12 +2910,12 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                                 status = ENOENT;
                             }
                         }
+
+                        FREE_MEMORY(path);
                     }
                 }
 
                 closedir(home);
-                home = NULL;
-                homeFd = -1;
             }
         }
     }
