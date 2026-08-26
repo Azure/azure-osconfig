@@ -1438,7 +1438,7 @@ TEST_F(CommonUtilsTest, FileAndDirectoryExistsFollowSymlinks)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, SetAndCheckFileAccessRefusesSymlink)
+TEST_F(CommonUtilsTest, SetAndCheckFileAccessSymlinkHandling)
 {
     const char* link = "/tmp/~test.symlink";
 
@@ -1448,12 +1448,26 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccessRefusesSymlink)
     remove(link);
     ASSERT_EQ(0, symlink(m_path, link));
 
-    // Both check and set must refuse to operate through the symlink (no following, O_NOFOLLOW)
+    // The default variants must refuse to operate through the symlink (no following, O_NOFOLLOW)
     EXPECT_NE(0, CheckFileAccess(link, 0, 0, 0600, nullptr, nullptr));
     EXPECT_NE(0, SetFileAccess(link, 0, 0, 0777, nullptr));
 
     // The target file must be untouched by the attempted operation through the symlink
     EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, 0600, nullptr, nullptr));
+
+    // The following variants (used for well-known root-owned /etc/* targets) resolve the symlink
+    // and act on its target, so both check and set succeed through the link
+    EXPECT_EQ(0, CheckFileAccessFollowingSymlinks(link, 0, 0, 0600, nullptr, nullptr));
+    EXPECT_EQ(0, SetFileAccessFollowingSymlinks(link, 0, 0, 0640, nullptr));
+
+    // The change made through the link is applied to the target file
+    EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, 0640, nullptr, nullptr));
+
+    // The following variants still work on a direct regular file and reject invalid arguments
+    EXPECT_EQ(0, CheckFileAccessFollowingSymlinks(m_path, 0, 0, 0640, nullptr, nullptr));
+    EXPECT_EQ(0, SetFileAccessFollowingSymlinks(m_path, 0, 0, 0600, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileAccessFollowingSymlinks(nullptr, 0, 0, 0600, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetFileAccessFollowingSymlinks(nullptr, 0, 0, 0600, nullptr));
 
     EXPECT_EQ(0, remove(link));
     EXPECT_TRUE(Cleanup(m_path));

@@ -1161,7 +1161,7 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue ?
+    CheckFileAccessFollowingSymlinks(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue ?
         g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue, NULL, 8), &reason, log);
     return reason;
 }
@@ -1169,7 +1169,7 @@ static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcIssueNet(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet ?
+    CheckFileAccessFollowingSymlinks(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet ?
         g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet, NULL, 8), &reason, log);
     return reason;
 }
@@ -1177,7 +1177,7 @@ static char* AuditEnsurePermissionsOnEtcIssueNet(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcHostsAllow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow ?
+    CheckFileAccessFollowingSymlinks(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow ?
         g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow, NULL, 8), &reason, log);
     return reason;
 }
@@ -1185,7 +1185,7 @@ static char* AuditEnsurePermissionsOnEtcHostsAllow(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcHostsDeny(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny ?
+    CheckFileAccessFollowingSymlinks(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny ?
         g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny, NULL, 8), &reason, log);
     return reason;
 }
@@ -1200,7 +1200,7 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
+    CheckFileAccessFollowingSymlinks(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
         g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
     return reason;
 }
@@ -1208,7 +1208,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
+    CheckFileAccessFollowingSymlinks(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
         g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1216,7 +1216,7 @@ static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
+    CheckFileAccessFollowingSymlinks(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
         g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
     return reason;
 }
@@ -1224,7 +1224,7 @@ static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
+    CheckFileAccessFollowingSymlinks(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
         g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1232,7 +1232,7 @@ static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcPasswd(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd ?
+    CheckFileAccessFollowingSymlinks(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd ?
         g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd, NULL, 8), &reason, log);
     return reason;
 }
@@ -1240,7 +1240,7 @@ static char* AuditEnsurePermissionsOnEtcPasswd(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcPasswdDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash ?
+    CheckFileAccessFollowingSymlinks(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash ?
         g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1248,7 +1248,7 @@ static char* AuditEnsurePermissionsOnEtcPasswdDash(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGroup(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup ?
+    CheckFileAccessFollowingSymlinks(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup ?
         g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup, NULL, 8), &reason, log);
     return reason;
 }
@@ -1256,7 +1256,7 @@ static char* AuditEnsurePermissionsOnEtcGroup(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcGroupDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash ?
+    CheckFileAccessFollowingSymlinks(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash ?
         g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash, NULL, 8), &reason, log);
     return reason;
 }
@@ -1264,7 +1264,7 @@ static char* AuditEnsurePermissionsOnEtcGroupDash(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcAnacronTab(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab ?
+    CheckFileAccessFollowingSymlinks(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab ?
         g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab, NULL, 8), &reason, log);
     return reason;
 }
@@ -1272,7 +1272,7 @@ static char* AuditEnsurePermissionsOnEtcAnacronTab(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcCronD(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD ?
+    CheckFileAccessFollowingSymlinks(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD ?
         g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD, NULL, 8), &reason, log);
     return reason;
 }
@@ -1280,7 +1280,7 @@ static char* AuditEnsurePermissionsOnEtcCronD(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcCronDaily(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily ?
+    CheckFileAccessFollowingSymlinks(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily ?
         g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily, NULL, 8), &reason, log);
     return reason;
 }
@@ -1288,7 +1288,7 @@ static char* AuditEnsurePermissionsOnEtcCronDaily(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcCronHourly(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly ?
+    CheckFileAccessFollowingSymlinks(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly ?
         g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly, NULL, 8), &reason, log);
     return reason;
 }
@@ -1296,7 +1296,7 @@ static char* AuditEnsurePermissionsOnEtcCronHourly(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcCronMonthly(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly ?
+    CheckFileAccessFollowingSymlinks(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly ?
         g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly, NULL, 8), &reason, log);
     return reason;
 }
@@ -1304,7 +1304,7 @@ static char* AuditEnsurePermissionsOnEtcCronMonthly(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcCronWeekly(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly ?
+    CheckFileAccessFollowingSymlinks(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly ?
         g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly, NULL, 8), &reason, log);
     return reason;
 }
@@ -1312,7 +1312,7 @@ static char* AuditEnsurePermissionsOnEtcCronWeekly(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcMotd(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd ?
+    CheckFileAccessFollowingSymlinks(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd ?
         g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd, NULL, 8), &reason, log);
     return reason;
 }
@@ -2943,25 +2943,25 @@ static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcIssue(value);
-    return SetFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcIssueNet(value);
-    return SetFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcHostsAllow(value);
-    return SetFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcHostsDeny(value);
-    return SetFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log)
@@ -2972,91 +2972,91 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLog
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcPasswd(value);
-    return SetFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcPasswdDash(value);
-    return SetFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroup(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGroup(value);
-    return SetFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGroupDash(value);
-    return SetFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcAnacronTab(value);
-    return SetFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronD(value);
-    return SetFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronDaily(value);
-    return SetFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronHourly(value);
-    return SetFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronMonthly(value);
-    return SetFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronWeekly(value);
-    return SetFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcMotd(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcMotd(value);
-    return SetFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log);
+    return SetFileAccessFollowingSymlinks(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log);
 };
 
 static int RemediateEnsureInetdNotInstalled(char* value, OsConfigLogHandle log)

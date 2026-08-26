@@ -570,11 +570,13 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-// Opens 'name' relative to 'dirFd' without following symlinks and verifies the type. Returns fd, or -1 with errno set.
-static int OpenTrueFileOrDirectoryAt(bool directory, int dirFd, const char* name, OsConfigLogHandle log)
+// Opens 'name' relative to 'dirFd' and verifies its type. 'followSymlink' selects whether the final
+// component may be a symlink (followed to its target) or is opened with O_NOFOLLOW. Either way the
+// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set.
+static int OpenTrueFileOrDirectoryAt(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
-    int flags = O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK | (directory ? O_DIRECTORY : 0);
+    int flags = O_RDONLY | O_CLOEXEC | O_NONBLOCK | (followSymlink ? 0 : O_NOFOLLOW) | (directory ? O_DIRECTORY : 0);
     int fd = -1;
     int err = 0;
 
@@ -698,7 +700,7 @@ static int SetAccessByFd(bool directory, int fd, const char* name, unsigned int 
     return result;
 }
 
-static int CheckAccessAt(bool directory, int dirFd, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+static int CheckAccessAt(bool directory, bool followSymlink, int dirFd, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     int fd = -1;
     int result = ENOENT;
@@ -710,7 +712,7 @@ static int CheckAccessAt(bool directory, int dirFd, const char* name, int desire
         return EINVAL;
     }
 
-    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, dirFd, name, log)))
+    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, followSymlink, dirFd, name, log)))
     {
         if (ENOENT == errno)
         {
@@ -736,12 +738,12 @@ static int CheckAccessAt(bool directory, int dirFd, const char* name, int desire
     return result;
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+static int CheckAccess(bool directory, bool followSymlink, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccessAt(directory, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccessAt(directory, followSymlink, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
-static int SetAccessAt(bool directory, int dirFd, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
+static int SetAccessAt(bool directory, bool followSymlink, int dirFd, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     int fd = -1;
     int result = ENOENT;
@@ -753,7 +755,7 @@ static int SetAccessAt(bool directory, int dirFd, const char* name, unsigned int
         return EINVAL;
     }
 
-    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, dirFd, name, log)))
+    if (0 > (fd = OpenTrueFileOrDirectoryAt(directory, followSymlink, dirFd, name, log)))
     {
         if (ENOENT == errno)
         {
@@ -771,39 +773,49 @@ static int SetAccessAt(bool directory, int dirFd, const char* name, unsigned int
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
+static int SetAccess(bool directory, bool followSymlink, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccessAt(directory, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccessAt(directory, followSymlink, AT_FDCWD, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccess(false, false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(false, false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+}
+
+int CheckFileAccessFollowingSymlinks(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+{
+    return CheckAccess(false, true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+}
+
+int SetFileAccessFollowingSymlinks(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
+{
+    return SetAccess(false, true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckFileAccessAt(int directoryFd, const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccessAt(false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccessAt(false, false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetFileAccessAt(int directoryFd, const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccessAt(false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccessAt(false, false, directoryFd, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
+    return CheckAccess(true, false, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(true, false, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
