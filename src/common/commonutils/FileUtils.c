@@ -2094,21 +2094,22 @@ int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const
             close(fd);
             errno = err;
         }
+        // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
+        // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
+        // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
+        else if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
+                directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
+            close(fd);
+            errno = EINVAL;
+        }
         else
         {
-            // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
-            // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
-            // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
-            if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
-            {
-                errno = EINVAL;
-                OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
-                    directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
-            }
+            // The object was opened once and verified; hand the still-open descriptor to the caller
+            result = fd;
         }
     }
 
-    result = fd;
-    close(fd);
     return result;
 }
