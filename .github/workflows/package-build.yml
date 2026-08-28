@@ -63,7 +63,7 @@ jobs:
   package:
     runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=build-infra"]') || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           submodules: recursive
           clean: true
@@ -71,7 +71,7 @@ jobs:
 
       - name: Setup QEMU
         if: ${{ inputs.arch != 'amd64' }}
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Run container
         id: container
@@ -151,7 +151,7 @@ jobs:
 
             cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ inputs.artifact }}
           path: |

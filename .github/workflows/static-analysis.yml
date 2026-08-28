@@ -10,7 +10,7 @@ jobs:
       image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64@sha256:0eed71cef37604c37186ec035974168a40a84d27e26d3b746a2858d99f305e2e
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       with:
         submodules: recursive
         clean: true
@@ -39,7 +39,7 @@ jobs:
           --cdb build/compile_commands.json \
           --output output/scan-build
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: success() || failure()
       with:
         name: scan-build
