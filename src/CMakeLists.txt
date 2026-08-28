@@ -36,7 +36,6 @@ option(BUILD_TELEMETRY "Build telemetry" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
-option(BUILD_COMPLIANCE_ENGINE_ASSESSOR "Build the compliance engine assessor tool" ON)
 
 add_compile_options("-Wno-psabi;-fPIC")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
