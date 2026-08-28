@@ -17,11 +17,6 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     asb
     pthread
     securitybaselinelib
-    complianceenginelib
     parsonlib
     $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
-)
-
-target_compile_definitions(osconfig-fuzzer PRIVATE
-    $<$<TARGET_EXISTS:complianceenginelib>:COMPLIANCEENGINE>
 )
