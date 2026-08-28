@@ -274,6 +274,66 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     return result;
 }
 
+// Validates that an SSH configuration value destined for interpolation into a shell command (or
+// written to and later read back from the SSH Server configuration) contains only characters that
+// legitimate values use: user, group, user@host and wildcard patterns, and comma-separated MAC and
+// cipher algorithm lists. This is a defense-in-depth guard: the values themselves are not validated
+// (they are passed to the SSH Server as-is, which validates them), but they must not be allowed to
+// break out of the command OSConfig builds around them and inject arbitrary commands, nor to break
+// the SSH Server configuration parsing.
+static bool IsValueSafe(const char* value, const char* additionalAllowedCharacters, OsConfigLogHandle log)
+{
+    // First layer: reject known-dangerous byte sequences outright, independently of the character
+    // allowlist below, so that they are caught (and clearly named in the log) even if the allowlist
+    // is ever relaxed. These can be used to inject an additional command or to break configuration
+    // parsing (command substitution, command chaining, redirection, quoting/escaping, comments,
+    // extra configuration lines via new lines, or relative path traversal).
+    const char* forbiddenSequences[] = {
+        "\n", "\r", "\t", "$", "`", "$(", "${", ";", "|", "&", "<", ">", "\\", "\"", "'", "#", ".."
+    };
+    size_t forbiddenSequencesSize = ARRAY_SIZE(forbiddenSequences);
+    size_t i = 0;
+    char c = 0;
+    bool result = false;
+
+    if ((NULL == value) || (0 == value[0]))
+    {
+        return result;
+    }
+
+    result = true;
+
+    for (i = 0; i < forbiddenSequencesSize; i++)
+    {
+        if (NULL != strstr(value, forbiddenSequences[i]))
+        {
+            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '%s'", value, forbiddenSequences[i]);
+            result = false;
+        }
+    }
+
+    if (true == result)
+    {
+        // Second layer: allow only the characters that legitimate SSH configuration values need
+        // (user, group, user@host and wildcard patterns and the space that separates a list of
+        // them), plus any extra characters the caller explicitly permits for this particular check.
+        for (i = 0; 0 != (c = value[i]); i++)
+        {
+            if (isalnum(c) || (' ' == c) || ('_' == c) || ('-' == c) || ('.' == c) || ('*' == c) ||
+                ('?' == c) || ('!' == c) || ('@' == c) || (':' == c) || ('/' == c) ||
+                ((NULL != additionalAllowedCharacters) && (NULL != strchr(additionalAllowedCharacters, c))))
+            {
+                continue;
+            }
+
+            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
+            result = false;
+        }
+    }
+
+    return result;
+}
+
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log)
 {
     char* sshMacs = NULL;
@@ -767,66 +827,6 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
     OsConfigLogInfo(log, "CheckSshProtocol returning %d", status);
 
     return status;
-}
-
-// Validates that an SSH configuration value destined for interpolation into a shell command (or
-// written to and later read back from the SSH Server configuration) contains only characters that
-// legitimate values use: user, group, user@host and wildcard patterns, and comma-separated MAC and
-// cipher algorithm lists. This is a defense-in-depth guard: the values themselves are not validated
-// (they are passed to the SSH Server as-is, which validates them), but they must not be allowed to
-// break out of the command OSConfig builds around them and inject arbitrary commands, nor to break
-// the SSH Server configuration parsing.
-static bool IsValueSafe(const char* value, const char* additionalAllowedCharacters, OsConfigLogHandle log)
-{
-    // First layer: reject known-dangerous byte sequences outright, independently of the character
-    // allowlist below, so that they are caught (and clearly named in the log) even if the allowlist
-    // is ever relaxed. These can be used to inject an additional command or to break configuration
-    // parsing (command substitution, command chaining, redirection, quoting/escaping, comments,
-    // extra configuration lines via new lines, or relative path traversal).
-    const char* forbiddenSequences[] = {
-        "\n", "\r", "\t", "$", "`", "$(", "${", ";", "|", "&", "<", ">", "\\", "\"", "'", "#", ".."
-    };
-    size_t forbiddenSequencesSize = ARRAY_SIZE(forbiddenSequences);
-    size_t i = 0;
-    char c = 0;
-    bool result = false;
-
-    if ((NULL == value) || (0 == value[0]))
-    {
-        return result;
-    }
-
-    result = true;
-
-    for (i = 0; i < forbiddenSequencesSize; i++)
-    {
-        if (NULL != strstr(value, forbiddenSequences[i]))
-        {
-            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '%s'", value, forbiddenSequences[i]);
-            result = false;
-        }
-    }
-
-    if (true == result)
-    {
-        // Second layer: allow only the characters that legitimate SSH configuration values need
-        // (user, group, user@host and wildcard patterns and the space that separates a list of
-        // them), plus any extra characters the caller explicitly permits for this particular check.
-        for (i = 0; 0 != (c = value[i]); i++)
-        {
-            if (isalnum(c) || (' ' == c) || ('_' == c) || ('-' == c) || ('.' == c) || ('*' == c) ||
-                ('?' == c) || ('!' == c) || ('@' == c) || (':' == c) || ('/' == c) ||
-                ((NULL != additionalAllowedCharacters) && (NULL != strchr(additionalAllowedCharacters, c))))
-            {
-                continue;
-            }
-
-            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
-            result = false;
-        }
-    }
-
-    return result;
 }
 
 static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, OsConfigLogHandle log)
