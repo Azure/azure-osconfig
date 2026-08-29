@@ -309,6 +309,7 @@ static bool IsValueSafe(const char* value, const char* additionalAllowedCharacte
         {
             OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '%s'", value, forbiddenSequences[i]);
             result = false;
+            break;
         }
     }
 
@@ -328,6 +329,7 @@ static bool IsValueSafe(const char* value, const char* additionalAllowedCharacte
 
             OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
             result = false;
+            break;
         }
     }
 
