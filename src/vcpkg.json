@@ -13,12 +13,6 @@
         "openssl"
       ]
     },
-    {
-      "name": "lua",
-      "features": [
-        "cpp"
-      ]
-    },
     "sqlite3",
     {
       "name": "nlohmann-json",
