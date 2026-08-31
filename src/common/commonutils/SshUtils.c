@@ -281,17 +281,8 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
 // (they are passed to the SSH Server as-is, which validates them), but they must not be allowed to
 // break out of the command OSConfig builds around them and inject arbitrary commands, nor to break
 // the SSH Server configuration parsing.
-static bool IsValueSafe(const char* value, const char* additionalAllowedCharacters, OsConfigLogHandle log)
+static bool IsValueSafe(const char* value, char additionalAllowedCharacter, OsConfigLogHandle log)
 {
-    // First layer: reject known-dangerous byte sequences outright, independently of the character
-    // allowlist below, so that they are caught (and clearly named in the log) even if the allowlist
-    // is ever relaxed. These can be used to inject an additional command or to break configuration
-    // parsing (command substitution, command chaining, redirection, quoting/escaping, comments,
-    // extra configuration lines via new lines, or relative path traversal).
-    const char* forbiddenSequences[] = {
-        "\n", "\r", "\t", "$", "`", "$(", "${", ";", "|", "&", "<", ">", "\\", "\"", "'", "#", ".."
-    };
-    size_t forbiddenSequencesSize = ARRAY_SIZE(forbiddenSequences);
     size_t i = 0;
     char c = 0;
     bool result = false;
@@ -303,34 +294,24 @@ static bool IsValueSafe(const char* value, const char* additionalAllowedCharacte
 
     result = true;
 
-    for (i = 0; i < forbiddenSequencesSize; i++)
+    for (i = 0; 0 != (c = value[i]); i++)
     {
-        if (NULL != strstr(value, forbiddenSequences[i]))
+        if (('.' == c) && ('.' == value[i + 1]))
         {
-            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '%s'", value, forbiddenSequences[i]);
+            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '..'", value);
             result = false;
             break;
         }
-    }
 
-    if (true == result)
-    {
-        // Second layer: allow only the characters that legitimate SSH configuration values need
-        // (user, group, user@host and wildcard patterns and the space that separates a list of
-        // them), plus any extra characters the caller explicitly permits for this particular check.
-        for (i = 0; 0 != (c = value[i]); i++)
+        if (isalnum(c) || (' ' == c) || ('_' == c) || ('-' == c) || ('.' == c) || ('*' == c) ||
+            ('?' == c) || ('!' == c) || ('@' == c) || (':' == c) || ('/' == c) || (additionalAllowedCharacter == c))
         {
-            if (isalnum(c) || (' ' == c) || ('_' == c) || ('-' == c) || ('.' == c) || ('*' == c) ||
-                ('?' == c) || ('!' == c) || ('@' == c) || (':' == c) || ('/' == c) ||
-                ((NULL != additionalAllowedCharacters) && (NULL != strchr(additionalAllowedCharacters, c))))
-            {
-                continue;
-            }
-
-            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
-            result = false;
-            break;
+            continue;
         }
+
+        OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
+        result = false;
+        break;
     }
 
     return result;
@@ -355,7 +336,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     {
         return status;
     }
-    else if (false == IsValueSafe(macs, ",", log))
+    else if (false == IsValueSafe(macs, ',', log))
     {
         OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", macs);
         OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", macs);
@@ -437,7 +418,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
     {
         return status;
     }
-    else if (false == IsValueSafe(ciphers, ",", log))
+    else if (false == IsValueSafe(ciphers, ',', log))
     {
         OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", ciphers);
         OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", ciphers);
@@ -851,7 +832,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
     {
         return status;
     }
-    else if (false == IsValueSafe(expectedValue, NULL, log))
+    else if (false == IsValueSafe(expectedValue, 0, log))
     {
         OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", lowercase);
         OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", lowercase);
@@ -1564,12 +1545,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
         (0 == strcmp(name, g_remediateEnsureAllowGroupsIsConfiguredObject)) ||
         (0 == strcmp(name, g_remediateEnsureDenyGroupsConfiguredObject)))
     {
-        status = IsValueSafe(value, NULL, log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
+        status = IsValueSafe(value, 0, log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
     }
     else if ((0 == strcmp(name, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject)) ||
         (0 == strcmp(name, g_remediateEnsureAppropriateCiphersForSshObject)))
     {
-        status = IsValueSafe(value, ",", log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
+        status = IsValueSafe(value, ',', log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
