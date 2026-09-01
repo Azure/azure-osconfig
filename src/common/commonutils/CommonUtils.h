@@ -39,11 +39,6 @@
 // 30 seconds
 #define DEFAULT_REPORTING_INTERVAL 30
 
-#define PROTOCOL_AUTO 0
-// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
-//#define PROTOCOL_MQTT 1
-#define PROTOCOL_MQTT_WS 2
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -77,6 +72,8 @@ int CheckFileExists(const char* fileName, char** reason, OsConfigLogHandle log);
 int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log);
 
 bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OsConfigLogHandle log);
+
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log);
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
@@ -123,7 +120,10 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
 int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log);
 int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log);
+int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, const char* faillockConf, char** reason, OsConfigLogHandle log);
+int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int numPamFiles, const char* faillockConf, OsConfigLogHandle log);
 int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log);
+int SetLockoutForFailedPasswordAttemptsViaFaillockConf(const char* faillockConf, int deny, int unlockTime, OsConfigLogHandle log);
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log);
 int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OsConfigLogHandle log);
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log);
@@ -237,14 +237,12 @@ typedef struct ReportedProperty
     size_t lastPayloadHash;
 } ReportedProperty;
 
-bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log);
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log);
 

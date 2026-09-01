@@ -5,11 +5,7 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
-#include "Evaluator.h"
-#include "Optional.h"
 #include "parson.h"
-#include "Base64.h"
-#include "Procedure.h"
 #ifdef BUILD_TELEMETRY
 #include "Telemetry.hpp"
 #endif
@@ -24,12 +20,6 @@
 #include <limits>
 #include <vector>
 #include <sstream>
-
-using ComplianceEngine::Optional;
-using ComplianceEngine::Result;
-using ComplianceEngine::Error;
-using ComplianceEngine::Evaluator;
-using ComplianceEngine::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -918,13 +908,6 @@ static int GetMaxLogSizeDebugMultiplierFromJsonConfig_target(const char* data, s
     return 0;
 }
 
-static int IsIotHubManagementEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsIotHubManagementEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
 static int GetReportingIntervalFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
@@ -943,13 +926,6 @@ static int GetLocalManagementFromJsonConfig_target(const char* data, std::size_t
 {
     auto json = std::string(data, size);
     GetLocalManagementFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetIotHubProtocolFromJsonConfig(json.c_str(), nullptr);
     return 0;
 }
 
@@ -998,93 +974,6 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     char* reason = nullptr;
     CheckUserAccountsNotFound(usernames.c_str(), &reason, nullptr);
     free(reason);
-    return 0;
-}
-
-static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return false;
-}
-
-static Result<bool> ComplianceEngineSuccess(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return true;
-}
-
-static Result<bool> ComplianceEngineParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
-{
-    auto it = arguments.find("result");
-    if (it == arguments.end())
-    {
-        return Error("Missing 'result' parameter");
-    }
-
-    if (it->second == "success")
-    {
-        return true;
-    }
-    else if (it->second == "failure")
-    {
-        return false;
-    }
-
-    return Error("Invalid 'result' parameter");
-}
-
-static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(const std::string& input)
-{
-    std::map<std::string, std::string> result;
-    std::istringstream stream(input);
-    std::string token;
-    while (std::getline(stream, token, ','))
-    {
-        auto delimiterPos = token.find('=');
-        if (delimiterPos == std::string::npos)
-        {
-            return {};
-        }
-
-        auto key = token.substr(0, delimiterPos);
-        auto value = token.substr(delimiterPos + 1);
-        result.emplace(std::move(key), std::move(value));
-    }
-
-    return result;
-}
-
-static int Base64Decode_target(const char* data, std::size_t size) noexcept
-{
-    ComplianceEngine::Base64Decode(std::string(data, size));
-    return c_valid_input;
-}
-
-static int ProcedureUpdateUserParameters_target(const char* data, std::size_t size) noexcept
-{
-    auto input = std::string(data, size);
-    for (auto& c : input)
-    {
-        if (!std::isspace(c) && !std::isprint(c))
-        {
-            return c_skip_input;
-        }
-    }
-    ComplianceEngine::Procedure proc;
-    ComplianceEngine::ProcedureParameters params;
-    params["X"] = "1";
-    params["Y"] = "2";
-    proc.SetParameters(std::move(params));
-    Optional<Error> error = proc.UpdateUserParameters(input);
-    if (error)
-    {
-        // printf("Error: %s\n", error->message.c_str());
-    }
-    else
-    {
-        for (auto& param : proc.Parameters())
-        {
-            // printf("Parameter: %s = %s\n", param.first.c_str(), param.second.c_str());
-        }
-    }
     return 0;
 }
 
@@ -1151,19 +1040,15 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
     { "GetMaxLogSizeFromJsonConfig.", GetMaxLogSizeFromJsonConfig_target },
     { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
-    { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },
     { "GetLocalManagementFromJsonConfig.", GetLocalManagementFromJsonConfig_target },
-    { "GetIotHubProtocolFromJsonConfig.", GetIotHubProtocolFromJsonConfig_target },
     { "LoadReportedFromJsonConfig.", LoadReportedFromJsonConfig_target },
     { "GetGitManagementFromJsonConfig.", GetGitManagementFromJsonConfig_target },
     { "GetGitRepositoryUrlFromJsonConfig.", GetGitRepositoryUrlFromJsonConfig_target },
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-    { "Base64Decode.", Base64Decode_target },
-    { "ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target },
 #ifdef BUILD_TELEMETRY
     { "ProcessJsonFile.", ProcessJsonFile_target },
 #endif
