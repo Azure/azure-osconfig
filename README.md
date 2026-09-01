@@ -80,9 +80,8 @@ Source | Destination | Description
 -----|-----|-----
 [src/adapters/agent/](src/adapters/agent/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
 [src/platform/](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
-[src/adapters/pnp/daemon/osconfig.conn](src/adapters/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
-[src/adapters/pnp/daemon/osconfig.json](src/adapters/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
-[src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
+[src/adapters/agent/daemon/osconfig.json](src/adapters/agent/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
+[src/adapters/agent/daemon/osconfig.service](src/adapters/agent/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The DeviceInfo module binary
 [src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary

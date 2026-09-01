@@ -32,12 +32,6 @@
             }
         },
         {
-            "name": "linux-bash-command",
-            "parameters": {
-                "command": "wget https://github.com/Azure/azure-iotedge/releases/download/1.4.1/aziot-identity-service_1.4.1-1_debian11_amd64.deb -O aziot-identity-service.deb && apt install -y ./aziot-identity-service.deb"
-            }
-        },
-        {
             "name": "linux-install-packages",
             "parameters": {
                 "packages": "jq powershell omi"
