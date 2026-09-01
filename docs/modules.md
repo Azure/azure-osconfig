@@ -9,7 +9,7 @@ OSConfig contains a set of Adapters, a Management Platform (including a Modules 
 
 The main way of contributing to and extending OSConfig is via developing new Management Modules.
 
-Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the management authority protocols. OSConfig communicates with the module via the module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn Azure technologies like MC, PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the MIM and implement the module. If needed, the MIM can then be easily translated to DTDL or other formats with minimal changes.
+Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the management authority protocols. OSConfig communicates with the module via the module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn the management authority protocols and instead can focus on designing the MIM and implementing the module. If needed, the MIM can then be easily translated to other formats with minimal changes.
 
 This document describes the OSConfig Management Modules and it's meant to serve as a guide for the design and development of such modules.
 
@@ -60,19 +60,19 @@ A MIM object captures an OS configuration state or function. For example: result
 
 MIM objects can be translated to C++ classes, etc.
 
-There are two types of PnP properties:
-- Readable, holding Reported Twin values. These properties are exclusively updated from the device and seen as read-only from the IoT Hub.
-- Writeable, holding Desired Twin values. These properties are exclusively updated from the IoT Hub. The device can reject an update request but cannot update such property.
+There are two types of properties:
+- Readable, holding reported values. These properties are exclusively updated from the device and seen as read-only from the remote authority.
+- Writeable, holding desired values. These properties are exclusively updated from the remote authority. The device can reject an update request but cannot update such property.
 
 The MIM objects (together with the Settings they contain) are uni-directional, either reported or desired, not both. For writeable settings, desired objects normally may be paired with reported objects. For read-only settings there can be only reported objects. There also could be desired objects without reported counterparts. Once the desired and reported objects are modeled, the module must adhere to this model (report reported, accept desired) and respect it.
 
 When the desired MIM object is distinctly different from its reported MIM object the two objects can be linked together (to be able to reference each other) via a common MIM setting. For example, the CommandRunner OSConfig Component's desired commandArguments Object is linked to the matching reported commandStatus Object via the commandId MIM setting that both contain.
 
-Each MIM object contains one or multiple MIM settings, either in a single instance or in multiple instances, as a array object.
+Each MIM object contains one or multiple MIM settings, either in a single instance or in multiple instances, as an array object.
 
 An array MIM object is a MIM Object with its list of MIM settings repeated a variable number of times as items into an array.
 
-When a MIM object contains just one MIM setting, that object and setting share the same name and for PnP are translated to a simple PnP property.
+When a MIM object contains just one MIM setting, that object and setting share the same name and are translated to a simple property.
 
 The names of MIM objects must be camelCased, with the first letter lowercase and the first letter of each word after the first uppercase.
 
@@ -663,7 +663,7 @@ Each Module must be a Linux Dynamically Linked Shared Object library (.so) imple
 
 For the first version of OSConfig, there was a single process, with modules loaded in-proc. In the current version of OSConfig there are two processes, one for the agent and the other for the platform and the later loads the modules in-proc. In a further future version modules could be isolated to run each into their own processes, via an executable shell provided by OSConfig.
 
-In general, any process can load a module and communicate to it over the MMI. The module developer shall not assume that the module will be loaded by a certain process or that will be only invoked over PnP and IoT Hub.
+In general, any process can load a module and communicate to it over the MMI. The module developer shall not assume that the module will be loaded by a certain process or that it will be only invoked over a specific management authority.
 
 The MMI is a simple C API and includes the calls described in this section.
 
@@ -709,7 +709,7 @@ A JSON schema of the MmiGetInfo payload response is at [MmiGetInfo JSON schema](
 
 ## 4.2. MmiOpen
 
-MmiOpen starts a new client session with the module. MmiOpen receives as an input argument the name of the client (the module use that name to identify the caller) and the maximum size in bytes for object payload values supported by the client (0 if unlimited). For OSConfig this name will be same as used for the IoT Hub (```Azure OSConfig M;A.B.C.YYYYMMDD``` where ```M``` is the DTDL model version, ```A.B.C``` is the version number and ```YYYYMMDD``` is the build date of OSConfig). On success, MmiOpen returns a newly created handle to identify this session. The handle is a module-specific opaque handle (where the module can hide a C structure or C++ class that identifies the current session) to be used for subsequent calls. On failure, MmiOpen returns NULL.
+MmiOpen starts a new client session with the module. MmiOpen receives as an input argument the name of the client (the module use that name to identify the caller) and the maximum size in bytes for object payload values supported by the client (0 if unlimited). For OSConfig this name follows the format ```Azure OSConfig M;A.B.C.YYYYMMDD``` where ```M``` is the model version, ```A.B.C``` is the version number and ```YYYYMMDD``` is the build date of OSConfig. On success, MmiOpen returns a newly created handle to identify this session. The handle is a module-specific opaque handle (where the module can hide a C structure or C++ class that identifies the current session) to be used for subsequent calls. On failure, MmiOpen returns NULL.
 
 ```C
 typedef void* MMI_HANDLE;
@@ -758,7 +758,7 @@ The payload argument contains a JSON formatted, not null terminated UTF-8 string
 
 OSConfig will not attempt to parse and validate the payload and payloadSizeBytes arguments. It is the responsability of the respective Module to do this and return errors if appropriate. Modules must also validate the clientSession, componentName and objectName arguments against invalid values.
 
-The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the PnP requests translated into MMI calls must be size limited (the size of the Twin, the Azure clone of the device, is limited) and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
+The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the requests translated into MMI calls must be size limited and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
 
 MmiSet may be called with the same payload several times. The Module must be able to handle these calls either by reapplying the desired payload or detect when the respective desired configuration was already applied and in that case return MMI_OK without reapplying the payload and without logging errors.
 
