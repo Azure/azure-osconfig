@@ -6,4 +6,3 @@
 #     add_subdirectory(pnp)
 # endif()
 add_subdirectory(mc)
-add_subdirectory(pnp)

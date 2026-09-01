@@ -1303,20 +1303,8 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
           "\"MaxLogSize\": 1073741825,"
           "\"MaxLogSizeDebugMultiplier\": 0,"
           "\"ModelVersion\": 11,"
-          "\"Reported\": ["
-          "  {"
-          "    \"ComponentName\": \"DeviceInfo\","
-          "    \"ObjectName\": \"osName\""
-          "  },"
-          "  {"
-          "    \"ComponentName\": \"TestABC\","
-          "    \"ObjectName\": \"TestVa12lue\""
-          "  }"
-          "],"
           "\"ReportingIntervalSeconds\": 30"
         "}";
-
-    ReportedProperty* reportedProperties = nullptr;
 
     char* value = nullptr;
 
@@ -1334,12 +1322,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     // The value 0 is too small, shall be changed to 5 (default)
     EXPECT_EQ(5, GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, nullptr));
 
-    EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
-    EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
-    EXPECT_STREQ("osName", reportedProperties[0].propertyName);
-    EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
-    EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
-
     EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
 
     EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
@@ -1347,8 +1329,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     EXPECT_STREQ("foo/test", value = GetGitBranchFromJsonConfig(configuration, nullptr));
     FREE_MEMORY(value);
-
-    FREE_MEMORY(reportedProperties);
 }
 
 TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
