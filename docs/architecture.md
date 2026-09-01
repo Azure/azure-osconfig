@@ -3,7 +3,7 @@ Azure OSConfig - North Star Architecture
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -34,13 +34,13 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC), a Watcher for GitOps and a PnP Agent for [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/).
+The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC) and a Watcher for GitOps.
 
 The OSConfig Agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) REST API.
 
 <img src="assets/agent.png" alt="OSConfig Agent" width=50%/>
 
-The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use it, without the need to recompile the agent or the platform.
+The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use it, without the need to recompile the agent or the platform.
 
 ## 3.2. RC/DC Watcher
 
@@ -62,25 +62,7 @@ The GitOps DC file is written in JSON and follows the [MIM schema](../src/module
 
 The Git clone is automatically deleted when the GitOps Watcher terminates. While active, the cloned DC file has restricted access for root user only.
 
-## 3.4. AIS Client
-
-For connecting to IoT Hub, the OSConfig Agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity necessary for IoT Hub connection.
-
-## 3.5. IoT Hub Client
-
-The Agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), receive Desired Twin updates, and make Reported Twin updates.
-
-The IoT Hub Client does not attempt to parse the property values.
-
-## 3.6. Desired and Reported Twins
-
-The Twins start empty and gradually get filled in with content (desired, from the remote authority and reported, from the device).
-
-When the OSConfig Agent starts, it receives the full Desired Twin and dispatches that to the OSConfig Managament Platform. From there on, incremental changes of the Desired Twin are communicated to the agent, one (full or partial) property at a time.
-
-In the opposite direction, the OSConfig Agent periodically updates the Reported Twin with one property value at a time, reading via the platform from the modules.
-
-## 3.7. MPI Client
+## 3.4. MPI Client
 
 The OSConfig Agent links to the common MPI Client library and it uses it to make Management Platform Interface (MPI) calls to the OSConfig Platform as IPC REST API calls over HTTP and Unix Domain Sockets (UDS).
 

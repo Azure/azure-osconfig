@@ -9,8 +9,8 @@
 #define DOWORK_SLEEP 100
 
 // The log file for the agent
-#define LOG_FILE "/var/log/osconfig_pnp_agent.log"
-#define ROLLED_LOG_FILE "/var/log/osconfig_pnp_agent.bak"
+#define LOG_FILE "/var/log/osconfig_agent.log"
+#define ROLLED_LOG_FILE "/var/log/osconfig_agent.bak"
 
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
