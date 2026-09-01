@@ -202,7 +202,7 @@ static bool InitializeAgent(void)
 
     if (status)
     {
-        OsConfigLogInfo(GetLog(), "The OSConfig Agent session is now intialized");
+        OsConfigLogInfo(GetLog(), "The OSConfig Agent session is now initialized");
     }
 
     return status;
