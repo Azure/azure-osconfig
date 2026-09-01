@@ -144,12 +144,6 @@ void ScheduleRefreshConnection(void)
     g_refreshSignal = SIGHUP;
 }
 
-static void SignalChild(int signal)
-{
-    // No-op for this version of the agent
-    UNUSED(signal);
-}
-
 bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
@@ -263,6 +257,9 @@ int main(int argc, char *argv[])
     char* productName = NULL;
     char* productVendor = NULL;
     char* encodedProductInfo = NULL;
+
+    UNUSED(argc);
+    UNUSED(argv);
 
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
