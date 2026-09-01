@@ -138,10 +138,6 @@ static void SignalReloadConfiguration(int incomingSignal)
     signal(SIGHUP, SignalReloadConfiguration);
 }
 
-/*static void RefreshConnection()
-{
-}*/
-
 void ScheduleRefreshConnection(void)
 {
     OsConfigLogInfo(GetLog(), "Scheduling refresh connection");
@@ -152,66 +148,6 @@ static void SignalChild(int signal)
 {
     // No-op for this version of the agent
     UNUSED(signal);
-}
-
-static void ForkDaemon()
-{
-    OsConfigLogInfo(GetLog(), "Attempting to fork daemon process");
-
-    int status = 0;
-
-    UNUSED(status);
-
-    pid_t pidDaemon = fork();
-    if (pidDaemon < 0)
-    {
-        OsConfigLogError(GetLog(), "fork() failed, could not fork daemon process");
-        exit(EXIT_FAILURE);
-    }
-
-    if (pidDaemon > 0)
-    {
-        // This is in the parent process, terminate it
-        OsConfigLogInfo(GetLog(), "fork() succeeded, terminating parent");
-        exit(EXIT_SUCCESS);
-    }
-
-    // The forked daemon process becomes session leader
-    if (setsid() < 0)
-    {
-        OsConfigLogError(GetLog(), "setsid() failed, could not fork daemon process");
-        exit(EXIT_FAILURE);
-    }
-
-    signal(SIGCHLD, SignalChild);
-    signal(SIGHUP, SignalReloadConfiguration);
-
-    // Fork off for the second time
-    pidDaemon = fork();
-    if (pidDaemon < 0)
-    {
-        OsConfigLogError(GetLog(), "Second fork() failed, could not fork daemon process");
-        exit(EXIT_FAILURE);
-    }
-
-    if (pidDaemon > 0)
-    {
-        OsConfigLogInfo(GetLog(), "Second fork() succeeded, terminating parent");
-        exit(EXIT_SUCCESS);
-    }
-
-    // Set new file permissions
-    umask(0);
-
-    // Change the working directory to the root directory
-    status = chdir("/");
-    LogAssert(GetLog(), 0 == status);
-
-    // Close all open file descriptors
-    for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
-    {
-        close(x);
-    }
 }
 
 bool RefreshMpiClientSession(bool* platformAlreadyRunning)
@@ -289,6 +225,12 @@ void CloseAgent(void)
     OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
+static void RefreshConnection()
+{
+    CloseAgent();
+    InitializeAgent();
+}
+
 static void AgentDoWork(void)
 {
     unsigned int currentTime = time(NULL);
@@ -307,7 +249,6 @@ int main(int argc, char *argv[])
 {
     char* jsonConfiguration = NULL;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
-    bool forkDaemon = false;
     pid_t pid = 0;
     char* osName = NULL;
     char* osVersion = NULL;
@@ -323,9 +264,6 @@ int main(int argc, char *argv[])
     char* productVendor = NULL;
     char* encodedProductInfo = NULL;
 
-    forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
-        ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
-
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
@@ -336,11 +274,6 @@ int main(int argc, char *argv[])
     }
 
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-
-    if (forkDaemon)
-    {
-        ForkDaemon();
-    }
 
     // Re-open the log
     CloseLog(&g_agentLog);
@@ -432,7 +365,7 @@ int main(int argc, char *argv[])
 
         if (0 != g_refreshSignal)
         {
-            //RefreshConnection();
+            RefreshConnection();
             g_refreshSignal = 0;
         }
     }
