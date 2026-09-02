@@ -107,49 +107,6 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredIotHubProtocol",
-    "Payload": "invalid",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredIotHubProtocol",
-    "Payload": "auto"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "iotHubProtocol",
-    "Payload": "auto"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredIotHubProtocol",
-    "Payload": "mqtt"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "iotHubProtocol",
-    "Payload": "mqtt"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredIotHubProtocol",
-    "Payload": "mqttWebSocket"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "iotHubProtocol",
-    "Payload": "mqttWebSocket"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
     "ObjectName": "desiredGitManagementEnabled",
     "Payload": true
   },

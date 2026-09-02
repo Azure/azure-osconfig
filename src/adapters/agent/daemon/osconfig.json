@@ -1,0 +1,11 @@
+{
+  "GitManagement": 0,
+  "GitRepositoryUrl": " ",
+  "GitBranch": " ",
+  "LocalManagement": 1,
+  "LoggingLevel": 6,
+  "MaxLogSize": 1048576,
+  "MaxLogSizeDebugMultiplier": 5,
+  "ModelVersion": 20,
+  "ReportingIntervalSeconds": 30
+}

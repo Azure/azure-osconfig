@@ -3,13 +3,13 @@ OSConfig Management Modules
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
 
 OSConfig contains a set of Adapters, a Management Platform (including a Modules Manager) and several Management Modules.
 
 The main way of contributing to and extending OSConfig is via developing new Management Modules.
 
-Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the management authority protocols (such as: Digital Twins Definition Language, etc). OSConfig communicates with the module via the module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn Azure technologies like MC, PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the MIM and implement the module. If needed, the MIM can then be easily translated to DTDL or other formats with minimal changes.
+Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the management authority protocols. OSConfig communicates with the module via the module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn the management authority protocols and instead can focus on designing the MIM and implementing the module. If needed, the MIM can then be easily translated to other formats with minimal changes.
 
 This document describes the OSConfig Management Modules and it's meant to serve as a guide for the design and development of such modules.
 
@@ -33,22 +33,18 @@ Each module must have its own MIM. Typically development of a new module starts 
 
 The MIM is composed by one or more MIM components, each component containing one or more MIM objects, each object being either desired or reported and containing one or several MIM settings. In other words a MIM can be described as lists of components, objects and settings.
 
-MIM can be directly translated to DTDL: MIM components can be translated to PnP interfaces, MIM objects can be translated to PnP properties, MIM settings can be translated to PnP property values. Such DTDL (obtained from MIM translation) is guaranteed to be supported by OSConfig. In general, MIM can always be translated to DTDL but DTDL cannot always be translated to MIM.
+A MIM can be translated to any other object models. For example, a MIM could be translated to a C++ class framework (each Component becoming a namespace, each Object a class, each Setting a class member).
 
-A MIM can also be translated to other object models. For example, a MIM could be translated to a C++ class framework (each Component becoming a namespace, each Object a class, each Setting a class member).
-
-This model assumes a declarative style of communication between the upper management layers and the module, where the desired and reported configuration of the device is communicated at once (for PnP this configuration being stored on the Digital Twin), not a procedural style with multi-step negotiation.
+This model assumes a declarative style of communication between the upper management layers and the module, where the desired and reported configuration of the device is communicated at once, not a procedural style with multi-step negotiation.
 
 - Declarative style: the Model describes the desired state (what), the Platform decides how to get there.
 - Procedural style: the Model relies on programmatic step-by-step negotiation of What and How.
-
-For PnP, the Twins start empty and gradually get filled in with content (desired, from the remote operator and reported, from the device). When the OSConfig starts, it receives the full desired Twin and dispatches that to modules. From there on, incremental changes of the desired Twin are communicated to OSConfig (and the modules), one (possibly partial, just the changed settings) object at a time. In the opposite direction, OSConfig periodically updates the reported Twin with one MIM object at a time, reading from the modules. Modules can also have their own MIM-specified actions to request the update of a reported MIM object (example: refreshCommandStatus Action for CommandRunner.commandArguments to update CommandRunner.commandStatus for a particular command).
 
 ### 3.1.1. MIM Components
 
 A MIM Component captures one specific OS configuration function, such as for example: running shell commands, configuring Wi-Fi, managing certificates, etc.
 
-MIM Components can be translated to PnP interfaces (or to C++ namespaces, etc).
+MIM Components can be translated to to C++ namespaces, etc.
 
 Modules in general only need to contain only one MIM component each. Sometimes, a second MIM component could be needed. For example, for Wi-Fi one MIM component could be Wi-Fi configuration and a second MIM component in support of the first but still separate could be Wi-Fi Certificates.
 
@@ -62,21 +58,21 @@ Example of an existing OSConfig MIM Component: commandRunner.
 
 A MIM object captures an OS configuration state or function. For example: result of a command, a new Wi-Fi Profile, etc.
 
-MIM objects can be translated to PnP properties (or to C++ classes, etc).
+MIM objects can be translated to C++ classes, etc.
 
-There are two types of PnP properties:
-- Readable, holding Reported Twin values. These properties are exclusively updated from the device and seen as read-only from the IoT Hub.
-- Writeable, holding Desired Twin values. These properties are exclusively updated from the IoT Hub. The device can reject an update request but cannot update such property.
+There are two types of properties:
+- Readable, holding reported values. These properties are exclusively updated from the device and seen as read-only from the remote authority.
+- Writeable, holding desired values. These properties are exclusively updated from the remote authority. The device can reject an update request but cannot update such property.
 
-Like the PnP properties, the MIM objects (together with the Settings they contain) are uni-directional, either reported or desired, not both. For writeable settings, desired objects normally may be paired with reported objects. For read-only settings there can be only reported objects. There also could be desired objects without reported counterparts. Once the desired and reported objects are modeled, the module must adhere to this model (report reported, accept desired) and respect it.
+The MIM objects (together with the Settings they contain) are uni-directional, either reported or desired, not both. For writeable settings, desired objects normally may be paired with reported objects. For read-only settings there can be only reported objects. There also could be desired objects without reported counterparts. Once the desired and reported objects are modeled, the module must adhere to this model (report reported, accept desired) and respect it.
 
 When the desired MIM object is distinctly different from its reported MIM object the two objects can be linked together (to be able to reference each other) via a common MIM setting. For example, the CommandRunner OSConfig Component's desired commandArguments Object is linked to the matching reported commandStatus Object via the commandId MIM setting that both contain.
 
-Each MIM object contains one or multiple MIM settings, either in a single instance or in multiple instances, as a array object.
+Each MIM object contains one or multiple MIM settings, either in a single instance or in multiple instances, as an array object.
 
 An array MIM object is a MIM Object with its list of MIM settings repeated a variable number of times as items into an array.
 
-When a MIM object contains just one MIM setting, that object and setting share the same name and for PnP are translated to a simple PnP property.
+When a MIM object contains just one MIM setting, that object and setting share the same name and are translated to a simple property.
 
 The names of MIM objects must be camelCased, with the first letter lowercase and the first letter of each word after the first uppercase.
 
@@ -159,7 +155,7 @@ Example of an array MIM object:
 
 ### 3.1.3 MIM Settings
 
-MIM settings translate to PnP property values of following types supported by both DTDL and OSConfig:
+MIM settings translate to setting values of following types supported by OSConfig:
 
 - Character string (UTF-8)
 - Integer
@@ -312,8 +308,6 @@ MIM names (for components, objects, settings and setting values, including map k
 Value types can be "object", "string", "integer", "boolean", "enum" (enumeration of "integer" values), "array" (array of "integer" or "string" values), "map" (map of "integer" or "string" values).
 
 MIM names for components must be PascalCased, while for object, settings and setting values must be camelCased.
-
-The number of MIM components, objects and settings translated to PnP affect the size of the device's Twin, which is limited. Thus, for IoT Hub and Digital Twins, it is important to try to describe a new module with the smallest possible number and size of MIM components, objects, and settings. There is no such limitation for the other management authority channels.
 
 A MIM can be described in JSON.
 
@@ -661,7 +655,7 @@ Example of serialized JSON payload for CommandRunner.commandArguments and Settin
 
 # 4. Management Modules Interface (MMI)
 
-A simplified diagram shows the desired and reported configuration requests exchanged between Digital Twin in Azure via the local OSConfig and module over the Management Module Interface (MMI):
+A simplified diagram shows the desired and reported configuration requests exchanged between Azure via the local OSConfig and module over the Management Module Interface (MMI):
 
 <img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width=70%/>
 
@@ -669,7 +663,7 @@ Each Module must be a Linux Dynamically Linked Shared Object library (.so) imple
 
 For the first version of OSConfig, there was a single process, with modules loaded in-proc. In the current version of OSConfig there are two processes, one for the agent and the other for the platform and the later loads the modules in-proc. In a further future version modules could be isolated to run each into their own processes, via an executable shell provided by OSConfig.
 
-In general, any process can load a module and communicate to it over the MMI. The module developer shall not assume that the module will be loaded by a certain process or that will be only invoked over PnP and IoT Hub.
+In general, any process can load a module and communicate to it over the MMI. The module developer shall not assume that the module will be loaded by a certain process or that it will be only invoked over a specific management authority.
 
 The MMI is a simple C API and includes the calls described in this section.
 
@@ -715,7 +709,7 @@ A JSON schema of the MmiGetInfo payload response is at [MmiGetInfo JSON schema](
 
 ## 4.2. MmiOpen
 
-MmiOpen starts a new client session with the module. MmiOpen receives as an input argument the name of the client (the module use that name to identify the caller) and the maximum size in bytes for object payload values supported by the client (0 if unlimited). For OSConfig this name will be same as used for the IoT Hub (```Azure OSConfig M;A.B.C.YYYYMMDD``` where ```M``` is the DTDL model version, ```A.B.C``` is the version number and ```YYYYMMDD``` is the build date of OSConfig). On success, MmiOpen returns a newly created handle to identify this session. The handle is a module-specific opaque handle (where the module can hide a C structure or C++ class that identifies the current session) to be used for subsequent calls. On failure, MmiOpen returns NULL.
+MmiOpen starts a new client session with the module. MmiOpen receives as an input argument the name of the client (the module use that name to identify the caller) and the maximum size in bytes for object payload values supported by the client (0 if unlimited). For OSConfig this name follows the format ```Azure OSConfig M;A.B.C.YYYYMMDD``` where ```M``` is the model version, ```A.B.C``` is the version number and ```YYYYMMDD``` is the build date of OSConfig. On success, MmiOpen returns a newly created handle to identify this session. The handle is a module-specific opaque handle (where the module can hide a C structure or C++ class that identifies the current session) to be used for subsequent calls. On failure, MmiOpen returns NULL.
 
 ```C
 typedef void* MMI_HANDLE;
@@ -764,7 +758,7 @@ The payload argument contains a JSON formatted, not null terminated UTF-8 string
 
 OSConfig will not attempt to parse and validate the payload and payloadSizeBytes arguments. It is the responsability of the respective Module to do this and return errors if appropriate. Modules must also validate the clientSession, componentName and objectName arguments against invalid values.
 
-The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the PnP requests translated into MMI calls must be size limited (the size of the Twin, the Azure clone of the device, is limited) and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
+The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the requests translated into MMI calls must be size limited and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
 
 MmiSet may be called with the same payload several times. The Module must be able to handle these calls either by reapplying the desired payload or detect when the respective desired configuration was already applied and in that case return MMI_OK without reapplying the payload and without logging errors.
 
@@ -991,43 +985,3 @@ Example of a recipe with two CommandRunner test objects, one desired commandArgu
 ```
 
 The Module Test Recipe is fed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
-
-# 14. Publishing DTDL for the module
-
-# 14.1. Introduction
-
-Modules can work invoked by any client over their MMI. When a module works with the rest of the OSConfig stack and in particular with the OSConfig PnP Agent, in order to allow remote management over Azure and IoT Hub, the module needs to have one or more PnP interfaces (one for each MIM component) published via the public [OSConfig DTDL Model](https://github.com/Azure/iot-plugandplay-models/tree/main/dtmi/osconfig). This allows applications such as [Azure IoT Explorer](https://github.com/Azure/azure-iot-explorer) to display personalized user interface to help the operator request desired and reported configuration with the respective Module at the other end.
-
-# 14.2. Translating MIM to DTDL
-
-MIM can be directly translated to [Digital Twins Definition Language (DTDL)](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md) as PnP interfaces and properties:
-
-MIM | DTDL | Notes
------|-----|-----
-MIM component | PnP interface | Each MIM component can be translated to a [PnP interface](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#interface). For example the [CommandRunner MIM component](../src/modules/mim/commandrunner.json) component is translated to the [CommandRunner PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/commandrunner-2.json).
-Complex MIM Object (containing multiple MIM settings) | Complex PnP property of object type | Each complex MIM object can be translated to a complex [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example CommandRunner.commandArguments in [CommandRunner MIM](../src/modules/mim/commandrunner.json) and [CommandRunner PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/commandrunner-2.json).
-Simple MIM Object (containing a single MIM setting) | Simple PnP property | Each simple MIM object can be translated to a simple [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example Tpm.TpmVersion in [Tpm MIM](../src/modules/mim/tpm.json) and [Tpm PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/tpm-1.json).
-Desired MIM Object | Writeable (also called read-write) PnP property | Each desired MIM object can be translated to a writeable (read-write) [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property).
-Reported MIM Object | Read-only PnP property | Each desired MIM object can be translated to a read-only [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property).
-MIM Setting | PnP property value | Each MIM setting can be translated to a PnP property value with the same name and value type.
-MIM enum | DTDL enum | MIM enums of integers (for MIM Settings) can be translated to [DTDL enums](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#enum) of the same type.
-MIM array | DTDL array | MIM arrays of strings and integers (for MIM Settings) or objects (for MIM Objects) can be translated to [DTDL arrays](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#array) of the same types.
-MIM map | DTDL map | MIM maps of string and integers (for MIM Settings) can be translated to [DTDL maps](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#map) of the same types.
-
-# 14.3. Editing the public OSConfig DTDL Model
-
-When publishing new PnP interfaces (for new modules MIM) those interfaces need to be added to a new version of the [OSConfig DTDL Model](https://github.com/Azure/iot-plugandplay-models/tree/main/dtmi/osconfig). The new DTDL model version must carry over previous model version's interfaces while adding on top new interfaces and/or, when applicable, new versions of existing interfaces. The only interfaces that can be replaced are the ones replaced by new versions of the same.
-
-For example [OSConfig DTDL Model version 2](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/deviceosconfiguration-2.json) adds the [Networking PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/networking-1.json) and keeps all interfaces of previous [OSConfig PnP Model version 1](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/deviceosconfiguration-1.json).
-
-# 14.4. Publishing the DTDL
-
-Follow the instructions at [iot-plugandplay-models](https://github.com/Azure/iot-plugandplay-models) for publishing a new version of the [OSConfig DTDL Model](https://github.com/Azure/iot-plugandplay-models/tree/main/dtmi/osconfig) that adds new PnP interfaces or new interface versions for the modules being added or updated.
-
-# 14.5. Why MIM instead of just DTDL?
-
-**All OSConfig Management Modules are required to have their MIM**
-
-The MIM enforces the translated DTDL to be compatible with OSConfig. Not any DTDL can be translated to MIM and be OSConfig-compliant but any MIM can be translated to DTDL. The MIM has additional benefits as it helps modeling the implementation of the module and can enable automated end to end testing of the module.
-
-This specification guides the module developers to design the MIM first and then implement the module, translate the MIM to DTDL and when all is done and validated, publish the new PnP interface(s) for the module under a new OSconfig DTDL version.

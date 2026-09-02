@@ -128,7 +128,7 @@ if (COVERAGE)
     message(STATUS "Code coverage: Enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/pnp/")
+    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/agent/")
 else ()
     message(STATUS "Code coverage: Disabled")
 endif()
@@ -205,7 +205,7 @@ set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
 set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
-    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
+    "${CMAKE_SOURCE_DIR}/adapters/agent/azure-iot-sdk-c/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/")
 
@@ -234,7 +234,6 @@ set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
-set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)

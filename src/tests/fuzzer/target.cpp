@@ -908,13 +908,6 @@ static int GetMaxLogSizeDebugMultiplierFromJsonConfig_target(const char* data, s
     return 0;
 }
 
-static int IsIotHubManagementEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsIotHubManagementEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
 static int GetReportingIntervalFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
@@ -933,13 +926,6 @@ static int GetLocalManagementFromJsonConfig_target(const char* data, std::size_t
 {
     auto json = std::string(data, size);
     GetLocalManagementFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetIotHubProtocolFromJsonConfig(json.c_str(), nullptr);
     return 0;
 }
 
@@ -1054,11 +1040,9 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
     { "GetMaxLogSizeFromJsonConfig.", GetMaxLogSizeFromJsonConfig_target },
     { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
-    { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },
     { "GetLocalManagementFromJsonConfig.", GetLocalManagementFromJsonConfig_target },
-    { "GetIotHubProtocolFromJsonConfig.", GetIotHubProtocolFromJsonConfig_target },
     { "LoadReportedFromJsonConfig.", LoadReportedFromJsonConfig_target },
     { "GetGitManagementFromJsonConfig.", GetGitManagementFromJsonConfig_target },
     { "GetGitRepositoryUrlFromJsonConfig.", GetGitRepositoryUrlFromJsonConfig_target },

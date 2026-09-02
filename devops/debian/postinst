@@ -36,14 +36,6 @@ esac
 
 # Automatically added by dh_installsystemd/12.10ubuntu1
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
-	# OSConfig Core Team change: binplace osconfig.toml for the azure-identity-service only if not present
-	# Binplacing a pre-existing install breaks the current identity
-	# If azure-identity-service is not present, place the identity in the directory anyway so
-	# once the agent is installed, OSConfig makes use of it.
-	if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
-		mkdir -p /etc/aziot/identityd/config.d
-		cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
-	fi
 	if [ -d /run/systemd/system ]; then
 		systemctl --system daemon-reload >/dev/null || true
 		if [ -n "$2" ]; then
@@ -57,10 +49,6 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 		systemctl $_dh_action 'osconfig-platform.service' >/dev/null || true
 		systemctl enable 'osconfig.service' >/dev/null || true
 		systemctl $_dh_action 'osconfig.service' >/dev/null || true
-	fi
-	# OSConfig Core Team change: signal aziot to reload module identities
-	if command -v aziotctl >/dev/null; then
-		aziotctl system restart >/dev/null || true
 	fi
 fi
 # End automatically added section

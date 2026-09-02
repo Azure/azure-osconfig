@@ -39,11 +39,6 @@
 // 30 seconds
 #define DEFAULT_REPORTING_INTERVAL 30
 
-#define PROTOCOL_AUTO 0
-// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
-//#define PROTOCOL_MQTT 1
-#define PROTOCOL_MQTT_WS 2
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -242,14 +237,12 @@ typedef struct ReportedProperty
     size_t lastPayloadHash;
 } ReportedProperty;
 
-bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log);
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log);
 

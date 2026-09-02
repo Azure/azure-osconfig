@@ -2,8 +2,7 @@
 // Licensed under the MIT License.
 
 #include "inc/AgentCommon.h"
-#include "inc/PnpAgent.h"
-#include "inc/AisUtils.h"
+#include "inc/Agent.h"
 
 #define MPI_CLIENT_NAME "OSConfig Watcher"
 #define MAX_PAYLOAD_LENGTH 0
