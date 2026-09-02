@@ -14,9 +14,7 @@
 #define REPORTED_SETTING_NAME "ObjectName"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
-#define IOT_HUB_MANAGEMENT "IotHubManagement"
 #define LOCAL_MANAGEMENT "LocalManagement"
-#define PROTOCOL "IotHubProtocol"
 #define GIT_MANAGEMENT "GitManagement"
 #define GIT_REPOSITORY_URL "GitRepositoryUrl"
 #define GIT_BRANCH "GitBranch"
@@ -40,32 +38,6 @@
 #define MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER 10
 #define DEFAULT_MAX_LOG_SIZE 1048576
 #define DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER 5
-
-static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* setting)
-{
-    bool result = false;
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                result = (0 == (int)json_object_get_number(rootObject, setting)) ? false : true;
-            }
-            json_value_free(rootValue);
-        }
-    }
-
-    return result;
-}
-
-bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
-{
-    return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
-}
 
 static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
 {
@@ -159,11 +131,6 @@ int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1, log);
-}
-
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
-{
-    return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS, log);
 }
 
 int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log)
@@ -411,7 +378,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
             else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
-                OSConfigTelemetryStatusTrace("mkdir", errno);
+                OSConfigTelemetryStatusTrace("Failed to create directory for the configuration file", errno);
                 result = result ? result : (errno ? errno : ENOENT);
             }
             else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))

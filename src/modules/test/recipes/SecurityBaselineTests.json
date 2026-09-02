@@ -252,6 +252,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureAllowUsersIsConfigured",
+    "Payload": "x\";id>/tmp/osconfig-marker;# z",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAllowUsersIsConfigured",
     "Payload": "*@*"
   },
   {
@@ -367,6 +374,13 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureOnlyApprovedMacAlgorithmsAreUsed",
     "Payload": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed",
+    "Payload": "hmac-sha2-256\";id>/tmp/osconfig-marker;# z",
+    "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",

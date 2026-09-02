@@ -3,7 +3,7 @@ Azure OSConfig - North Star Architecture
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -34,13 +34,13 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC), a Watcher for GitOps and a PnP Agent for [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/).
+The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC) and a Watcher for GitOps.
 
 The OSConfig Agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) REST API.
 
 <img src="assets/agent.png" alt="OSConfig Agent" width=50%/>
 
-The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use it, without the need to recompile the agent or the platform.
+The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use it, without the need to recompile the agent or the platform.
 
 ## 3.2. RC/DC Watcher
 
@@ -62,25 +62,7 @@ The GitOps DC file is written in JSON and follows the [MIM schema](../src/module
 
 The Git clone is automatically deleted when the GitOps Watcher terminates. While active, the cloned DC file has restricted access for root user only.
 
-## 3.4. AIS Client
-
-For connecting to IoT Hub, the OSConfig Agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity necessary for IoT Hub connection.
-
-## 3.5. IoT Hub Client
-
-The Agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), receive Desired Twin updates, and make Reported Twin updates.
-
-The IoT Hub Client does not attempt to parse the property values.
-
-## 3.6. Desired and Reported Twins
-
-The Twins start empty and gradually get filled in with content (desired, from the remote authority and reported, from the device).
-
-When the OSConfig Agent starts, it receives the full Desired Twin and dispatches that to the OSConfig Managament Platform. From there on, incremental changes of the Desired Twin are communicated to the agent, one (full or partial) property at a time.
-
-In the opposite direction, the OSConfig Agent periodically updates the Reported Twin with one property value at a time, reading via the platform from the modules.
-
-## 3.7. MPI Client
+## 3.4. MPI Client
 
 The OSConfig Agent links to the common MPI Client library and it uses it to make Management Platform Interface (MPI) calls to the OSConfig Platform as IPC REST API calls over HTTP and Unix Domain Sockets (UDS).
 
@@ -133,7 +115,7 @@ For more about MpiGetReported and MpiSetDesired see the next section.
 
 ### 4.2.1. Functional parity between local and remote management
 
-In addition to the common MpiGet and MpiSet an additional pair of MpiGetReported and MpiSetDesired MPI calls are provided so local management authorities such as OOBE can contact the OSConfig Management Platform directly exchanging full or partial desired and reported payload like it happens for the Digital Twins in the following JSON format, including one or many MIM components and MIM objects:
+In addition to the common MpiGet and MpiSet an additional pair of MpiGetReported and MpiSetDesired MPI calls are provided so local management authorities such as OOBE can contact the OSConfig Management Platform directly exchanging full or partial desired and reported payload in the following JSON format, including one or many MIM components and MIM objects:
 
 ```
 {"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
@@ -167,10 +149,10 @@ What the Orchestrator does not do:
 - Retry failed requests on its own. The Management Modules can internally retry, the upper OSConfig stack, including the Orchestrator, should not automatically retry.
 - Create new or modify requests in a way that is incompatible with the MIM contracts with Management Modules.
 
-For IoT Hub and the Digital Twins:
+For remote management authorities:
 
-- The Orchestrator cannot change midway in the platform desired requests from the Twins and cannot change reported requests to the Twins - doing so violates the Twins-MIM contract.
-- Once a desired object is set on the Twin, that object gets automatically re-applied to the device until it is corrected on the Twin by the remote authority. OSConfig can reject a desired payload but cannot correct that payload on the Twin. The device cannot change Desired Twin content.
+- The Orchestrator cannot change midway in the platform desired requests from the remote authority and cannot change reported requests to the remote authority - doing so violates the authority-MIM contract.
+- Once a desired object is set by the remote authority, that object gets automatically re-applied to the device until it is corrected by the remote authority. OSConfig can reject a desired payload but cannot correct that payload at the remote authority. The device cannot change desired content.
 
 Special OSConfig Management Modules that implement more complex scenarios and only invoke other modules, without adding any other OS configuration of their own, can also orchestrate.
 
@@ -260,13 +242,13 @@ For more details on the Logging library and its use by modules see the [OSConfig
 
 ## 4.10. Telemetry
 
-OSConfig has limited Telemetry via its product information submitted to the IoT Hub. OpenTelemetry is a potential future path.
+OSConfig has limited Telemetry via its product information. OpenTelemetry is a potential future path.
 
 # 5. OSConfig Management Modules
 
 ## 5.1. Introduction
 
-Each Management Module typically implements one OS configuration function. OSConfig isolates the module from the [PnP](https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play) and the [Digital Twins Definition Language (DTDL)](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md) protocols and from the Edge authentication with the IoT Hub. OSConfig communicates with the Module over a Module Interface Model (MIM) and the Management Module Interface (MMI) that each module implements. The module developer is not required to learn Azure IoT technologies like PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the PnP-agnostic MIM and the module implementation.
+Each Management Module typically implements one OS configuration function. OSConfig isolates the module from the management authority protocols. OSConfig communicates with the Module over a Module Interface Model (MIM) and the Management Module Interface (MMI) that each module implements. The module developer is not required to learn the management authority protocols and instead can focus on designing the MIM and the module implementation.
 
 <img src="assets/modules.png" alt="Management Modules" width=80%/>
 
@@ -286,17 +268,17 @@ For more information about modules and MIM see the [OSConfig Management Modules]
 
 ## 5.2. Module Interface Model (MIM)
 
-The Module Interface Model (MIM) is composed of MIM components, MIM objects, and MIM settings. A module that can be described by a set of components, objects and settings can be translated to PnP and DTDL and still be generic enough so it could be reused for other managament platforms.
+The Module Interface Model (MIM) is composed of MIM components, MIM objects, and MIM settings. A module that can be described by a set of components, objects and settings can be translated to other management protocols and still be generic enough so it could be reused for other management platforms.
 
 The Module Management Interface (MMI) is used to transport desired and reported object payloads (to and from the module) that follow the MIM.
 
-The MIM assumes a declarative style of communication between the upper layer and the module, where the desired and reported configuration of the device is communicated in bulk (for PnP this configuration being stored on the Twins), not a procedural style with multi-step negotiation.
+The MIM assumes a declarative style of communication between the upper layer and the module, where the desired and reported configuration of the device is communicated in bulk, not a procedural style with multi-step negotiation.
 
 For more information about the MIM see the [OSConfig Management Modules](modules.md) specification.
 
 ## 5.3. OSQuery Module
 
-The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and PnP interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device.
+The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device.
 
 ## 5.5. Orchestrator Module
 
@@ -310,7 +292,7 @@ The OSConfig Universal Native Resource Provider (NRP) Adapter links OSConfig to 
 
 Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux Arc devices in a particular Azure subscription and Azure resource group.
 
-The Universal NRP can audit and remediate the the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) either by itself (acting as 'OSConfig for MC') or via the SecurityBaseline module. In the future the Universal NRP could be used for other scenarios.
+The Universal NRP can audit and remediate the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) either by itself (acting as 'OSConfig for MC') or via the SecurityBaseline module. In the future the Universal NRP could be used for other scenarios.
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
 

@@ -3,9 +3,7 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.configureSettings": {
         "ENABLE_PAYLOAD_LOGGING": "OFF",
-        "COMPILE_WITH_STRICTNESS": "ON",
-        "use_prov_client": "ON",
-        "hsm_type_symm_key": "ON"
+        "COMPILE_WITH_STRICTNESS": "ON"
     },
     // Enables C# XML Auto Commenting
     "editor.formatOnType": true,

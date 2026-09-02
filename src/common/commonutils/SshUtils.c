@@ -274,6 +274,49 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     return result;
 }
 
+// Validates that an SSH configuration value destined for interpolation into a shell command (or
+// written to and later read back from the SSH Server configuration) contains only characters that
+// legitimate values use: user, group, user@host and wildcard patterns, and comma-separated MAC and
+// cipher algorithm lists. This is a defense-in-depth guard: the values themselves are not validated
+// (they are passed to the SSH Server as-is, which validates them), but they must not be allowed to
+// break out of the command OSConfig builds around them and inject arbitrary commands, nor to break
+// the SSH Server configuration parsing.
+static bool IsValueSafe(const char* value, char additionalAllowedCharacter, OsConfigLogHandle log)
+{
+    size_t i = 0;
+    char c = 0;
+    bool result = false;
+
+    if ((NULL == value) || (0 == value[0]))
+    {
+        return result;
+    }
+
+    result = true;
+
+    for (i = 0; 0 != (c = value[i]); i++)
+    {
+        if (('.' == c) && ('.' == value[i + 1]))
+        {
+            OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden sequence '..'", value);
+            result = false;
+            break;
+        }
+
+        if (isalnum(c) || (' ' == c) || ('_' == c) || ('-' == c) || ('.' == c) || ('*' == c) ||
+            ('?' == c) || ('!' == c) || ('@' == c) || (':' == c) || ('/' == c) || (additionalAllowedCharacter == c))
+        {
+            continue;
+        }
+
+        OsConfigLogInfo(log, "IsValueSafe: '%s' contains forbidden character '%c'", value, c);
+        result = false;
+        break;
+    }
+
+    return result;
+}
+
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log)
 {
     char* sshMacs = NULL;
@@ -292,6 +335,12 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    }
+    else if (false == IsValueSafe(macs, ',', log))
+    {
+        OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", macs);
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", macs);
+        return EINVAL;
     }
     else if (NULL == (sshMacs = DuplicateStringToLowercase(g_sshMacs)))
     {
@@ -368,6 +417,12 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    }
+    else if (false == IsValueSafe(ciphers, ',', log))
+    {
+        OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", ciphers);
+        OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", ciphers);
+        return EINVAL;
     }
     else if (NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
     {
@@ -776,6 +831,12 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    }
+    else if (false == IsValueSafe(expectedValue, 0, log))
+    {
+        OsConfigCaptureReason(reason, "'%s' contains characters or sequences that are not allowed and cannot be safely evaluated", lowercase);
+        OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: '%s' contains characters or sequences that are not allowed and cannot be safely evaluated", lowercase);
+        return EINVAL;
     }
     else if (NULL == strchr(expectedValue, ' '))
     {
@@ -1478,6 +1539,18 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
             status = SetFileAccess(g_sshServerConfiguration, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
         }
+    }
+    else if ((0 == strcmp(name, g_remediateEnsureAllowUsersIsConfiguredObject)) ||
+        (0 == strcmp(name, g_remediateEnsureDenyUsersIsConfiguredObject)) ||
+        (0 == strcmp(name, g_remediateEnsureAllowGroupsIsConfiguredObject)) ||
+        (0 == strcmp(name, g_remediateEnsureDenyGroupsConfiguredObject)))
+    {
+        status = IsValueSafe(value, 0, log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
+    }
+    else if ((0 == strcmp(name, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject)) ||
+        (0 == strcmp(name, g_remediateEnsureAppropriateCiphersForSshObject)))
+    {
+        status = IsValueSafe(value, ',', log) ? InitializeSshAuditCheck(name, value, log) : EINVAL;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||

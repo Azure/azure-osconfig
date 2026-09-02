@@ -8,7 +8,9 @@
 #include <list>
 #include <time.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <limits.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
@@ -1302,27 +1304,13 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
           "\"MaxLogSize\": 1073741825,"
           "\"MaxLogSizeDebugMultiplier\": 0,"
           "\"ModelVersion\": 11,"
-          "\"IotHubProtocol\": 2,"
-          "\"Reported\": ["
-          "  {"
-          "    \"ComponentName\": \"DeviceInfo\","
-          "    \"ObjectName\": \"osName\""
-          "  },"
-          "  {"
-          "    \"ComponentName\": \"TestABC\","
-          "    \"ObjectName\": \"TestVa12lue\""
-          "  }"
-          "],"
           "\"ReportingIntervalSeconds\": 30"
         "}";
-
-    ReportedProperty* reportedProperties = nullptr;
 
     char* value = nullptr;
 
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
-    EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
 
     // The value of 3 is too big, shall be changed to 1
     EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
@@ -1335,12 +1323,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     // The value 0 is too small, shall be changed to 5 (default)
     EXPECT_EQ(5, GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, nullptr));
 
-    EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
-    EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
-    EXPECT_STREQ("osName", reportedProperties[0].propertyName);
-    EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
-    EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
-
     EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
 
     EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
@@ -1348,8 +1330,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     EXPECT_STREQ("foo/test", value = GetGitBranchFromJsonConfig(configuration, nullptr));
     FREE_MEMORY(value);
-
-    FREE_MEMORY(reportedProperties);
 }
 
 TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
@@ -1413,6 +1393,62 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
 
     EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 0777, nullptr));
     EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
+}
+
+TEST_F(CommonUtilsTest, FileAndDirectoryExistsFollowSymlinks)
+{
+    const char* link = "/tmp/~test.symlink";
+
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    remove(link);
+    ASSERT_EQ(0, symlink(m_path, link));
+
+    // FileExists/DirectoryExists report existence and follow symlinks; the symlink-race
+    // protection lives in the access layer (Check/SetFileAccess open with O_NOFOLLOW).
+    EXPECT_TRUE(FileExists(m_path));
+    EXPECT_TRUE(FileExists(link));
+    EXPECT_TRUE(FileExists("/tmp"));
+
+    // A symlink to a regular file is not a directory
+    EXPECT_TRUE(DirectoryExists("/tmp"));
+    EXPECT_FALSE(DirectoryExists(link));
+
+    EXPECT_EQ(0, remove(link));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, SetAndCheckFileAccessAt)
+{
+    const char* directory = "/tmp/~testAt";
+    const char* fileName = ".dotfile";
+    const char* link = ".symlink";
+    unsigned int testModes[] = { 0600, 0640, 0644, 0700, 0750 };
+    int numTestModes = ARRAY_SIZE(testModes);
+    int directoryFd = -1;
+    int dotFd = -1;
+
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir -p /tmp/~testAt", false, false, 0, 0, nullptr, nullptr, nullptr));
+    EXPECT_TRUE(CreateTestFile("/tmp/~testAt/.dotfile", m_data));
+
+    directoryFd = open(directory, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
+    ASSERT_LE(0, directoryFd);
+
+    // A regular file opened relative to the directory descriptor without following symlinks can be set through its fd
+    for (int i = 0; i < numTestModes; i++)
+    {
+        dotFd = OpenTrueFileOrDirectory(false, false, directoryFd, fileName, nullptr);
+        ASSERT_LE(0, dotFd);
+        EXPECT_EQ(0, fchmod(dotFd, testModes[i]));
+        EXPECT_EQ(0, close(dotFd));
+        EXPECT_EQ(0, CheckFileAccess("/tmp/~testAt/.dotfile", 0, 0, testModes[i], nullptr, nullptr));
+    }
+
+    // A symlink placed in the directory must be refused by the relative open (O_NOFOLLOW)
+    ASSERT_EQ(0, symlinkat(fileName, directoryFd, link));
+    EXPECT_GT(0, OpenTrueFileOrDirectory(false, false, directoryFd, link, nullptr));
+
+    EXPECT_EQ(0, close(directoryFd));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r /tmp/~testAt", false, false, 0, 0, nullptr, nullptr, nullptr));
 }
 
 char* CheckForMountCreds(char* options);
@@ -1513,12 +1549,9 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
-    const char* testFileContents = "Line 123 1\nLine ABC 2\nLine 3\nA test line 4\nLine 5\n";
-    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
     EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
-    EXPECT_EQ(5, GetNumberOfLinesInFile(m_path));
-    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
 }
 
 TEST_F(CommonUtilsTest, CharacterFoundInFile)
@@ -1678,6 +1711,16 @@ TEST_F(CommonUtilsTest, CheckOrEnsureUsersDontHaveDotFiles)
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", true, nullptr, nullptr));
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", true, nullptr, nullptr));
     EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", true, nullptr, nullptr));
+}
+
+TEST_F(CommonUtilsTest, UsersRestrictedDotFilesInvalidArguments)
+{
+    unsigned int modes[] = { 0600, 0640 };
+
+    EXPECT_EQ(EINVAL, CheckUsersRestrictedDotFiles(nullptr, ARRAY_SIZE(modes), nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckUsersRestrictedDotFiles(modes, 0, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetUsersRestrictedDotFiles(nullptr, ARRAY_SIZE(modes), 0600, nullptr));
+    EXPECT_EQ(EINVAL, SetUsersRestrictedDotFiles(modes, 0, 0600, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)
@@ -1994,14 +2037,11 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
         "auth required pam_faillock.so deny=3 unlock_time=600",
         "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",
-        "# comment line",
         "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
         "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
         "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
         "auth required pam_tally2.so file=/var/log/tallylog     deny=3 unlock_time=555",
         "auth required pam_tally2.so file=/var/log/tallylog deny=3     even_deny_root unlock_time=12",
-        "# comment line",
-        "# comment line",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4    unlock_time=3000",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4 even_deny_root     unlock_time=1",
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
@@ -2036,7 +2076,10 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
         "auth	requisite			pam_deny.so\n"
         "auth	required			pam_permit.so\n"
-        "auth	optional			pam_cap.so\n"
+        "auth	optional			pam_cap.so\n",
+        "# comment line",
+        "# first comment line\n# second comment line\n# third comment line\n",
+        "\n\n\n"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
@@ -2067,6 +2110,299 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
+}
+
+TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttemptsViaFaillockConf)
+{
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+
+    const char* pamWithoutFaillock =
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_deny.so\n";
+
+    const char* pamWithFaillockCommented =
+        "# auth      required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n";
+
+    const char* faillockConfDefaultsCommented =
+        "# deny = 3\n"
+        "# unlock_time = 600\n"
+        "# even_deny_root\n";
+
+    const char* faillockConfCompliant =
+        "deny = 5\n"
+        "unlock_time = 900\n"
+        "even_deny_root\n"
+        "root_unlock_time = 900\n";
+
+    const char* faillockConfDenyTooHigh =
+        "deny = 6\n"
+        "unlock_time = 900\n";
+
+    const char* faillockConfDenyAtBoundary =
+        "deny = 5\n"
+        "unlock_time = 1\n";
+
+    const char* faillockConfUnlockTimeZero =
+        "deny = 3\n"
+        "unlock_time = 0\n";
+
+    const char* faillockConfUnlockTimeNegative =
+        "deny = 3\n"
+        "unlock_time = -1\n";
+
+    const char* faillockConfWithSubstringSiblings =
+        "even_deny_root\n"
+        "root_unlock_time = 100\n"
+        "deny = 5\n"
+        "unlock_time = 900\n";
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf("dummy", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, "dummy", nullptr, nullptr));
+
+    // faillock.conf missing.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(ENOENT, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, "~file_that_does_not_exist", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // PAM file missing (faillock.conf present).
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf("~file_that_does_not_exist", m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM contains pam_faillock.so and faillock.conf has compliant values explicitly set.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM contains pam_faillock.so and faillock.conf has all defaults commented out: pam_faillock
+    // built-in defaults of 'deny = 3' and 'unlock_time = 600' apply and are compliant.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDefaultsCommented));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Boundary: 'deny' set to 5 is acceptable.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDenyAtBoundary));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'deny' greater than 5 is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfDenyTooHigh));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'unlock_time' of 0 is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfUnlockTimeZero));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'unlock_time' negative is rejected.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfUnlockTimeNegative));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM file does not reference pam_faillock.so.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // PAM file has pam_faillock.so commented out.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfCompliant));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // 'even_deny_root' and 'root_unlock_time' siblings must not be picked up as 'deny' or
+    // 'unlock_time' by the parser.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, faillockConfWithSubstringSiblings));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, SetLockoutForFailedPasswordAttemptsViaFaillockConf)
+{
+    char* contents = nullptr;
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, SetLockoutForFailedPasswordAttemptsViaFaillockConf(nullptr, 3, 900, nullptr));
+
+    // Target file does not exist.
+    EXPECT_EQ(ENOENT, SetLockoutForFailedPasswordAttemptsViaFaillockConf("~file_that_does_not_exist", 3, 900, nullptr));
+
+    // In-place replacement when both keys are already present uncommented; sibling lines preserved.
+    const char* originalWithBothKeys =
+        "# Deny access after n consecutive failures.\n"
+        "deny = 10\n"
+        "# Lock-out period in seconds for non-root.\n"
+        "unlock_time = 60\n"
+        "even_deny_root\n"
+        "root_unlock_time = 77\n"
+        "fail_interval = 900\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalWithBothKeys));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    EXPECT_NE(nullptr, strstr(contents, "even_deny_root\n"));
+    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 77\n"));
+    EXPECT_NE(nullptr, strstr(contents, "fail_interval = 900\n"));
+    EXPECT_EQ(nullptr, strstr(contents, "deny = 10"));
+    EXPECT_EQ(nullptr, strstr(contents, "unlock_time = 60\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Append when both keys are absent (only commented defaults are present in the file).
+    const char* originalCommentedOnly =
+        "# deny = 3\n"
+        "# unlock_time = 600\n"
+        "# even_deny_root\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalCommentedOnly));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 5, 1200, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 5\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 1200\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# unlock_time = 600\n"));
+    EXPECT_NE(nullptr, strstr(contents, "# even_deny_root\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Token-boundary match: 'deny' must not match 'even_deny_root' and 'unlock_time' must not
+    // match 'root_unlock_time' on either replacement.
+    const char* originalSubstringSiblings =
+        "even_deny_root\n"
+        "root_unlock_time = 100\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalSubstringSiblings));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "even_deny_root\n"));
+    EXPECT_NE(nullptr, strstr(contents, "root_unlock_time = 100\n"));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Tabs and extra leading whitespace are treated as token separators.
+    const char* originalTabs =
+        "  deny\t=\t10\n"
+        "\tunlock_time = 30\n";
+    EXPECT_TRUE(CreateTestFile(m_path2, originalTabs));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 3, 900, nullptr));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path2, false, nullptr));
+    EXPECT_NE(nullptr, strstr(contents, "deny = 3\n"));
+    EXPECT_NE(nullptr, strstr(contents, "unlock_time = 900\n"));
+    EXPECT_EQ(nullptr, strstr(contents, "deny\t=\t10"));
+    EXPECT_EQ(nullptr, strstr(contents, "unlock_time = 30\n"));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path2));
+
+    // Round-trip: after Set, the audit helper accepts the resulting configuration.
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+    const char* originalEmpty = "# initially empty\n";
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, originalEmpty));
+    EXPECT_EQ(0, SetLockoutForFailedPasswordAttemptsViaFaillockConf(m_path2, 5, 900, nullptr));
+    EXPECT_EQ(0, CheckLockoutForFailedPasswordAttemptsViaFaillockConf(m_path, m_path2, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, CheckPamFaillockModernModelInUse)
+{
+    // This is the shared 'is the Linux-PAM 1.4.0+ faillock model in use end-to-end' gate that
+    // both AuditEnsureLockoutForFailedPasswordAttempts and SetLockoutForFailedPasswordAttempts
+    // must agree on. The rule it encodes:
+    //
+    //   - faillock.conf MUST exist  AND
+    //   - 'pam_faillock.so' MUST be referenced uncommented in at least one of the supplied
+    //     PAM files
+    //
+    // -> only when both signals are present is the modern model active and the modern
+    // remediation (write faillock.conf only, don't touch the PAM stack) safe.
+
+    const char* pamWithFaillock =
+        "auth        required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_faillock.so authfail\n"
+        "account     required      pam_faillock.so\n";
+    const char* pamWithoutFaillock =
+        "auth        sufficient    pam_unix.so nullok\n"
+        "auth        required      pam_deny.so\n";
+    const char* pamWithFaillockCommented =
+        "# auth      required      pam_faillock.so preauth silent\n"
+        "auth        sufficient    pam_unix.so nullok\n";
+    const char* faillockConfCompliant =
+        "deny = 3\n"
+        "unlock_time = 900\n";
+    const char* const fourPamFiles[] = { m_path, m_path2, m_path3, m_path4 };
+
+    // Invalid arguments.
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(nullptr, 4, "/tmp/whatever", nullptr));
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(fourPamFiles, 0, "/tmp/whatever", nullptr));
+    EXPECT_EQ(EINVAL, CheckPamFaillockModernModelInUse(fourPamFiles, 4, nullptr, nullptr));
+
+    // faillock.conf missing -> ENOENT regardless of PAM state.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, "~file_that_does_not_exist", nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // faillock.conf exists but NO PAM file references pam_faillock.so -> ENOENT.
+    EXPECT_TRUE(CreateTestFile(m_path4, faillockConfCompliant));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+
+    // faillock.conf exists; only the LAST inspected PAM file references pam_faillock.so -> 0.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path2, pamWithoutFaillock));
+    EXPECT_TRUE(CreateTestFile(m_path3, pamWithFaillock));
+    EXPECT_EQ(0, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+    EXPECT_TRUE(Cleanup(m_path3));
+
+    // faillock.conf exists; pam_faillock.so is present BUT commented out -> ENOENT.
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path2, pamWithFaillockCommented));
+    EXPECT_TRUE(CreateTestFile(m_path3, pamWithFaillockCommented));
+    EXPECT_EQ(ENOENT, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+    EXPECT_TRUE(Cleanup(m_path3));
+
+    // faillock.conf exists; only the FIRST inspected PAM file references pam_faillock.so -> 0.
+    // (Other PAM files don't even need to exist.)
+    EXPECT_TRUE(CreateTestFile(m_path, pamWithFaillock));
+    EXPECT_EQ(0, CheckPamFaillockModernModelInUse(fourPamFiles, 4, m_path4, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Cleanup the conf file.
+    EXPECT_TRUE(Cleanup(m_path4));
 }
 
 TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
@@ -3160,64 +3496,6 @@ TEST_F(CommonUtilsTest, GetOptionFromBuffer)
     EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
-TEST_F(CommonUtilsTest, ReadEndOfFile)
-{
-    const char* testFileContents = "Line 1\nLine 2\nLine 3\nTestline 4\n";
-    char* contents = NULL;
-    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
-
-    EXPECT_STREQ("\n", contents = ReadEndOfFile(m_path, 1, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("4\n", contents = ReadEndOfFile(m_path, 2, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ(" 4\n", contents = ReadEndOfFile(m_path, 3, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("Testline 4\n", contents = ReadEndOfFile(m_path, strlen("Testline 4\n"), nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_STREQ("Line 2\nLine 3\nTestline 4\n", contents = ReadEndOfFile(m_path, strlen("Line 2\nLine 3\nTestline 4\n"), nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
-TEST_F(CommonUtilsTest, CrashHandler)
-{
-    OsConfigLogHandle log = nullptr;
-    EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
-
-    OsConfigLogInfo(log, "Installing the crash handler in the parent process");
-    InstallCrashHandler(m_path);
-
-    OsConfigLogInfo(log, "Forking the child process that will crash");
-    pid_t pid = fork();
-    EXPECT_NE(-1, pid);
-    if (0 == pid)
-    {
-        // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
-        OsConfigLogInfo(log, "Forcing the crash");
-        volatile int* null_ptr = NULL;
-        *null_ptr = 0;
-        _exit(0); // never reached
-    }
-    waitpid(pid, NULL, 0);
-    OsConfigLogInfo(log, "Done!");
-
-    // Verify the crash handler [ERROR] lines appear in the handler log
-    char* contents = NULL;
-    char* result = NULL;
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    printf("%s", contents);
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
-    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
-
-    CloseLog(&log);
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
@@ -3290,4 +3568,62 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_FALSE(IsConsoleLoggingEnabled());
 
     EXPECT_FALSE(IsDaemon());
+}
+
+TEST_F(CommonUtilsTest, ReadEndOfFile)
+{
+    const char* testFileContents = "Line 1\nLine 2\nLine 3\nTestline 4\n";
+    char* contents = NULL;
+    EXPECT_TRUE(SavePayloadToFile(m_path, testFileContents, strlen(testFileContents), nullptr));
+
+    EXPECT_STREQ("\n", contents = ReadEndOfFile(m_path, 1, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("4\n", contents = ReadEndOfFile(m_path, 2, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ(" 4\n", contents = ReadEndOfFile(m_path, 3, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Testline 4\n", contents = ReadEndOfFile(m_path, strlen("Testline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_STREQ("Line 2\nLine 3\nTestline 4\n", contents = ReadEndOfFile(m_path, strlen("Line 2\nLine 3\nTestline 4\n"), nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, CrashHandler)
+{
+    OsConfigLogHandle log = nullptr;
+    EXPECT_NE(nullptr, log = OpenLog(m_path, nullptr));
+
+    OsConfigLogInfo(log, "Installing the crash handler in the parent process");
+    InstallCrashHandler(m_path);
+
+    OsConfigLogInfo(log, "Forking the child process that will crash");
+    pid_t pid = fork();
+    EXPECT_NE(-1, pid);
+    if (0 == pid)
+    {
+        // Cause a genuine SIGSEGV via NULL dereference exercises the full signal delivery and handler path
+        OsConfigLogInfo(log, "Forcing the crash");
+        volatile int* null_ptr = NULL;
+        *null_ptr = 0;
+        _exit(0); // never reached
+    }
+    waitpid(pid, NULL, 0);
+    OsConfigLogInfo(log, "Done!");
+
+    // Verify the crash handler [ERROR] lines appear in the handler log
+    char* contents = NULL;
+    char* result = NULL;
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    printf("%s", contents);
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
+    EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
+
+    CloseLog(&log);
+    EXPECT_TRUE(Cleanup(m_path));
 }

@@ -1,0 +1,18 @@
+[Unit]
+Description=OSConfig Agent Daemon
+After=network-online.target
+Wants=network.target network-online.target nss-lookup.target
+# Allow restart up to 3 times every 16 minutes (3 times x 5 minutes + 1 minute)
+StartLimitIntervalSec=960
+StartLimitBurst=3
+
+[Service]
+ExecStart=/usr/bin/osconfig
+Type=simple
+User=root
+Restart=always
+# Allow restart at 5 minutes intervals
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -136,7 +136,7 @@ static void InitializePlatform(void)
 
     MpiInitialize();
 
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform initialized");
 }
 
 void TerminatePlatform(void)

@@ -24,13 +24,6 @@ set(VCPKG_PACKAGES_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 # Set CMAKE_PREFIX_PATH to vcpkg only
 set(CMAKE_PREFIX_PATH "${VCPKG_PACKAGES_DIR}")
 
-set(MAT_SDK_LIB ${CMAKE_BINARY_DIR}/1ds_install/lib)
-set(MAT_SDK_INCLUDE ${CMAKE_BINARY_DIR}/1ds_install/include/mat)
-
-# Make visible to sibling directories (bin/)
-set(MAT_SDK_LIB ${MAT_SDK_LIB} PARENT_SCOPE)
-set(MAT_SDK_INCLUDE ${MAT_SDK_INCLUDE} PARENT_SCOPE)
-
 include(ExternalProject)
 ExternalProject_Add(
     1dscpplib
@@ -90,9 +83,6 @@ add_library(telemetrylib STATIC
 )
 add_dependencies(telemetrylib 1dscpplib)
 
-# 1DS SDK headers have unused parameters — suppress for this target only
-target_compile_options(telemetrylib PUBLIC -Wno-unused-parameter)
-
 if(BUILD_EXTERNAL)
     # commonutils is used which uses telemetry, create an alias to avoid name conflict
     add_library(telemetry ALIAS telemetrylib)
@@ -114,7 +104,7 @@ target_link_libraries(telemetrylib
 
 target_include_directories(telemetrylib
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../
+        ${CMAKE_CURRENT_SOURCE_DIR}../
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${MAT_SDK_INCLUDE}

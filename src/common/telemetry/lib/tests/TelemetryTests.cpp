@@ -143,41 +143,9 @@ TEST_F(TelemetryTest, ProcessStatusTraceEvent)
     EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
 }
 
-TEST_F(TelemetryTest, ProcessCrashDetectedEvent)
-{
-    std::string realEvent = R"({"EventName":"CrashDetected","Timestamp":"2025-10-17 22:52:56+0000","CrashInfo":"Test","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
-    ASSERT_TRUE(CreateTestJsonFile(realEvent));
-    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
-    EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
-}
-
-TEST_F(TelemetryTest, ProcessCrashDetectedMissingCrashInfoEvent)
-{
-    std::string realEvent = R"({"EventName":"CrashDetected","Timestamp":"2025-10-17 22:52:56+0000","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
-    ASSERT_TRUE(CreateTestJsonFile(realEvent));
-    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
-    EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));
-}
-
 TEST_F(TelemetryTest, ProcessStatusTraceMissingScenarioNameEvent)
 {
     std::string realEvent = R"({"EventName":"StatusTrace","Timestamp":"2025-10-17 22:52:56+0000","FileName":"/workspaces/azure-osconfig/src/common/asb/Asb.c","LineNumber":"1109","FunctionName":"AsbShutdown","RuleCodename":"auditEnsureSmbWithSambaIsDisabled","CallingFunctionName":"TestingStatusTrace","ResultCode":"0","Microseconds":"101807","DistroName":"CentOS","CorrelationId":"","Version":"1.0.5.20251017-g03b36b7d"})";
-    ASSERT_TRUE(CreateTestJsonFile(realEvent));
-    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
-    EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));
-}
-
-TEST_F(TelemetryTest, ProcessCommandExecutedEvent)
-{
-    std::string realEvent = R"({"EventName":"CommandExecuted","DistroName":"CentOS","Version":"1.3.0-preview123","CorrelationId":"{00000000-0000-0000-0000-000000000000}","CorrelationGroup":"TestGroup","Timestamp":"2025-10-17 22:52:56+0000","IsTestMode":true,"Subcommand":"get resource","Duration":1234.5678,"Success":true,"ErrorResourceName":"Test Resource","ErrorResourceType":"Microsoft.OSConfig/Test","ErrorLocation":"utils/test.rs:123","ErrorCode":1})";
-    ASSERT_TRUE(CreateTestJsonFile(realEvent));
-    Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
-    EXPECT_TRUE(telemetryManager.ProcessJsonFile(m_testJsonFile));
-}
-
-TEST_F(TelemetryTest, ProcessCommandExecutedMissingSubcommandEvent)
-{
-    std::string realEvent = R"({"EventName":"CommandExecuted","DistroName":"CentOS","Version":"1.3.0-preview123","CorrelationId":"{00000000-0000-0000-0000-000000000000}","CorrelationGroup":"TestGroup","Timestamp":"2025-10-17 22:52:56+0000","IsTestMode":true,"Duration":1234.5678,"Success":true,"ErrorResourceName":"Test Resource","ErrorResourceType":"Microsoft.OSConfig/Test","ErrorLocation":"utils/test.rs:123","ErrorCode":1})";
     ASSERT_TRUE(CreateTestJsonFile(realEvent));
     Telemetry::TelemetryManager telemetryManager(false, std::chrono::seconds(1));
     EXPECT_FALSE(telemetryManager.ProcessJsonFile(m_testJsonFile));

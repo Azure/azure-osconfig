@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
 
 For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md) and [OSConfig Management Modules](docs/modules.md).
 
@@ -52,8 +52,6 @@ cmake --version
 gcc --version
 ```
 
-For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
-
 For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/):
 
 ```bash
@@ -73,26 +71,21 @@ mkdir build && cd build
 Build with the following commands issued from under the build subfolder:
 
 ```bash
-cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DBUILD_TESTS=ON|OFF
+cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -DBUILD_TESTS=ON|OFF
 cmake --build . --config Release|Debug  --target install
 ```
 The following OSConfig files are binplaced at build time:
 
 Source | Destination | Description
 -----|-----|-----
-[src/adapters/pnp/](src/adapters/pnp/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
+[src/adapters/agent/](src/adapters/agent/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
 [src/platform/](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
-[src/adapters/pnp/daemon/osconfig.conn](src/adapters/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
-[src/adapters/pnp/daemon/osconfig.json](src/adapters/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
-[src/modules/commandrunner/assets/osconfig_commandrunner.cache](src/modules/commandrunner/assets/osconfig_commandrunner.cache) | /etc/osconfig/osconfig_commandrunner.cache | Persistent cache for the CommandRunner module
-[src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
+[src/adapters/agent/daemon/osconfig.json](src/adapters/agent/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
+[src/adapters/agent/daemon/osconfig.service](src/adapters/agent/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
-[src/adapters/pnp/daemon/osconfig.toml](src/adapters/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The DeviceInfo module binary
-[src/modules/commandrunner/](src/modules/commandrunner/) | /usr/lib/osconfig/commandrunner.so | The CommandRunner module binary
 [src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
-[src/modules/complianceengine/](src/modules/complianceengine/) | /usr/lib/osconfig/complianceengine.so | The ComplianceEngine module binary
 [src/common/telemetry/](src/common/telemetry/) | /var/lib/osconfig/telemetry | The OSConfig telemetry directory
 
 ### Enable and start OSConfig for the first time
@@ -124,7 +117,7 @@ To replace a service unit while the daemon is running: stop the Agent daemon, di
 OSConfig logs to its own logs at `/var/log/osconfig*.log*`:
 
 ```bash
-sudo cat /var/log/osconfig_pnp_agent.log
+sudo cat /var/log/osconfig_agent.log
 sudo cat /var/log/osconfig_platform.log
 sudo cat /var/log/osconfig_commandrunner.log
 sudo cat /var/log/osconfig_networking.log
@@ -135,7 +128,7 @@ sudo cat /var/log/osconfig_tpm.log
 
 Each of these log files when it reaches maximum size (128 KB) gets rolled over to a file with the same name and a .bak extension (osconfig_agent.bak, for example).
 
-When OSConfig exists prematurely (crashes) the Agent's log (osconfig_pnp_agent.log) at the very end may contain an indication of that. For example:
+When OSConfig exists prematurely (crashes) the Agent's log (osconfig_agent.log) at the very end may contain an indication of that. For example:
 
 ```
 [ERROR] OSConfig crash due to segmentation fault (SIGSEGV) during MpiGet to Firewall.FirewallRules
@@ -145,16 +138,6 @@ Only the root user can view these log files.
 ## Configuration
 
 OSConfig can be configured via `/etc/osconfig/osconfig.json`. After changing this configuration file, restart OSConfig to apply the configuration changes. Only the root user can view or edit this configuration file.
-
-### Enabling management via IoT Hub
-
-Originally OSConfig was developed with the IoT Hub management channel by default and always enabled. Currently, this managament channel is by default disabled. You can enable it via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "IotHubManagement" to a non-zero value:
-
-```json
-{
-    "IotHubManagement": 0
-}
-```
 
 ### Adjusting the reporting interval
 
@@ -243,69 +226,6 @@ Set (or add if needed) an integer value named "GitManagement" to a non-zero valu
 To disable GitOps DC management, set "GitManagement" to 0.
 
 OSConfig clones locally the configured Git DC file and branch to `/etc/osconfig/gitops/osconfig_desired.json`. This Git clone is automatically deleted when the OSConfig Agent (Watcher) terminates. While active, the cloned DC file is protected for root user access only.
-
-### Changing the protocol OSConfig uses to connect to the IoT Hub
-
-The networking protocol that OSConfig uses to connect to the IoT Hub is configured in the OSConfig general configuration file `/etc/osconfig/osconfig.json`:
-
-```json
-{
-    "IotHubProtocol": 2
-}
-```
-
-OSConfig currently supports the following protocol values:
-
-Value | Description
------|-----
-0 | Decided by OSConfig (currently this is MQTT)
-1 | MQTT
-2 | MQTT over Web Socket
-
-## HTTP proxy configuration
-
-When the configured IotHubProtocol value is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
-
-1. `http_proxy`
-1. `https_proxy`
-1. `HTTP_PROXY`
-1. `HTTPS_PROXY`
-
-OSConfig supports the HTTP proxy configuration to be in one of the following formats:
-
-- `http://server:port`
-- `http://username:password@server:port`
-- `http://domain\username:password@server:port`
-
-Where the prefix is either lowercase `http` or uppercase `HTTP` and the username and password can contain `@` characters escaped as `\@`.
-
-For example: `http://username\@mail.foo:p\@ssw\@rd@www.foo.org:100` where username is `username@mail.foo`, password is `p@ssw@rd`, the proxy server is `www.foo.org` and the port is 100.
-
-The environment variable needs to be set for the root user account. For example, for a fictive proxy server, user and password, the environment variable `http_proxy` can be set for the root user manually via console with:
-
-```
-sudo -E su
-export http_proxy=http://user:password@wwww.foo.org:100//
-```
-
-The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service):
-
-```
-# Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
-# Environment="http_proxy=http://user:password@wwww.foo.org:100//"
-```
-
-After editing the service unit file, stop and disable osconfig.service, rebuild OSConfig, then enable and start osconfig.service:
-
-```bash
-sudo systemctl stop osconfig.service
-sudo systemctl disable osconfig.service
-cd build
-cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DBUILD_TESTS=ON|OFF
-cmake --build . --config Release|Debug  --target install
-sudo systemctl enable osconfig.service
-sudo systemctl start osconfig.service
-```
 
 ---
 

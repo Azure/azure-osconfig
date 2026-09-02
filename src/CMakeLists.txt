@@ -33,12 +33,10 @@ option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_TELEMETRY "Build telemetry" ON)
-option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
-option(BUILD_COMPLIANCE_ENGINE_ASSESSOR "Build the compliance engine assessor tool" ON)
 
-add_compile_options("-Wno-psabi;-fPIC;-fno-omit-frame-pointer")
+add_compile_options("-Wno-psabi;-fPIC")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
@@ -49,8 +47,6 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.5" AND NOT VCPKG_OVERLAY_PORTS MATCHES "src/ports-overlay$")
     message(FATAL_ERROR "GCC version less than 5.5 detected, set VCPKG_OVERLAY_PORTS to '${CMAKE_CURRENT_SOURCE_DIR}/src/ports-overlay'. eg 'cmake ... -DVCPKG_OVERLAY_PORTS=${CMAKE_CURRENT_SOURCE_DIR}/ports-overlay'")
 endif()
-
-add_link_options(-rdynamic)
 
 if(BUILD_TELEMETRY)
     message(STATUS "Telemetry: Enabled")
@@ -132,7 +128,7 @@ if (COVERAGE)
     message(STATUS "Code coverage: Enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/pnp/")
+    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/agent/")
 else ()
     message(STATUS "Code coverage: Disabled")
 endif()
@@ -174,20 +170,19 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-# TODO: Refactor telemetry test discovery after ExternalProject removal
-# if (BUILD_TELEMETRY)
-#    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
-#    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
-#    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
-#    configure_file(
-#        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
-#        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
-#        @ONLY)
-#
-#    set_property(DIRECTORY APPEND PROPERTY
-#        TEST_INCLUDE_FILES
-#            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
-# endif()
+if (BUILD_TELEMETRY)
+    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
+    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
+    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
+        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
+        @ONLY)
+
+    set_property(DIRECTORY APPEND PROPERTY
+        TEST_INCLUDE_FILES
+            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
+endif()
 
 add_subdirectory(tests)
 
@@ -210,7 +205,7 @@ set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
 set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
-    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
+    "${CMAKE_SOURCE_DIR}/adapters/agent/azure-iot-sdk-c/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/")
 
@@ -239,7 +234,6 @@ set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
-set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)

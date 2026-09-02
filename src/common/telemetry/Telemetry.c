@@ -15,8 +15,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static FILE* g_telemetryFile = NULL;
-static char* g_executableDirectory = NULL;
+static FILE* g_tmpFile = NULL;
+static char* g_moduleDirectory = NULL;
 static char* g_distroName = NULL;
 
 char* GetModuleDirectory(void)
@@ -55,43 +55,17 @@ char* GetCachedDistroName(void)
 
 void TelemetryInitialize(const OsConfigLogHandle log)
 {
-    if (false == DirectoryExists(OSCONFIG_DIRECTORY_NAME))
-    {
-        if (0 != mkdir(OSCONFIG_DIRECTORY_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
-        {
-            OsConfigLogError(log, "TelemetryInitialize: Failed to create directory: '%s' (%d, %s)", OSCONFIG_DIRECTORY_NAME, errno, strerror(errno));
-            return;
-        }
-        else
-        {
-            OsConfigLogInfo(log, "TelemetryInitialize: Created directory: %s", OSCONFIG_DIRECTORY_NAME);
-        }
-    }
+    g_tmpFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
 
-    if (false == DirectoryExists(TELEMETRY_DIRECTORY_NAME))
-    {
-        if (0 != mkdir(TELEMETRY_DIRECTORY_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))
-        {
-            OsConfigLogError(log, "TelemetryInitialize: Failed to create directory: '%s' (%d, %s)", TELEMETRY_DIRECTORY_NAME, errno, strerror(errno));
-            return;
-        }
-        else
-        {
-            OsConfigLogInfo(log, "TelemetryInitialize: Created directory: %s", TELEMETRY_DIRECTORY_NAME);
-        }
-    }
-
-    g_telemetryFile = fopen(TELEMETRY_TMP_FILE_NAME, "a");
-
-    if (NULL != g_telemetryFile)
+    if (NULL != g_tmpFile)
     {
         OsConfigLogInfo(log, "TelemetryInitialize: Opened file: %s", TELEMETRY_TMP_FILE_NAME);
 
-        g_executableDirectory = GetModuleDirectory();
+        g_moduleDirectory = GetModuleDirectory();
 
-        if (NULL != g_executableDirectory)
+        if (NULL != g_moduleDirectory)
         {
-            OsConfigLogInfo(log, "TelemetryInitialize: Found module directory: %s", g_executableDirectory);
+            OsConfigLogInfo(log, "TelemetryInitialize: Found module directory: %s", g_moduleDirectory);
         }
         else
         {
@@ -108,52 +82,47 @@ void TelemetryInitialize(const OsConfigLogHandle log)
 
 void TelemetryCleanup(const OsConfigLogHandle log)
 {
-    int status = 0;
-    char* fileName = NULL;
-    char* command = NULL;
-
-    if (NULL != g_telemetryFile)
+    if (NULL != g_tmpFile)
     {
-        if (NULL != g_executableDirectory)
-        {
-            fileName = FormatAllocateString("%s/%s", g_executableDirectory, TELEMETRY_BINARY_NAME);
+        char* fileName = NULL;
+        char* command = NULL;
 
-            if (false == FileExists(fileName))
+        if (NULL != g_moduleDirectory)
+        {
+            fileName = FormatAllocateString("%s/%s", g_moduleDirectory, TELEMETRY_BINARY_NAME);
+
+            if (NULL != fileName)
             {
-                OsConfigLogError(log, "TelemetryCleanup: '%s' does not exist, cannot invoke executable  to send telemetry", fileName);
-            }
-            else
-            {
-                SetFileAccess(fileName, 0, 0, 0700, log);
-                command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_TEARDOWN_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
-                if (0 != (status = ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log)))
+                if (0 == SetFileAccess(fileName, 0, 0, 0700, log))
                 {
-                    OsConfigLogError(log, "TelemetryCleanup: '%s' failed with %d (%s)", command, status, strerror(status));
+                    command = FormatAllocateString("%s -f %s -t %d %s", fileName, TELEMETRY_TMP_FILE_NAME, TELEMETRY_TEARDOWN_TIMEOUT_SECONDS, VERBOSE_FLAG_IF_DEBUG);
+
+                    if (NULL != command)
+                    {
+                        ExecuteCommand(NULL, command, false, false, 0, TELEMETRY_COMMAND_TIMEOUT_SECONDS, NULL, NULL, log);
+                        FREE_MEMORY(command);
+                    }
                 }
+
+                FREE_MEMORY(fileName);
             }
+
+            FREE_MEMORY(g_moduleDirectory);
         }
 
-        fclose(g_telemetryFile);
-        g_telemetryFile = NULL;
-    }
-    else
-    {
-        OsConfigLogError(log, "TelemetryCleanup: no telemetry file, nothing to send");
+        fclose(g_tmpFile);
+        g_tmpFile = NULL;
     }
 
-    FREE_MEMORY(command);
-    FREE_MEMORY(fileName);
-
-    FREE_MEMORY(g_executableDirectory);
     FREE_MEMORY(g_distroName);
 }
 
 void TelemetryAppendPayloadToFile(const char* jsonString)
 {
-    if ((NULL != jsonString) && (NULL != g_telemetryFile))
+    if ((NULL != jsonString) && (NULL != g_tmpFile))
     {
-        fprintf(g_telemetryFile, "%s\n", jsonString);
-        fflush(g_telemetryFile);
+        fprintf(g_tmpFile, "%s\n", jsonString);
+        fflush(g_tmpFile);
     }
 }
 

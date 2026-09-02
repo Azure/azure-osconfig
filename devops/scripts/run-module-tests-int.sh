@@ -2,7 +2,7 @@
 BUILDDIR=$1
 SRCDIR=`pwd`
 mkdir -p /etc/osconfig
-cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
+cp -r ./src/adapters/agent/daemon/osconfig.json /etc/osconfig/osconfig.json
 
 if [ -z "$2" ]; then
 	mkdir $BUILDDIR
