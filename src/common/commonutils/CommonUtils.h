@@ -47,6 +47,7 @@ extern "C"
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool FileEndsInEol(const char* fileName, OsConfigLogHandle log);
+char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHandle log);
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
@@ -260,6 +261,9 @@ int StartPerfClock(PerfClock* clock, OsConfigLogHandle log);
 int StopPerfClock(PerfClock* clock, OsConfigLogHandle log);
 long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log);
 void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log);
+
+void InstallCrashHandler(const char* logFileName);
+void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
