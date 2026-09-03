@@ -1,3 +1,3 @@
-[submodule "external/vcpkg"]
-	path = external/vcpkg
+[submodule "src/common/telemetry/vcpkg"]
+	path = src/common/telemetry/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
