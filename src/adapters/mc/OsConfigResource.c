@@ -53,6 +53,7 @@ OsConfigLogHandle GetLog(void)
     return g_log;
 }
 
+// 65535 means this constructor is to be invoked last when the SO is loaded
 void __attribute__((constructor(65535))) Initialize()
 {
     CheckForPreviousCrash(LOG_FILE, GetLog());
