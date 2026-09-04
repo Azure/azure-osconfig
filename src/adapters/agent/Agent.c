@@ -181,18 +181,6 @@ static void AgentDoWork(void)
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        ////////////// HERE //////////////
-        OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
-        {
-            int* crashInducer = NULL;
-            // Optimization barrier: hide the NULL from the compiler so it cannot prove the
-            // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
-            __asm__ volatile("" : "+r"(crashInducer));
-            *crashInducer = 42;
-        }
-        //////////////////////////////////
-        
-        
         // Process RCD/DC and/or Git clones DC files
         WatcherDoWork(GetLog());
 
