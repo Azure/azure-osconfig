@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "inc/AgentCommon.h"
 #include "inc/Agent.h"
 
 #define MPI_CLIENT_NAME "OSConfig Watcher"

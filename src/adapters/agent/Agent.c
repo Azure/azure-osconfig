@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "inc/AgentCommon.h"
 #include "inc/Agent.h"
 #include "inc/Watcher.h"
 
@@ -15,8 +14,8 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
-// The optional second command line argument that when present instructs the agent to run as a traditional daemon
-#define FORK_ARG "fork"
+// The name of the OSConfig Management Platform daemon
+#define OSCONFIG_PLATFORM "osconfig-platform"
 
 #define DEVICE_MODEL_ID_SIZE 40
 #define DEVICE_PRODUCT_NAME_SIZE 128
@@ -54,7 +53,7 @@ static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 
 MPI_HANDLE g_mpiHandle = NULL;
-static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
+static unsigned int g_maxPayloadSizeBytes = 4096;
 
 static OsConfigLogHandle g_agentLog = NULL;
 
