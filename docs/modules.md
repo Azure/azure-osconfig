@@ -845,19 +845,19 @@ To enable and use logging via this library, modules must use the following calls
 
 Call | Arguments | Returns | Description
 -----|-----|-----|-----
-OpenLog | The name of the log and of the rollover backup log. These names must be "/var/log/osconfig_*modulename*.log" and "/var/log/osconfig_*modulename*.bak" respectively | A OSCONFIG_LOG_HANDLE handle | Called when the module starts to open the log
-CloseLog | A OSCONFIG_LOG_HANDLE handle | None | Called when the module terminates to close the log
+OpenLog | The name of the log and of the rollover backup log. These names must be "/var/log/osconfig_*modulename*.log" and "/var/log/osconfig_*modulename*.bak" respectively | A OsConfigLogHandle handle | Called when the module starts to open the log
+CloseLog | A OsConfigLogHandle handle | None | Called when the module terminates to close the log
 SetLoggingLevel  | A LoggingLevel value | None | Called to set a new logging level
 GetLoggingLevel | none | A LoggingLevel value | Called to return the current logging level
 IsDebugLoggingEnabled | None | Returns true if debug logging is enabled, false otherwise | Checks if debug logging is enabled
-OsConfigLogEmergency | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogAlert | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogCritical | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogError | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogWarning | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogNotice | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
-OsConfigLogInfo | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an informational trace to the log
-OsConfigLogDebug | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogEmergency | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes an emergency trace to the log
+OsConfigLogAlert | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes an alert trace to the log
+OsConfigLogCritical | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes a critical trace to the log
+OsConfigLogError | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogWarning | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes a warning trace to the log
+OsConfigLogNotice | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes a notice trace to the log
+OsConfigLogInfo | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes an informational trace to the log
+OsConfigLogDebug | The OsConfigLogHandle handle plus printf-style format string and variable list of arguments | None | Writes a debug trace to the log
 
 The Logging library header file: [src/common/logging/Logging.h](../src/common/logging/Logging.h)
 
@@ -865,7 +865,7 @@ The Logging library header file: [src/common/logging/Logging.h](../src/common/lo
 
 Modules can log as necessary informational and error traces during all MMI calls except MmiGet: MmiOpen, MmiClose, MmiFree and MmiSet.
 
-During MmiGet the modules should only log in case of error (no information traces) and only when full logging is enabled (when IsFullLoggingEnabled returns true). This is because MmiGet is periodically called and same traces can fill the module's log, obscuring other traces.
+During MmiGet the modules should only log in case of error (no information traces) and only when debug logging is enabled (when IsDebugLoggingEnabled returns true). This is because MmiGet is periodically called and same traces can fill the module's log, obscuring other traces.
 
 # 10. Handling multiple client sessions
 
