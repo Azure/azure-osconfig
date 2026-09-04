@@ -391,6 +391,9 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
                             OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for module session");
                         }
 
+                        // Reinstall the crash handler after each modules is loaded, in case any install their own handler to overwrite this:
+                        InstallCrashHandler(LOG_FILE);
+
                         module = module->next;
                     }
 
