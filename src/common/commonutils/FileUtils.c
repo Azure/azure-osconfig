@@ -628,7 +628,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     int result = ENOENT;
 
     ////////////// HERE //////////////
-    OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
+    OsConfigLogError(log, "TEMP: inducing a deliberate crash to test the crash handler");
     {
         int* crashInducer = NULL;
         // Optimization barrier: hide the NULL from the compiler so it cannot prove the
