@@ -15,15 +15,9 @@ This document describes the OSConfig Management Modules and it's meant to serve 
 
 For more information on OSConfig see the [OSConfig North Star Architecture](architecture.md).
 
-# 2. Architecture Overview
+# 2. Module Interface Model (MIM)
 
-<img src="assets/osconfig.png" alt="OSConfig North Star" width=70%/>
-
-This diagram shows the overall OSConfig North Star architecture. Not all components shown in this diagram are currently available.
-
-# 3. Module Interface Model (MIM)
-
-## 3.1. Introduction
+## 2.1. Introduction
 
 This section describes the module Interface Model (MIM).
 
@@ -40,7 +34,7 @@ This model assumes a declarative style of communication between the upper manage
 - Declarative style: the Model describes the desired state (what), the Platform decides how to get there.
 - Procedural style: the Model relies on programmatic step-by-step negotiation of What and How.
 
-### 3.1.1. MIM Components
+### 2.1.1. MIM Components
 
 A MIM Component captures one specific OS configuration function, such as for example: running shell commands, configuring Wi-Fi, managing certificates, etc.
 
@@ -54,7 +48,7 @@ The names of MIM components must be PascalCased, with the first letter of each w
 
 Example of an existing OSConfig MIM Component: commandRunner.
 
-### 3.1.2. MIM Objects
+### 2.1.2. MIM Objects
 
 A MIM object captures an OS configuration state or function. For example: result of a command, a new Wi-Fi Profile, etc.
 
@@ -153,7 +147,7 @@ Example of an array MIM object:
 }
 ```
 
-### 3.1.3 MIM Settings
+### 2.1.3 MIM Settings
 
 MIM settings translate to setting values of following types supported by OSConfig:
 
@@ -297,7 +291,7 @@ Example of a MIM setting of map of strings type:
 }
 ```
 
-## 3.2. Describing the module Interface Model (MIM)
+## 2.2. Describing the module Interface Model (MIM)
 
 MIM names (for components, objects, settings and setting values, including map key names) may only contain the characters 'a'-'z', 'A'-'Z', '0'-'9', and '_' (underscore), and must match the following regular expression:
 
@@ -311,7 +305,7 @@ MIM names for components must be PascalCased, while for object, settings and set
 
 A MIM can be described in JSON.
 
-### 3.2.1.  MIM JSON
+### 2.2.1.  MIM JSON
 
 Each Module must have its own MIM JSON saved to the [src/modules/mim/](../src/modules/mim/) in a JSON file with the same name as the module SO binary.
 
@@ -595,7 +589,7 @@ Other MIM JSON examples:
 - CommandRunner: two MIM objects, commandArguments (desired) and commandStatus (reported), linked together by a common Setting, commandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
-### 3.2.3 Serialized MIM payload at run-time
+### 2.2.3 Serialized MIM payload at run-time
 
 The following is the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles):
 
@@ -653,11 +647,7 @@ Example of serialized JSON payload for CommandRunner.commandArguments and Settin
 {"CommandRunner":{"commandArguments":{"commandId":"A","arguments":"date","action":4}},"Settings":{"deviceHealthTelemetryConfiguration":2,"deliveryOptimizationPolicies":{"percentageDownloadThrottle": 55,"cacheHostSource": 0,"cacheHost": "abc","cacheHostFallback":2022}}}
 ```
 
-# 4. Management Modules Interface (MMI)
-
-A simplified diagram shows the desired and reported configuration requests exchanged between Azure via the local OSConfig and module over the Management Module Interface (MMI):
-
-<img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width=70%/>
+# 3. Management Modules Interface (MMI)
 
 Each Module must be a Linux Dynamically Linked Shared Object library (.so) implementing the MMI. The MMI transports the MIM object payloads of settings for the module component(s).
 
@@ -669,7 +659,7 @@ The MMI is a simple C API and includes the calls described in this section.
 
 The MMI header file is [src/modules/inc/Mmi.h](../src/modules/inc/Mmi.h)
 
-## 4.1. MmiGetInfo
+## 3.1. MmiGetInfo
 
 MmiGetInfo returns information about the module to help the client to correctly identify it. MmiGetInfo may be called at any time and is typically called immediately after the module is loaded by the client, before MmiOpen. MmiGetInfo must succeed called at any time while the module is loaded.
 
@@ -707,7 +697,7 @@ In addition to the values in the above table the module manufacturer can add the
 
 A JSON schema of the MmiGetInfo payload response is at [MmiGetInfo JSON schema](../src/modules/schema/mmi-get-info.schema.json)
 
-## 4.2. MmiOpen
+## 3.2. MmiOpen
 
 MmiOpen starts a new client session with the module. MmiOpen receives as an input argument the name of the client (the module use that name to identify the caller) and the maximum size in bytes for object payload values supported by the client (0 if unlimited). For OSConfig this name follows the format ```Azure OSConfig M;A.B.C.YYYYMMDD``` where ```M``` is the model version, ```A.B.C``` is the version number and ```YYYYMMDD``` is the build date of OSConfig. On success, MmiOpen returns a newly created handle to identify this session. The handle is a module-specific opaque handle (where the module can hide a C structure or C++ class that identifies the current session) to be used for subsequent calls. On failure, MmiOpen returns NULL.
 
@@ -719,7 +709,7 @@ MMI_HANDLE MmiOpen(
     const unsigned int maxPayloadSizeBytes);
 ```
 
-## 4.3. MmiClose
+## 3.3. MmiClose
 
 MmiClose ends a client session with the module. MmiClose receives as an input argument the handle returned by a previous MmiOpen call. No further calls with that handle can be made after this call.
 
@@ -727,7 +717,7 @@ MmiClose ends a client session with the module. MmiClose receives as an input ar
 void MmiClose(MMI_HANDLE clientSession);
 ```
 
-## 4.4. MmiSet
+## 3.4. MmiSet
 
 MmiSet takes as input arguments a handle returned by MmiOpen, the name of the Component (e.g. "CommandRunner"), the name of the Object (e.g. "commandArguments"), the desired Object payload formatted as JSON and not null terminated UTF-8 character string  and the length (size) in bytes of the JSON payload (without null terminator). The module can use the clientSession handle (module specific, could be a C structure or C++ class) to give context to the call or can ignore it.
 
@@ -762,7 +752,7 @@ The maximum size of payload will be limited to the size specified via MmiOpen if
 
 MmiSet may be called with the same payload several times. The Module must be able to handle these calls either by reapplying the desired payload or detect when the respective desired configuration was already applied and in that case return MMI_OK without reapplying the payload and without logging errors.
 
-## 4.5. MmiGet
+## 3.5. MmiGet
 
 MmiGet takes as input arguments a handle returned by MmiOpen, the name of the Component, the name of the Object, and returns via output arguments the reported Object payload formatted as JSON (same format as for MmiSet), the size of value size and MMI_OK if success, NULL, 0 and an error code defined in errno.h if failure. On success, the caller requests the module to free the memory for the JSON payload with MmiFree.
 
@@ -781,7 +771,7 @@ Modules must validate on input the clientSession, componentName and objectName a
 
 If the module has no data to report the module must still return valid payload that contains default values (such as empty strings). The module must not return MMI_OK with null payload or payload size of 0.
 
-## 4.6. MmiFree
+## 3.6. MmiFree
 
 Frees memory allocated by Module for the payload returned to MmiGetInfo and MmiGet:
 
@@ -789,7 +779,7 @@ Frees memory allocated by Module for the payload returned to MmiGetInfo and MmiG
 void MmiFree(MMI_JSON_STRING payload);
 ```
 
-# 5. Installation
+# 4. Installation
 
 Modules are installed as Dynamically Linked Shared Object libraries (.so) under /usr/lib/osconfig/. Each Module reports its version at runtime via MmiGetInfo.
 
@@ -833,7 +823,7 @@ or simply:
 sudo systemctl restart osconfig
 ```
 
-# 6. Persistence, Retry, Wait
+# 5. Persistence, Retry, Wait
 
 Modules may need to save data to files to persist across device restart. Any persisted files must be access-restricted to be written by root account only and must be deleted when no longer needed. The Modules must not save to such files any personal, user or device, identifying data. The files may be encrypted (encryption is optional).
 
@@ -841,33 +831,29 @@ A future version of OSConfig may provide modules with a Storage utility that cou
 
 Modules may also need to retry failed OS configuration operations or wait. Persisting state can help modules execute retry and wait over machine restarts.
 
-# 7. Orchestration
-
-OSConfig orchestrates the requests received from the various management authority adapters into an ordered sequences of MMI calls that are communicated to the respective modules to execute.
-
-# 8. Versioning
+# 6. Versioning
 
 Modules must report their version via MmiGetInfo. OSConfig will use this version to decide which Module to load in case that multiple versions of the same Module are present under /usr/lib/osconfig/.
 
 Each Module must be compliant with its Module Interface Model (MIM). New  versions of the modules keeping the same MIM must increment their version numbers. When the MIM needs to change, the component names can be changed and/or components with new names be added.
 
-# 9. Packaging
+# 7. Packaging
 
 Modules can be packaged standalone in their own packages or together with OSConfig in one package.
 
-# 10. Telemetry
+# 8. Telemetry
 
 Each module is responsible of its own telemetry. The modules must not emit any personal, user or device, identifying (PII) data.
 
-# 11. Logging
+# 9. Logging
 
 Modules should log via the logging library provided by OSConfig to log files under /var/log/ where all other OSConfig logs are found. To help the device administrator collect all OSCOnfig logs the module should use a log name that matches the rest of the OSConfig logs: ```/var/log/osconfig_*modulename*.log```.
 
 Modules can log MIM component names and MIM object names. Modules must not log MIM Setting values unless full logging is enabled. In general, the modules must not log any personal, user or device, identifying (PII) data.
 
-## 11.1. Logging library
+## 9.1. Logging library
 
-OSConfig provides a static logging library that modules can use.
+OSConfig provides a static logging library that modules can use. This logging library exposes macros that clients can use to log telemetry with levels corresponding to the severity values defined in RFC 5424.
 
 To enable and use logging via this library, modules must use the following calls:
 
@@ -875,43 +861,33 @@ Call | Arguments | Returns | Description
 -----|-----|-----|-----
 OpenLog | The name of the log and of the rollover backup log. These names must be "/var/log/osconfig_*modulename*.log" and "/var/log/osconfig_*modulename*.bak" respectively | A OSCONFIG_LOG_HANDLE handle | Called when the module starts to open the log
 CloseLog | A OSCONFIG_LOG_HANDLE handle | None | Called when the module terminates to close the log
-IsFullLoggingEnabled | None | Returns true if full logging is enabled, false otherwise | Checks if full logging is enabled
-OsConfigLogInfo | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an informational trace to the log
+SetLoggingLevel  | A LoggingLevel value | None | Called to set a new logging level
+GetLoggingLevel | none | A LoggingLevel value | Called to return the current logging level
+IsDebugLoggingEnabled | None | Returns true if debug logging is enabled, false otherwise | Checks if debug logging is enabled
+OsConfigLogEmergency | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogAlert | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogCritical | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
 OsConfigLogError | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogWarning | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogNotice | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
+OsConfigLogInfo | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an informational trace to the log
+OsConfigLogDebug | The OSCONFIG_LOG_HANDLE handle plus printf-style format string and variable list of arguments | None | Writes an error trace to the log
 
 The Logging library header file: [src/common/logging/Logging.h](../src/common/logging/Logging.h)
 
-## 11.2. Enabling full logging
-
-Full logging can be temporarily enabled by the module developer for debugging purposes. Generally it is not recommended to run OSConfig with full logging enabled.
-
-To enable full logging, edit the OSConfig general configuration file at /etc/osconfig/osconfig.json and set there the integer value named "FullLogging" to a non zero value (such as 1) to enable full logging and to 0 for normal logging:
-
-```JSON
-{
-    "FullLogging":0
-}
-```
-
-To make OSConfig apply the change, restart or refresh OSConfig:
-
-```
-sudo systemctl kill -s SIGHUP osconfig.service
-```
-
-## 11.3. Logging during MMI calls
+## 9.2. Logging during MMI calls
 
 Modules can log as necessary informational and error traces during all MMI calls except MmiGet: MmiOpen, MmiClose, MmiFree and MmiSet.
 
 During MmiGet the modules should only log in case of error (no information traces) and only when full logging is enabled (when IsFullLoggingEnabled returns true). This is because MmGet is periodically called and same traces can fill the module's log, obscuring other traces.
 
-# 12. Handling multiple client sessions
+# 10. Handling multiple client sessions
 
 OSConfig Modules can be invoked to execute multiple sessions in parallel. Each MmiOpen opens a new session with that client. Each MmiClose closes one session (other sessions may remain open). At any time during a module instance life there may be multiple clients connected to the module and  there may be multiple open sessions from each client.
 
 The code for a Module can be split into a static library and a shared object (SO) dynamic library. This section describes one optional pattern which can help a module to support multiple sessions.
 
-## 12.1. Module Static Library
+## 10.1. Module Static Library
 
 The static library implements one upper C++ class: ModuleObject. This class contains common code to all ModuleObject instances placed in a base class. Each ModuleObject instance represents one client session and implements:
 
@@ -924,7 +900,7 @@ The static library implements one upper C++ class: ModuleObject. This class cont
 
 The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as both the unit-tests and module SO link to this same static library.
 
-## 12.2. Module Shared Object (SO)
+## 10.2. Module Shared Object (SO)
 
 The SO component of the module implements the MMI functions, with C signatures and C|C++ implementations.
 
@@ -937,7 +913,7 @@ Each MMI function implementation calls directly into its respective ModuleObject
 - MmiGet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Get.
 - MmiSet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Set.
 
-# 13. Testing
+# 11. Testing
 
 Each module needs to have its own full set of unit tests as well as a Test Recipe for a functional test.
 

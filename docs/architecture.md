@@ -129,34 +129,7 @@ Example:
 
 This format is following the MIM JSON payload schema described in the [OSConfig Management Modules](modules.md) specification.
 
-## 4.3. Orchestrator
-
-The Orchestrator receives management requests from Adapters over the Management Platform Interface (MPI) IPC REST API. The Orchestrator combines the requests in a serial sequence that it feeds into the Module Manager to dispatch the requests to the respective Management Modules.
-
-<img src="assets/orchestration.png" alt="Orchestrator" width=50%/>
-
-What the Orchestrator does:
-
-- Receive management requests from one or multiple management authority adapters.
-- Combines requests into one serial sequence.
-- Skips duplicate requests. For example, a duplicate request to set DeviceHealthTelemetry to Optional.
-- Applies a certain order for requests simultaneously arriving from separate authorities per a list of priorities to be created as part of the configuration at /etc/osconfig/osconfig.json. For example, if a request to set DeviceHealthTelemetry to Optional arrives at the same time with a CommandArguments.Action.Shutdown to pipe them in this order. Or: NetworkConnections.DesiredConnectionConfiguration.Action=ChangeIpv4Address results in network connection loss to automatically invoke RollbackConnectionConfiguration.
-- Return over the MPI to the adapters the module responses from the Modules Manager.
-
-What the Orchestrator does not do:
-
-- Make multiple calls in parallel into the Modules Manager (such as over separate threads). The Orchestrator combines multiple parallel pipes into one single serial pipe and feeds MPI requests into the Modules Manager on a single thread.
-- Retry failed requests on its own. The Management Modules can internally retry, the upper OSConfig stack, including the Orchestrator, should not automatically retry.
-- Create new or modify requests in a way that is incompatible with the MIM contracts with Management Modules.
-
-For remote management authorities:
-
-- The Orchestrator cannot change midway in the platform desired requests from the remote authority and cannot change reported requests to the remote authority - doing so violates the authority-MIM contract.
-- Once a desired object is set by the remote authority, that object gets automatically re-applied to the device until it is corrected by the remote authority. OSConfig can reject a desired payload but cannot correct that payload at the remote authority. The device cannot change desired content.
-
-Special OSConfig Management Modules that implement more complex scenarios and only invoke other modules, without adding any other OS configuration of their own, can also orchestrate.
-
-## 4.4. Modules Manager
+## 4.3. Modules Manager
 
 The Modules Manager receives serialized MPI C API requests from the MPI REST API server and/or from the Orchestrator and dispatches the requests over MMI to the appropriate Management Modules. The Modules Manager returns the responses from the modules to the MPI REST API server and/or the Orchestrator.
 
@@ -180,7 +153,7 @@ What the Module Manager does not do:
 - Receive input from multiple callers. The Orchestrator orders the requests from multiple management authorities in one sequence that is feed into the Modules Manager.
 - Retry the same MMI request to a module multiple times after a failure. The modules can internally retry, the upper OSConfig stack, including the Modules Manager shall not automatically retry.
 
-## 4.5. Module Host
+## 4.4. Module Host
 
 The Module Host is a thin executable shell provided by OSConfig that wraps (loads) a Management Module (Dynamically Linked Shared Object library .so) and provides the Unix Domain Sockets (UDS) Module Management Interface (MMI) REST API on behalf of the loaded module which allows the module to be called by any management authority directly, by-passing rest of OSConfig, if needed. The Module Host communicates with the loaded module over the MMI C API that the module implements.
 
@@ -192,7 +165,7 @@ Isolating the modules into their own processes makes it harder for them to inter
 
 For more details on the Module Interface Model (MIM) and MIM components see the [OSConfig Management Modules](modules.md) specification.
 
-## 4.6. Module Management Interface (MMI)
+## 4.5. Module Management Interface (MMI)
 
 The Management Module Interface (MMI) is almost identical to the Management Platform Interface (MPI), except that:
 
@@ -212,37 +185,11 @@ The MMI C API header file is [src/modules/inc/Mmi.h](../src/modules/inc/Mmi.h)
 
 For more details on the MMI C API including MmiGetInfo see the see the [OSConfig Management Modules](modules.md) specification.
 
-## 4.7. Downloader
-
-For requests that involve big data, instead of the actual data being transmitted over the MPI and MMI, download URI paths could be transmitted, pointing to desired configuration files uploaded (for example, on Azure Storage) by a Composer App (editor app for the desired configuration files).
-
-<img src="assets/downloader.png" alt="Downloader" width=70%/>
-
-The Downloader can be a Dynamically Linked Shared Object library (.so) provided by OSConfig for benefit of both OSConfig Management Platform (when downloads go into platform - see B) and (where this is mostly expected to be needed - see A) for Management Modules. The modules would load this dynamic Downloader library in their Module Host processes and invoke the Downloader API.
-
-## 4.8. Secure Store
-
-The OSConfig Management Platform and the Management Modules may need to persist data locally to be available across device reboot.
-
-To make it easier for Module developers, OSConfig can provide a Secure Store storage component either as a Dynamically Linked Shared Object library (.so) loaded by the OSConfig Platform or running in its own separate daemon process.
-
-The store can be accessed over a Store REST API modeled after the MPI REST API. The Store API can store and retrieve MIM settings per MIM components and MIM objects, per management authority, and can also add audit logging, to record who did what and when. A Store Client API can be provided as a static library.
-
-The Secure Store storage can be under /etc/osconfig/, like the current RC/DC files, just separate per MIM component (such as for example /etc/osconfig/firewall_desired.json) and client (for example /etc/osconfig/configlock) and (unlike RC/DC files) not meant to be accessed directly and/or by any local management authority or user, but only by OSConfig and other Store API clients. The files could be encrypted in a way that only legit Store API clients can decrypt.
-
-By default file access would be restricted to root for everything, including read. The North Star for the Secure Store is to block all direct access to the files, except via the Store API.
-
-<img src="assets/securestore.png" alt="Secure Store" width=70%/>
-
-## 4.9. Logging
+## 4.6. Logging
 
 OSConfig provides a Logging library component that makes it easy for all OSConfig components to log in a standard fashion to date and time stamped self-rolled log files.
 
 For more details on the Logging library and its use by modules see the [OSConfig Management Modules](modules.md) specification.
-
-## 4.10. Telemetry
-
-OSConfig has limited Telemetry via its product information. OpenTelemetry is a potential future path.
 
 # 5. OSConfig Management Modules
 
@@ -276,11 +223,7 @@ The MIM assumes a declarative style of communication between the upper layer and
 
 For more information about the MIM see the [OSConfig Management Modules](modules.md) specification.
 
-## 5.3. OSQuery Module
-
-The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device.
-
-## 5.5. Orchestrator Module
+## 5.3. Orchestrator Module
 
 In general, we can adapt OSConfig Management Modules to Azure Policy and Machine Configuration by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
 
