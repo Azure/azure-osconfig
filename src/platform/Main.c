@@ -117,7 +117,6 @@ int main(int argc, char* argv[])
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
     CheckForPreviousCrash(LOG_FILE, GetPlatformLog());
-    InstallCrashHandler(LOG_FILE);
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -134,6 +133,9 @@ int main(int argc, char* argv[])
     signal(SIGHUP, SignalReloadConfiguration);
 
     InitializePlatform();
+
+    // Install the crash handler after all modules are loaded, in case any install their own:
+    InstallCrashHandler(LOG_FILE);
 
     while (0 == g_stopSignal)
     {
