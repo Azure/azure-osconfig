@@ -10,7 +10,7 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         set (CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
         message (STATUS "VCPKG_ROOT not found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
     else()
-        message (ERROR "Ensure git submodules are initialized or VCPKG_ROOT is set and install the vcpkg ports")
+        message (FATAL_ERROR "vcpkg toolchain not found at ${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/vcpkg. Run 'git submodule update --init --recursive' (or set VCPKG_ROOT) and install the vcpkg ports")
     endif()
 endif()
 
