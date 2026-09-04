@@ -420,7 +420,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
 
     ////////////// HERE //////////////
-    OsConfigLogError(GetPlatformLog(), "TEMP: inducing a deliberate crash to test the crash handler");
+    OsConfigLogError(GetPlatformLog(), "TEMP: inducing a deliberate crash to test the crash handler in the platform");
     {
         int* crashInducer = NULL;
         // Optimization barrier: hide the NULL from the compiler so it cannot prove the
