@@ -4,7 +4,7 @@ This directory contains vcpkg port overlays that override the default port versi
 
 ## gtest
 
-The `gtest` overlay provides Google Test version 1.10.0, which is used specifically when building with the `x64-linux-gcc5` triplet for compatibility with older GCC 5 compilers (e.g., Ubuntu 14.04, centos-7, rhel-7. oraclelinux-7).
+The `gtest` overlay provides Google Test version 1.10.0, which is used specifically when building with the `x64-linux-gcc5` triplet for compatibility with older GCC 5 compilers (e.g. Ubuntu 14.04, centos-7, rhel-7, oraclelinux-7).
 
 ### Usage
 
@@ -12,9 +12,9 @@ When building with the GCC-5 triplet (See the [triplets concept documentation](h
 
 ```bash
 cmake ../src \
-  -DVCPKG_OVERLAY_TRIPLETS=../src/triplets \
+  -DVCPKG_OVERLAY_TRIPLETS=../src/common/telemetry/triplets \
   -DVCPKG_TARGET_TRIPLET=x64-linux-gcc5 \
-  -DVCPKG_OVERLAY_PORTS=../src/ports-overlay
+  -DVCPKG_OVERLAY_PORTS=../src/common/telemetry/ports-overlay
 ```
 
 For all other builds (modern compilers), omit the `VCPKG_OVERLAY_PORTS` parameter to use the default gtest version specified in `vcpkg.json` (1.12.0).

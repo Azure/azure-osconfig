@@ -7,7 +7,7 @@
 # (used on Ubuntu 14.04 for 1DS SDK compatibility) does not fully support the C++11
 # features required by gtest 1.11.0 and later versions.
 #
-# Usage: Add -DVCPKG_OVERLAY_PORTS=../src/ports-overlay to your CMake command when
+# Usage: Add -DVCPKG_OVERLAY_PORTS=../src/common/telemetry/ports-overlay to your CMake command when
 #        building with the x64-linux-gcc5 triplet to use this version instead of
 #        the default gtest version specified in vcpkg.json.
 #
