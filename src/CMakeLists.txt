@@ -124,10 +124,6 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/version.h.in" "${CMA
 message(STATUS "Setting CMAKE_INSTALL_SYSCONFDIR to /etc")
 set(CMAKE_INSTALL_SYSCONFDIR "/etc")
 
-# Keep frame pointers (-fno-omit-frame-pointer) so the crash handler can walk thestack reliably, and export symbols (-rdynamic) so backtrace_symbols_fd() can resolve function names in stack traces
-target_compile_options(${target_name} PRIVATE -fno-omit-frame-pointer)
-target_link_options(${target_name} PRIVATE -rdynamic)
-
 if (COVERAGE)
     message(STATUS "Code coverage: Enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
