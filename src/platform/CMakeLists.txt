@@ -48,12 +48,6 @@ target_link_libraries(${target_name}
     commonutils
     parsonlib)
 
-# Keep frame pointers (-fno-omit-frame-pointer) so the common crash handler can walk the
-# stack reliably, and export symbols (-rdynamic) so backtrace_symbols_fd() can resolve this
-# executable's own function names in crash stack traces.
-target_compile_options(${target_name} PRIVATE -fno-omit-frame-pointer)
-target_link_options(${target_name} PRIVATE -rdynamic)
-
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
