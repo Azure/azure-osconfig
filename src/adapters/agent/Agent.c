@@ -22,17 +22,14 @@
 
 static unsigned int g_lastTime = 0;
 
-// All signals on which we want the agent to cleanup before terminating process.
-// SIGKILL is omitted to allow a clean and immediate process kill if needed.
+// Signals on which the agent performs a graceful cleanup before terminating.
+// Crash signals (SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL) are handled separately by
+// the common crash handler (see InstallCrashHandler). SIGKILL is omitted to allow a
+// clean and immediate process kill if needed.
 static int g_stopSignals[] = {
     0,
     SIGINT,  // 2
     SIGQUIT, // 3
-    SIGILL,  // 4
-    SIGABRT, // 6
-    SIGBUS,  // 7
-    SIGFPE,  // 8
-    SIGSEGV, //11
     SIGTERM, //15
     SIGSTOP, //19
     SIGTSTP  //20
@@ -76,56 +73,10 @@ OsConfigLogHandle GetLog()
     return g_agentLog;
 }
 
-#define EOL_TERMINATOR "\n"
-#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
-#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)" EOL_TERMINATOR
-
 static void SignalInterrupt(int signal)
 {
-    int logDescriptor = -1;
-    char* errorMessage = NULL;
-
-    if (SIGSEGV == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGSEGV;
-    }
-    else if (SIGFPE == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGFPE;
-    }
-    else if (SIGILL == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGILL;
-    }
-    else if (SIGABRT == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGABRT;
-    }
-    else if (SIGBUS == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGBUS;
-    }
-    else
-    {
-        OsConfigLogInfo(g_agentLog, "Interrupt signal (%d)", signal);
-        g_stopSignal = signal;
-    }
-
-    if (NULL != errorMessage)
-    {
-        if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
-        {
-            ssize_t writeResult = -1;
-            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
-            UNUSED(writeResult);
-            close(logDescriptor);
-        }
-        _exit(signal);
-    }
+    OsConfigLogInfo(g_agentLog, "Interrupt signal (%d)", signal);
+    g_stopSignal = signal;
 }
 
 static void SignalReloadConfiguration(int incomingSignal)
@@ -273,6 +224,9 @@ int main(int argc, char *argv[])
     // Re-open the log
     CloseLog(&g_agentLog);
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+
+    CheckForPreviousCrash(LOG_FILE, GetLog());
+    InstallCrashHandler(LOG_FILE);
 
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
