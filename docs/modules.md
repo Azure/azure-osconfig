@@ -38,7 +38,7 @@ This model assumes a declarative style of communication between the upper manage
 
 A MIM Component captures one specific OS configuration function, such as for example: running shell commands, configuring Wi-Fi, managing certificates, etc.
 
-MIM Components can be translated to to C++ namespaces, etc.
+MIM Components can be translated to C++ namespaces, etc.
 
 Modules in general only need to contain only one MIM component each. Sometimes, a second MIM component could be needed. For example, for Wi-Fi one MIM component could be Wi-Fi configuration and a second MIM component in support of the first but still separate could be Wi-Fi Certificates.
 
@@ -147,7 +147,7 @@ Example of an array MIM object:
 }
 ```
 
-### 2.1.3 MIM Settings
+### 2.1.3. MIM Settings
 
 MIM settings translate to setting values of following types supported by OSConfig:
 
@@ -276,7 +276,7 @@ Example of a MIM setting of map of strings type:
 
 ```JSON
 {
-  "name": "firewallFingerprins",
+  "name": "firewallFingerprints",
   "schema": {
     "type": "map",
     "mapKey": {
@@ -305,7 +305,7 @@ MIM names for components must be PascalCased, while for object, settings and set
 
 A MIM can be described in JSON.
 
-### 2.2.1.  MIM JSON
+### 2.2.1. MIM JSON
 
 Each Module must have its own MIM JSON saved to the [src/modules/mim/](../src/modules/mim/) in a JSON file with the same name as the module SO binary.
 
@@ -589,7 +589,7 @@ Other MIM JSON examples:
 - CommandRunner: two MIM objects, commandArguments (desired) and commandStatus (reported), linked together by a common Setting, commandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
-### 2.2.3 Serialized MIM payload at run-time
+### 2.2.2. Serialized MIM payload at run-time
 
 The following is the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles):
 
@@ -603,43 +603,7 @@ MmiSet and MmiGet only use the object portions of this payload. Such as:
 {"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringEnumerationSettingName":"enumStringValue","stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
 ```
 
-or:
-
-```
-"some value"
-```
-
-or:
-
-```
-N
-```
-
-or:
-
-```
-true|false
-```
-
-or:
-
-```
-["stringArrayItemA","stringArrayItemB","stringArrayItemC"]
-```
-
-or:
-
-```
-[a,b,c]
-```
-
-or:
-
-```
-{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"}
-```
-
-Etc.
+or a single value matching the setting's type, for example: `"some value"` (string), `N` (integer), `true|false` (boolean), `["a","b","c"]` (array of strings), `[a,b,c]` (array of integers), or `{"mapKeyX":"X","mapKeyY":"Y"}` (map).
 
 Example of serialized JSON payload for CommandRunner.commandArguments and Settings:
 
@@ -651,7 +615,7 @@ Example of serialized JSON payload for CommandRunner.commandArguments and Settin
 
 Each Module must be a Linux Dynamically Linked Shared Object library (.so) implementing the MMI. The MMI transports the MIM object payloads of settings for the module component(s).
 
-For the first version of OSConfig, there was a single process, with modules loaded in-proc. In the current version of OSConfig there are two processes, one for the agent and the other for the platform and the later loads the modules in-proc. In a further future version modules could be isolated to run each into their own processes, via an executable shell provided by OSConfig.
+For the first version of OSConfig, there was a single process, with modules loaded in-proc. In the current version of OSConfig there are two processes, one for the agent and the other for the platform and the latter loads the modules in-proc. In a further future version modules could be isolated to run each into their own processes, via an executable shell provided by OSConfig.
 
 In general, any process can load a module and communicate to it over the MMI. The module developer shall not assume that the module will be loaded by a certain process or that it will be only invoked over a specific management authority.
 
@@ -721,7 +685,7 @@ void MmiClose(MMI_HANDLE clientSession);
 
 MmiSet takes as input arguments a handle returned by MmiOpen, the name of the Component (e.g. "CommandRunner"), the name of the Object (e.g. "commandArguments"), the desired Object payload formatted as JSON and not null terminated UTF-8 character string  and the length (size) in bytes of the JSON payload (without null terminator). The module can use the clientSession handle (module specific, could be a C structure or C++ class) to give context to the call or can ignore it.
 
-The objectName and payload must must match a desired MIM Object from the componentName MIM component and present in the module's MIM. There can only be one single MIM Object per MmiSet call. Modules must not accept MmiSet calls that are not following their MIM precisely.
+The objectName and payload must match a desired MIM Object from the componentName MIM component and present in the module's MIM. There can only be one single MIM Object per MmiSet call. Modules must not accept MmiSet calls that are not following their MIM precisely.
 
 ```C
 int MmiSet(
@@ -746,7 +710,7 @@ The payload argument contains a JSON formatted, not null terminated UTF-8 string
 - Boolean payload example: ```"true"```
 - Complex payload example combining all the above as fields into same object payload: ```"{"valueOne":123,"valueTwo":"This is a test.","valueThree":true}"``` where "valueOne", "valueTwo" and "valueThree" are the respective field names.
 
-OSConfig will not attempt to parse and validate the payload and payloadSizeBytes arguments. It is the responsability of the respective Module to do this and return errors if appropriate. Modules must also validate the clientSession, componentName and objectName arguments against invalid values.
+OSConfig will not attempt to parse and validate the payload and payloadSizeBytes arguments. It is the responsibility of the respective Module to do this and return errors if appropriate. Modules must also validate the clientSession, componentName and objectName arguments against invalid values.
 
 The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the requests translated into MMI calls must be size limited and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
 
@@ -756,7 +720,7 @@ MmiSet may be called with the same payload several times. The Module must be abl
 
 MmiGet takes as input arguments a handle returned by MmiOpen, the name of the Component, the name of the Object, and returns via output arguments the reported Object payload formatted as JSON (same format as for MmiSet), the size of value size and MMI_OK if success, NULL, 0 and an error code defined in errno.h if failure. On success, the caller requests the module to free the memory for the JSON payload with MmiFree.
 
-The objectName and payload must must match a reported MIM object from the componentName MIM Component and present in the module's MIM. There can only be one single MIM Object per MmiGet call. Modules must not return to MmiGet payloads that are not following their MIM precisely.
+The objectName and payload must match a reported MIM object from the componentName MIM Component and present in the module's MIM. There can only be one single MIM Object per MmiGet call. Modules must not return to MmiGet payloads that are not following their MIM precisely.
 
 ```C
 int MmiGet(
@@ -779,7 +743,29 @@ Frees memory allocated by Module for the payload returned to MmiGetInfo and MmiG
 void MmiFree(MMI_JSON_STRING payload);
 ```
 
-# 4. Installation
+# 4. Building and installing a module
+
+## 4.1. Module structure and build
+
+The simplest existing module to use as a starting reference is [deviceinfo](../src/modules/deviceinfo/). Copy its layout as the starting point for a new module.
+
+A module is organized as a small static library plus a thin shared object (.so):
+
+- `src/modules/<module>/src/lib/` - a static library implementing the module logic and the MMI calls (input-argument validation, logging, Get/Set). Both the module's unit-tests and the `.so` link to this same static library to maximize test coverage.
+- `src/modules/<module>/src/so/` - the shared object (`<module>.so`) that exposes the MMI C functions and forwards each call directly to its counterpart in the static library.
+- `src/modules/<module>/tests/` - the module's unit-tests, linked against the static library.
+- `src/modules/mim/<module>.json` - the module's MIM (see section 2), validated against the MIM schema at build time.
+- `src/modules/test/recipes/<Module>Tests.json` - the functional Test Recipe (see section 11).
+
+To add the module to the build, add a single line to [src/modules/CMakeLists.txt](../src/modules/CMakeLists.txt):
+
+```cmake
+add_module(<module>)
+```
+
+`add_module` validates `mim/<module>.json` against the MIM schema and, after building, copies `<module>.so` into the module test bin directory so it can be exercised by the functional tests.
+
+## 4.2. Installation
 
 Modules are installed as Dynamically Linked Shared Object libraries (.so) under /usr/lib/osconfig/. Each Module reports its version at runtime via MmiGetInfo.
 
@@ -847,7 +833,7 @@ Each module is responsible of its own telemetry. The modules must not emit any p
 
 # 9. Logging
 
-Modules should log via the logging library provided by OSConfig to log files under /var/log/ where all other OSConfig logs are found. To help the device administrator collect all OSCOnfig logs the module should use a log name that matches the rest of the OSConfig logs: ```/var/log/osconfig_*modulename*.log```.
+Modules should log via the logging library provided by OSConfig to log files under /var/log/ where all other OSConfig logs are found. To help the device administrator collect all OSConfig logs the module should use a log name that matches the rest of the OSConfig logs: ```/var/log/osconfig_*modulename*.log```.
 
 Modules can log MIM component names and MIM object names. Modules must not log MIM Setting values unless full logging is enabled. In general, the modules must not log any personal, user or device, identifying (PII) data.
 
@@ -879,7 +865,7 @@ The Logging library header file: [src/common/logging/Logging.h](../src/common/lo
 
 Modules can log as necessary informational and error traces during all MMI calls except MmiGet: MmiOpen, MmiClose, MmiFree and MmiSet.
 
-During MmiGet the modules should only log in case of error (no information traces) and only when full logging is enabled (when IsFullLoggingEnabled returns true). This is because MmGet is periodically called and same traces can fill the module's log, obscuring other traces.
+During MmiGet the modules should only log in case of error (no information traces) and only when full logging is enabled (when IsFullLoggingEnabled returns true). This is because MmiGet is periodically called and same traces can fill the module's log, obscuring other traces.
 
 # 10. Handling multiple client sessions
 
@@ -919,7 +905,7 @@ Each module needs to have its own full set of unit tests as well as a Test Recip
 
 The unit-tests for each module link to the module's static library and test that.
 
-The functional tests exercise the module over its MMI following that module's MIM amd a Module Test Recipe.
+The functional tests exercise the module over its MMI following that module's MIM and a Module Test Recipe.
 
 The Module Test Recipe is a JSON containing an array of test MIM object payloads to be processed in the order they are listed in the array, from first to last. Each test object includes an optional delay to be performed before the next test object if any.
 

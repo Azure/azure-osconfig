@@ -85,7 +85,7 @@ The platform includes the following main components:
 The platform also includes several utility libraries which are shared with all OSConfig components, including adapters and modules:
 
 - Logging: file and console circular logging library.
-- CommonUtils: various utility APIs useful for accesing and working with the Linux OS.
+- CommonUtils: various utility APIs useful for accessing and working with the Linux OS.
 - MpiClient: client for the MPI REST API
 - Asb: the implementation of the Azure Security Baseline, shared among the Universal NRP adapter and the SecurityBaseline module.
 
@@ -131,7 +131,7 @@ This format is following the MIM JSON payload schema described in the [OSConfig 
 
 ## 4.3. Modules Manager
 
-The Modules Manager receives serialized MPI C API requests from the MPI REST API server and/or from the Orchestrator and dispatches the requests over MMI to the appropriate Management Modules. The Modules Manager returns the responses from the modules to the MPI REST API server and/or the Orchestrator.
+The Modules Manager receives serialized MPI C API requests from the MPI REST API server and dispatches the requests over MMI to the appropriate Management Modules. The Modules Manager returns the responses from the modules to the MPI REST API server.
 
 <img src="assets/modulesmanager.png" alt="Modules Manager" width=40%/>
 
@@ -149,11 +149,11 @@ What the Module Manager does:
 
 What the Module Manager does not do:
 
-- Orchestrate incoming requests among modules. The Modules Manager dispatches requests in the order they arrive from the Orchestrator.
-- Receive input from multiple callers. The Orchestrator orders the requests from multiple management authorities in one sequence that is feed into the Modules Manager.
 - Retry the same MMI request to a module multiple times after a failure. The modules can internally retry, the upper OSConfig stack, including the Modules Manager shall not automatically retry.
 
 ## 4.4. Module Host
+
+> **Note:** The Module Host and the out-of-process module isolation described in this section are part of the North Star architecture and are **not yet implemented**. In the current version of OSConfig the modules are loaded in-process by the platform (the Modules Manager). This section describes the intended future design.
 
 The Module Host is a thin executable shell provided by OSConfig that wraps (loads) a Management Module (Dynamically Linked Shared Object library .so) and provides the Unix Domain Sockets (UDS) Module Management Interface (MMI) REST API on behalf of the loaded module which allows the module to be called by any management authority directly, by-passing rest of OSConfig, if needed. The Module Host communicates with the loaded module over the MMI C API that the module implements.
 
@@ -183,7 +183,7 @@ REST API calls include: GET (MmiGet, MmiGetInfo) and POST (MmiSet).
 
 The MMI C API header file is [src/modules/inc/Mmi.h](../src/modules/inc/Mmi.h)
 
-For more details on the MMI C API including MmiGetInfo see the see the [OSConfig Management Modules](modules.md) specification.
+For more details on the MMI C API including MmiGetInfo see the [OSConfig Management Modules](modules.md) specification.
 
 ## 4.6. Logging
 
@@ -222,12 +222,6 @@ The Module Management Interface (MMI) is used to transport desired and reported 
 The MIM assumes a declarative style of communication between the upper layer and the module, where the desired and reported configuration of the device is communicated in bulk, not a procedural style with multi-step negotiation.
 
 For more information about the MIM see the [OSConfig Management Modules](modules.md) specification.
-
-## 5.3. Orchestrator Module
-
-In general, we can adapt OSConfig Management Modules to Azure Policy and Machine Configuration by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
-
-A new kind of OSConfig Management Module can be added: an Orchestrator Module loads other modules and execute combination of standard OSConfig module scenarios, without dealing itself with any direct OS configuration. There can be one or multiple Orchestrator Modules, each one of them using a different combination of standard modules, and/or using same modules but in different ways. The power of Orchestrator Modules is that they can wrap more complex scenarios in simple MIM models and thus work better with Azure Policy.
 
 # 6. OSConfig Universal Native Resource Provider (NRP)
 
