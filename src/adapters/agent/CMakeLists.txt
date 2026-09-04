@@ -17,8 +17,7 @@ set(target_name osconfig)
 
 add_executable(${target_name} ${osconfig_files})
 
-target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -fno-omit-frame-pointer)
-target_link_options(${target_name} PRIVATE -rdynamic)
+target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security)
 
 target_include_directories(${target_name} PUBLIC
     ${PLATFORM_INC_DIR})

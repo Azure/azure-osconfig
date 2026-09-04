@@ -36,7 +36,7 @@ option(BUILD_TELEMETRY "Build telemetry" ON)
 option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
 
-add_compile_options("-Wno-psabi;-fPIC")
+add_compile_options("-Wno-psabi;-fPIC;-fno-omit-frame-pointer")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
@@ -47,6 +47,11 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.5" AND NOT VCPKG_OVERLAY_PORTS MATCHES "ports-overlay$")
     message(FATAL_ERROR "GCC version less than 5.5 detected, set VCPKG_OVERLAY_PORTS to '${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'. eg 'cmake ... -DVCPKG_OVERLAY_PORTS=${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'")
 endif()
+
+# Keep frame pointers (-fno-omit-frame-pointer, set globally above) and export symbols
+# (-rdynamic) so the common crash handler's backtrace_symbols_fd() can resolve function
+# names in crash stack traces.
+add_link_options(-rdynamic)
 
 if(BUILD_TELEMETRY)
     message(STATUS "Telemetry: Enabled")
