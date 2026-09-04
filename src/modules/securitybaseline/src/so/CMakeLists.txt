@@ -21,4 +21,8 @@ set_target_properties(securitybaseline
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
+
+target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -fno-omit-frame-pointer)
+target_link_options(${target_name} PRIVATE -rdynamic)
+
 install(TARGETS securitybaseline DESTINATION ${MODULES_INSTALL_DIR})
