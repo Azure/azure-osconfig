@@ -17,6 +17,3 @@ target_link_libraries(securitybaselinelib PRIVATE
 target_include_directories(securitybaselinelib PUBLIC
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -fno-omit-frame-pointer)
-target_link_options(${target_name} PRIVATE -rdynamic)
