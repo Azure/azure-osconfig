@@ -306,6 +306,14 @@ int main(int argc, char *argv[])
     InitializeWatcher(jsonConfiguration, GetLog());
     FREE_MEMORY(jsonConfiguration);
 
+    ////////////// HERE //////////////
+    OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
+    {
+        volatile int* crashInducer = NULL;
+        *crashInducer = 42;
+    }
+    //////////////////////////////////
+
     while (0 == g_stopSignal)
     {
         AgentDoWork();
