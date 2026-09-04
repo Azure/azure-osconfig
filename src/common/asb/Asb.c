@@ -1133,17 +1133,6 @@ void AsbShutdown(OsConfigLogHandle log)
 
 static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
 {
-    ////////////// HERE //////////////
-    OsConfigLogError(log, "TEMP: inducing a deliberate crash to test the crash handler in the ASB lib");
-    {
-        int* crashInducer = NULL;
-        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
-        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
-        __asm__ volatile("" : "+r"(crashInducer));
-        *crashInducer = 42;
-    }
-    //////////////////////////////////
-
     char* reason = NULL;
     LoggingLevel existingLevel = GetLoggingLevel();
     LoggingLevel desiredLevel = GetLoggingLevelFromString(g_desiredLoggingLevel ? g_desiredLoggingLevel : g_defaultLoggingLevel);
