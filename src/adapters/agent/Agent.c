@@ -17,7 +17,6 @@
 // The name of the OSConfig Management Platform daemon
 #define OSCONFIG_PLATFORM "osconfig-platform"
 
-#define DEVICE_MODEL_ID_SIZE 40
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
 
