@@ -627,18 +627,6 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     mode_t desiredMode = 0;
     int result = ENOENT;
 
-    ////////////// HERE //////////////
-    OsConfigLogError(log, "TEMP: inducing a deliberate crash to test the crash handler");
-    {
-        int* crashInducer = NULL;
-        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
-        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
-        __asm__ volatile("" : "+r"(crashInducer));
-        *crashInducer = 42;
-    }
-    //////////////////////////////////
-
-
     if (NULL == name)
     {
         OsConfigLogError(log, "CheckAccess called with an invalid name argument");

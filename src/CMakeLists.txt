@@ -48,9 +48,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_
     message(FATAL_ERROR "GCC version less than 5.5 detected, set VCPKG_OVERLAY_PORTS to '${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'. eg 'cmake ... -DVCPKG_OVERLAY_PORTS=${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'")
 endif()
 
-# Keep frame pointers (-fno-omit-frame-pointer, set globally above) and export symbols
-# (-rdynamic) so the common crash handler's backtrace_symbols_fd() can resolve function
-# names in crash stack traces.
+# Keep frame pointers (-fno-omit-frame-pointer, set globally above) and export symbols (-rdynamic)
+# so the crash handler's backtrace_symbols_fd() can resolve function names in crash stack traces
 add_link_options(-rdynamic)
 
 if(BUILD_TELEMETRY)

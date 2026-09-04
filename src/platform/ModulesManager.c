@@ -223,6 +223,18 @@ static void LoadModules(const char* directory, const char* configJson)
         json_value_free(config);
     }
     FREE_MEMORY(clientName);
+
+    ////////////// HERE //////////////
+    OsConfigLogError(GetPlatformLog(), "TEMP: inducing a deliberate crash to test the crash handler");
+    {
+        int* crashInducer = NULL;
+        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
+        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
+        __asm__ volatile("" : "+r"(crashInducer));
+        *crashInducer = 42;
+    }
+    //////////////////////////////////
+
 }
 
 void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
