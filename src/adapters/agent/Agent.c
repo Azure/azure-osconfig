@@ -131,17 +131,6 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
         g_exitState = PlatformInitializationFailure;
     }
 
-    ////////////// HERE //////////////
-    OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
-    {
-        int* crashInducer = NULL;
-        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
-        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
-        __asm__ volatile("" : "+r"(crashInducer));
-        *crashInducer = 42;
-    }
-    //////////////////////////////////
-
     return status;
 }
 
@@ -316,6 +305,17 @@ int main(int argc, char *argv[])
     // Call the Watcher to initialize itself
     InitializeWatcher(jsonConfiguration, GetLog());
     FREE_MEMORY(jsonConfiguration);
+
+    ////////////// HERE //////////////
+    OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
+    {
+        int* crashInducer = NULL;
+        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
+        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
+        __asm__ volatile("" : "+r"(crashInducer));
+        *crashInducer = 42;
+    }
+    //////////////////////////////////
 
     while (0 == g_stopSignal)
     {
