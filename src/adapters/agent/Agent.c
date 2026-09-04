@@ -309,7 +309,10 @@ int main(int argc, char *argv[])
     ////////////// HERE //////////////
     OsConfigLogError(GetLog(), "TEMP: inducing a deliberate crash to test the crash handler");
     {
-        volatile int* crashInducer = NULL;
+        int* crashInducer = NULL;
+        // Optimization barrier: hide the NULL from the compiler so it cannot prove the
+        // dereference (avoids -Wnull-dereference under -Werror) or delete the store.
+        __asm__ volatile("" : "+r"(crashInducer));
         *crashInducer = 42;
     }
     //////////////////////////////////
