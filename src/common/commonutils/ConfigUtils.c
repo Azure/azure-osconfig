@@ -39,7 +39,7 @@
 #define DEFAULT_MAX_LOG_SIZE 1048576
 #define DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER 5
 
-static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
+int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -244,7 +244,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
     return numReportedProperties;
 }
 
-static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log)
+char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;

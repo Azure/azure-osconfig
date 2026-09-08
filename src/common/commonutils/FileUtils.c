@@ -65,7 +65,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle
     return string;
 }
 
-static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     FILE* file = NULL;
     int i = 0;
@@ -244,7 +244,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     return result;
 }
 
-static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
@@ -444,7 +444,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-static bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
+bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int format = 0;
@@ -587,7 +587,7 @@ int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log
     return status;
 }
 
-static bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
+bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
 {
     int fileDescriptor = -1;
     int lockResult = -1;
@@ -620,7 +620,7 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -706,7 +706,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
+int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     int result = ENOENT;
 
@@ -776,7 +776,7 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
+unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
 {
     unsigned int numberOf = 0;
     FILE* file = NULL;
@@ -840,7 +840,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfig
     return status;
 }
 
-static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
+int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     struct stat statStruct = { 0 };
     int status = ENOENT;
@@ -887,7 +887,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
     return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
-static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
+int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
 {
     char* restoreCommand = NULL;
     char* textResult = NULL;
@@ -1007,7 +1007,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
     return status;
 }
 
-static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
+int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -1577,7 +1577,7 @@ int CheckTextFoundInFolder(const char* directory, const char* text, const char* 
     return result;
 }
 
-static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
+int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -1716,7 +1716,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
     return result;
 }
 
-static int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
+int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
 {
     char* results = NULL;
     int status = 0;

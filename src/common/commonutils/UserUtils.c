@@ -14,7 +14,7 @@ static const char* g_redacted = "***";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
-static void ResetUserEntry(SimplifiedUser* target)
+void ResetUserEntry(SimplifiedUser* target)
 {
     if (NULL != target)
     {
@@ -55,7 +55,7 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size)
     }
 }
 
-static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
+int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
 {
     int status = 0;
     size_t length = 0;
@@ -131,7 +131,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     return status;
 }
 
-static char* EncryptionName(int type)
+char* EncryptionName(int type)
 {
     char* name = NULL;
     switch (type)
@@ -168,7 +168,7 @@ static char* EncryptionName(int type)
     return name;
 }
 
-static bool IsUserNonLogin(SimplifiedUser* user)
+bool IsUserNonLogin(SimplifiedUser* user)
 {
     int index = ARRAY_SIZE(g_noLoginShell);
     bool noLogin = false;
@@ -193,19 +193,19 @@ static bool IsUserNonLogin(SimplifiedUser* user)
 // For logging purposes, we identify an user account as a system account if either has name "root", or has a no-loging shell,
 // or has an UID below 1000. For non-system accounts we redact usernames and home names, for system accounts we log everything.
 // We do this in order to log in full clear deviant accounts (that for example use a no-login shell while having UID above 1000)
-static bool IsSystemAccount(SimplifiedUser* user)
+bool IsSystemAccount(SimplifiedUser* user)
 {
     return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
 // Similar to determining if an user account is system, we identify a group to be system if either
 // has name "root" or has a GID below 1000 (and all such system groups get logged in full)
-static bool IsSystemGroup(SimplifiedGroup* group)
+bool IsSystemGroup(SimplifiedGroup* group)
 {
     return (group && ((group->groupName && (0 == strcmp(group->groupName, g_root))) || (group->groupId < 1000))) ? true : false;
 }
 
-static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
+int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 {
     const char* commandTemplate = "usermod -s %s %s";
     char* command = NULL;
@@ -262,7 +262,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
     return result;
 }
 
-static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
+int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct spwd* shadowEntry = NULL;
     char control = 0;
@@ -1645,7 +1645,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     return status;
 }
 
-static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
+int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int status = 0;

@@ -142,7 +142,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle log)
+int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle log)
 {
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
@@ -195,7 +195,7 @@ static int CopyMountTableFile(const char* source, const char* target, OsConfigLo
     return status;
 }
 
-static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log)
+int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int status = 0;

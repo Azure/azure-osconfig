@@ -67,7 +67,7 @@ void ScheduleRefresh(void)
     g_refreshSignal = SIGHUP;
 }
 
-/*static*/ void InitializePlatform(void)
+void InitializePlatform(void)
 {
     g_lastTime = (unsigned int)time(NULL);
 
@@ -83,7 +83,7 @@ void TerminatePlatform(void)
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
 }
 
-/*static*/ void PlatformDoWork(void)
+void PlatformDoWork(void)
 {
     unsigned int currentTime = time(NULL);
     unsigned int timeInterval = DOWORK_INTERVAL;
