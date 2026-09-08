@@ -35,7 +35,7 @@ static pthread_t g_mpiServerWorker = 0;
 static int g_mpiServerWorkerError = -1;
 static bool g_serverActive = false;
 
-/*static*/ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
+MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MPI_HANDLE handle = NULL;
 
@@ -47,13 +47,13 @@ static bool g_serverActive = false;
     return handle;
 }
 
-/*static*/ void CallMpiClose(MPI_HANDLE handle)
+void CallMpiClose(MPI_HANDLE handle)
 {
     OsConfigLogDebug(GetPlatformLog(), "Received MpiClose request, session %p ('%s')", handle, (char*)handle);
     MpiClose((MPI_HANDLE)handle);
 }
 
-/*static*/ int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
+int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
 {
     int status = MPI_OK;
 
@@ -74,7 +74,7 @@ static bool g_serverActive = false;
     return status;
 }
 
-/*static*/ int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
+int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
 {
     int status = MPI_OK;
 
@@ -95,7 +95,7 @@ static bool g_serverActive = false;
     return status;
 }
 
-/*static*/ int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
+int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
 {
     int status = MPI_OK;
 
@@ -116,7 +116,7 @@ static bool g_serverActive = false;
     return status;
 }
 
-/*static*/ int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
+int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
 {
     int status = MPI_OK;
 
@@ -432,7 +432,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-/*static*/ void* MpiServerWorker(void* arguments)
+void* MpiServerWorker(void* arguments)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 

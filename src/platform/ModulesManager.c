@@ -47,7 +47,7 @@ OsConfigLogHandle GetPlatformLog(void)
     return g_platformLog;
 }
 
-static void LoadModules(const char* directory, const char* configJson)
+/*static*/ void LoadModules(const char* directory, const char* configJson)
 {
     MODULE* module = NULL;
     DIR* dir = NULL;
@@ -233,7 +233,7 @@ void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
     }
 }
 
-static void FreeModules(MODULE* modules)
+/*static*/ void FreeModules(MODULE* modules)
 {
     MODULE* curr = modules;
     MODULE* next = NULL;
@@ -248,7 +248,7 @@ static void FreeModules(MODULE* modules)
     modules = NULL;
 }
 
-static void FreeSessions(SESSION* sessions)
+/*static*/ void FreeSessions(SESSION* sessions)
 {
     SESSION* curr = sessions;
     SESSION* next = NULL;
@@ -276,7 +276,7 @@ static void FreeSessions(SESSION* sessions)
     sessions = NULL;
 }
 
-static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
+/*static*/ void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
 {
     int i = 0;
 
@@ -298,7 +298,7 @@ void UnloadModules(void)
     g_reportedTotal = 0;
 }
 
-static char* GenerateUuid(void)
+/*static*/ char* GenerateUuid(void)
 {
     char* uuid = NULL;
     static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
