@@ -1988,7 +1988,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     }
 
     ////////////// HERE //////////////
-    OsConfigLogError(GetPlatformLog(), "TEMP: inducing a deliberate crash to test the crash handler in the platform");
+    OsConfigLogError(log, "TEMP: inducing a deliberate crash to test the crash handler");
     {
         int* crashInducer = NULL;
         // Optimization barrier: hide the NULL from the compiler so it cannot prove the
