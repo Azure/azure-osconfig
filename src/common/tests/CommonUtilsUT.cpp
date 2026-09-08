@@ -743,119 +743,6 @@ TEST_F(CommonUtilsTest, IsAFileOrDirectory)
     EXPECT_TRUE(IsADirectory("/etc", NULL));
 }
 
-struct HttpProxyOptions
-{
-    const char* data;
-    const char* hostAddress;
-    int port;
-    const char* username;
-    const char* password;
-};
-
-TEST_F(CommonUtilsTest, ValidHttpProxyData)
-{
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-
-    HttpProxyOptions validOptions[] = {
-        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
-        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
-        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
-        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" },
-        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "wwww.foo.org", 8070, "fooname", "foo$pass!word" },
-        { "http://a\\b:c@d:1", "d", 1, "a\\b", "c" },
-        { "http://a\\@b:c@d:1", "d", 1, "a@b", "c" },
-        { "http://a:b@c:1", "c", 1, "a", "b" },
-        { "http://a:1", "a", 1, nullptr, nullptr },
-        { "http://1:a", "1", 0, nullptr, nullptr }
-    };
-
-    int validOptionsSize = ARRAY_SIZE(validOptions);
-
-    for (int i = 0; i < validOptionsSize; i++)
-    {
-        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
-        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
-        EXPECT_EQ(port, validOptions[i].port);
-        EXPECT_STREQ(username, validOptions[i].username);
-        EXPECT_STREQ(password, validOptions[i].password);
-
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
-    }
-}
-
-TEST_F(CommonUtilsTest, InvalidHttpProxyData)
-{
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-
-    const char* badOptions[] = {
-        "some random text",
-        "http://blah",
-        "http://blah oh",
-        "123",
-        "http://abc",
-        "wwww.foo.org:1010",
-        "11.22.22.44:2020",
-        "//wwww.foo.org:3030",
-        "https://wwww.foo.org:40",
-        "HTTPS://wwww.foo.org:5050",
-        "http://foo`name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo=password@wwww.foo.org:6060",
-        "http://foo~name:foopassword@wwww.foo.org:6060",
-        "http://foo#name:foopassword@wwww.foo.org:6060",
-        "http://foo%name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo^password@wwww.foo.org:6060",
-        "http://fooname:foo&password@wwww.foo.org:6060",
-        "http://foo*name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo(password@wwww.foo.org:6060",
-        "http://foo)name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo+password@wwww.foo.org:6060",
-        "http://foo,name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo<password@wwww.foo.org:6060",
-        "http://foo>name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo?password@wwww.foo.org:6060",
-        "http://foo'name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo[password@wwww.foo.org:6060",
-        "http://foo]name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo{password@wwww.foo.org:6060",
-        "http://foo}name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo password@wwww.foo.org:6060",
-        "http://foo|name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foopassword@@wwww.foo.org:7070",
-        "http://foo:name:foo:password@@wwww.foo.org:8080",
-        "http://fooname:foopassword@wwww.foo.org:***",
-        "http://fooname:foo\"password@wwww.foo.org:9090"
-    };
-
-    int badOptionsSize = ARRAY_SIZE(badOptions);
-
-    for (int i = 0; i < badOptionsSize; i++)
-    {
-        EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
-
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
-    }
-}
-
-TEST_F(CommonUtilsTest, InvalidArgumentsHttpProxyDataParsing)
-{
-    char* hostAddress = nullptr;
-    int port = 0;
-
-    EXPECT_FALSE(ParseHttpProxyData(nullptr, &hostAddress, &port, nullptr, nullptr, nullptr));
-    EXPECT_FALSE(ParseHttpProxyData("http://a:1", nullptr, &port, nullptr, nullptr, nullptr));
-    EXPECT_FALSE(ParseHttpProxyData("http://a:1", &hostAddress, nullptr, nullptr, nullptr, nullptr));
-}
-
 TEST_F(CommonUtilsTest, OsProperties)
 {
     char* osPrettyName = NULL;
@@ -3624,6 +3511,7 @@ TEST_F(CommonUtilsTest, CrashHandler)
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Crash due to segmentation fault (SIGSEGV)"));
     EXPECT_NE(nullptr, result = strstr(contents, "[ERROR] Stack trace:"));
 
+    FREE_MEMORY(contents);
     CloseLog(&log);
     EXPECT_TRUE(Cleanup(m_path));
 }

@@ -34,7 +34,7 @@ bool IsValidDaemonName(const char *name)
     return result;
 }
 
-static int ExecuteSystemctlCommand(const char* command, const char* daemonName, OsConfigLogHandle log)
+int ExecuteSystemctlCommand(const char* command, const char* daemonName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "systemctl %s %s";
     char* formattedCommand = NULL;
@@ -107,7 +107,7 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, OsConfigLogHand
     return result;
 }
 
-static bool CommandDaemon(const char* command, const char* daemonName, OsConfigLogHandle log)
+bool CommandDaemon(const char* command, const char* daemonName, OsConfigLogHandle log)
 {
     int result = 0;
     bool status = true;

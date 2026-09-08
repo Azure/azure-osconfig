@@ -35,11 +35,7 @@ static pthread_t g_mpiServerWorker = 0;
 static int g_mpiServerWorkerError = -1;
 static bool g_serverActive = false;
 
-char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
-static const char g_mpiCallObjectTemplate[] = " during %s to %s.%s\n";
-static const char g_mpiCallModelTemplate[] = " during %s\n";
-
-static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
+MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MPI_HANDLE handle = NULL;
 
@@ -51,17 +47,15 @@ static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayl
     return handle;
 }
 
-static void CallMpiClose(MPI_HANDLE handle)
+void CallMpiClose(MPI_HANDLE handle)
 {
     OsConfigLogDebug(GetPlatformLog(), "Received MpiClose request, session %p ('%s')", handle, (char*)handle);
     MpiClose((MPI_HANDLE)handle);
 }
 
-static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
+int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
 {
     int status = MPI_OK;
-
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_SET_URI, componentName, objectName);
 
     status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
@@ -77,16 +71,12 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
         }
     }
 
-    memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return status;
 }
 
-static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
+int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
 {
     int status = MPI_OK;
-
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_GET_URI, componentName, objectName);
 
     status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
@@ -102,16 +92,12 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
         }
     }
 
-    memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return status;
 }
 
-static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
+int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
 {
     int status = MPI_OK;
-
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_SET_DESIRED_URI);
 
     status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
@@ -127,16 +113,12 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
         }
     }
 
-    memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return status;
 }
 
-static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
+int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
 {
     int status = MPI_OK;
-
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_GET_REPORTED_URI);
 
     status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
@@ -151,8 +133,6 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
             OsConfigLogError(GetPlatformLog(), "MpiGetReported request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
         }
     }
-
-    memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     return status;
 }
@@ -452,7 +432,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-static void* MpiServerWorker(void* arguments)
+void* MpiServerWorker(void* arguments)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 

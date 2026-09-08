@@ -747,20 +747,6 @@ static int HashString_target(const char* data, std::size_t size) noexcept
     return 0;
 }
 
-static int ParseHttpProxyData_target(const char* data, std::size_t size) noexcept
-{
-    auto source = std::string(data, size);
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-    ParseHttpProxyData(source.c_str(), &hostAddress, &port, &username, &password, nullptr);
-    free(hostAddress);
-    free(username);
-    free(password);
-    return 0;
-}
-
 static int CheckCpuFlagSupported_target(const char* data, std::size_t size) noexcept
 {
     auto cpuFlag = std::string(data, size);
@@ -1023,7 +1009,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "RemoveCharacterFromString.", RemoveCharacterFromString_target },
     { "ReplaceEscapeSequencesInString.", ReplaceEscapeSequencesInString_target },
     { "HashString.", HashString_target },
-    { "ParseHttpProxyData.", ParseHttpProxyData_target },
     { "CheckCpuFlagSupported.", CheckCpuFlagSupported_target },
     { "CheckLoginUmask.", CheckLoginUmask_target },
     { "IsCurrentOs.", IsCurrentOs_target },

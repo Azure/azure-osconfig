@@ -27,6 +27,9 @@
 #include <version.h>
 #include <Telemetry.h>
 
+#define LOG_FILE "/var/log/osconfig_platform.log"
+#define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
+
 #ifdef __cplusplus
 extern "C"
 {

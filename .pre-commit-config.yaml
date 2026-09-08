@@ -33,17 +33,3 @@ repos:
          .*\.cmd|
          .*\.csrpoj
          )$
-  - repo: local
-    hooks:
-      - id: clang-tidy
-        name: Run clang-tidy
-        types_or: [c++]
-        entry: src/tests/clang-tidy/run-clang-tidy.py
-        language: python
-        additional_dependencies: [clang-tidy]
-        files: |
-          (?x)(
-          ^src/common/telemetry/.*\.h$|
-          ^src/common/telemetry/.*\.hpp$|
-          ^src/common/telemetry/.*\.c$
-            )

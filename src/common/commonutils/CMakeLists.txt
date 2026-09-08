@@ -15,7 +15,6 @@ add_library(commonutils STATIC
     PackageUtils.c
     PassUtils.c
     PerfUtils.c
-    ProxyUtils.c
     SocketUtils.c
     SshUtils.c
     UrlUtils.c

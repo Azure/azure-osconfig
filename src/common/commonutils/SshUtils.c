@@ -139,7 +139,7 @@ static char* g_desiredAppropriateCiphersForSsh = NULL;
 
 static bool g_auditOnlySession = true;
 
-static char* GetSshServerState(const char* name, OsConfigLogHandle log)
+char* GetSshServerState(const char* name, OsConfigLogHandle log)
 {
     const char* sshdDashTCommand = "sshd -T";
     const char* commandTemplateForOne = "%s | grep  -m 1 -w %s";
@@ -184,7 +184,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
     return textResult;
 }
 
-static int IsSshServerActive(OsConfigLogHandle log)
+int IsSshServerActive(OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -204,7 +204,7 @@ static int IsSshServerActive(OsConfigLogHandle log)
 
 // SSH servers that implement OpenSSH version 8.2 or newer support Include
 // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
-static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
+int IsSshConfigIncludeSupported(OsConfigLogHandle log)
 {
     const char* expectedPrefix = "unknown option -- V OpenSSH_";
     const char* command = "sshd -V";
@@ -281,7 +281,7 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
 // (they are passed to the SSH Server as-is, which validates them), but they must not be allowed to
 // break out of the command OSConfig builds around them and inject arbitrary commands, nor to break
 // the SSH Server configuration parsing.
-static bool IsValueSafe(const char* value, char additionalAllowedCharacter, OsConfigLogHandle log)
+bool IsValueSafe(const char* value, char additionalAllowedCharacter, OsConfigLogHandle log)
 {
     size_t i = 0;
     char c = 0;
@@ -317,7 +317,7 @@ static bool IsValueSafe(const char* value, char additionalAllowedCharacter, OsCo
     return result;
 }
 
-static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log)
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log)
 {
     char* sshMacs = NULL;
     char* macsValue = NULL;
@@ -399,7 +399,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     return status;
 }
 
-static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsConfigLogHandle log)
+int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsConfigLogHandle log)
 {
     char* sshCiphers = NULL;
     char* ciphersValue = NULL;
@@ -511,7 +511,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
     return status;
 }
 
-static int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, OsConfigLogHandle log)
+int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, OsConfigLogHandle log)
 {
     char* value = NULL;
     int status = 0;
@@ -562,7 +562,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
     return status;
 }
 
-static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, int* actualValue, char** reason, OsConfigLogHandle log)
+int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, int* actualValue, char** reason, OsConfigLogHandle log)
 {
     char* actualValueString = NULL;
     char* expectedValueString = expectedValue ? FormatAllocateString("%d", *expectedValue) : NULL;
@@ -579,7 +579,7 @@ static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, 
     return status;
 }
 
-static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
+int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
 {
     char* clientAliveInterval = DuplicateStringToLowercase(g_sshClientAliveInterval);
     int actualValue = 0;
@@ -611,7 +611,7 @@ static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogHandle log)
+int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogHandle log)
 {
     char* loginGraceTime = DuplicateStringToLowercase(g_sshLoginGraceTime);
     int targetValue = atoi(value ? value : g_sshDefaultSshLoginGraceTime);
@@ -644,7 +644,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogH
     return status;
 }
 
-static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHandle log)
+int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHandle log)
 {
     char* maxAuthTries = DuplicateStringToLowercase(g_sshMaxAuthTries);
     int targetValue = atoi(value ? value : g_sshDefaultSshMaxAuthTries);
@@ -677,7 +677,7 @@ static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHan
     return status;
 }
 
-static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
+int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 {
     const char* banner = "banner";
     const char* none = "none";
@@ -717,7 +717,7 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static char* FormatInclusionForRemediation(OsConfigLogHandle log)
+char* FormatInclusionForRemediation(OsConfigLogHandle log)
 {
     const char* inclusionTemplate = "%s\nInclude %s\n";
     char* inclusion = NULL;
@@ -812,7 +812,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, OsConfigLogHandle log)
+int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s -T | grep \"%s %s\"";
     char* command = NULL;
@@ -896,7 +896,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
     return status;
 }
 
-static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, OsConfigLogHandle log)
+int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, OsConfigLogHandle log)
 {
     const char* etcAzSec = "/etc/azsec/";
     int status = 0;
@@ -935,7 +935,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     return status;
 }
 
-static char* FormatRemediationValues(OsConfigLogHandle log)
+char* FormatRemediationValues(OsConfigLogHandle log)
 {
     const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n";
     char* remediation = NULL;
@@ -994,7 +994,7 @@ static char* FormatRemediationValues(OsConfigLogHandle log)
     return remediation;
 }
 
-static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
+int IncludeRemediationSshConfFile(OsConfigLogHandle log)
 {
     const char* etcSshSshdConfigD = "/etc/ssh/sshd_config.d";
     const char* configurationTemplate = "%s%s";
@@ -1081,7 +1081,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
     return status;
 }
 
-static int SaveRemediationToConfFile(OsConfigLogHandle log)
+int SaveRemediationToConfFile(OsConfigLogHandle log)
 {
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
@@ -1119,7 +1119,7 @@ static int SaveRemediationToConfFile(OsConfigLogHandle log)
     return status;
 }
 
-static int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
+int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
 {
     size_t configurationSize = 0;
     int status = 0;
@@ -1135,7 +1135,7 @@ static int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
     return status;
 }
 
-static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
+int SaveRemediationToSshdConfig(OsConfigLogHandle log)
 {
     const char* configurationTemplate = "%s%s";
     char* originalConfiguration = NULL;

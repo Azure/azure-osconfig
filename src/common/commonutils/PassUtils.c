@@ -19,7 +19,7 @@ static const char* g_etcSecurityFaillockConf = "/etc/security/faillock.conf";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
-static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
+char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 {
     const char* paths[] = {
         "/usr/lib/x86_64-linux-gnu/security/%s",
@@ -112,7 +112,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
     return status;
 }
 
-static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
+void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
 {
     const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-pwquality", "libpam-cracklib"};
     int numPamPackages = ARRAY_SIZE(pamPackages);
@@ -320,7 +320,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
-static int GetFaillockConfIntegerOption(const char* fileName, const char* key, OsConfigLogHandle log)
+int GetFaillockConfIntegerOption(const char* fileName, const char* key, OsConfigLogHandle log)
 {
     // Reads an integer 'key = value' setting from a configuration file using token-boundary matching,
     // so that for example 'deny' does not match the unrelated key 'even_deny_root' and 'unlock_time'
@@ -495,7 +495,7 @@ int CheckLockoutForFailedPasswordAttemptsViaFaillockConf(const char* pamFile, co
     return 0;
 }
 
-static int SetFaillockConfOption(const char* fileName, const char* key, int value, OsConfigLogHandle log)
+int SetFaillockConfOption(const char* fileName, const char* key, int value, OsConfigLogHandle log)
 {
     // Writes 'key = value' to the configuration file at 'fileName'. The function replaces the first
     // uncommented line whose first whitespace-delimited token is exactly 'key' (token-boundary match,
@@ -711,7 +711,7 @@ int CheckPamFaillockModernModelInUse(const char* const* pamFiles, unsigned int n
     // 'reason' is intentionally not surfaced - this is a path-selection helper, not an audit,
     // so it never contributes to user-facing compliance text.
 
-    static const char* pamFaillockSo = "pam_faillock.so";
+    const char* pamFaillockSo = "pam_faillock.so";
     unsigned int i = 0;
 
     if ((NULL == pamFiles) || (0 == numPamFiles) || (NULL == faillockConf))
@@ -895,7 +895,7 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     return status;
 }
 
-static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
+int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
@@ -1072,7 +1072,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     return status;
 }
 
-static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log)
+int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log)
 {
     int value = INT_ENOENT;
     int status = ENOENT;
@@ -1115,7 +1115,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     return status;
 }
 
-static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
+int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     FILE* fileHandle = NULL;
     char* line = NULL;

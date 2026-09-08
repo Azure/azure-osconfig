@@ -54,7 +54,6 @@ void SecurityBaselineInitialize(void)
     g_log = OpenLog(g_securityBaselineLogFile, g_securityBaselineRolledLogFile);
     CheckForPreviousCrash(g_securityBaselineLogFile, SecurityBaselineGetLog());
     InstallCrashHandler(g_securityBaselineLogFile);
-    TelemetryInitialize(SecurityBaselineGetLog());
     AsbInitialize(SecurityBaselineGetLog());
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s initialized", g_securityBaselineModuleName);
 }
@@ -63,7 +62,6 @@ void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
     AsbShutdown(SecurityBaselineGetLog());
-    TelemetryCleanup(SecurityBaselineGetLog());
     CloseLog(&g_log);
 }
 

@@ -19,7 +19,7 @@
 
 static const char* g_logFileName = DEFAULT_LOG_FILE;
 
-static void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
+void OsConfigCrashHandler(int sig, siginfo_t* info, void* ctx)
 {
     void* frames[OSCONFIG_MAX_FRAMES] = {NULL};
     int nFrames = 0;

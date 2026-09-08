@@ -151,8 +151,6 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log);
 size_t HashString(const char* source);
 char* HashCommand(const char* source, OsConfigLogHandle log);
 
-bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, OsConfigLogHandle log);
-
 char* GetOsPrettyName(OsConfigLogHandle log);
 char* GetOsName(OsConfigLogHandle log);
 char* GetOsVersion(OsConfigLogHandle log);

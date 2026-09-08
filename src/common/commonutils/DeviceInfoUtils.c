@@ -172,7 +172,7 @@ char* GetOsVersion(OsConfigLogHandle log)
     return textResult;
 }
 
-static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, OsConfigLogHandle log)
+char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, OsConfigLogHandle log)
 {
     char* textResult = NULL;
 
@@ -199,7 +199,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     return textResult;
 }
 
-static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log)
+char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log)
 {
     char* textResult = NULL;
 
@@ -223,7 +223,7 @@ static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log)
 
 char* GetOsKernelName(OsConfigLogHandle log)
 {
-    static char* osKernelNameCommand = "uname -s";
+    char* osKernelNameCommand = "uname -s";
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
     OsConfigLogDebug(log, "Kernel name: '%s'", textResult);
     return textResult;
@@ -231,7 +231,7 @@ char* GetOsKernelName(OsConfigLogHandle log)
 
 char* GetOsKernelRelease(OsConfigLogHandle log)
 {
-    static char* osKernelReleaseCommand = "uname -r";
+    char* osKernelReleaseCommand = "uname -r";
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
     OsConfigLogDebug(log, "Kernel release: '%s'", textResult);
     return textResult;
@@ -239,7 +239,7 @@ char* GetOsKernelRelease(OsConfigLogHandle log)
 
 char* GetOsKernelVersion(OsConfigLogHandle log)
 {
-    static char* osKernelVersionCommand = "uname -v";
+    char* osKernelVersionCommand = "uname -v";
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
     OsConfigLogDebug(log, "Kernel version: '%s'", textResult);
     return textResult;
@@ -418,7 +418,7 @@ char* GetSystemConfiguration(OsConfigLogHandle log)
     return textResult;
 }
 
-static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, OsConfigLogHandle log)
+char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, OsConfigLogHandle log)
 {
     char* command = NULL;
     char* result = NULL;
@@ -478,17 +478,17 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
     return result;
 }
 
-static char* GetEtcReleaseEntry(const char* name, OsConfigLogHandle log)
+char* GetEtcReleaseEntry(const char* name, OsConfigLogHandle log)
 {
     return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log);
 }
 
-static char* GetLsbReleaseEntry(const char* name, OsConfigLogHandle log)
+char* GetLsbReleaseEntry(const char* name, OsConfigLogHandle log)
 {
     return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log);
 }
 
-static void ClearOsDistroInfo(OsDistroInfo* info)
+void ClearOsDistroInfo(OsDistroInfo* info)
 {
     if (info)
     {
@@ -654,7 +654,7 @@ int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static long GetPasswordDays(const char* name, OsConfigLogHandle log)
+long GetPasswordDays(const char* name, OsConfigLogHandle log)
 {
     const char* commandTemplate = "cat /etc/login.defs | grep %s | grep -v ^#";
     size_t commandLength = 0;
@@ -715,7 +715,7 @@ long GetPassWarnAge(OsConfigLogHandle log)
     return GetPasswordDays("PASS_WARN_AGE", log);
 }
 
-static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log)
+int SetPasswordDays(const char* name, long days, OsConfigLogHandle log)
 {
     const char* etcLoginDefs = "/etc/login.defs";
     char* value = NULL;
@@ -803,7 +803,7 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log)
     return result;
 }
 
-static bool IsRedHatBasedInternal(OsConfigLogHandle log)
+bool IsRedHatBasedInternal(OsConfigLogHandle log)
 {
     const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Rocky Linux", "Oracle Linux"};
     int numDistros = ARRAY_SIZE(distros);
@@ -849,8 +849,8 @@ static bool IsRedHatBasedInternal(OsConfigLogHandle log)
 
 bool IsRedHatBased(OsConfigLogHandle log)
 {
-    static bool firstTime = true;
-    static bool redHatBased = false;
+    bool firstTime = true;
+    bool redHatBased = false;
     if (firstTime)
     {
         redHatBased = IsRedHatBasedInternal(log);

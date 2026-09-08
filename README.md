@@ -179,16 +179,16 @@ This pair of files are called Reported Configuration (RC) and Desired Configurat
 
 Once created, only the root user can view these files or change the DC file.
 
-By default, the reported configuration is not saved locally to the DC file at `/etc/osconfig/osconfig_reported.json` (local reporting is disabled) and desired configuration is not picked-up from the DC file at `/etc/osconfig/osconfig_desired.json`.
+By default, the reported configuration is locally saved to the DC file at `/etc/osconfig/osconfig_reported.json` (local reporting is enabled) and desired configuration is picked-up from the DC file at `/etc/osconfig/osconfig_desired.json`.
 
-To enable local management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LocalManagement" to a non-zero value:
+To disable local management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LocalManagement" to a zero value:
 
 ```json
 {
-    "LocalManagement": 1
+    "LocalManagement": 0
 }
 ```
-To disable local management, set "LocalManagement" to 0.
+To enable local management, set "LocalManagement" to 1.
 
 ### Desired Configuration (DC) management over GitOps
 

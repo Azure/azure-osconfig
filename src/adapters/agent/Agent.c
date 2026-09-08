@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "inc/AgentCommon.h"
 #include "inc/Agent.h"
 #include "inc/Watcher.h"
 
@@ -15,26 +14,22 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
-// The optional second command line argument that when present instructs the agent to run as a traditional daemon
-#define FORK_ARG "fork"
+// The name of the OSConfig Management Platform daemon
+#define OSCONFIG_PLATFORM "osconfig-platform"
 
-#define DEVICE_MODEL_ID_SIZE 40
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
 
 static unsigned int g_lastTime = 0;
 
-// All signals on which we want the agent to cleanup before terminating process.
-// SIGKILL is omitted to allow a clean and immediate process kill if needed.
+// Signals on which the agent performs a graceful cleanup before terminating.
+// Crash signals (SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL) are handled separately by
+// the common crash handler (see InstallCrashHandler). SIGKILL is omitted to allow a
+// clean and immediate process kill if needed.
 static int g_stopSignals[] = {
     0,
     SIGINT,  // 2
     SIGQUIT, // 3
-    SIGILL,  // 4
-    SIGABRT, // 6
-    SIGBUS,  // 7
-    SIGFPE,  // 8
-    SIGSEGV, //11
     SIGTERM, //15
     SIGSTOP, //19
     SIGTSTP  //20
@@ -54,7 +49,7 @@ static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 
 MPI_HANDLE g_mpiHandle = NULL;
-static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
+static unsigned int g_maxPayloadSizeBytes = 4096;
 
 static OsConfigLogHandle g_agentLog = NULL;
 
@@ -78,56 +73,10 @@ OsConfigLogHandle GetLog()
     return g_agentLog;
 }
 
-#define EOL_TERMINATOR "\n"
-#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
-#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)" EOL_TERMINATOR
-
 static void SignalInterrupt(int signal)
 {
-    int logDescriptor = -1;
-    char* errorMessage = NULL;
-
-    if (SIGSEGV == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGSEGV;
-    }
-    else if (SIGFPE == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGFPE;
-    }
-    else if (SIGILL == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGILL;
-    }
-    else if (SIGABRT == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGABRT;
-    }
-    else if (SIGBUS == signal)
-    {
-        errorMessage = ERROR_MESSAGE_SIGBUS;
-    }
-    else
-    {
-        OsConfigLogInfo(g_agentLog, "Interrupt signal (%d)", signal);
-        g_stopSignal = signal;
-    }
-
-    if (NULL != errorMessage)
-    {
-        if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
-        {
-            ssize_t writeResult = -1;
-            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
-            UNUSED(writeResult);
-            close(logDescriptor);
-        }
-        _exit(signal);
-    }
+    OsConfigLogInfo(g_agentLog, "Interrupt signal (%d)", signal);
+    g_stopSignal = signal;
 }
 
 static void SignalReloadConfiguration(int incomingSignal)
@@ -275,6 +224,9 @@ int main(int argc, char *argv[])
     // Re-open the log
     CloseLog(&g_agentLog);
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+
+    CheckForPreviousCrash(LOG_FILE, GetLog());
+    InstallCrashHandler(LOG_FILE);
 
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
