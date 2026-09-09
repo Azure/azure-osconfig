@@ -1454,23 +1454,25 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOptionNfsType)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-/*TEST_F(CommonUtilsTest, IsMountTableFieldSafe)
+TEST_F(CommonUtilsTest, CheckInvalidMountingOptions)
 {
-    // Fields with no record/line separator are safe to serialize into a mount table
-    EXPECT_TRUE(IsMountTableFieldSafe(nullptr));
-    EXPECT_TRUE(IsMountTableFieldSafe(""));
-    EXPECT_TRUE(IsMountTableFieldSafe("server:/export"));
-    EXPECT_TRUE(IsMountTableFieldSafe("/mnt/data"));
-    EXPECT_TRUE(IsMountTableFieldSafe("rw,nosuid,nodev,relatime"));
-    EXPECT_TRUE(IsMountTableFieldSafe("fuse.portal"));
+    const char* testFstab = "server:/export /mnt/data nfs defaults 0 0\n";
 
-    // A field whose octal escape was decoded by getmntent() into a real newline or carriage return must be
-    // rejected, otherwise it could inject additional records when written into a root-owned mount table
-    EXPECT_FALSE(IsMountTableFieldSafe("evil\n/home/attacker/file /root/.canary none bind 0 0"));
-    EXPECT_FALSE(IsMountTableFieldSafe("evil\r/home/attacker/pam /etc/pam.d/su none bind 0 0"));
-    EXPECT_FALSE(IsMountTableFieldSafe("\ninjected"));
-    EXPECT_FALSE(IsMountTableFieldSafe("trailing\n"));
-}*/
+    EXPECT_TRUE(CreateTestFile(m_path, testFstab));
+
+    // A NULL mount file name is invalid
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(nullptr, "/mnt/data", "nfs", "nosuid", nullptr, nullptr));
+
+    // Both the mount directory and the mount type being NULL is invalid, at least one selector is required
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, nullptr, nullptr, "nosuid", nullptr, nullptr));
+
+    // A NULL desired option is invalid, whether the selector is a mount directory, a mount type, or both
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "/mnt/data", "nfs", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "/mnt/data", nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, nullptr, "nfs", nullptr, nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {

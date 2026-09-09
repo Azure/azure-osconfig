@@ -278,7 +278,11 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
-                if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
+                if ((NULL == mountStruct->mnt_fsname) || (NULL != strpbrk(mountStruct->mnt_fsname, unsafe)))
+                {
+                    OsConfigLogInfo(log, "SetFileSystemMountingOption: name for mount directory '%s' or mount type '%s' is not valid", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-");
+                }
+                else if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
                     ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(mountStruct->mnt_type, unsafe))))
                 {
                     matchFound = true;
@@ -346,9 +350,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                         status = ENOMEM;
                         break;
                     }
-            }
-
-
+                }
 
                 lineNumber += 1;
             }
@@ -371,9 +373,12 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
-                            if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
-                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk((mountStruct->mnt_type, unsafe))))
-
+                            if ((NULL == mountStruct->mnt_fsname) || (NULL != strpbrk(mountStruct->mnt_fsname, unsafe)))
+                            {
+                                OsConfigLogInfo(log, "SetFileSystemMountingOption: name for mount directory '%s' or mount type '%s' is not valid", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-");
+                            }
+                            else if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
+                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(mountStruct->mnt_type, unsafe))))
                             {
                                 matchFound = true;
 
