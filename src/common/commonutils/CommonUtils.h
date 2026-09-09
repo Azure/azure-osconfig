@@ -87,7 +87,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
 
 char* CheckForMountCreds(char* options);
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log);
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
 
 int IsPresent(const char* what, OsConfigLogHandle log);
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log);
