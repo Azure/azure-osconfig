@@ -87,6 +87,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
 
 char* CheckForMountCreds(char* options);
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log);
+bool IsMountTableFieldSafe(const char* field);
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
 
 int IsPresent(const char* what, OsConfigLogHandle log);

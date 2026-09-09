@@ -3277,8 +3277,8 @@ int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, OsConfig
 int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log)) &&
-        (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log))) ? 0 : ENOENT;
+    return ((0 == SetFileSystemMountingOption(NULL, g_nfs, g_nosuid, log)) &&
+        (0 == SetFileSystemMountingOption(NULL, g_nfs, g_noexec, log))) ? 0 : ENOENT;
 }
 
 int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, OsConfigLogHandle log)

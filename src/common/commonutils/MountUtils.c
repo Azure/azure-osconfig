@@ -226,6 +226,32 @@ int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogH
     return status;
 }
 
+// Returns true if 'field' is safe to serialize into a mount table file, meaning it contains no line/record
+// separator characters ('\n' or '\r'). getmntent() decodes octal escapes (for example the '\012' sequence
+// present in /proc/self/mounts) into literal control characters. Without this check an unprivileged, attacker
+// controlled mount field (such as a FUSE mnt_fsname) could smuggle a newline and inject additional records
+// when the entry is written into a root-owned mount table such as /etc/fstab.
+bool IsMountTableFieldSafe(const char* field)
+{
+    return (NULL == field) || (NULL == strpbrk(field, "\n\r"));
+}
+
+bool MountEntryIsSafeToSerialize(const struct mntent* entry, const char* mountFileName, int lineNumber, OsConfigLogHandle log)
+{
+    if ((NULL == entry) ||
+        (false == IsMountTableFieldSafe(entry->mnt_fsname)) ||
+        (false == IsMountTableFieldSafe(entry->mnt_dir)) ||
+        (false == IsMountTableFieldSafe(entry->mnt_type)) ||
+        (false == IsMountTableFieldSafe(entry->mnt_opts)))
+    {
+        OsConfigLogError(log, "SetFileSystemMountingOption: skipping unsafe mount entry (embedded line separator) in '%s' at line %d", mountFileName, lineNumber);
+        OSConfigTelemetryStatusTrace("unsafeMountEntry", EINVAL);
+        return false;
+    }
+
+    return true;
+}
+
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
 {
     const char* fsMountTable = "/etc/fstab";
@@ -277,6 +303,12 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
+                if (false == MountEntryIsSafeToSerialize(mountStruct, fsMountTable, lineNumber, log))
+                {
+                    lineNumber += 1;
+                    continue;
+                }
+
                 if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                     ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                 {
@@ -368,6 +400,12 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
+                            if (false == MountEntryIsSafeToSerialize(mountStruct, mountTable, lineNumber, log))
+                            {
+                                lineNumber += 1;
+                                continue;
+                            }
+
                             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                                 ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                             {

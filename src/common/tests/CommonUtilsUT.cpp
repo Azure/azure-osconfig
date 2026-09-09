@@ -1434,6 +1434,46 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+// The NFS hardening rule keys on the filesystem TYPE ("nfs"), not on the mount directory. This test locks in
+// that contract: an ordinary NFS entry whose mount point contains no "nfs" substring must still be matched by
+// type. Matching it as a directory (the pre-fix remediation bug) finds nothing and would fall back to /etc/mtab.
+TEST_F(CommonUtilsTest, CheckFileSystemMountingOptionNfsType)
+{
+    const char* testFstab =
+        "server:/export /mnt/data nfs defaults 0 0\n"
+        "server2:/export /mnt/secure nfs4 nosuid,noexec 0 0\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFstab));
+
+    // Matching by type "nfs" flags the /mnt/data entry that is missing the hardening option
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+
+    // Matching by directory "nfs" finds no entry, because neither mount point contains that substring
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "nfs", nullptr, "noexec", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "nfs", nullptr, "nosuid", nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, IsMountTableFieldSafe)
+{
+    // Fields with no record/line separator are safe to serialize into a mount table
+    EXPECT_TRUE(IsMountTableFieldSafe(nullptr));
+    EXPECT_TRUE(IsMountTableFieldSafe(""));
+    EXPECT_TRUE(IsMountTableFieldSafe("server:/export"));
+    EXPECT_TRUE(IsMountTableFieldSafe("/mnt/data"));
+    EXPECT_TRUE(IsMountTableFieldSafe("rw,nosuid,nodev,relatime"));
+    EXPECT_TRUE(IsMountTableFieldSafe("fuse.portal"));
+
+    // A field whose octal escape was decoded by getmntent() into a real newline or carriage return must be
+    // rejected, otherwise it could inject additional records when written into a root-owned mount table
+    EXPECT_FALSE(IsMountTableFieldSafe("evil\n/home/attacker/file /root/.canary none bind 0 0"));
+    EXPECT_FALSE(IsMountTableFieldSafe("evil\r/home/attacker/pam /etc/pam.d/su none bind 0 0"));
+    EXPECT_FALSE(IsMountTableFieldSafe("\ninjected"));
+    EXPECT_FALSE(IsMountTableFieldSafe("trailing\n"));
+}
+
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
