@@ -226,11 +226,11 @@ int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogH
     return status;
 }
 
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
 {
-    const char* fsMountTable = "/etc/fstab";
+    const char* fsMountTable = mountFileName;
     const char* mountTable = "/etc/mtab";
-    const char tempFileNameTemplate[] = "/etc/~xtab%d";
+    const char* tempFileNameTemplate = "%s/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
     const char* mountAll = "mount -a";
@@ -242,12 +242,14 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     char* tempFileNameOne = NULL;
     char* tempFileNameTwo = NULL;
     char* tempFileNameThree = NULL;
+    char* fsMountTableCopy = NULL;
+    char* fsMountDirectory = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 1;
     int status = 0;
 
-    if (((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
+    if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
         OSConfigTelemetryStatusTrace("mountDirectory", EINVAL);
@@ -260,9 +262,15 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         return 0;
     }
 
-    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, 1))) ||
-        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, 2))) ||
-        (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, 3))))
+    // Keep the scratch files next to the mount table so the final rename stays on the same filesystem
+    if (NULL != (fsMountTableCopy = DuplicateString(fsMountTable)))
+    {
+        fsMountDirectory = dirname(fsMountTableCopy);
+    }
+
+    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 1))) ||
+        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 2))) ||
+        (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 3))))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
         OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
@@ -489,6 +497,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     FREE_MEMORY(tempFileNameOne);
     FREE_MEMORY(tempFileNameTwo);
     FREE_MEMORY(tempFileNameThree);
+    FREE_MEMORY(fsMountTableCopy);
 
     return status;
 }

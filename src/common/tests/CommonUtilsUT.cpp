@@ -1432,9 +1432,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-// The NFS hardening rule keys on the filesystem TYPE ("nfs"), not on the mount directory. This test locks in
-// that contract: an ordinary NFS entry whose mount point contains no "nfs" substring must still be matched by
-// type. Matching it as a directory (the pre-fix remediation bug) finds nothing and would fall back to /etc/mtab.
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOptionNfsType)
 {
     const char* testFstab =
@@ -1470,6 +1467,50 @@ TEST_F(CommonUtilsTest, CheckInvalidMountingOptions)
     EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "/mnt/data", "nfs", nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "/mnt/data", nullptr, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, nullptr, "nfs", nullptr, nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, CheckAndSetFileSystemMountingOption)
+{
+    const char* validFstab =
+        "server:/export /mnt/data nfs defaults 0 0\n"
+        "/dev/sda1 / ext4 errors=remount-ro 0 1\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, validFstab));
+
+    // A NULL mount file name is rejected, mirroring CheckFileSystemMountingOption
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(nullptr, nullptr, "nfs", "nosuid", nullptr));
+
+    // Before remediation the NFS entry lacks the hardening option
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+
+    // Remediation adds the option to the existing entry, after which the same audit passes
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // The device field of the first record decodes (glibc getmntent unescapes \012 and \040) to
+    // "aaa<newline>/pwned /pwned pwnfs defaults 0 0", packing a whole extra record into a single field, exactly
+    // as an unprivileged FUSE mnt_fsname can. Without the fix, the raw re-serialization emits that decoded
+    // newline and promotes "/pwned" into an independent, root-trusted mount entry.
+    const char* poisonedFstab =
+        "aaa\\012/pwned\\040/pwned\\040pwnfs\\040defaults\\0400\\0400 /realmnt realtype defaults 0 0\n"
+        "server:/export /mnt/data nfs defaults 0 0\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, poisonedFstab));
+
+    // Remediating the legitimate NFS entry succeeds and does not abort on the malformed record
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+
+    // The legitimate entry was still hardened
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+
+    // No active '/pwned' / 'pwnfs' record was injected from the decoded newline. Had one been promoted, the
+    // audit would match it and report the missing option as ENOENT instead of finding no such entry (0).
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/pwned", nullptr, "nodev", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "pwnfs", "nodev", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
