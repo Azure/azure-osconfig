@@ -278,8 +278,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
-                if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(entry->mnt_fsname, unsafe))) ||
-                    ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(entry->mnt_type, unsafe))))
+                if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
+                    ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(mountStruct->mnt_type, unsafe))))
                 {
                     matchFound = true;
 
@@ -371,8 +371,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
-                            if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(entry->mnt_fsname, unsafe))) ||
-                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(entry->mnt_type, unsafe))))
+                            if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
+                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk((mountStruct->mnt_type, unsafe))))
 
                             {
                                 matchFound = true;
