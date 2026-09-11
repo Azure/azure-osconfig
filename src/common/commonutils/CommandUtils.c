@@ -182,9 +182,8 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
-    // The template's trailing 'XXXXXX' is replaced in place by mkstemp() with a unique, unpredictable
-    // suffix and the file is created with O_EXCL and mode 0600, which is not vulnerable to symlink or
-    // predictable-name attacks in the world-writable /tmp directory (unlike a plain rand() based name).
+    // The template's trailing 'XXXXXX' is replaced in place by mkstemp() with a unique, unpredictable suffix and the file is created with O_EXCL and mode 0600,
+    // which is not vulnerable to symlink or predictable-name attacks in the world-writable /tmp directory (unlike a plain rand() based name).
     const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResultXXXXXX";
     const char commandDiscardTarget[] = "/dev/null";
     const char commandSeparator[] = " > ";
@@ -210,8 +209,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         return -1;
     }
 
-    // Capture output to a secure temporary file only when the caller asks for it. Otherwise discard
-    // all output to /dev/null so no temporary file is created for the common no-output case.
+    // Capture output to a secure temporary file only when the caller asks for it,  otherwise discard
+    // all output to /dev/null so no temporary file is created for the common no-output case
     redirectTargetLength = (NULL != textResult) ? (sizeof(commandTextResultFileTemplate) - 1) : (sizeof(commandDiscardTarget) - 1);
 
     commandLineLength = strlen(command);
@@ -261,9 +260,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     free(commandLine);
 
-    // Read the text result from the output of the command, if any, whether command succeeded or failed.
-    // The result is read through the file descriptor returned by mkstemp() (not by re-opening the path)
-    // so the read cannot be redirected by a swapped temporary file.
+    // Read the text result from the output of the command, if any, whether command succeeded or failed. The result is read through the file
+    // descriptor returned by mkstemp() (not by re-opening the path) so the read cannot be redirected by a swapped temporary file
     if (0 <= resultsFd)
     {
         resultsFile = fdopen(resultsFd, "r");
@@ -296,8 +294,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                         }
 
                         // Copy the data. Following characters are replaced with spaces:
-                        // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
-                        // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
+                        // - all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
+                        // - plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
                         if ((replaceEol && (EOL == next)) || ((next < 0x20) && (EOL != next)) || (0x7F == next) || (forJson && (('"' == next) || ('\\' == next))))
                         {
                             (*textResult)[i] = ' ';
