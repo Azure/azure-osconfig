@@ -196,35 +196,21 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     int next = 0;
     int i = 0;
     char* commandLine = NULL;
-    size_t commandLineLength = 0;
-    size_t maximumCommandLine = 0;
-    size_t redirectTargetLength = 0;
-    const char* redirectTarget = NULL;
+    size_t maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
+    const char* redirectTarget = commandDiscardTarget;
     char commandTextResultFile[sizeof(commandTextResultFileTemplate)] = {0};
     bool wrappedCommand = false;
 
     if ((NULL == command) || (0 == system(NULL)))
     {
         OsConfigLogDebug(log, "Cannot run command '%s'", command);
+        OSConfigTelemetryStatusTrace("ExecuteCommand", -1);
         return -1;
     }
 
-    // Capture output to a secure temporary file only when the caller asks for it,  otherwise discard
-    // all output to /dev/null so no temporary file is created for the common no-output case
-    redirectTargetLength = (NULL != textResult) ? (sizeof(commandTextResultFileTemplate) - 1) : (sizeof(commandDiscardTarget) - 1);
-
-    commandLineLength = strlen(command);
     wrappedCommand = ('(' == command[0]);
 
-    commandLineLength += strlen(commandSeparator) + redirectTargetLength + strlen(commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
-
-    maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
-    if (commandLineLength > maximumCommandLine)
-    {
-        OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
-        return E2BIG;
-    }
-
+    // Capture output to a secure temporary file only when the caller asks for it, otherwise discard all output to /dev/null so no temporary file is created for the common no-output case
     if (NULL != textResult)
     {
         *textResult = NULL;
@@ -232,38 +218,32 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         if (0 > (resultsFd = mkstemp(commandTextResultFile)))
         {
             OsConfigLogError(log, "Cannot run command '%s', cannot create secure temporary file (errno: %d, '%s')", command, errno, strerror(errno));
+            OSConfigTelemetryStatusTrace("mkstemp", errno ? errno : -1);
             return errno ? errno : -1;
+
         }
         redirectTarget = commandTextResultFile;
     }
+
+    if (NULL == (commandLine = FormatAllocateString(wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, redirectTarget, commandTerminator)))
+    {
+        OsConfigLogError(log, "Cannot run command '%s', cannot allocate memory for command line, out of memory", command);
+        OSConfigTelemetryStatusTrace("ExecuteCommand", ENOMEM);
+        status = ENOMEM;
+    }
+    else if (strlen(commandLine) > maximumCommandLine)
+    {
+        OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)strlen(commandLine), (unsigned)maximumCommandLine);
+        OSConfigTelemetryStatusTrace("ExecuteCommand", E2BIG);
+        status = E2BIG;
+    }
     else
     {
-        redirectTarget = commandDiscardTarget;
-    }
+        // Execute the command with the requested timeout: error ETIME (62) means the command timed out
+        status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
 
-    commandLine = (char*)malloc(commandLineLength);
-    if (NULL == commandLine)
-    {
-        OsConfigLogError(log, "Cannot run command '%s', cannot allocate %u bytes for command, out of memory", command, (unsigned)commandLineLength);
-        if (0 <= resultsFd)
-        {
-            close(resultsFd);
-            remove(commandTextResultFile);
-        }
-        return ENOMEM;
-    }
-
-    snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, redirectTarget, commandTerminator);
-
-    // Execute the command with the requested timeout: error ETIME (62) means the command timed out
-    status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
-
-    free(commandLine);
-
-    // Read the text result from the output of the command, if any, whether command succeeded or failed. The result is read through the file
-    // descriptor returned by mkstemp() (not by re-opening the path) so the read cannot be redirected by a swapped temporary file
-    if (0 <= resultsFd)
-    {
+        // Read the text result from the output of the command, if any, whether command succeeded or failed. The result is read through the file
+        // descriptor returned by mkstemp() (not by re-opening the path) so the read cannot be redirected by a swapped temporary file
         resultsFile = fdopen(resultsFd, "r");
         if (NULL != resultsFile)
         {
@@ -310,13 +290,19 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
             fclose(resultsFile);
         }
-
-        remove(commandTextResultFile);
-        if (0 <= resultsFd)
-        {
-            close(resultsFd);
-        }
     }
+
+    if (0 <= resultsFd)
+    {
+        close(resultsFd);
+    }
+
+    if (NULL != textResult)
+    {
+        remove(commandTextResultFile);
+    }
+
+    FREE_MEMORY(commandLine);
 
     OsConfigLogDebug(log, "Context: '%p'", context);
     OsConfigLogDebug(log, "Command: '%s'", command);
@@ -356,6 +342,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "HashCommand: out of memory");
+        OSConfigTelemetryStatusTrace("HashCommand", ENOMEM);
     }
 
     FREE_MEMORY(command);
