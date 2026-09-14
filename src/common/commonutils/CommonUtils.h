@@ -55,13 +55,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
 int RenameFile(const char* original, const char* target, OsConfigLogHandle log);
 
 typedef int(*CommandCallback)(void* context);
-
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log);
-
-#ifdef TEST_CODE
-void AddMockCommand(const char* expectedCommand, bool matchPrefix, const char* output, int returnCode);
-void CleanupMockCommands();
-#endif
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 

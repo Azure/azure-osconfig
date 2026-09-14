@@ -1,8 +1,0 @@
-  {
-    "Action": "UnloadModule"
-  },
-  {
-    "Action": "LoadModule",
-    "Module": "securitybaseline.so",
-    "WaitSeconds": 5
-  },
