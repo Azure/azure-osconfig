@@ -182,12 +182,9 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
-    // The template's trailing 'XXXXXX' is replaced in place by mkstemp() with a unique, unpredictable suffix and the file is created with O_EXCL and mode 0600,
-    // which is not vulnerable to symlink or predictable-name attacks in the world-writable /tmp directory (unlike a plain rand() based name).
-    const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResultXXXXXX";
-    const char commandDiscardTarget[] = "/dev/null";
     const char commandSeparator[] = " > ";
     const char commandTerminator[] = " 2>&1";
+    const char* redirectTarget = "/dev/null";
 
     int status = -1;
     FILE* resultsFile = NULL;
@@ -197,9 +194,11 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     int i = 0;
     char* commandLine = NULL;
     size_t maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
-    const char* redirectTarget = commandDiscardTarget;
-    char commandTextResultFile[sizeof(commandTextResultFileTemplate)] = {0};
     bool wrappedCommand = false;
+
+    // The template's trailing 'XXXXXX' is replaced in place by mkstemp() with a unique, unpredictable suffix and the file is created
+    // with O_EXCL and mode 0600, which is not vulnerable to symlink or predictable-name attacks in the world-writable /tmp directory
+    char commandTextResultFile[] = "/tmp/~OSConfig.TextResultXXXXXX";
 
     if ((NULL == command) || (0 == system(NULL)))
     {
@@ -210,11 +209,10 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     wrappedCommand = ('(' == command[0]);
 
-    // Capture output to a secure temporary file only when the caller asks for it, otherwise discard all output to /dev/null so no temporary file is created for the common no-output case
+    // Capture output to a secure temporary file only when the caller asks for it, otherwise discard all output to /dev/null
     if (NULL != textResult)
     {
         *textResult = NULL;
-        memcpy(commandTextResultFile, commandTextResultFileTemplate, sizeof(commandTextResultFileTemplate));
         if (0 > (resultsFd = mkstemp(commandTextResultFile)))
         {
             OsConfigLogError(log, "Cannot run command '%s', cannot create secure temporary file (errno: %d, '%s')", command, errno, strerror(errno));
