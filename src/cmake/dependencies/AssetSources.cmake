@@ -18,7 +18,7 @@ function(osconfig_parse_asset_sources sources mirrors_out blocked_out)
             list(APPEND mirrors "${CMAKE_MATCH_1}")
         else()
             message(FATAL_ERROR
-                "Unsupported X_VCPKG_ASSET_SOURCES setting. Supported entries are "
+                "Unsupported asset-source setting. Supported entries are "
                 "x-azurl,https://host/container/ (optionally followed by ,,read) "
                 "and x-block-origin. No source configuration was ignored.")
         endif()
@@ -30,8 +30,20 @@ function(osconfig_parse_asset_sources sources mirrors_out blocked_out)
     set(${blocked_out} "${blocked}" PARENT_SCOPE)
 endfunction()
 
-osconfig_parse_asset_sources("$ENV{X_VCPKG_ASSET_SOURCES}"
+# Accept the old environment name during the independent pipeline migration.
+# Conflicting settings must not silently weaken origin-blocking restrictions.
+if(DEFINED ENV{OSCONFIG_ASSET_SOURCES})
+    if(DEFINED ENV{X_VCPKG_ASSET_SOURCES} AND
+        NOT "$ENV{OSCONFIG_ASSET_SOURCES}" STREQUAL "$ENV{X_VCPKG_ASSET_SOURCES}")
+        message(FATAL_ERROR "OSCONFIG_ASSET_SOURCES and X_VCPKG_ASSET_SOURCES conflict; configure only one")
+    endif()
+    set(_osconfig_asset_sources "$ENV{OSCONFIG_ASSET_SOURCES}")
+else()
+    set(_osconfig_asset_sources "$ENV{X_VCPKG_ASSET_SOURCES}")
+endif()
+osconfig_parse_asset_sources("${_osconfig_asset_sources}"
     OSCONFIG_ASSET_MIRRORS OSCONFIG_ASSET_ORIGIN_BLOCKED)
+unset(_osconfig_asset_sources)
 
 function(osconfig_asset_download result origin sha512)
     set(urls)

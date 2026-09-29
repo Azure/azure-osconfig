@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.21)
 
 # Never use the caller's real mirrors or credentials; these tests make no requests.
 unset(ENV{X_VCPKG_ASSET_SOURCES})
+unset(ENV{OSCONFIG_ASSET_SOURCES})
 if(FAILURE_CASE STREQUAL "blocked-without-mirror")
     set(ENV{X_VCPKG_ASSET_SOURCES} "x-block-origin")
 elseif(FAILURE_CASE STREQUAL "unsupported-source")
@@ -15,11 +16,27 @@ elseif(FAILURE_CASE STREQUAL "insecure-mirror")
     set(ENV{X_VCPKG_ASSET_SOURCES} "x-azurl,http://mirror.invalid/assets/;x-block-origin")
 elseif(FAILURE_CASE STREQUAL "missing-trailing-slash")
     set(ENV{X_VCPKG_ASSET_SOURCES} "x-azurl,https://mirror.invalid/assets;x-block-origin")
+elseif(FAILURE_CASE STREQUAL "conflicting-settings")
+    set(ENV{X_VCPKG_ASSET_SOURCES} "x-azurl,https://mirror.invalid/assets/;x-block-origin")
+    set(ENV{OSCONFIG_ASSET_SOURCES} "")
+endif()
+if(ENVIRONMENT_CASE STREQUAL "new" OR ENVIRONMENT_CASE STREQUAL "both")
+    set(ENV{OSCONFIG_ASSET_SOURCES} "x-azurl,https://mirror.invalid/assets/;x-block-origin")
+endif()
+if(ENVIRONMENT_CASE STREQUAL "legacy" OR ENVIRONMENT_CASE STREQUAL "both")
+    set(ENV{X_VCPKG_ASSET_SOURCES} "x-azurl,https://mirror.invalid/assets/;x-block-origin")
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/../AssetSources.cmake")
 if(DEFINED FAILURE_CASE)
     message(FATAL_ERROR "Invalid asset source was accepted")
+endif()
+if(DEFINED ENVIRONMENT_CASE)
+    if(NOT OSCONFIG_ASSET_ORIGIN_BLOCKED OR
+        NOT OSCONFIG_ASSET_MIRRORS STREQUAL "https://mirror.invalid/assets/")
+        message(FATAL_ERROR "Environment did not preserve the mirror-only configuration")
+    endif()
+    return()
 endif()
 
 function(expect_download sources expected_urls)
@@ -43,7 +60,7 @@ expect_download("x-block-origin;x-azurl,https://mirror.invalid/assets/,,read"
 expect_download("x-azurl,https://first.invalid/assets/;x-azurl,https://second.invalid/assets/;x-block-origin"
     "https://first.invalid/assets/${hash};https://second.invalid/assets/${hash}")
 
-foreach(case IN ITEMS blocked-without-mirror unsupported-source unsupported-auth insecure-mirror missing-trailing-slash)
+foreach(case IN ITEMS blocked-without-mirror unsupported-source unsupported-auth insecure-mirror missing-trailing-slash conflicting-settings)
     execute_process(
         COMMAND "${CMAKE_COMMAND}" "-DFAILURE_CASE=${case}" -P "${CMAKE_CURRENT_LIST_FILE}"
         RESULT_VARIABLE result
@@ -54,10 +71,18 @@ foreach(case IN ITEMS blocked-without-mirror unsupported-source unsupported-auth
     endif()
     if(case STREQUAL "blocked-without-mirror")
         set(expected_error "Origin downloads are blocked")
+    elseif(case STREQUAL "conflicting-settings")
+        set(expected_error "conflict; configure only one")
     else()
-        set(expected_error "Unsupported X_VCPKG_ASSET_SOURCES setting")
+        set(expected_error "Unsupported asset-source setting")
     endif()
     if(NOT "${error}" MATCHES "${expected_error}")
         message(FATAL_ERROR "${case}: unexpected failure: ${output}${error}")
     endif()
+endforeach()
+
+foreach(case IN ITEMS new legacy both)
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" "-DENVIRONMENT_CASE=${case}" -P "${CMAKE_CURRENT_LIST_FILE}"
+        COMMAND_ERROR_IS_FATAL ANY)
 endforeach()
