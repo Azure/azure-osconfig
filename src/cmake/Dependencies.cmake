@@ -53,6 +53,7 @@ endif()
 
 list(PREPEND CMAKE_PREFIX_PATH "${OSCONFIG_DEPENDENCY_PREFIX}")
 if(BUILD_TESTS)
-    find_package(GTest 1.12.0 EXACT CONFIG REQUIRED
+    # The checksum-pinned release-1.12.0 archive reports 1.11.0 in its CMake package.
+    find_package(GTest 1.11.0 EXACT CONFIG REQUIRED
         PATHS "${OSCONFIG_DEPENDENCY_PREFIX}/lib/cmake/GTest" NO_DEFAULT_PATH)
 endif()

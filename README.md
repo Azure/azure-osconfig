@@ -86,6 +86,8 @@ Dependency versions and build options are maintained in
 They currently pin OpenSSL 3.6.0, curl 8.16.0, SQLite 3.47.2, zlib 1.3.1, JSON
 headers 3.11.3, and Google Test 1.12.0. Google Test is built only when tests are
 enabled; the other dependencies are built only when telemetry is enabled.
+The Google Test 1.12.0 source release reports CMake package version 1.11.0;
+package discovery uses that metadata version without changing the pinned source.
 These pins need normal dependency/security servicing. Source archives and their
 upstream license files remain in the dependency build tree.
 
