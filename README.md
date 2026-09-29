@@ -23,8 +23,12 @@ Build environments have many dependencies required, the easiest way to get start
 Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
 
 **Common build dependencies across distributions:**
-- git
-- curl and CA certificates
+- vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
+    - git
+    - curl
+    - autoconf
+    - unzip
+    - zip
 - cmake (>= 3.21)
 - build-essential (gcc >= 4.4.7, g++, make)
 - perl (perl-core, perl-IPC-Cmd)
@@ -38,7 +42,7 @@ Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docke
 
 ```bash
 sudo apt -y update && sudo apt-get -y install software-properties-common
-sudo apt -y update && sudo apt-get -y install build-essential cmake git curl ca-certificates perl pkg-config tar unzip wget zip
+sudo apt -y update && sudo apt-get -y install build-essential cmake git curl pkg-config tar unzip wget zip
 ```
 
 Verify that CMake is at least version 3.21 and gcc is at least version 4.4.7.
@@ -70,99 +74,6 @@ Build with the following commands issued from under the build subfolder:
 cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -DBUILD_TESTS=ON|OFF
 cmake --build . --config Release|Debug  --target install
 ```
-
-#### Build dependencies and policy ZIPs
-
-CMake downloads checksum-pinned sources and builds the required dependencies under
-the build directory during the first configure. Subsequent configurations reuse
-that dependency build. No separate package manager, system-wide dependency
-installation, or additional customer-machine installation is needed. Downloads
-require network access; source verification and dependency build failures stop
-configuration. Dependency logs are under `build/dependencies/*-prefix/src/*-stamp`.
-Use a fresh build directory when changing compilers or dependency tooling.
-
-Dependency versions and build options are maintained in
-[`src/cmake/dependencies/CMakeLists.txt`](src/cmake/dependencies/CMakeLists.txt).
-They currently pin OpenSSL 3.6.0, curl 8.16.0, SQLite 3.47.2, zlib 1.3.1, JSON
-headers 3.11.3, and Google Test 1.12.0. Google Test is built only when tests are
-enabled; the other dependencies are built only when telemetry is enabled.
-The Google Test 1.12.0 source release reports CMake package version 1.11.0;
-package discovery uses that metadata version without changing the pinned source.
-These pins need normal dependency/security servicing. Source archives and their
-upstream license files remain in the dependency build tree.
-
-The 1DS SDK remains pinned to `v3.9.309.1`. Its API usage, event payloads, collector
-configuration, and queue/shutdown behavior are unchanged. Telemetry links static
-curl, OpenSSL, SQLite, and zlib libraries from the private dependency prefix, not
-the distribution's possibly older development packages. TLS verification remains
-enabled, with the existing OpenSSL `/etc/ssl` trust location and curl CA fallback.
-
-There are two build paths:
-
-- **Shipping policy ZIPs:** use the Ubuntu 14 build environment and GCC 4.8 for
-  the policy libraries. The existing separate telemetry subprocess requires
-  GCC 5.5 (`gcc-5`/`g++-5` in that environment); CMake selects it only for that
-  subprocess and its dependencies. Its C++ runtime is linked statically so the
-  helper does not introduce a newer system `libstdc++` requirement. The main
-  policy-library compiler is not changed. As before, the GCC 4.8 path disables
-  unit tests and the platform build.
-- **CI/tests:** use the normal selected compiler in each supported distro's build
-  environment, with `BUILD_TESTS=ON`.
-
-Shipping artifacts are the four policy ZIP targets defined under
-[`src/adapters/mc`](src/adapters/mc), not a new package format. For example, in the
-Ubuntu 14 shipping environment, from the repository root:
-
-```bash
-cmake -S src -B build-policy -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8 \
-  -DBUILD_ADAPTERS=ON -DBUILD_TELEMETRY=ON -DBUILD_TESTS=OFF
-cmake --build build-policy --parallel --target \
-  create_ssh_zip create_ssh_zip_set create_asb_zip create_asb_zip_set
-```
-
-Use the existing approved telemetry-key injection for a real reporting build;
-without it the existing placeholder key is used. Do not put keys in CMake files,
-command-line arguments, or source control.
-
-#### Validating a dependency-build change
-
-On a disposable Linux test machine/container, use the existing tests first:
-
-```bash
-cmake -S src -B build-ci -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_ADAPTERS=ON -DBUILD_TELEMETRY=ON -DBUILD_TESTS=ON
-cmake --build build-ci --parallel
-sudo install -d /var/lib/osconfig/telemetry
-sudo ctest --test-dir build-ci --output-on-failure \
-  --no-tests=error -R '^Telemetry(Test|BinTest)\.'
-```
-
-The tests use fixed `/var/lib/osconfig` paths and the SDK cache, so run them
-serially in an isolated test environment, not on a production machine sharing
-that telemetry state. Do not inject a production telemetry key for unit tests.
-The selected tests cover C-side event-file creation, SDK initialization, valid
-and invalid event processing, and telemetry executable argument handling.
-They do **not** assert collector acceptance or downstream delivery.
-
-Before shipping, also build all four ZIPs in the Ubuntu 14/GCC 4.8 environment and
-check the actual packaged `libOsConfigResource.so` and `OSConfigTelemetry` on the
-oldest supported runtime. Inspect their ELF dependencies and symbol versions
-with `readelf -d` and `readelf --version-info`: the helper must not require dynamic
-curl/OpenSSL/SQLite/zlib or a newer system `libstdc++`, and neither artifact may
-require a glibc newer than the supported baseline. Retain the existing multi-distro
-CI coverage.
-
-The smallest end-to-end check is one approved test-policy execution using a new
-ZIP, an approved test telemetry key, and a unique correlation ID, followed by
-confirmation that its expected events reach the test Geneva/Kusto destination.
-For a transport-only check, the packaged `OSConfigTelemetry -v -t 30 <json-file>`
-can process a **copy** of a valid test event file (it deletes the supplied file).
-Use the current event schema and a fresh correlation ID; do not add unrecognized
-properties. Check the logs and actual downstream event, not just process exit
-status: the current executable's success exit does not prove successful delivery.
-Do not publish test events into production without approval.
-
 The following OSConfig files are binplaced at build time:
 
 Source | Destination | Description
