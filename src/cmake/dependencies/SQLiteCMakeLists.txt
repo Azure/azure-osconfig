@@ -1,0 +1,18 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+cmake_minimum_required(VERSION 3.21)
+project(sqlite3 LANGUAGES C)
+
+find_package(Threads REQUIRED)
+add_library(sqlite3 STATIC sqlite3.c)
+target_compile_definitions(sqlite3 PRIVATE
+    SQLITE_ENABLE_UNLOCK_NOTIFY=1
+    SQLITE_ENABLE_COLUMN_METADATA=1
+    $<$<CONFIG:Debug>:SQLITE_DEBUG=1>
+    $<$<CONFIG:Debug>:SQLITE_ENABLE_SELECTTRACE>
+    $<$<CONFIG:Debug>:SQLITE_ENABLE_WHERETRACE>
+)
+target_link_libraries(sqlite3 PRIVATE Threads::Threads ${CMAKE_DL_LIBS})
+install(TARGETS sqlite3 ARCHIVE DESTINATION lib)
+install(FILES sqlite3.h sqlite3ext.h DESTINATION include)
