@@ -68,7 +68,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
             return 0;
         }
 
-        OsConfigLogError(log, "TelemetryEncodeEvent: Missing %s", field);
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Missing %s", field);
         return EINVAL;
     }
 
@@ -78,7 +78,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
 
         if (i == maximumLength)
         {
-            OsConfigLogError(log, "TelemetryEncodeEvent: %s exceeds %zu bytes", field, maximumLength);
+            OsConfigLogInfo(log, "TelemetryEncodeEvent: %s exceeds %zu bytes", field, maximumLength);
             return EMSGSIZE;
         }
 
@@ -128,13 +128,13 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
 
     if (('\0' != value[i]) || (0 != remaining))
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Invalid UTF-8 in %s", field);
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid UTF-8 in %s", field);
         return EILSEQ;
     }
 
     if (i < minimumLength)
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: %s is shorter than %zu bytes", field, minimumLength);
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: %s is shorter than %zu bytes", field, minimumLength);
         return EINVAL;
     }
 
@@ -160,14 +160,14 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
         if (!(((byte >= 'a') && (byte <= 'z')) || ((byte >= 'A') && (byte <= 'Z')) ||
             ((byte >= '0') && (byte <= '9')) || ('_' == byte) || ('.' == byte)))
         {
-            OsConfigLogError(log, "TelemetryEncodeEvent: Invalid character in %s name", property ? "property" : "event");
+            OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid character in %s name", property ? "property" : "event");
             return EINVAL;
         }
     }
 
     if (property && (('.' == name[0]) || ('.' == name[*length - 1])))
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Property name starts or ends with a dot");
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Property name starts or ends with a dot");
         return EINVAL;
     }
 
@@ -183,13 +183,13 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
     if ((event->time <= 0) || (event->flags < 0) || (event->sequence < 0) ||
         ((0 != event->propertyCount) && (NULL == event->properties)))
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Invalid event time, flags, sequence, or property array");
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid event time, flags, sequence, or property array");
         return EINVAL;
     }
 
     if (event->propertyCount > TELEMETRY_MAX_PROPERTY_COUNT)
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Property count exceeds %d", TELEMETRY_MAX_PROPERTY_COUNT);
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Property count exceeds %d", TELEMETRY_MAX_PROPERTY_COUNT);
         return EMSGSIZE;
     }
 
@@ -208,7 +208,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
 
     if (('o' != event->iKey[0]) || (':' != event->iKey[1]))
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: iKey must use the Common Schema o: prefix");
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: iKey must use the Common Schema o: prefix");
         return EINVAL;
     }
 
@@ -250,7 +250,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
             case TelemetryPropertyString:
                 if (NULL == property->value.stringValue)
                 {
-                    OsConfigLogError(log, "TelemetryEncodeEvent: Missing string value at property %zu", i);
+                    OsConfigLogInfo(log, "TelemetryEncodeEvent: Missing string value at property %zu", i);
                     return EINVAL;
                 }
 
@@ -261,7 +261,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
             case TelemetryPropertyDouble:
                 if (!isfinite(property->value.doubleValue))
                 {
-                    OsConfigLogError(log, "TelemetryEncodeEvent: Non-finite double at property %zu", i);
+                    OsConfigLogInfo(log, "TelemetryEncodeEvent: Non-finite double at property %zu", i);
                     return EINVAL;
                 }
                 break;
@@ -271,7 +271,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
                 break;
 
             default:
-                OsConfigLogError(log, "TelemetryEncodeEvent: Unsupported type at property %zu", i);
+                OsConfigLogInfo(log, "TelemetryEncodeEvent: Unsupported type at property %zu", i);
                 return EINVAL;
         }
 
@@ -287,7 +287,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
 
         if ((j > 0) && (0 == strcmp(validated->properties[j - 1].property->name, property->name)))
         {
-            OsConfigLogError(log, "TelemetryEncodeEvent: Duplicate property name at property %zu", i);
+            OsConfigLogInfo(log, "TelemetryEncodeEvent: Duplicate property name at property %zu", i);
             return EINVAL;
         }
 
@@ -507,7 +507,7 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
 
     if ((NULL == event) || (NULL == buffer) || (NULL == encodedSize))
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Invalid event, buffer, or size output");
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid event, buffer, or size output");
         return EINVAL;
     }
 
@@ -524,7 +524,7 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
 
     if (writer.failed)
     {
-        OsConfigLogError(log, "TelemetryEncodeEvent: Event exceeds buffer capacity or the %d-byte event limit",
+        OsConfigLogInfo(log, "TelemetryEncodeEvent: Event exceeds buffer capacity or the %d-byte event limit",
             TELEMETRY_MAX_EVENT_SIZE);
         return EMSGSIZE;
     }
