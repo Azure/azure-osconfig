@@ -21,6 +21,9 @@ add_executable(telemetryencoderparitytests
 )
 add_dependencies(telemetryencoderparitytests 1dscpplib)
 
+# Serializer headers include mat.h; leave its unused C API dispatcher unbound.
+target_compile_definitions(telemetryencoderparitytests PRIVATE HAVE_DYNAMIC_C_LIB)
+
 target_include_directories(telemetryencoderparitytests
     PRIVATE
         ../..
