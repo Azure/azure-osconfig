@@ -12,6 +12,7 @@ add_executable(commontests
     CommonUtilsUT.cpp
     SshUtilsUT.cpp
     TelemetryUT.cpp
+    TelemetryEncoderUT.cpp
     Helper.c
 )
 
@@ -26,6 +27,7 @@ target_link_libraries(commontests
     asb
     parsonlib
     telemetry
+    telemetryencoder
 )
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

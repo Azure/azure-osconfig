@@ -16,6 +16,14 @@ if(BUILD_EXTERNAL)
     add_subdirectory(lib)
     add_subdirectory(bin)
 else()
+    add_library(telemetryencoder STATIC TelemetryEncoder.c)
+
+    target_include_directories(telemetryencoder
+        PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR})
+
+    target_link_libraries(telemetryencoder PUBLIC logging)
+
     add_library(telemetry
         STATIC
             Telemetry.c)
