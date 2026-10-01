@@ -6,6 +6,7 @@
 #include "TelemetryWorker.h"
 #include "TelemetryWorkerProtocol.h"
 #include "TelemetryResolverProtocol.h"
+#include "TelemetryDeadline.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -37,41 +38,9 @@ struct TelemetryWorker
     int64_t operationLimit;
 };
 
-static int MonotonicTime(int64_t* value)
-{
-    struct timespec now;
-    if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
-    {
-        return (0 != errno) ? errno : EIO;
-    }
-    if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > (uint64_t)(INT64_MAX / 1000000000 - 1)))
-    {
-        return EOVERFLOW;
-    }
-    *value = (int64_t)now.tv_sec * INT64_C(1000000000) + now.tv_nsec;
-    return 0;
-}
-
-static int Remaining(int64_t deadline, int* milliseconds)
-{
-    int64_t now = 0;
-    int status = MonotonicTime(&now);
-    if (0 != status)
-    {
-        return status;
-    }
-    if (now >= deadline)
-    {
-        return ETIMEDOUT;
-    }
-    int64_t remaining = (deadline - now) / 1000000 + ((deadline - now) % 1000000 != 0);
-    *milliseconds = (remaining > INT_MAX) ? INT_MAX : (int)remaining;
-    return 0;
-}
-
 static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* deadline)
 {
-    int status = MonotonicTime(start);
+    int status = TelemetryMonotonicTime(start);
     if (0 != status)
     {
         worker->budget = 0;
@@ -93,7 +62,7 @@ static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* d
 static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandle log)
 {
     int64_t now = 0;
-    int status = MonotonicTime(&now);
+    int status = TelemetryMonotonicTime(&now);
     if (0 != status)
     {
         worker->budget = 0;
@@ -152,7 +121,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
             break;
         }
         int remaining = 0;
-        int timingStatus = Remaining(gracefulDeadline, &remaining);
+        int timingStatus = TelemetryDeadlineRemaining(gracefulDeadline, &remaining);
         if (0 != timingStatus)
         {
             if (ETIMEDOUT != timingStatus)
@@ -206,7 +175,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
     while (offset < size)
     {
         int remaining;
-        int status = Remaining(deadline, &remaining);
+        int status = TelemetryDeadlineRemaining(deadline, &remaining);
         if (0 != status)
         {
             return status;
@@ -221,7 +190,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
         }
         if (0 == count)
         {
-            status = Remaining(deadline, &remaining);
+            status = TelemetryDeadlineRemaining(deadline, &remaining);
             return status ? status : ((0 == offset) ? EPIPE : EPROTO);
         }
         if (EINTR == errno)
@@ -280,7 +249,7 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
         return errno;
     }
     int remaining;
-    return Remaining(deadline, &remaining);
+    return TelemetryDeadlineRemaining(deadline, &remaining);
 }
 
 static int PrepareDescriptor(int* descriptor)
@@ -366,7 +335,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     if ((0 != (status = posix_spawnattr_setsigdefault(&attributes, &defaults))) ||
         (0 != (status = posix_spawnattr_setsigmask(&attributes, &mask))) ||
         (0 != (status = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK))) ||
-        (0 != (status = Remaining(deadline, &remaining))))
+        (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining))))
     {
         goto cleanup;
     }
@@ -437,7 +406,7 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
     {
         status = EALREADY;
     }
-    else if (0 == (status = MonotonicTime(&now)))
+    else if (0 == (status = TelemetryMonotonicTime(&now)))
     {
         if (now > INT64_MAX - (int64_t)lifetimeMilliseconds * 1000000)
         {
@@ -524,7 +493,7 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     if (0 == status)
     {
         int remaining;
-        status = Remaining(deadline, &remaining);
+        status = TelemetryDeadlineRemaining(deadline, &remaining);
         if (0 != status)
         {
             goto failed;

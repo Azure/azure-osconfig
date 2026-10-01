@@ -51,6 +51,11 @@ else()
     target_include_directories(telemetryhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(telemetryhttp PUBLIC logging PRIVATE parsonlib)
 
+    # Loaded OS TLS belongs only to the owned worker, never to the policy SO.
+    add_library(telemetrytls STATIC TelemetryTls.c)
+    target_include_directories(telemetrytls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
+
     add_library(telemetry
         STATIC
             Telemetry.c)

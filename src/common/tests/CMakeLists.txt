@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 3.2.0)
 
 include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
+find_package(Python3 3.4 REQUIRED COMPONENTS Interpreter)
+find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
@@ -14,6 +16,7 @@ add_executable(commontests
     TelemetryUT.cpp
     TelemetryEncoderUT.cpp
     TelemetryHttpUT.cpp
+    TelemetryTlsUT.cpp
     TelemetryResolverUT.cpp
     TelemetryWorkerUT.cpp
     Helper.c
@@ -32,6 +35,7 @@ target_link_libraries(commontests
     telemetry
     telemetryencoder
     telemetryhttp
+    telemetrytls
     telemetryresolver
     telemetryworkerclient
 )
@@ -80,3 +84,8 @@ target_compile_definitions(commontests PRIVATE
     TELEMETRY_WORKER_FAULT_PATH="$<TARGET_FILE:telemetryworkerfault>")
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
+
+target_compile_definitions(commontests PRIVATE
+    TELEMETRY_TLS_PYTHON="${Python3_EXECUTABLE}"
+    TELEMETRY_TLS_OPENSSL="${TELEMETRY_TLS_OPENSSL_EXECUTABLE}"
+    TELEMETRY_TLS_PEER_SCRIPT="${CMAKE_CURRENT_SOURCE_DIR}/TelemetryTlsPeer.py")
