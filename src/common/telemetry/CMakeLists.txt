@@ -16,6 +16,10 @@ if(BUILD_EXTERNAL)
     add_subdirectory(lib)
     add_subdirectory(bin)
 else()
+    # Offline development inventory, available even when legacy builds disable tests.
+    add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TelemetryTlsProbe.c)
+    target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
+
     add_executable(telemetryresolverworker TelemetryResolverWorker.c)
     target_link_libraries(telemetryresolverworker PRIVATE rt)
 
