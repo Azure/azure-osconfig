@@ -42,7 +42,7 @@ static int MonotonicTime(int64_t* value)
     struct timespec now;
     if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
     {
-        return errno;
+        return (0 != errno) ? errno : EIO;
     }
     if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > (uint64_t)(INT64_MAX / 1000000000 - 1)))
     {
@@ -54,7 +54,7 @@ static int MonotonicTime(int64_t* value)
 
 static int Remaining(int64_t deadline, int* milliseconds)
 {
-    int64_t now;
+    int64_t now = 0;
     int status = MonotonicTime(&now);
     if (0 != status)
     {
@@ -92,7 +92,7 @@ static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* d
 
 static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandle log)
 {
-    int64_t now;
+    int64_t now = 0;
     int status = MonotonicTime(&now);
     if (0 != status)
     {
