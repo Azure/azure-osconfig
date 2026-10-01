@@ -47,6 +47,10 @@ else()
 
     target_link_libraries(telemetryencoder PUBLIC logging)
 
+    add_library(telemetryhttp STATIC TelemetryHttp.c)
+    target_include_directories(telemetryhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(telemetryhttp PUBLIC logging PRIVATE parsonlib)
+
     add_library(telemetry
         STATIC
             Telemetry.c)

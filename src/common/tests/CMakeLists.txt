@@ -13,6 +13,7 @@ add_executable(commontests
     SshUtilsUT.cpp
     TelemetryUT.cpp
     TelemetryEncoderUT.cpp
+    TelemetryHttpUT.cpp
     TelemetryResolverUT.cpp
     TelemetryWorkerUT.cpp
     Helper.c
@@ -30,6 +31,7 @@ target_link_libraries(commontests
     parsonlib
     telemetry
     telemetryencoder
+    telemetryhttp
     telemetryresolver
     telemetryworkerclient
 )
