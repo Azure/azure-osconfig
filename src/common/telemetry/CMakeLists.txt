@@ -20,7 +20,19 @@ else()
     add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TelemetryTlsProbe.c)
     target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
 
-    add_executable(telemetryresolverworker TelemetryResolverWorker.c)
+    # Candidate C worker: not installed or staged into production ZIPs yet.
+    add_executable(telemetryworker EXCLUDE_FROM_ALL
+        TelemetryWorkerMain.c TelemetryResolverLookup.c)
+    set_target_properties(telemetryworker PROPERTIES
+        OUTPUT_NAME OSConfigTelemetry
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/distilled")
+    target_link_libraries(telemetryworker PRIVATE logging rt)
+
+    add_library(telemetryworkerclient STATIC TelemetryWorker.c)
+    target_include_directories(telemetryworkerclient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(telemetryworkerclient PUBLIC telemetryresolver)
+
+    add_executable(telemetryresolverworker TelemetryResolverWorker.c TelemetryResolverLookup.c)
     target_link_libraries(telemetryresolverworker PRIVATE rt)
 
     add_library(telemetryresolver STATIC TelemetryResolver.c)

@@ -27,4 +27,19 @@ typedef struct TelemetryResolverReply
     TelemetryResolverAddress addresses[TELEMETRY_RESOLVER_ADDRESS_LIMIT];
 } TelemetryResolverReply;
 
+struct TelemetryResolvedHost;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+// Lookup runs only in an exec'd worker; errors travel in the reply to its parent.
+void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply);
+int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, struct TelemetryResolvedHost* result);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // TELEMETRY_RESOLVER_PROTOCOL_H

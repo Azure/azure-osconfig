@@ -66,7 +66,7 @@ static int PreparePipeDescriptor(int* descriptor)
     return 0;
 }
 
-static int DecodeReply(const TelemetryResolverReply* reply, TelemetryResolvedHost* result)
+int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryResolvedHost* result)
 {
     size_t i;
 
@@ -330,7 +330,7 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
         goto cleanup;
     }
     memcpy(&reply, bytes, sizeof(reply));
-    status = DecodeReply(&reply, &resolved);
+    status = TelemetryDecodeResolverReply(&reply, &resolved);
 
 cleanup:
     if ((child > 0) && !reaped)

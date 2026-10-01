@@ -1,0 +1,29 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#ifndef TELEMETRY_WORKER_PROTOCOL_H
+#define TELEMETRY_WORKER_PROTOCOL_H
+
+#include <stdint.h>
+
+#define TELEMETRY_WORKER_MAGIC UINT32_C(0x4F534354)
+#define TELEMETRY_WORKER_VERSION 1
+#define TELEMETRY_WORKER_READY 1
+#define TELEMETRY_WORKER_RESOLVE 2
+#define TELEMETRY_WORKER_ARGUMENT "--ipc-v1"
+
+// Private native-endian protocol: the SO and worker must come from one package.
+// One outstanding request, no event queue. Deadlines are absolute monotonic ns.
+// Replies have deadline == 0; a nonzero status has no body.
+typedef struct TelemetryWorkerFrame
+{
+    uint32_t magic;
+    uint32_t version;
+    uint32_t operation;
+    uint32_t size;
+    uint32_t sequence;
+    int32_t status;
+    int64_t deadline;
+} TelemetryWorkerFrame;
+
+#endif // TELEMETRY_WORKER_PROTOCOL_H

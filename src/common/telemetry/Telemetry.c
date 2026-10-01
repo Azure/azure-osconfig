@@ -69,12 +69,12 @@ void TelemetryInitialize(const OsConfigLogHandle log)
         }
         else
         {
-            OsConfigLogError(log, "TelemetryInitialize: Failed to resolve module directory");
+            OsConfigLogInfo(log, "TelemetryInitialize: Failed to resolve module directory");
         }
     }
     else
     {
-        OsConfigLogError(log, "TelemetryInitialize: Failed to open file %s", TELEMETRY_TMP_FILE_NAME);
+        OsConfigLogInfo(log, "TelemetryInitialize: Failed to open file %s", TELEMETRY_TMP_FILE_NAME);
     }
 
     g_distroName = GetOsPrettyName(log);

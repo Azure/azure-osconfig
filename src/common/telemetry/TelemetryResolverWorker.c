@@ -6,8 +6,6 @@
 #include "TelemetryResolverProtocol.h"
 
 #include <errno.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,9 +56,6 @@ static int ParseNonnegativeLong(const char* text, long* value)
 int main(int argc, char** argv)
 {
     TelemetryResolverReply reply = {0};
-    struct addrinfo hints = {0};
-    struct addrinfo* addresses = NULL;
-    struct addrinfo* next = NULL;
     struct sigevent notification = {0};
     struct sigaction action = {0};
     struct itimerspec expiration = {0};
@@ -117,44 +112,7 @@ int main(int argc, char** argv)
         SendReplyAndExit(&reply);
     }
 
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    reply.lookupError = getaddrinfo(argv[1], NULL, &hints, &addresses);
-    if (0 != reply.lookupError)
-    {
-        reply.error = (EAI_SYSTEM == reply.lookupError) ? (errno ? errno : EIO) : EHOSTUNREACH;
-        SendReplyAndExit(&reply);
-    }
-
-    for (next = addresses; (NULL != next) && (reply.count < TELEMETRY_RESOLVER_ADDRESS_LIMIT);
-        next = next->ai_next)
-    {
-        TelemetryResolverAddress* address = &reply.addresses[reply.count];
-        if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) &&
-            (next->ai_addrlen >= sizeof(struct sockaddr_in)))
-        {
-            const struct sockaddr_in* ipv4 = (const struct sockaddr_in*)next->ai_addr;
-            address->family = AF_INET;
-            memcpy(address->bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
-            ++reply.count;
-        }
-        else if ((AF_INET6 == next->ai_family) && (NULL != next->ai_addr) &&
-            (next->ai_addrlen >= sizeof(struct sockaddr_in6)))
-        {
-            const struct sockaddr_in6* ipv6 = (const struct sockaddr_in6*)next->ai_addr;
-            address->family = AF_INET6;
-            address->scopeId = ipv6->sin6_scope_id;
-            memcpy(address->bytes, &ipv6->sin6_addr, sizeof(ipv6->sin6_addr));
-            ++reply.count;
-        }
-    }
-
-    freeaddrinfo(addresses);
-    if (0 == reply.count)
-    {
-        reply.error = EHOSTUNREACH;
-    }
+    TelemetryLookupHost(argv[1], &reply);
 
     // Keep the timer armed through IPC; process exit releases it.
     SendReplyAndExit(&reply);

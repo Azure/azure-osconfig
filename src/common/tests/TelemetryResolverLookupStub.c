@@ -55,10 +55,10 @@ int TelemetryTestGetAddrInfo(const char* host, const char* service,
         entries[i].ai_addrlen = sizeof(ipv4[i]);
         entries[i].ai_next = (i + 1 < count) ? &entries[i + 1] : NULL;
     }
-    if (0 == strcmp(host, "ipv6"))
+    if ((0 == strcmp(host, "ipv6")) || (0 == strcmp(host, "worker-pid")))
     {
         ipv6.sin6_family = AF_INET6;
-        ipv6.sin6_scope_id = 7;
+        ipv6.sin6_scope_id = (0 == strcmp(host, "worker-pid")) ? (uint32_t)getpid() : 7;
         ipv6.sin6_addr.s6_addr[15] = 1;
         entries[0].ai_family = AF_INET6;
         entries[0].ai_addr = (struct sockaddr*)&ipv6;
