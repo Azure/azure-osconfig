@@ -16,6 +16,13 @@ if(BUILD_EXTERNAL)
     add_subdirectory(lib)
     add_subdirectory(bin)
 else()
+    add_executable(telemetryresolverworker TelemetryResolverWorker.c)
+    target_link_libraries(telemetryresolverworker PRIVATE rt)
+
+    add_library(telemetryresolver STATIC TelemetryResolver.c)
+    target_include_directories(telemetryresolver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(telemetryresolver PUBLIC logging PRIVATE rt)
+
     add_library(telemetryencoder STATIC TelemetryEncoder.c)
 
     target_include_directories(telemetryencoder
