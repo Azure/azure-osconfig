@@ -292,10 +292,10 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
     for (size_t i = 0; i < response->controlCount; ++i)
     {
         if (response->controls[i].kind != TelemetryTimeDeltaMillis) transport->suppressed = true;
-        else OsConfigLogInfo(log, "TelemetryTransport: Clock guidance preserved; live test uses local UTC");
+        else OsConfigLogDebug(log, "TelemetryTransport: Clock guidance preserved; live test uses local UTC");
     }
     if (!response->reusable || transport->suppressed) Disconnect(transport, log);
-    OsConfigLogInfo(log, "TelemetryTransport: Response complete (http=%u, acceptance=%d, controls=%zu)",
+    OsConfigLogDebug(log, "TelemetryTransport: Response complete (http=%u, acceptance=%d, controls=%zu)",
         response->status, (int)response->acceptance, response->controlCount);
     return 0;
 

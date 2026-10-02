@@ -476,9 +476,11 @@ public:
     }
 };
 
-void HundredEvents(const char* mode, const char* expected, int exitCode)
+void LiveEvents(const char* mode, const char* expected, int exitCode)
 {
     IgnorePipe();
+    const bool fullRun = strcmp(mode, "aria-live") == 0;
+    if (fullRun) alarm(1200);
     Peer peer;
     ASSERT_EQ(0, peer.Start(mode, false));
     ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
@@ -490,7 +492,7 @@ void HundredEvents(const char* mode, const char* expected, int exitCode)
     int status = posix_spawn_file_actions_init(&actions);
     if (status) { close(output[1]); FAIL() << "spawn action initialization failed"; }
     char* arguments[] = {const_cast<char*>(TELEMETRY_ARIA_TEST_PATH),
-        const_cast<char*>("--send-status-trace-100"), NULL};
+        const_cast<char*>("--send-status-trace-10000"), NULL};
     if ((0 == (status = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO))) &&
         (0 == (status = posix_spawn_file_actions_addclose(&actions, output[0]))) &&
         (0 == (status = posix_spawn_file_actions_addclose(&actions, output[1]))))
@@ -502,7 +504,7 @@ void HundredEvents(const char* mode, const char* expected, int exitCode)
     if (status) process.child = -1;
     ASSERT_EQ(0, status);
     std::string text;
-    int64_t deadline = Deadline(15000);
+    int64_t deadline = Deadline(fullRun ? 1200000 : 15000);
     for (;;)
     {
         int remaining = 0;
@@ -517,7 +519,7 @@ void HundredEvents(const char* mode, const char* expected, int exitCode)
         ASSERT_GE(size, 0);
         if (!size) break;
         text.append(bytes, static_cast<size_t>(size));
-        ASSERT_LE(text.size(), 32768U);
+        ASSERT_LE(text.size(), 2048U);
     }
     int result = 0;
     for (;;)
@@ -536,6 +538,7 @@ void HundredEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
     EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test ***"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
+    EXPECT_EQ(std::string::npos, text.find("event="));
     EXPECT_EQ(0, peer.Wait());
 }
 }
@@ -581,28 +584,28 @@ TEST(TelemetryTransportDeathTest, EmptySuccessIsUnconfirmed) { TLS_CASE(Transpor
 TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnThrottling) { TLS_CASE(TransportResponse("aria-throttle", TelemetryRejected, true)); }
 TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnKillDirective) { TLS_CASE(TransportResponse("aria-kill", TelemetryAccepted, true)); }
 TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes) { TLS_CASE(TransportArguments()); }
-TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsHundredEventsToLoopbackOnly)
+TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsTenThousandEventsToLoopbackOnly)
 {
-    TLS_CASE(HundredEvents("aria-live",
-        "requested=100 attempted=100 accepted=100 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
+    TLS_CASE(LiveEvents("aria-live",
+        "requested=10000 attempted=10000 accepted=10000 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
 }
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnThrottling)
 {
-    TLS_CASE(HundredEvents("aria-live-throttle",
-        "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
+    TLS_CASE(LiveEvents("aria-live-throttle",
+        "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
 }
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnExplicitRejection)
 {
-    TLS_CASE(HundredEvents("aria-live-reject",
-        "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
+    TLS_CASE(LiveEvents("aria-live-reject",
+        "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
 }
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotTreatEmpty200AsAcceptance)
 {
-    TLS_CASE(HundredEvents("aria-live-empty",
-        "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
+    TLS_CASE(LiveEvents("aria-live-empty",
+        "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
 }
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotReplayAmbiguousDelivery)
 {
-    TLS_CASE(HundredEvents("aria-live-drop",
-        "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
+    TLS_CASE(LiveEvents("aria-live-drop",
+        "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
 }

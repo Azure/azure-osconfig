@@ -18,7 +18,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define TEST_COUNT 100
+#define TEST_COUNT 10000
 #define TEST_RESULT "731001"
 #define TEST_MARKER "*** Distilled 1DS SDK test ***"
 #define TEST_CLIENT "OSConfig-C/0.1"
@@ -118,10 +118,10 @@ static int Encode(const char* iKey, const char* correlation, unsigned int sequen
 
 int main(int argc, char** argv)
 {
-    if (argc != 2 || strcmp(argv[1], "--send-status-trace-100"))
+    if (argc != 2 || strcmp(argv[1], "--send-status-trace-10000"))
     {
-        fprintf(stderr, "Explicit live test only: %s --send-status-trace-100\n"
-            "Sends 100 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
+        fprintf(stderr, "Explicit live test only: %s --send-status-trace-10000\n"
+            "Sends 10000 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
             "OsConfigTelemetryApiKey in the runtime environment overrides that key.\n"
             "Honors inherited HTTPS proxy settings. Never scheduled by ctest.\n", argv[0]);
         return 2;
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
     int status = InitializeTimer(&timer);
     int64_t started = 0;
     if (!status) status = TelemetryMonotonicTime(&started);
-    if (!status && started > INT64_MAX - INT64_C(300000000000)) status = EOVERFLOW;
+    if (!status && started > INT64_MAX - INT64_C(15000000000)) status = EOVERFLOW;
     if (!status) status = TelemetryArmDeadline(timer, started + INT64_C(15000000000));
     if (status)
     {
@@ -184,10 +184,8 @@ int main(int argc, char** argv)
         int64_t now = 0, uploadTime = 0;
         status = TelemetryMonotonicTime(&now);
         if (status) break;
-        const int64_t lifetime = started + INT64_C(300000000000);
-        if (now >= lifetime) { status = ETIMEDOUT; break; }
-        const int64_t deadline = lifetime - now > INT64_C(15000000000) ?
-            now + INT64_C(15000000000) : lifetime;
+        if (now > INT64_MAX - INT64_C(15000000000)) { status = EOVERFLOW; break; }
+        const int64_t deadline = now + INT64_C(15000000000);
         status = TelemetryArmDeadline(timer, deadline);
         if (status) break;
         unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
@@ -201,11 +199,10 @@ int main(int argc, char** argv)
         if (!status && response.acceptance == TelemetryAccepted) ++accepted;
         else if (!status && response.acceptance == TelemetryRejected) ++rejected;
         else ++unconfirmed;
-        printf("event=%u http=%u accepted=%u rejected=%u unconfirmed=%u status=%d controls=%zu\n",
-            i + 1, response.status, accepted, rejected, unconfirmed, status, response.controlCount);
-        fflush(stdout);
         if (status || response.acceptance != TelemetryAccepted || TelemetryTransportSuppressed(transport))
         {
+            fprintf(stderr, "event=%u http=%u status=%d controls=%zu\n",
+                i + 1, response.status, status, response.controlCount);
             if (!status) status = ECANCELED;
             fprintf(stderr, "Stopped without replay. Inspect the log and collector controls before another pass.\n");
             break;

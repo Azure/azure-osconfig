@@ -108,7 +108,7 @@ def aria_peer(listener, context, mode, seen_names):
                     raise RuntimeError("Collector SNI was not preserved through CONNECT")
                 if hasattr(secured, "selected_alpn_protocol") and secured.selected_alpn_protocol() != "http/1.1":
                     raise RuntimeError("Invalid collector ALPN")
-                count = 100 if mode == "aria-live" else 2 if mode in ("aria-reuse", "aria-auth") else 1
+                count = 10000 if mode == "aria-live" else 2 if mode in ("aria-reuse", "aria-auth") else 1
                 for sequence in range(count):
                     first, fields = headers(secured)
                     if (first != "POST /OneCollector/1.0/ HTTP/1.1" or
@@ -198,7 +198,7 @@ def main():
                 target.write(source.read())
 
     signal.signal(signal.SIGALRM, signal.SIG_DFL)
-    signal.alarm(20)
+    signal.alarm(1200 if mode == "aria-live" else 20)
     protocol = getattr(ssl, "PROTOCOL_TLS_SERVER", ssl.PROTOCOL_TLSv1_2)
     if mode == "tls10":
         protocol = ssl.PROTOCOL_TLSv1
