@@ -36,6 +36,18 @@ else()
         COMMAND ${CMAKE_COMMAND} -E rm -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
 endif()
 
+if(BUILD_TELEMETRY AND OSCONFIG_TELEMETRY_MINTLS)
+    list(APPEND STAGING_COMMANDS_GET
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${COMMON_SRC_DIR}/mintls/core/LICENSE" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/mintls-LICENSE)
+    list(APPEND STAGING_COMMANDS_SET
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${COMMON_SRC_DIR}/mintls/core/LICENSE" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/mintls-LICENSE)
+else()
+    list(APPEND STAGING_COMMANDS_GET
+        COMMAND ${CMAKE_COMMAND} -E rm -f ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/mintls-LICENSE)
+    list(APPEND STAGING_COMMANDS_SET
+        COMMAND ${CMAKE_COMMAND} -E rm -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/mintls-LICENSE)
+endif()
+
 # For Audit (Get):
 
 add_custom_target(stage_create_ssh_zip

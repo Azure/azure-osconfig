@@ -30,11 +30,15 @@ Make sure all dependencies are installed for your distribution. All of our suppo
 
 This branch's distilled telemetry prototype does not fetch or build the 1DS
 C++ SDK, curl, OpenSSL, zlib, SQLite, or nlohmann JSON. GoogleTest is still fetched
-when tests are enabled. The sender dynamically loads **OS-installed OpenSSL 3
-or 1.1** and uses the system certificate trust store; it does not bundle TLS.
-Support for older OS TLS families and the final compiler/distribution matrix
-are not yet complete. CI/download utilities may still use the `curl` command;
-that is not a telemetry library dependency.
+when tests are enabled. The sender prefers **OS-installed OpenSSL 3 or 1.1**.
+When neither supported provider is available, the owned executable can use
+the in-tree [mintls fallback](src/common/mintls/README.md), built directly from
+a maintained client-only source subset, with no TLS dependency download.
+Both paths require trusted certificates; no root bundle is shipped.
+Fallback cannot replace a failed OS-provider initialization or handshake.
+Fallback validation, size measurement, and the final compiler/distribution
+matrix remain pending. CI/download utilities may still use the `curl`
+command; that is not a telemetry library dependency.
 
 Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example. The environments do also contain tools used in our CI which are not required for building (bc, jq, libubsan1, libasan8, clang, clang-tools, file).
 

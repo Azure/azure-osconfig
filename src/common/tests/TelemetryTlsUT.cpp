@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <fstream>
 #include <poll.h>
 #include <spawn.h>
 #include <string>
@@ -57,7 +58,7 @@ public:
         }
         if (!directory.empty())
         {
-            for (const char* file : {"server-key.pem", "server.pem", "root-key.pem", "root.pem", "openssl.cnf"})
+            for (const char* file : {"server-key.pem", "server.pem", "root-key.pem", "root.pem", "openssl.cnf", "expired.pem"})
             {
                 unlink((directory + "/" + file).c_str());
             }
@@ -206,12 +207,23 @@ void ReadExact(Peer& peer, const std::string& expected)
     EXPECT_EQ(expected, received);
 }
 
-void Exchange(const char* identity)
+void Exchange(const char* identity, const char* mode = nullptr)
 {
     IgnorePipe();
     Peer peer;
-    ASSERT_EQ(0, peer.Start(strcmp(identity, "127.0.0.1") == 0 ? "ip" : "exchange"));
+    ASSERT_EQ(0, peer.Start(mode ? mode : strcmp(identity, "127.0.0.1") == 0 ? "ip" : "exchange"));
     ASSERT_EQ(0, TelemetryTlsHandshake(peer.tls, peer.descriptor, identity, Deadline(), NULL));
+#ifdef OSCONFIG_TELEMETRY_FORCE_MINTLS
+    std::ifstream maps("/proc/self/maps");
+    ASSERT_TRUE(maps.is_open());
+    std::string mapping;
+    while (std::getline(maps, mapping))
+    {
+        EXPECT_EQ(std::string::npos, mapping.find("libssl.so"));
+        EXPECT_EQ(std::string::npos, mapping.find("libcrypto.so"));
+    }
+    EXPECT_TRUE(maps.eof());
+#endif
     TelemetryTls* original = peer.tls;
     EXPECT_EQ(EALREADY, TelemetryTlsCreate(&peer.tls, Deadline(), NULL));
     EXPECT_EQ(original, peer.tls);
@@ -537,7 +549,8 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_EQ(exitCode, WEXITSTATUS(result)) << text;
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
-    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 2 ***"));
+    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 3 ***"));
+    EXPECT_NE(std::string::npos, text.find("TLS mode: mintls only (OS OpenSSL discovery disabled)"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));
     EXPECT_EQ(0, peer.Wait());
@@ -660,10 +673,13 @@ void ProducerEvents()
     ::testing::ExitedWithCode(0), "")
 
 TEST(TelemetryTlsDeathTest, VerifiesDnsAndReusesConnection) { TLS_CASE(Exchange("localhost")); }
+TEST(TelemetryTlsDeathTest, VerifiesEcdsaCertificate) { TLS_CASE(Exchange("localhost", "ecdsa")); }
 TEST(TelemetryTlsDeathTest, VerifiesIpWithoutSendingSni) { TLS_CASE(Exchange("127.0.0.1")); }
 TEST(TelemetryTlsDeathTest, RejectsWrongDnsIdentity) { TLS_CASE(HandshakeFailure("wrong-name", "localhost", EACCES)); }
 TEST(TelemetryTlsDeathTest, RejectsWrongIpIdentity) { TLS_CASE(HandshakeFailure("wrong-ip", "127.0.0.2", EACCES)); }
 TEST(TelemetryTlsDeathTest, RejectsUntrustedCertificate) { TLS_CASE(HandshakeFailure("untrusted", "localhost", EACCES)); }
+TEST(TelemetryTlsDeathTest, RejectsExpiredCertificate) { TLS_CASE(HandshakeFailure("expired", "localhost", EACCES)); }
+TEST(TelemetryTlsDeathTest, RejectsNumericDnsSanForIpIdentity) { TLS_CASE(HandshakeFailure("numeric-dns", "127.0.0.1", EACCES)); }
 TEST(TelemetryTlsDeathTest, RejectsTls10) { TLS_CASE(HandshakeFailure("tls10", "localhost", 0)); }
 TEST(TelemetryTlsDeathTest, TimesOutSilentHandshake) { TLS_CASE(HandshakeFailure("silent-handshake", "localhost", ETIMEDOUT)); }
 TEST(TelemetryTlsDeathTest, HandlesSocketResetWithoutSigpipe) { TLS_CASE(HandshakeFailure("reset", "localhost", 0)); }

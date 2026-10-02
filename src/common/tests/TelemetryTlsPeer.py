@@ -14,10 +14,13 @@ import sys
 import time
 
 
-def certificate(openssl, directory, name, subject):
+def certificate(openssl, directory, name, subject, ecdsa=False):
+    key = ["-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:P-256"] if ecdsa else ["-newkey", "rsa:2048"]
     subprocess.check_call(
         [
-            openssl, "req", "-new", "-x509", "-newkey", "rsa:2048", "-nodes",
+            openssl, "req", "-new", "-x509",
+        ] + key + [
+            "-nodes",
             "-days", "1", "-sha256", "-subj", "/CN=" + subject,
             "-config", os.path.join(directory, "openssl.cnf"),
             "-keyout", os.path.join(directory, name + "-key.pem"),
@@ -125,7 +128,7 @@ def aria_peer(listener, context, mode, seen_names):
                         raise RuntimeError("Invalid collector request length")
                     body = receive(secured, size)
                     if mode.startswith("aria-live"):
-                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test No. 2 ***", b"731001",
+                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test No. 3 ***", b"731001",
                                          b"CorrelationId", b"ResultString", b"o:fixture"):
                             if required not in body:
                                 raise RuntimeError("Synthetic event missing required field")
@@ -196,14 +199,26 @@ def main():
     name = ARIA_HOST if mode.startswith("aria-") else "localhost"
     if mode in ("wrong-name", "aria-wrong-name"):
         name = "wrong.example"
+    if mode == "numeric-dns":
+        name = "127.0.0.1"
+    san = "DNS:" + name
+    if mode != "numeric-dns":
+        san += ",IP:127.0.0.1"
     with open(os.path.join(directory, "openssl.cnf"), "w") as config:
         config.write(
             "[req]\ndistinguished_name=dn\nx509_extensions=extensions\n"
             "[dn]\n[extensions]\nbasicConstraints=critical,CA:TRUE\n"
             "keyUsage=critical,digitalSignature,keyEncipherment,keyCertSign\n"
-            "extendedKeyUsage=serverAuth\nsubjectAltName=DNS:" + name + ",IP:127.0.0.1\n"
+            "extendedKeyUsage=serverAuth\nsubjectAltName=" + san + "\n"
         )
-    certificate(openssl, directory, "server", name)
+    certificate(openssl, directory, "server", name, mode == "ecdsa")
+    if mode == "expired":
+        subprocess.check_call(
+            [openssl, "x509", "-in", os.path.join(directory, "server.pem"),
+             "-signkey", os.path.join(directory, "server-key.pem"), "-days", "-1",
+             "-out", os.path.join(directory, "expired.pem")],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+        os.replace(os.path.join(directory, "expired.pem"), os.path.join(directory, "server.pem"))
     if mode == "untrusted":
         certificate(openssl, directory, "root", "Other Test Root")
     else:
@@ -251,7 +266,7 @@ def main():
             try:
                 secured = context.wrap_socket(connection, server_side=True)
             except ssl.SSLError:
-                if mode in ("wrong-name", "wrong-ip", "untrusted", "tls10"):
+                if mode in ("wrong-name", "wrong-ip", "untrusted", "tls10", "expired", "numeric-dns"):
                     return
                 raise
             with secured:

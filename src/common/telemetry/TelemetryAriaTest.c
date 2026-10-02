@@ -21,7 +21,7 @@
 
 #define TEST_COUNT 10000
 #define TEST_RESULT "731001"
-#define TEST_MARKER "*** Distilled 1DS SDK test No. 2 ***"
+#define TEST_MARKER "*** Distilled 1DS SDK test No. 3 ***"
 #define TEST_CLIENT "OSConfig-C/0.1"
 
 static int InitializeTimer(timer_t* timer)
@@ -147,6 +147,7 @@ int main(int argc, char** argv)
     if (status) goto cleanup;
     printf("LIVE StatusTrace test: requested=%d ResultCode=%s\n"
         "ResultString=%s\nCorrelationId=%s\n"
+        "TLS mode: mintls only (OS OpenSSL discovery disabled)\n"
         "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.\n",
         TEST_COUNT, TEST_RESULT, TEST_MARKER, correlation);
     fflush(stdout);

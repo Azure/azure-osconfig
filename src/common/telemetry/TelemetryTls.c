@@ -5,6 +5,9 @@
 
 #include "TelemetryTls.h"
 #include "TelemetryDeadline.h"
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+#include <MinTls.h>
+#endif
 
 #include <arpa/inet.h>
 #include <dlfcn.h>
@@ -16,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Opaque public OpenSSL ABI types; no build-time or bundled TLS dependency.
+// Opaque public OpenSSL ABI types; no OpenSSL build-time dependency.
 typedef struct ssl_st Ssl;
 typedef struct ssl_ctx_st SslContext;
 typedef struct ssl_method_st SslMethod;
@@ -79,6 +82,9 @@ typedef struct TlsApi
 
 struct TelemetryTls
 {
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+    MinTls* fallback;
+#endif
     SslContext* context;
     Ssl* connection;
     int descriptor;
@@ -157,6 +163,10 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
 
 static int LoadProvider(OsConfigLogHandle log)
 {
+#ifdef OSCONFIG_TELEMETRY_FORCE_MINTLS
+    OsConfigLogInfo(log, "TelemetryTls: Test build forces mintls; OS provider discovery disabled");
+    return ENOTSUP;
+#endif
     if (g_attempted) return g_providerStatus;
     g_attempted = true;
     static const char* names[] = {"libssl.so.3", "libssl.so.1.1"};
@@ -248,9 +258,28 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
     if (NULL == tls) status = EINVAL;
     else if (NULL != *tls) status = EALREADY;
     else if ((0 == (status = WorkerSignals())) &&
-        (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining))) &&
-        (0 == (status = LoadProvider(log))))
+        (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining))))
     {
+        status = LoadProvider(log);
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+        if (status == ENOTSUP)
+        {
+            created = calloc(1, sizeof(*created));
+            if (!created) return Failure(NULL, "fallback allocation", ENOMEM, log);
+            created->descriptor = -1;
+            status = MinTlsCreate(&created->fallback, NULL, deadline, log);
+            if (status)
+            {
+                TelemetryTlsDestroy(&created, log);
+                return Failure(NULL, "fallback initialization", status, log);
+            }
+            *tls = created;
+            OsConfigLogInfo(log, "TelemetryTls: Selected in-tree mintls fallback");
+            return 0;
+        }
+#endif
+        // Provider initialization/configuration failures never trigger fallback.
+        if (status) return Failure(NULL, "OS provider initialization", status, log);
         g_api.ERR_clear_error();
         created = calloc(1, sizeof(*created));
         if (NULL == created) status = ENOMEM;
@@ -301,6 +330,14 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
 int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
     int64_t deadline, OsConfigLogHandle log)
 {
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+    if (tls && tls->fallback)
+    {
+        int signals = WorkerSignals();
+        if (signals) return Failure(NULL, "worker signals", signals, log);
+        return MinTlsHandshake(tls->fallback, descriptor, peer, deadline, log);
+    }
+#endif
     int status = 0;
     int remaining = 0;
     unsigned char address[16] = {0};
@@ -387,6 +424,9 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
 int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
     int64_t deadline, OsConfigLogHandle log)
 {
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+    if (tls && tls->fallback) return MinTlsWrite(tls->fallback, bytes, size, deadline, log);
+#endif
     if ((NULL == tls) || !tls->connected || ((NULL == bytes) && size) || (size > INT_MAX))
     {
         return Failure(NULL, "write arguments", EINVAL, log);
@@ -418,6 +458,9 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
 int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* size,
     bool* endOfStream, int64_t deadline, OsConfigLogHandle log)
 {
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+    if (tls && tls->fallback) return MinTlsRead(tls->fallback, bytes, capacity, size, endOfStream, deadline, log);
+#endif
     if (NULL != size) *size = 0;
     if (NULL != endOfStream) *endOfStream = false;
     if ((NULL == tls) || !tls->connected || (NULL == bytes) || !capacity ||
@@ -452,6 +495,9 @@ int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* si
 void TelemetryTlsDestroy(TelemetryTls** tls, OsConfigLogHandle log)
 {
     if ((NULL == tls) || (NULL == *tls)) return;
+#ifdef OSCONFIG_TELEMETRY_MINTLS
+    MinTlsDestroy(&(*tls)->fallback, log);
+#endif
     Disconnect(*tls);
     if (NULL != (*tls)->context) g_api.SSL_CTX_free((*tls)->context);
     free(*tls);
