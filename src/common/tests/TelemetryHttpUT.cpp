@@ -104,11 +104,11 @@ protected:
     }
 };
 
-TEST_F(TelemetryHttpDiagnosticsTest, ReportsMissingCountWithoutLoggingPayloadOrControlValues)
+TEST_F(TelemetryHttpDiagnosticsTest, ReportsZeroOnlyCountWithoutLoggingPayloadOrControlValues)
 {
-    ExpectDiagnostic(Response("{\"acc\":1,\"private\":\"sensitive-marker\"}",
+    ExpectDiagnostic(Response("{\"acc\":0,\"private\":\"sensitive-marker\"}",
         "kill-tokens: sensitive-marker\r\n"), EPROTO,
-        "accType=number, acc=1, rejType=missing, rej=0");
+        "accType=number, acc=0, rejType=missing, rej=0");
 }
 
 TEST_F(TelemetryHttpDiagnosticsTest, ReportsCountTypeWithoutLoggingStringValue)
@@ -331,7 +331,10 @@ TEST_F(TelemetryHttpTest, HonorsExplicitRejectionAndIndexedEventFailures)
         "{\"acc\":0,\"rej\":1}",
         "{\"acc\":1,\"rej\":0,\"efi\":{\"failure\":\"all\"}}",
         "{\"acc\":1,\"rej\":0,\"efi\":{\"failure\":[0]}}",
-        "{\"acc\":1,\"rej\":0,\"TokenCrackingFailure\":true}"})
+        "{\"acc\":1,\"rej\":0,\"TokenCrackingFailure\":true}",
+        "{\"acc\":1,\"efi\":{\"failure\":\"all\"}}",
+        "{\"acc\":1,\"efi\":{\"failure\":[0]}}",
+        "{\"acc\":1,\"TokenCrackingFailure\":true}"})
     {
         SCOPED_TRACE(body);
         ASSERT_EQ(0, Parse(Response(body)));
@@ -342,12 +345,71 @@ TEST_F(TelemetryHttpTest, HonorsExplicitRejectionAndIndexedEventFailures)
     EXPECT_EQ(TelemetryAccepted, response.acceptance);
 }
 
+TEST_F(TelemetryHttpTest, AcceptsExplicitSingleEventCountWithOmittedZeroCounter)
+{
+    const struct
+    {
+        const char* body;
+        TelemetryAcceptance acceptance;
+    } cases[] = {
+        {"{\"acc\":1}", TelemetryAccepted},
+        {"{\"rej\":1}", TelemetryRejected},
+        {"{\"acc\":1,\"efi\":{}}", TelemetryAccepted},
+        {"{\"acc\":1,\"efi\":{\"failure\":[]}}", TelemetryAccepted}
+    };
+    for (const auto& item : cases)
+    {
+        SCOPED_TRACE(item.body);
+        ASSERT_EQ(0, Parse(Response(item.body)));
+        EXPECT_TRUE(response.complete);
+        EXPECT_TRUE(response.reusable);
+        EXPECT_EQ(item.acceptance, response.acceptance);
+    }
+}
+
+TEST_F(TelemetryHttpTest, HandlesSparseLiveAcknowledgmentAcrossFramingAndEverySplitPoint)
+{
+    const std::string body = "{\"acc\":1}";
+    const std::string wires[] = {
+        Response(body, "time-delta-millis: 0\r\n"),
+        Chunked(Chunk(body) + "0\r\n\r\n"),
+        "HTTP/1.1 200 OK\r\n\r\n" + body
+    };
+    for (size_t framing = 0; framing < 3; ++framing)
+    {
+        const std::string& wire = wires[framing];
+        for (size_t split = 0; split <= wire.size(); ++split)
+        {
+            SCOPED_TRACE(framing);
+            SCOPED_TRACE(split);
+            ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, NULL));
+            ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, wire.data(), split, false, NULL));
+            ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, wire.data() + split,
+                wire.size() - split, framing == 2, NULL));
+            EXPECT_TRUE(response.complete);
+            EXPECT_EQ(TelemetryAccepted, response.acceptance);
+            EXPECT_EQ(body, std::string(response.body, response.bodySize));
+            EXPECT_EQ(framing != 2, response.reusable);
+            if (framing == 0)
+            {
+                ASSERT_EQ(1U, response.controlCount);
+                EXPECT_EQ(TelemetryTimeDeltaMillis, response.controls[0].kind);
+            }
+        }
+    }
+}
+
 TEST_F(TelemetryHttpTest, RejectsMissingContradictoryAndInvalidAcknowledgmentCounts)
 {
-    for (const char* body : {"{}", "{\"acc\":1}", "{\"acc\":\"1\",\"rej\":0}", "{\"acc\":true,\"rej\":0}",
+    for (const char* body : {"{}", "{\"acc\":0}", "{\"rej\":0}", "{\"efi\":{}}",
+        "{\"acc\":\"1\",\"rej\":0}", "{\"acc\":true,\"rej\":0}",
         "{\"acc\":1,\"rej\":1}", "{\"acc\":0,\"rej\":0}", "{\"acc\":2,\"rej\":0}",
         "{\"acc\":0.5,\"rej\":0.5}", "{\"acc\":-1,\"rej\":2}", "{\"acc\":1e999,\"rej\":0}",
-        "{\"acc\":1,\"acc\":0,\"rej\":0}", "{\"acc\":1,\"rej\":null}"})
+        "{\"acc\":1,\"acc\":0,\"rej\":0}", "{\"acc\":1,\"rej\":null}", "{\"acc\":null,\"rej\":1}",
+        "{\"acc\":1,\"rej\":\"0\"}", "{\"acc\":1,\"rej\":false}", "{\"acc\":1,\"rej\":{}}",
+        "{\"acc\":1,\"rej\":[]}", "{\"acc\":null}", "{\"acc\":true}", "{\"acc\":\"1\"}",
+        "{\"acc\":-1}", "{\"acc\":0.5}", "{\"acc\":2}", "{\"rej\":-1}", "{\"rej\":0.5}",
+        "{\"rej\":2}", "{\"rej\":\"1\"}", "{\"rej\":true}", "{\"rej\":null}"})
     {
         SCOPED_TRACE(body);
         ExpectFailure(Response(body), EPROTO);
@@ -361,6 +423,7 @@ TEST_F(TelemetryHttpTest, RejectsMalformedFailureIndicesAndFailureTypes)
     {
         SCOPED_TRACE(efi);
         ExpectFailure(Response(std::string("{\"acc\":1,\"rej\":0,\"efi\":") + efi + "}"), EPROTO);
+        ExpectFailure(Response(std::string("{\"acc\":1,\"efi\":") + efi + "}"), EPROTO);
     }
 }
 

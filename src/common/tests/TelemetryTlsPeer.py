@@ -151,7 +151,7 @@ def aria_peer(listener, context, mode, seen_names):
                         time.sleep(3)
                         return
                     status, extra = b"200 OK", b""
-                    response = b'{"acc":1,"rej":0}'
+                    response = b'{"acc":1}' if mode == "aria-live" else b'{"acc":1,"rej":0}'
                     if mode in ("aria-reject", "aria-live-reject"):
                         response = b'{"acc":0,"rej":1}'
                     elif mode in ("aria-empty", "aria-live-empty"):

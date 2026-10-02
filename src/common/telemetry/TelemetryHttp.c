@@ -367,10 +367,12 @@ static int Acknowledge(TelemetryHttpResponse* response, OsConfigLogHandle log)
     JSON_Object* object = json_value_get_object(value);
     JSON_Value* accepted = json_object_get_value(object, "acc");
     JSON_Value* rejected = json_object_get_value(object, "rej");
-    double acc = json_value_get_number(accepted);
-    double rej = json_value_get_number(rejected);
+    // The collector omits zero counts; a present count must still be numeric.
+    double acc = accepted ? json_value_get_number(accepted) : 0;
+    double rej = rejected ? json_value_get_number(rejected) : 0;
     bool failed = NULL != json_object_get_value(object, "TokenCrackingFailure");
-    if ((JSONNumber != json_value_get_type(accepted)) || (JSONNumber != json_value_get_type(rejected)) ||
+    if ((accepted && JSONNumber != json_value_get_type(accepted)) ||
+        (rejected && JSONNumber != json_value_get_type(rejected)) ||
         !((acc == 0 && rej == 1) || (acc == 1 && rej == 0)))
     {
         status = EPROTO;
