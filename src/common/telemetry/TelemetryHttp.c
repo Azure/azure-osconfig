@@ -316,7 +316,22 @@ static int EventFailures(const JSON_Object* object, bool* rejected)
     return 0;
 }
 
-static int Acknowledge(TelemetryHttpResponse* response)
+static const char* JsonType(const JSON_Value* value)
+{
+    if (NULL == value) return "missing";
+    switch (json_value_get_type(value))
+    {
+        case JSONNull: return "null";
+        case JSONString: return "string";
+        case JSONNumber: return "number";
+        case JSONObject: return "object";
+        case JSONArray: return "array";
+        case JSONBoolean: return "boolean";
+        default: return "invalid";
+    }
+}
+
+static int Acknowledge(TelemetryHttpResponse* response, OsConfigLogHandle log)
 {
     if (200 != response->status)
     {
@@ -329,13 +344,26 @@ static int Acknowledge(TelemetryHttpResponse* response)
         return 0;
     }
     int status = JsonEnvelope(response->body, response->bodySize);
-    if (0 != status) return status;
+    if (0 != status)
+    {
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment envelope invalid (status=%d, bodyBytes=%zu)",
+            status, response->bodySize);
+        return status;
+    }
     // Parson's string constructor validates UTF-8; its JSON parser does not.
     JSON_Value* utf8 = json_value_init_string_with_len(response->body, response->bodySize);
-    if (NULL == utf8) return EPROTO;
+    if (NULL == utf8)
+    {
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment UTF-8 validation or allocation failed");
+        return EPROTO;
+    }
     json_value_free(utf8);
     JSON_Value* value = json_parse_string(response->body);
-    if (NULL == value) return EPROTO;
+    if (NULL == value)
+    {
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment JSON parse or allocation failed");
+        return EPROTO;
+    }
     JSON_Object* object = json_value_get_object(value);
     JSON_Value* accepted = json_object_get_value(object, "acc");
     JSON_Value* rejected = json_object_get_value(object, "rej");
@@ -346,19 +374,28 @@ static int Acknowledge(TelemetryHttpResponse* response)
         !((acc == 0 && rej == 1) || (acc == 1 && rej == 0)))
     {
         status = EPROTO;
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment counts invalid "
+            "(accType=%s, acc=%.17g, rejType=%s, rej=%.17g, efiType=%s, tokenFailure=%d)",
+            JsonType(accepted), acc, JsonType(rejected), rej,
+            JsonType(json_object_get_value(object, "efi")), (int)failed);
     }
     else if (0 == (status = EventFailures(object, &failed)))
     {
         response->acceptance = (failed || rej == 1) ? TelemetryRejected : TelemetryAccepted;
     }
+    else
+    {
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment event failures invalid (efiType=%s, status=%d)",
+            JsonType(json_object_get_value(object, "efi")), status);
+    }
     json_value_free(value);
     return status;
 }
 
-static int Complete(TelemetryHttpResponse* response)
+static int Complete(TelemetryHttpResponse* response, OsConfigLogHandle log)
 {
     response->body[response->bodySize] = '\0';
-    int status = Acknowledge(response);
+    int status = Acknowledge(response, log);
     if (0 != status) return status;
     response->complete = true;
     response->state = HttpComplete;
@@ -367,7 +404,7 @@ static int Complete(TelemetryHttpResponse* response)
     return 0;
 }
 
-static int EndHeaders(TelemetryHttpResponse* response)
+static int EndHeaders(TelemetryHttpResponse* response, OsConfigLogHandle log)
 {
     if (response->hasLength && response->chunked) return EPROTO;
     if (response->status < 200)
@@ -383,9 +420,9 @@ static int EndHeaders(TelemetryHttpResponse* response)
     if (204 == response->status)
     {
         if (response->hasLength || response->chunked) return EPROTO;
-        return Complete(response);
+        return Complete(response, log);
     }
-    if (304 == response->status) return Complete(response);
+    if (304 == response->status) return Complete(response, log);
     if (response->chunked)
     {
         if (response->minorVersion != 1) return EPROTO;
@@ -396,7 +433,7 @@ static int EndHeaders(TelemetryHttpResponse* response)
         if (response->contentLength > TELEMETRY_HTTP_BODY_LIMIT) return EMSGSIZE;
         response->remaining = response->contentLength;
         response->state = HttpLengthBody;
-        if (!response->remaining) return Complete(response);
+        if (!response->remaining) return Complete(response, log);
     }
     else
     {
@@ -451,7 +488,7 @@ static int ChunkSize(TelemetryHttpResponse* response)
     return 0;
 }
 
-static int Line(TelemetryHttpResponse* response)
+static int Line(TelemetryHttpResponse* response, OsConfigLogHandle log)
 {
     switch (response->state)
     {
@@ -476,17 +513,17 @@ static int Line(TelemetryHttpResponse* response)
             response->state = HttpHeaders;
             return 0;
         case HttpHeaders:
-            return response->lineSize ? Header(response, false) : EndHeaders(response);
+            return response->lineSize ? Header(response, false) : EndHeaders(response, log);
         case HttpChunkSize:
             return ChunkSize(response);
         case HttpTrailers:
-            return response->lineSize ? Header(response, true) : Complete(response);
+            return response->lineSize ? Header(response, true) : Complete(response, log);
         default:
             return EPROTO;
     }
 }
 
-static int Byte(TelemetryHttpResponse* response, unsigned char byte)
+static int Byte(TelemetryHttpResponse* response, unsigned char byte, OsConfigLogHandle log)
 {
     if (++response->wireBytes > TELEMETRY_HTTP_WIRE_LIMIT) return EMSGSIZE;
     switch (response->state)
@@ -504,7 +541,7 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte)
                 if (byte != '\n') return EPROTO;
                 response->carriageReturn = false;
                 response->line[response->lineSize] = '\0';
-                int status = Line(response);
+                int status = Line(response, log);
                 response->lineSize = 0;
                 return status;
             }
@@ -526,7 +563,7 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte)
             {
                 if (0 == --response->remaining)
                 {
-                    if (response->state == HttpLengthBody) return Complete(response);
+                    if (response->state == HttpLengthBody) return Complete(response, log);
                     response->state = HttpChunkCr;
                 }
             }
@@ -570,11 +607,11 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
         const unsigned char* input = bytes;
         for (size_t i = 0; i < size && !status; ++i)
         {
-            status = Byte(response, input[i]);
+            status = Byte(response, input[i], log);
         }
         if (!status && endOfStream)
         {
-            if (response->state == HttpEofBody) status = Complete(response);
+            if (response->state == HttpEofBody) status = Complete(response, log);
             else if (!response->complete) status = EPROTO;
             response->reusable = false;
         }
@@ -583,6 +620,17 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
     {
         if (NULL != response)
         {
+            OsConfigLogInfo(log, "TelemetryHttp: Response failure "
+                "(state=%u, http=%u, bodyBytes=%zu, wireBytes=%zu, hasLength=%d, contentLength=%zu, "
+                "chunked=%d, remaining=%zu, eof=%d, controls=%zu)",
+                response->state, response->status, response->bodySize, response->wireBytes,
+                (int)response->hasLength, response->contentLength, (int)response->chunked,
+                response->remaining, (int)endOfStream, response->controlCount);
+            for (size_t i = 0; i < response->controlCount; ++i)
+            {
+                OsConfigLogInfo(log, "TelemetryHttp: Preserved control (index=%zu, kind=%d)",
+                    i, (int)response->controls[i].kind);
+            }
             response->state = HttpFailed;
             response->complete = false;
             response->reusable = false;

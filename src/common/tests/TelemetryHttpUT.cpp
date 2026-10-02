@@ -9,8 +9,12 @@
 #include <array>
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <iterator>
 #include <string>
+#include <unistd.h>
 
 namespace
 {
@@ -59,6 +63,82 @@ protected:
         EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
     }
 };
+
+class TelemetryHttpDiagnosticsTest : public TelemetryHttpTest
+{
+protected:
+    char path[64] = "/tmp/osconfig-http-diagnostics-XXXXXX";
+    OsConfigLogHandle log = NULL;
+    bool created = false;
+
+    void SetUp() override
+    {
+        TelemetryHttpTest::SetUp();
+        int descriptor = mkstemp(path);
+        ASSERT_GE(descriptor, 0);
+        created = true;
+        ASSERT_EQ(0, close(descriptor));
+        log = OpenLog(path, NULL);
+        ASSERT_NE(nullptr, log);
+        ASSERT_NE(nullptr, GetLogFile(log));
+    }
+
+    void TearDown() override
+    {
+        if (log) CloseLog(&log);
+        if (created) unlink(path);
+    }
+
+    void ExpectDiagnostic(const std::string& wire, int expected, const char* diagnostic)
+    {
+        EXPECT_EQ(expected, TelemetryHttpResponseFeed(&response, wire.data(), wire.size(), false, log));
+        EXPECT_FALSE(response.complete);
+        EXPECT_FALSE(response.reusable);
+        EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
+        std::ifstream file(path);
+        ASSERT_TRUE(file.is_open());
+        const std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        EXPECT_NE(std::string::npos, text.find(diagnostic)) << text;
+        EXPECT_NE(std::string::npos, text.find("TelemetryHttp: Response failure")) << text;
+        EXPECT_EQ(std::string::npos, text.find("sensitive-marker")) << text;
+    }
+};
+
+TEST_F(TelemetryHttpDiagnosticsTest, ReportsMissingCountWithoutLoggingPayloadOrControlValues)
+{
+    ExpectDiagnostic(Response("{\"acc\":1,\"private\":\"sensitive-marker\"}",
+        "kill-tokens: sensitive-marker\r\n"), EPROTO,
+        "accType=number, acc=1, rejType=missing, rej=0");
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, ReportsCountTypeWithoutLoggingStringValue)
+{
+    ExpectDiagnostic(Response("{\"acc\":\"sensitive-marker\",\"rej\":0}"), EPROTO,
+        "accType=string, acc=0, rejType=number, rej=0");
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, ReportsInvalidEventFailuresWithoutLoggingNamesOrValues)
+{
+    ExpectDiagnostic(Response("{\"acc\":1,\"rej\":0,\"efi\":{\"sensitive-marker\":\"sensitive-marker\"}}"),
+        EPROTO, "Acknowledgment event failures invalid (efiType=object");
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, DistinguishesEnvelopeUtf8AndJsonFailures)
+{
+    ExpectDiagnostic(Response("[\"sensitive-marker\"]"), EPROTO, "Acknowledgment envelope invalid");
+    ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, log));
+    ExpectDiagnostic(Response("{\"private\":\"sensitive-marker\xff\"}"), EPROTO,
+        "Acknowledgment UTF-8 validation or allocation failed");
+    ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, log));
+    ExpectDiagnostic(Response("{\"private\":\"sensitive-marker\",}"), EPROTO,
+        "Acknowledgment JSON parse or allocation failed");
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, ReportsFramingStateWithoutLoggingHeaderValues)
+{
+    ExpectDiagnostic("HTTP/1.1 200 OK\r\nTransfer-Encoding: sensitive-marker\r\n\r\n",
+        ENOTSUP, "state=1, http=200, bodyBytes=0");
+}
 
 TEST_F(TelemetryHttpTest, BuildsExactUncompressedSingleEventHeaders)
 {
