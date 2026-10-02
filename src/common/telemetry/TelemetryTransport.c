@@ -240,6 +240,13 @@ int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle l
     return 0;
 }
 
+static void CaptureSuppression(TelemetryTransport* transport, const TelemetryHttpResponse* response)
+{
+    if (response->status == 429 || response->status == 503) transport->suppressed = true;
+    for (size_t i = 0; i < response->controlCount; ++i)
+        if (response->controls[i].kind != TelemetryTimeDeltaMillis) transport->suppressed = true;
+}
+
 int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
     const char* clientVersion, int64_t uploadTimeMilliseconds, const void* event,
     size_t eventSize, int64_t deadline, TelemetryHttpResponse* response, OsConfigLogHandle log)
@@ -288,11 +295,11 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
         if (!status) status = TelemetryHttpResponseFeed(response, bytes, size, eof, log);
         if (status) goto failed;
     }
-    if (response->status == 429 || response->status == 503) transport->suppressed = true;
+    CaptureSuppression(transport, response);
     for (size_t i = 0; i < response->controlCount; ++i)
     {
-        if (response->controls[i].kind != TelemetryTimeDeltaMillis) transport->suppressed = true;
-        else OsConfigLogDebug(log, "TelemetryTransport: Clock guidance preserved; live test uses local UTC");
+        if (response->controls[i].kind == TelemetryTimeDeltaMillis)
+            OsConfigLogDebug(log, "TelemetryTransport: Clock guidance preserved; sender uses local UTC");
     }
     if (!response->reusable || transport->suppressed) Disconnect(transport, log);
     OsConfigLogDebug(log, "TelemetryTransport: Response complete (http=%u, acceptance=%d, controls=%zu)",
@@ -301,7 +308,11 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
 
 failed:
     OsConfigLogInfo(log, "TelemetryTransport: %s failed; event not replayed (status=%d)", stage, status);
-    if (transport) Disconnect(transport, log);
+    if (transport)
+    {
+        if (response) CaptureSuppression(transport, response);
+        Disconnect(transport, log);
+    }
     return status;
 }
 

@@ -11,9 +11,6 @@ set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
 set(PATCH_VERSION "5" CACHE STRING "Patch version")
 
-# External Projects
-set(ONEDS_CPP_SDK_VERSION "v3.9.309.1" CACHE STRING "1DS CPP SDK version")
-
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
@@ -162,20 +159,6 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-if (BUILD_TELEMETRY AND BUILD_ADAPTERS AND BUILD_TESTS)
-    ExternalProject_Get_Property(telemetry-external BINARY_DIR)
-    set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
-    set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
-        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
-        @ONLY)
-
-    set_property(DIRECTORY APPEND PROPERTY
-        TEST_INCLUDE_FILES
-            ${CMAKE_BINARY_DIR}/ExternalTests.cmake)
-endif()
-
 add_subdirectory(tests)
 
 message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
@@ -207,7 +190,7 @@ set(CPACK_SOURCE_IGNORE_FILES ${CPACK_EXCLUDES})
 set(CPACK_VERBATIM_VARIABLES YES)
 
 # RPM packaging - see /devops/rpm for postinst/postun/preun scripts
-set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, gtest-devel, gmock, gmock-devel, curl-devel, openssl")
+set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, gtest-devel, gmock, gmock-devel, openssl")
 set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/changelog")
 set(CPACK_RPM_PACKAGE_AUTOREQ 1)
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")

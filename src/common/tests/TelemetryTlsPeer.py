@@ -60,7 +60,7 @@ def headers(connection):
 
 
 def aria_peer(listener, context, mode, seen_names):
-    connections = 2 if mode in ("aria-close", "aria-recover") else 1
+    connections = 2 if mode in ("aria-close", "aria-recover", "aria-worker-recover") else 1
     event_bodies = set()
     run_id = None
     for connection_index in range(connections):
@@ -108,7 +108,8 @@ def aria_peer(listener, context, mode, seen_names):
                     raise RuntimeError("Collector SNI was not preserved through CONNECT")
                 if hasattr(secured, "selected_alpn_protocol") and secured.selected_alpn_protocol() != "http/1.1":
                     raise RuntimeError("Invalid collector ALPN")
-                count = 10000 if mode == "aria-live" else 2 if mode in ("aria-reuse", "aria-auth") else 1
+                count = 10000 if mode == "aria-live" else 2 if mode in (
+                    "aria-reuse", "aria-auth", "aria-worker", "aria-producer") else 1
                 for sequence in range(count):
                     first, fields = headers(secured)
                     if (first != "POST /OneCollector/1.0/ HTTP/1.1" or
@@ -124,7 +125,7 @@ def aria_peer(listener, context, mode, seen_names):
                         raise RuntimeError("Invalid collector request length")
                     body = receive(secured, size)
                     if mode.startswith("aria-live"):
-                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test ***", b"731001",
+                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test No. 2 ***", b"731001",
                                          b"CorrelationId", b"ResultString", b"o:fixture"):
                             if required not in body:
                                 raise RuntimeError("Synthetic event missing required field")
@@ -139,35 +140,48 @@ def aria_peer(listener, context, mode, seen_names):
                         if body in event_bodies:
                             raise RuntimeError("Repeated synthetic event instead of a new sequence")
                         event_bodies.add(body)
+                    elif mode.startswith("aria-worker") or mode == "aria-producer":
+                        event = b"BaselineRun" if mode == "aria-producer" and sequence == 1 else b"CrashDetected"
+                        for required in (event, b"OSConfig-C/0.1", b"o:fixture", b"CorrelationId",
+                                         b"worker-fixture"):
+                            if required not in body:
+                                raise RuntimeError("Worker event missing expected schema or marker")
+                        if body in event_bodies:
+                            raise RuntimeError("Worker replayed an event")
+                        event_bodies.add(body)
                     elif body != b"encoded-fixture":
                         raise RuntimeError("Incorrect or replayed event body")
                     if mode in ("aria-drop", "aria-live-drop"):
                         os.close(secured.detach())
                         return
-                    if mode == "aria-recover" and connection_index == 0:
+                    if mode in ("aria-recover", "aria-worker-recover") and connection_index == 0:
                         os.close(secured.detach())
                         break
-                    if mode == "aria-read-timeout":
+                    if mode in ("aria-read-timeout", "aria-worker-timeout"):
                         time.sleep(3)
                         return
                     status, extra = b"200 OK", b""
                     response = b'{"acc":1}' if mode == "aria-live" else b'{"acc":1,"rej":0}'
-                    if mode in ("aria-reject", "aria-live-reject"):
+                    if mode in ("aria-reject", "aria-live-reject", "aria-worker-reject"):
                         response = b'{"acc":0,"rej":1}'
-                    elif mode in ("aria-empty", "aria-live-empty"):
+                    elif mode in ("aria-empty", "aria-live-empty", "aria-worker-empty"):
                         response = b""
-                    elif mode in ("aria-throttle", "aria-live-throttle"):
+                    elif mode in ("aria-throttle", "aria-live-throttle", "aria-worker-throttle"):
                         status, extra, response = b"429 Too Many Requests", b"Retry-After: 60\r\n", b""
-                    elif mode == "aria-kill":
+                    elif mode in ("aria-kill", "aria-worker-kill", "aria-worker-bad-kill", "aria-bad-kill"):
                         extra = b"kill-tokens: fixture-token\r\nkill-duration: 60\r\n"
+                        if mode in ("aria-worker-bad-kill", "aria-bad-kill"):
+                            response = b'{"acc":'
                     elif mode == "aria-close":
                         extra = b"Connection: close\r\n"
                     # Clock guidance must not be mistaken for acceptance or throttle.
                     extra += b"time-delta-millis: 0\r\n"
                     secured.sendall(b"HTTP/1.1 " + status + b"\r\nContent-Length: " +
                                     str(len(response)).encode("ascii") + b"\r\n" + extra + b"\r\n" + response)
-                if mode in ("aria-throttle", "aria-kill", "aria-reject", "aria-empty",
-                            "aria-live-throttle", "aria-live-reject", "aria-live-empty"):
+                if mode in ("aria-throttle", "aria-kill", "aria-reject", "aria-empty", "aria-bad-kill",
+                            "aria-live-throttle", "aria-live-reject", "aria-live-empty",
+                            "aria-worker-throttle", "aria-worker-kill", "aria-worker-bad-kill",
+                            "aria-worker-reject", "aria-worker-empty"):
                     # No additional application request is permitted on this connection.
                     try:
                         if secured.recv(1):

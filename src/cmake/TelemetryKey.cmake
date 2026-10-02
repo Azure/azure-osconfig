@@ -9,6 +9,6 @@ function(osconfig_configure_telemetry_key output fallback)
         message(WARNING "OsConfigTelemetryApiKey not set, using target default")
         set(OsConfigTelemetryApiKey "${fallback}")
     endif()
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../common/telemetry/lib/Keys.h.in"
+    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../common/telemetry/Keys.h.in"
         "${output}" @ONLY)
 endfunction()

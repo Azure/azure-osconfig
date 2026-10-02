@@ -5,6 +5,7 @@
 #define TELEMETRY_WORKER_H
 
 #include "TelemetryResolver.h"
+#include "TelemetryEncoder.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -26,6 +27,16 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
 // A lookup failure does not require a new worker. Output is cleared on failure.
 int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     TelemetryResolvedHost* result, OsConfigLogHandle log);
+
+// Synchronously sends one named event. Properties are borrowed strings. Packing,
+// startup, encoding, network, and acknowledgment share the operation budget.
+// Nonzero means dropped/rejected/unconfirmed, never queued or replayed.
+int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
+    const TelemetryProperty* properties, size_t count, OsConfigLogHandle log);
+
+// Charge producer-side metadata preparation before beginning the SEND deadline.
+// started is a monotonic nanosecond timestamp from immediately before that work.
+int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log);
 
 // Idempotent for *worker == NULL. Always closes IPC and handles the exact child.
 // If child ownership cannot be discharged, retains *worker for cleanup retry.

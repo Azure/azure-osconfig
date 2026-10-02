@@ -7,6 +7,7 @@
 #include "TelemetryWorkerProtocol.h"
 #include "TelemetryResolverProtocol.h"
 #include "TelemetryDeadline.h"
+#include "TelemetryEvent.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -36,6 +37,7 @@ struct TelemetryWorker
     int64_t lifetimeDeadline;
     int64_t budget;
     int64_t operationLimit;
+    bool suppressed;
 };
 
 static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* deadline)
@@ -70,6 +72,12 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
         return status;
     }
     int64_t elapsed = now - start;
+    if (elapsed < 0)
+    {
+        worker->budget = 0;
+        OsConfigLogError(log, "TelemetryWorker: Invalid elapsed-time interval");
+        return EINVAL;
+    }
     worker->budget = (elapsed >= worker->budget) ? 0 : worker->budget - elapsed;
     return 0;
 }
@@ -522,6 +530,82 @@ finished:
     {
         *result = resolved;
     }
+    return status;
+}
+
+int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log)
+{
+    if (!worker || started <= 0)
+    {
+        OsConfigLogError(log, "TelemetryWorker: Invalid preparation accounting");
+        return EINVAL;
+    }
+    int status = ChargeBudget(worker, started, log);
+    if (!status && worker->budget <= 0)
+    {
+        status = ETIMEDOUT;
+        OsConfigLogInfo(log, "TelemetryWorker: Preparation exhausted invocation budget");
+    }
+    return status;
+}
+
+int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
+    const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
+{
+    if (!worker)
+    {
+        OsConfigLogError(log, "TelemetryWorkerSend: Missing invocation");
+        return EINVAL;
+    }
+    if (worker->suppressed)
+    {
+        OsConfigLogInfo(log, "TelemetryWorkerSend: Invocation suppressed; event dropped");
+        return ECANCELED;
+    }
+    int64_t start = 0, deadline = 0;
+    int status = OperationDeadline(worker, &start, &deadline);
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE];
+    size_t size = 0;
+    TelemetryWorkerSendReply reply = {0};
+    TelemetryWorkerFrame request = {0};
+    bool sendStarted = false;
+    if (status) goto finished;
+    status = TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, log);
+    if (status) goto finished;
+    if (0 != (status = StartChild(worker, deadline, log))) goto failed;
+    if (UINT32_MAX == worker->sequence) { status = EOVERFLOW; goto failed; }
+    request.magic = TELEMETRY_WORKER_MAGIC;
+    request.version = TELEMETRY_WORKER_VERSION;
+    request.operation = TELEMETRY_WORKER_SEND;
+    request.size = (uint32_t)size;
+    request.sequence = ++worker->sequence;
+    request.deadline = deadline;
+    sendStarted = true;
+    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline))) ||
+        (0 != (status = Transfer(worker->descriptor, payload, size, true, deadline))) ||
+        (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline))))
+        goto failed;
+    if (reply.status < 0 || reply.suppressed > 1) { status = EPROTO; goto failed; }
+    worker->suppressed = reply.suppressed != 0;
+    status = reply.status;
+    goto finished;
+failed:
+    // An ambiguous SEND reply could hide collector suppression. Stop this
+    // invocation rather than restarting a child and losing that control.
+    if (sendStarted) worker->suppressed = true;
+    ReleaseChild(worker, 0, log);
+finished:
+    if (start > 0)
+    {
+        int error = ChargeBudget(worker, start, log);
+        if (!status && error)
+        {
+            status = error;
+            worker->suppressed = true;
+            ReleaseChild(worker, 0, log);
+        }
+    }
+    if (status) OsConfigLogInfo(log, "TelemetryWorkerSend: Event not delivered (status=%d)", status);
     return status;
 }
 

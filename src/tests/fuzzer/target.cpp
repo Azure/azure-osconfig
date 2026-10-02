@@ -7,7 +7,7 @@
 #include "UserUtils.h"
 #include "parson.h"
 #ifdef BUILD_TELEMETRY
-#include "Telemetry.hpp"
+#include "TelemetryEvent.h"
 #endif
 #include <unistd.h>
 #include <fcntl.h>
@@ -41,9 +41,6 @@ struct Context
 {
     MMI_HANDLE handle;
     std::string tempdir;
-#ifdef BUILD_TELEMETRY
-    std::unique_ptr<Telemetry::TelemetryManager> telemetryManager;
-#endif
 
     Context() noexcept(false)
     {
@@ -61,9 +58,6 @@ struct Context
             SecurityBaselineShutdown();
             throw std::runtime_error("failed to initialized SecurityBaseline library");
         }
-#ifdef BUILD_TELEMETRY
-        telemetryManager.reset(new Telemetry::TelemetryManager(false, std::chrono::seconds{1}));
-#endif
     }
 
     ~Context() noexcept
@@ -964,13 +958,14 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
 }
 
 #ifdef BUILD_TELEMETRY
-static int ProcessJsonFile_target(const char* data, std::size_t size) noexcept
+static int TelemetryEncodePayload_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = GetContext().MakeTemporaryFile(data, size);
-
-    GetContext().telemetryManager->ProcessJsonFile(filename);
-
-    GetContext().Remove(filename);
+    unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
+    size_t encodedSize = 0;
+    int64_t uploadTime = 0;
+    TelemetryEncodePayload(reinterpret_cast<const unsigned char*>(data), size,
+        "o:fuzz", "00000000-0000-4000-8000-000000000001", 1,
+        bytes, &encodedSize, &uploadTime, nullptr);
     return 0;
 }
 #endif
@@ -1035,7 +1030,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
 #ifdef BUILD_TELEMETRY
-    { "ProcessJsonFile.", ProcessJsonFile_target },
+    { "TelemetryEncodePayload.", TelemetryEncodePayload_target },
 #endif
 };
 

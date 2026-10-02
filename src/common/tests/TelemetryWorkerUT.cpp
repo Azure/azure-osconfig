@@ -301,6 +301,19 @@ TEST_F(TelemetryWorkerTest, ReportsMissingExecutableWithoutLosingTheInvocation)
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, NULL));
 }
 
+TEST_F(TelemetryWorkerTest, SendStartupFailureDoesNotConsumeCollectorSuppressionState)
+{
+    const std::string missing = std::string(TELEMETRY_WORKER_PATH) + ".nonexistent";
+    ASSERT_EQ(0, Create(missing.c_str()));
+    TelemetryProperty property = {};
+    property.name = "CrashInfo";
+    property.type = TelemetryPropertyString;
+    property.value.stringValue = "fixture";
+    EXPECT_EQ(EINVAL, TelemetryWorkerSend(nullptr, "CrashDetected", &property, 1, nullptr));
+    EXPECT_EQ(ENOENT, TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr));
+    EXPECT_EQ(ENOENT, TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr));
+}
+
 TEST_F(TelemetryWorkerTest, RejectsMismatchedStartupProtocol)
 {
     ASSERT_EQ(0, Create(TELEMETRY_WORKER_BAD_READY_PATH));
@@ -343,6 +356,17 @@ TEST_F(TelemetryWorkerTest, AuditTimeBetweenCallsDoesNotConsumeTelemetryBudget)
     poll(NULL, 0, 1100);
     ASSERT_EQ(0, TelemetryWorkerResolve(worker, "worker-pid", &result, NULL));
     EXPECT_EQ(first, Pid());
+}
+
+TEST_F(TelemetryWorkerTest, PreparationConsumesTheSameInvocationBudget)
+{
+    ASSERT_EQ(0, Create(TELEMETRY_WORKER_LOOKUP_PATH, 600000, 500, 500));
+    EXPECT_EQ(EINVAL, TelemetryWorkerAccountPreparation(worker, 0, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerAccountPreparation(nullptr, Now(), nullptr));
+    int64_t started = Now();
+    poll(nullptr, 0, 550);
+    EXPECT_EQ(ETIMEDOUT, TelemetryWorkerAccountPreparation(worker, started, nullptr));
+    EXPECT_EQ(ETIMEDOUT, TelemetryWorkerResolve(worker, "worker-pid", &result, nullptr));
 }
 
 TEST_F(TelemetryWorkerTest, InvocationLifetimeIsNotResetByRequests)
@@ -471,7 +495,7 @@ TEST(TelemetryWorkerProtocolTest, RejectsMalformedAndMismatchedRequests)
         {
         case 0: ++request.magic; break;
         case 1: ++request.version; break;
-        case 2: ++request.operation; break;
+        case 2: request.operation = UINT32_MAX; break;
         case 3: request.sequence = 0; break;
         case 4: request.size = UINT32_MAX; break;
         case 5: request.deadline = INT64_MAX; break;

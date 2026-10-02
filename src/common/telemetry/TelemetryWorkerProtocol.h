@@ -10,6 +10,7 @@
 #define TELEMETRY_WORKER_VERSION 1
 #define TELEMETRY_WORKER_READY 1
 #define TELEMETRY_WORKER_RESOLVE 2
+#define TELEMETRY_WORKER_SEND 3
 #define TELEMETRY_WORKER_ARGUMENT "--ipc-v1"
 
 // Private native-endian protocol: the SO and worker must come from one package.
@@ -25,5 +26,13 @@ typedef struct TelemetryWorkerFrame
     int32_t status;
     int64_t deadline;
 } TelemetryWorkerFrame;
+
+// SEND reports event outcome separately from IPC failure. Suppression is latched
+// in the parent too, so replacing a failed child cannot bypass collector controls.
+typedef struct TelemetryWorkerSendReply
+{
+    int32_t status;
+    uint32_t suppressed;
+} TelemetryWorkerSendReply;
 
 #endif // TELEMETRY_WORKER_PROTOCOL_H

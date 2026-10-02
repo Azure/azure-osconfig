@@ -4,85 +4,65 @@
 cmake_minimum_required(VERSION 3.21)
 project(telemetry)
 
-if(BUILD_EXTERNAL)
-    set(BUILD_TELEMETRY ON)
-    include(../../cmake/Dependencies.cmake)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.5")
-        message(FATAL_ERROR "The telemetry subprocess requires GCC 5.5 or newer")
-    endif()
-    if(BUILD_TESTS)
-        enable_testing()
-    endif()
-    add_subdirectory(lib)
-    add_subdirectory(bin)
-else()
-    # Offline development inventory, available even when legacy builds disable tests.
-    add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TelemetryTlsProbe.c)
-    target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
+add_library(telemetryencoder STATIC TelemetryEncoder.c)
+target_include_directories(telemetryencoder PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryencoder PUBLIC logging)
 
-    # Candidate C worker: not installed or staged into production ZIPs yet.
-    add_executable(telemetryworker EXCLUDE_FROM_ALL
-        TelemetryWorkerMain.c TelemetryResolverLookup.c)
-    set_target_properties(telemetryworker PROPERTIES
-        OUTPUT_NAME OSConfigTelemetry
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/distilled")
-    target_link_libraries(telemetryworker PRIVATE logging rt)
+add_library(telemetryevent STATIC TelemetryEvent.c)
+target_include_directories(telemetryevent PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryevent PUBLIC telemetryencoder)
 
-    add_library(telemetryworkerclient STATIC TelemetryWorker.c)
-    target_include_directories(telemetryworkerclient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetryworkerclient PUBLIC telemetryresolver)
+add_library(telemetryhttp STATIC TelemetryHttp.c)
+target_include_directories(telemetryhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryhttp PUBLIC logging PRIVATE parsonlib)
 
-    add_executable(telemetryresolverworker TelemetryResolverWorker.c TelemetryResolverLookup.c)
-    target_link_libraries(telemetryresolverworker PRIVATE rt)
+add_library(telemetryproxy STATIC TelemetryProxy.c)
+target_include_directories(telemetryproxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryproxy PUBLIC logging)
 
-    add_library(telemetryresolver STATIC TelemetryResolver.c)
-    target_include_directories(telemetryresolver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetryresolver PUBLIC logging PRIVATE rt)
+# OS TLS is loaded only by the owned executable, never by the policy SO.
+add_library(telemetrytls STATIC TelemetryTls.c)
+target_include_directories(telemetrytls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
 
-    add_library(telemetryencoder STATIC TelemetryEncoder.c)
+add_library(telemetryresolver STATIC TelemetryResolver.c)
+target_include_directories(telemetryresolver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryresolver PUBLIC logging PRIVATE rt)
 
-    target_include_directories(telemetryencoder
-        PUBLIC
-            ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(telemetrytransport STATIC TelemetryTransport.c TelemetryResolverLookup.c)
+target_include_directories(telemetrytransport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetrytransport PUBLIC telemetryhttp telemetryproxy
+    PRIVATE telemetrytls telemetryresolver rt)
 
-    target_link_libraries(telemetryencoder PUBLIC logging)
+add_library(telemetryworkerclient STATIC TelemetryWorker.c)
+target_include_directories(telemetryworkerclient PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetryworkerclient PUBLIC telemetryresolver telemetryevent)
 
-    add_library(telemetryhttp STATIC TelemetryHttp.c)
-    target_include_directories(telemetryhttp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetryhttp PUBLIC logging PRIVATE parsonlib)
+add_library(telemetry STATIC Telemetry.c)
+target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(telemetry PRIVATE commonutils telemetryworkerclient ${CMAKE_DL_LIBS})
 
-    add_library(telemetryproxy STATIC TelemetryProxy.c)
-    target_include_directories(telemetryproxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetryproxy PUBLIC logging)
+include(../../cmake/TelemetryKey.cmake)
+osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h" "")
 
-    # Loaded OS TLS belongs only to the owned worker, never to the policy SO.
-    add_library(telemetrytls STATIC TelemetryTls.c)
-    target_include_directories(telemetrytls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
-
-    add_library(telemetrytransport STATIC TelemetryTransport.c TelemetryResolverLookup.c)
-    target_include_directories(telemetrytransport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(telemetrytransport PUBLIC telemetryhttp telemetryproxy
-        PRIVATE telemetrytls telemetryresolver rt)
-
-    # Explicit invocation only: never register a live collector send with ctest.
-    include(../../cmake/TelemetryKey.cmake)
-    osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h" "")
-    add_executable(telemetryariatest EXCLUDE_FROM_ALL TelemetryAriaTest.c)
-    target_include_directories(telemetryariatest PRIVATE ../commonutils ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(telemetryariatest PRIVATE telemetrytransport telemetryencoder rt)
-
-    add_library(telemetry
-        STATIC
-            Telemetry.c)
-
-    target_include_directories(telemetry
-        PUBLIC
-            ${CMAKE_CURRENT_SOURCE_DIR})
-
-    target_link_libraries(telemetry
-        PRIVATE
-            commonutils
-        PUBLIC
-            dl)
+add_executable(telemetryworker EXCLUDE_FROM_ALL TelemetryWorkerMain.c)
+set_target_properties(telemetryworker PROPERTIES OUTPUT_NAME OSConfigTelemetry)
+target_include_directories(telemetryworker PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(telemetryworker PRIVATE telemetrytransport telemetryevent commonutils rt)
+add_custom_target(telemetrybin DEPENDS telemetryworker)
+if(BUILD_TELEMETRY)
+    add_custom_target(telemetry-worker-package ALL DEPENDS telemetryworker)
+    install(TARGETS telemetryworker RUNTIME DESTINATION bin)
+    install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
 endif()
+
+# Offline resolver/probe utilities; the production worker owns its own DNS.
+add_executable(telemetryresolverworker EXCLUDE_FROM_ALL TelemetryResolverWorker.c TelemetryResolverLookup.c)
+target_link_libraries(telemetryresolverworker PRIVATE rt)
+add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TelemetryTlsProbe.c)
+target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
+
+# Explicit live invocation only; not installed or registered with ctest.
+add_executable(telemetryariatest EXCLUDE_FROM_ALL TelemetryAriaTest.c)
+target_include_directories(telemetryariatest PRIVATE ../commonutils ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(telemetryariatest PRIVATE telemetrytransport telemetryevent rt)

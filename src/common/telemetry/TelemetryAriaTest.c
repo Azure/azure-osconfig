@@ -4,6 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "TelemetryEncoder.h"
+#include "TelemetryEvent.h"
 #include "TelemetryTransport.h"
 #include "TelemetryDeadline.h"
 #include "Keys.h"
@@ -20,7 +21,7 @@
 
 #define TEST_COUNT 10000
 #define TEST_RESULT "731001"
-#define TEST_MARKER "*** Distilled 1DS SDK test ***"
+#define TEST_MARKER "*** Distilled 1DS SDK test No. 2 ***"
 #define TEST_CLIENT "OSConfig-C/0.1"
 
 static int InitializeTimer(timer_t* timer)
@@ -39,36 +40,6 @@ static int InitializeTimer(timer_t* timer)
     notification.sigev_notify = SIGEV_SIGNAL;
     notification.sigev_signo = SIGALRM;
     return timer_create(CLOCK_MONOTONIC, &notification, timer) ? (errno ? errno : EIO) : 0;
-}
-
-static int RunId(char* text)
-{
-    unsigned char bytes[16];
-    int descriptor = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
-    if (descriptor < 0) return errno ? errno : EIO;
-    size_t size = 0;
-    int status = 0;
-    while (size < sizeof(bytes))
-    {
-        ssize_t count = read(descriptor, bytes + size, sizeof(bytes) - size);
-        if (count > 0) size += (size_t)count;
-        else if (!count) { status = EIO; break; }
-        else if (errno != EINTR) { status = errno ? errno : EIO; break; }
-    }
-    if (close(descriptor) && !status) status = errno ? errno : EIO;
-    if (status) return status;
-    bytes[6] = (bytes[6] & 15) | 64;
-    bytes[8] = (bytes[8] & 63) | 128;
-    size_t offset = 0;
-    for (size_t i = 0; i < sizeof(bytes); ++i)
-    {
-        if (i == 4 || i == 6 || i == 8 || i == 10) text[offset++] = '-';
-        static const char hex[] = "0123456789abcdef";
-        text[offset++] = hex[bytes[i] >> 4];
-        text[offset++] = hex[bytes[i] & 15];
-    }
-    text[offset] = '\0';
-    return 0;
 }
 
 static int Encode(const char* iKey, const char* correlation, unsigned int sequence,
@@ -171,7 +142,7 @@ int main(int argc, char** argv)
     }
     memcpy(iKey, "o:", 2);
     memcpy(iKey + 2, token, tenantLength);
-    status = RunId(correlation);
+    status = TelemetryCreateEpoch(correlation, log);
     if (!status) status = TelemetryTransportCreate(&transport, log);
     if (status) goto cleanup;
     printf("LIVE StatusTrace test: requested=%d ResultCode=%s\n"

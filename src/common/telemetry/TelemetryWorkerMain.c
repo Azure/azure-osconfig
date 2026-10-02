@@ -6,6 +6,10 @@
 #include "TelemetryWorkerProtocol.h"
 #include "TelemetryResolverProtocol.h"
 #include "TelemetryDeadline.h"
+#include "TelemetryEvent.h"
+#include "TelemetryTransport.h"
+#include "Keys.h"
+#include <CommonUtils.h>
 #include <Logging.h>
 
 #include <dirent.h>
@@ -184,12 +188,55 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
     return TelemetryArmDeadline(*timer, startup);
 }
 
+static int SendEvent(TelemetryTransport** transport, char* epoch,
+    const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline,
+    OsConfigLogHandle log)
+{
+    // The package's key is compiled only into the owned executable. A runtime
+    // override also permits offline tests with a deliberately fake token.
+    const char* token = getenv("OsConfigTelemetryApiKey");
+    if (!token) token = API_KEY;
+    char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1];
+    size_t headerSize = 0;
+    int status = TelemetryHttpBuildRequest(token, TELEMETRY_CLIENT_VERSION, 0, 1,
+        headers, sizeof(headers), &headerSize, log);
+    if (status) return status;
+    size_t tenantLength = strcspn(token, "-");
+    if (!tenantLength || token[tenantLength] != '-')
+    {
+        OsConfigLogError(log, "OSConfigTelemetry: Ingestion key lacks tenant prefix");
+        return EINVAL;
+    }
+    char iKey[TELEMETRY_HTTP_TOKEN_LIMIT + 3] = "o:";
+    memcpy(iKey + 2, token, tenantLength);
+    if (!epoch[0] && (0 != (status = TelemetryCreateEpoch(epoch, log)))) return status;
+    unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
+    size_t encodedSize = 0;
+    int64_t uploadTime = 0;
+    status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes,
+        &encodedSize, &uploadTime, log);
+    if (status) return status;
+    if (!*transport && (0 != (status = TelemetryTransportCreate(transport, log)))) return status;
+    TelemetryHttpResponse response;
+    status = TelemetryTransportSend(*transport, token, TELEMETRY_CLIENT_VERSION,
+        uploadTime, bytes, encodedSize, deadline, &response, log);
+    if (!status && response.acceptance != TelemetryAccepted)
+    {
+        status = response.acceptance == TelemetryRejected ? ECANCELED : EPROTO;
+        OsConfigLogInfo(log, "OSConfigTelemetry: Event not accepted (http=%u, acceptance=%d)",
+            response.status, (int)response.acceptance);
+    }
+    return status;
+}
+
 int main(int argc, char** argv)
 {
     timer_t timer;
     OsConfigLogHandle log = NULL;
     int64_t lifetime = 0;
     uint32_t sequence = 0;
+    TelemetryTransport* transport = NULL;
+    char epoch[TELEMETRY_EPOCH_SIZE] = {0};
     SetConsoleLoggingEnabled(false);
     int status = Initialize(argc, argv, &timer, &lifetime);
     if (0 == status)
@@ -209,6 +256,18 @@ int main(int argc, char** argv)
             OsConfigLogInfo(log, "OSConfigTelemetry: Starting (PID=%ld, PPID=%ld)",
                 (long)getpid(), (long)getppid());
             status = CloseInheritedDescriptors(fileno(GetLogFile(log)));
+            if (!status && FileExists("/etc/osconfig/osconfig.json"))
+            {
+                char* configuration = LoadStringFromFile("/etc/osconfig/osconfig.json", false, log);
+                if (!configuration) status = EIO;
+                else
+                {
+                    SetLoggingLevel(GetLoggingLevelFromJsonConfig(configuration, log));
+                    SetMaxLogSize(GetMaxLogSizeFromJsonConfig(configuration, log));
+                    SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, log));
+                    free(configuration);
+                }
+            }
         }
     }
     if (0 != status)
@@ -229,7 +288,7 @@ int main(int argc, char** argv)
     for (;;)
     {
         TelemetryWorkerFrame request = {0};
-        char host[TELEMETRY_RESOLVER_HOST_LIMIT + 1];
+        unsigned char payload[TELEMETRY_MAX_EVENT_SIZE];
         TelemetryResolverReply reply = {0};
         if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
         {
@@ -251,9 +310,12 @@ int main(int argc, char** argv)
             break;
         }
         if ((request.magic != TELEMETRY_WORKER_MAGIC) || (request.version != TELEMETRY_WORKER_VERSION) ||
-            (request.operation != TELEMETRY_WORKER_RESOLVE) || (request.status != 0) ||
+            ((request.operation != TELEMETRY_WORKER_RESOLVE) &&
+                (request.operation != TELEMETRY_WORKER_SEND)) || (request.status != 0) ||
             (UINT32_MAX == sequence) || (request.sequence != sequence + 1) ||
-            (request.size < 2) || (request.size > sizeof(host)) ||
+            (request.size < 2) || (request.size > sizeof(payload)) ||
+            ((request.operation == TELEMETRY_WORKER_RESOLVE) &&
+                (request.size > TELEMETRY_RESOLVER_HOST_LIMIT + 1)) ||
             (request.deadline <= 0) || (request.deadline > lifetime))
         {
             status = EPROTO;
@@ -266,10 +328,11 @@ int main(int argc, char** argv)
         status = TelemetryArmDeadline(timer, request.deadline);
         if (0 == status)
         {
-            OsConfigLogInfo(log, "OSConfigTelemetry: Receiving request (sequence=%" PRIu32 ")", sequence);
-            status = Transfer(host, request.size, false);
+            OsConfigLogDebug(log, "OSConfigTelemetry: Receiving request (sequence=%" PRIu32 ")", sequence);
+            status = Transfer(payload, request.size, false);
         }
-        if ((0 == status) && (strnlen(host, request.size) != request.size - 1))
+        if ((0 == status) && (request.operation == TELEMETRY_WORKER_RESOLVE) &&
+            (strnlen((const char*)payload, request.size) != request.size - 1))
         {
             status = EINVAL;
         }
@@ -281,8 +344,19 @@ int main(int argc, char** argv)
             break;
         }
 
+        if (request.operation == TELEMETRY_WORKER_SEND)
+        {
+            TelemetryWorkerSendReply sent = {0};
+            sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, log);
+            sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
+            if (sent.status)
+                OsConfigLogInfo(log, "OSConfigTelemetry: SEND failed (sequence=%" PRIu32 ", status=%d)",
+                    sequence, sent.status);
+            if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log))) break;
+            continue;
+        }
         OsConfigLogInfo(log, "OSConfigTelemetry: Resolving request (sequence=%" PRIu32 ")", sequence);
-        TelemetryLookupHost(host, &reply);
+        TelemetryLookupHost((const char*)payload, &reply);
         if (0 != reply.error)
         {
             OsConfigLogError(log, "OSConfigTelemetry: Lookup failed (sequence=%" PRIu32
@@ -302,6 +376,7 @@ int main(int argc, char** argv)
     }
 
 cleanup:
+    if (NULL != transport) TelemetryTransportDestroy(&transport, log);
     if (NULL != log)
     {
         OsConfigLogInfo(log, "OSConfigTelemetry: Exiting (status=%d)", status);

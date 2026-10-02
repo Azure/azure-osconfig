@@ -5,6 +5,7 @@
 #include <TelemetryTls.h>
 #include <TelemetryDeadline.h>
 #include <TelemetryTransport.h>
+#include <TelemetryWorker.h>
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -536,11 +537,121 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_EQ(exitCode, WEXITSTATUS(result)) << text;
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
-    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test ***"));
+    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 2 ***"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));
     EXPECT_EQ(0, peer.Wait());
 }
+
+class WorkerOwner
+{
+public:
+    TelemetryWorker* value = nullptr;
+    ~WorkerOwner() { TelemetryWorkerDestroy(&value, nullptr); }
+};
+
+void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start(mode, false));
+    ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
+    WorkerOwner worker;
+    const bool timeout = strcmp(mode, "aria-worker-timeout") == 0;
+    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 600000,
+        timeout ? 500 : 10000, timeout ? 500 : 5000, &worker.value, nullptr));
+    const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "CrashInfo"};
+    TelemetryProperty properties[5] = {};
+    for (size_t i = 0; i < 5; ++i)
+    {
+        properties[i].name = names[i];
+        properties[i].type = TelemetryPropertyString;
+        properties[i].value.stringValue = "worker-fixture";
+    }
+    int64_t before = 0, after = 0;
+    ASSERT_EQ(0, TelemetryMonotonicTime(&before));
+    int status = TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr);
+    ASSERT_EQ(0, TelemetryMonotonicTime(&after));
+    if (timeout)
+    {
+        // The independent worker timer can close IPC just before parent timeout.
+        EXPECT_TRUE(status == ETIMEDOUT || status == EPIPE);
+        EXPECT_GE(after - before, INT64_C(400000000));
+        EXPECT_LT(after - before, INT64_C(1000000000));
+    }
+    else EXPECT_EQ(expected, status);
+    if (second || suppressed || timeout)
+    {
+        properties[4].value.stringValue = "worker-fixture-next";
+        EXPECT_EQ((suppressed || timeout) ? ECANCELED : 0,
+            TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr));
+    }
+    TelemetryWorkerDestroy(&worker.value, nullptr);
+    EXPECT_EQ(nullptr, worker.value);
+    EXPECT_EQ(0, peer.Wait());
+}
+
+void MalformedKill()
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start("aria-bad-kill", false));
+    Transport transport;
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, nullptr));
+    TelemetryHttpResponse response;
+    EXPECT_EQ(EPROTO, transport.Send(&response));
+    EXPECT_TRUE(TelemetryTransportSuppressed(transport.value));
+    EXPECT_EQ(ECANCELED, transport.Send(&response));
+    TelemetryTransportDestroy(&transport.value, nullptr);
+    EXPECT_EQ(0, peer.Wait());
+}
+
+void WorkerRejectsBeforeNetwork()
+{
+    IgnorePipe();
+    ASSERT_EQ(0, setenv("https_proxy", "http://127.0.0.1:9", 1));
+    ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "", 1));
+    WorkerOwner worker;
+    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, nullptr));
+    const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "CrashInfo"};
+    TelemetryProperty properties[5] = {};
+    for (size_t i = 0; i < 5; ++i)
+    {
+        properties[i].name = names[i];
+        properties[i].type = TelemetryPropertyString;
+        properties[i].value.stringValue = "worker-fixture";
+    }
+    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr));
+    TelemetryWorkerDestroy(&worker.value, nullptr);
+    ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
+    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, nullptr));
+    // Valid token, invalid named schema: must fail before contacting the route.
+    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 1, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "Unknown", properties, 5, nullptr));
+}
+
+#ifdef TELEMETRY_PRODUCER_PROBE_PATH
+void ProducerEvents()
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start("aria-producer", false));
+    ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
+    LiveTestProcess process;
+    char* arguments[] = {const_cast<char*>(TELEMETRY_PRODUCER_PROBE_PATH), nullptr};
+    ASSERT_EQ(0, posix_spawn(&process.child, TELEMETRY_PRODUCER_PROBE_PATH, nullptr, nullptr, arguments, environ));
+    int status = 0;
+    pid_t waited;
+    do { waited = waitpid(process.child, &status, 0); } while (waited < 0 && errno == EINTR);
+    ASSERT_EQ(process.child, waited);
+    process.child = -1;
+    ASSERT_TRUE(WIFEXITED(status));
+    EXPECT_EQ(0, WEXITSTATUS(status));
+    // The peer requires both the real CrashDetected and BaselineRun; the
+    // producer must fit startup and both synchronous sends inside 500 ms.
+    EXPECT_EQ(0, peer.Wait());
+}
+#endif
 }
 
 // Each case has a fresh owned process: provider residency and environment/signal
@@ -583,6 +694,7 @@ TEST(TelemetryTransportDeathTest, ReportsCollectorRejection) { TLS_CASE(Transpor
 TEST(TelemetryTransportDeathTest, EmptySuccessIsUnconfirmed) { TLS_CASE(TransportResponse("aria-empty", TelemetryUnconfirmed, false)); }
 TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnThrottling) { TLS_CASE(TransportResponse("aria-throttle", TelemetryRejected, true)); }
 TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnKillDirective) { TLS_CASE(TransportResponse("aria-kill", TelemetryAccepted, true)); }
+TEST(TelemetryTransportDeathTest, PreservesKillDirectiveWhenBodyIsMalformed) { TLS_CASE(MalformedKill()); }
 TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes) { TLS_CASE(TransportArguments()); }
 TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsTenThousandEventsToLoopbackOnly)
 {
@@ -609,3 +721,16 @@ TEST(TelemetryTransportDeathTest, LiveTestDoesNotReplayAmbiguousDelivery)
     TLS_CASE(LiveEvents("aria-live-drop",
         "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
 }
+
+TEST(TelemetryWorkerSendDeathTest, SendsAndReusesActualWorker) { TLS_CASE(WorkerEvents("aria-worker", 0, false, true)); }
+TEST(TelemetryWorkerSendDeathTest, ReportsRejection) { TLS_CASE(WorkerEvents("aria-worker-reject", ECANCELED, false, false)); }
+TEST(TelemetryWorkerSendDeathTest, ReportsUnconfirmedDelivery) { TLS_CASE(WorkerEvents("aria-worker-empty", EPROTO, false, false)); }
+TEST(TelemetryWorkerSendDeathTest, PreservesThrottleInParent) { TLS_CASE(WorkerEvents("aria-worker-throttle", ECANCELED, true, false)); }
+TEST(TelemetryWorkerSendDeathTest, PreservesKillInParent) { TLS_CASE(WorkerEvents("aria-worker-kill", 0, true, false)); }
+TEST(TelemetryWorkerSendDeathTest, PreservesKillOnMalformedResponse) { TLS_CASE(WorkerEvents("aria-worker-bad-kill", EPROTO, true, false)); }
+TEST(TelemetryWorkerSendDeathTest, ReconnectsOnlyForNextEvent) { TLS_CASE(WorkerEvents("aria-worker-recover", EPROTO, false, true)); }
+TEST(TelemetryWorkerSendDeathTest, EnforcesFiveHundredMillisecondBudget) { TLS_CASE(WorkerEvents("aria-worker-timeout", ETIMEDOUT, true, false)); }
+TEST(TelemetryWorkerSendDeathTest, RejectsMissingKeyAndInvalidSchemaBeforeNetwork) { TLS_CASE(WorkerRejectsBeforeNetwork()); }
+#ifdef TELEMETRY_PRODUCER_PROBE_PATH
+TEST(TelemetryWorkerSendDeathTest, RealProducersAndPackagedWorkerShareFiveHundredMilliseconds) { TLS_CASE(ProducerEvents()); }
+#endif

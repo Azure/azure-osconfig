@@ -1,5 +1,2 @@
 # LeakSanitizer suppressions for fuzzer
-# Suppress leaks from external dependencies that are not part of our codebase
-
-# SQLite3 internal allocations
-leak:sqlite3MemMalloc
+# No telemetry SDK/database suppressions: the distilled sender has neither.

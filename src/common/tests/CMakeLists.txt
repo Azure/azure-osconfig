@@ -13,8 +13,8 @@ find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 add_executable(commontests
     CommonUtilsUT.cpp
     SshUtilsUT.cpp
-    TelemetryUT.cpp
     TelemetryEncoderUT.cpp
+    TelemetryEventUT.cpp
     TelemetryHttpUT.cpp
     TelemetryProxyUT.cpp
     TelemetryTlsUT.cpp
@@ -35,6 +35,7 @@ target_link_libraries(commontests
     parsonlib
     telemetry
     telemetryencoder
+    telemetryevent
     telemetryhttp
     telemetryproxy
     telemetrytls
@@ -66,11 +67,11 @@ add_executable(telemetryworkerlookup
     ../telemetry/TelemetryWorkerMain.c
     ../telemetry/TelemetryResolverLookup.c
     TelemetryResolverLookupStub.c)
-target_include_directories(telemetryworkerlookup PRIVATE ../telemetry)
+target_include_directories(telemetryworkerlookup PRIVATE ../telemetry "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
 target_compile_definitions(telemetryworkerlookup PRIVATE
     getaddrinfo=TelemetryTestGetAddrInfo
     freeaddrinfo=TelemetryTestFreeAddrInfo)
-target_link_libraries(telemetryworkerlookup PRIVATE logging rt)
+target_link_libraries(telemetryworkerlookup PRIVATE telemetrytransport telemetryevent commonutils rt)
 
 add_executable(telemetryworkerfault TelemetryWorkerFault.c)
 target_include_directories(telemetryworkerfault PRIVATE ../telemetry)
@@ -96,3 +97,27 @@ target_compile_definitions(commontests PRIVATE
 add_dependencies(commontests telemetryariatest)
 target_compile_definitions(commontests PRIVATE
     TELEMETRY_ARIA_TEST_PATH="$<TARGET_FILE:telemetryariatest>")
+
+add_executable(telemetryproducertests TelemetryUT.cpp ../telemetry/Telemetry.c)
+target_compile_definitions(telemetryproducertests PRIVATE
+    BUILD_TELEMETRY=1
+    TelemetryWorkerCreate=TelemetryTestWorkerCreate
+    TelemetryWorkerSend=TelemetryTestWorkerSend
+    TelemetryWorkerAccountPreparation=TelemetryTestWorkerAccountPreparation
+    TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
+    SetFileAccess=TelemetryTestSetFileAccess
+    GetOsPrettyName=TelemetryTestGetOsPrettyName)
+target_link_libraries(telemetryproducertests PRIVATE
+    GTest::gtest_main commonutils telemetryevent ${CMAKE_DL_LIBS})
+gtest_discover_tests(telemetryproducertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
+
+if(BUILD_TELEMETRY)
+    add_executable(telemetryproducerprobe TelemetryProducerProbe.c)
+    set_target_properties(telemetryproducerprobe PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
+    target_link_libraries(telemetryproducerprobe PRIVATE telemetry)
+    add_dependencies(telemetryproducerprobe telemetryworker)
+    add_dependencies(commontests telemetryproducerprobe)
+    target_compile_definitions(commontests PRIVATE
+        TELEMETRY_PRODUCER_PROBE_PATH="$<TARGET_FILE:telemetryproducerprobe>")
+endif()
