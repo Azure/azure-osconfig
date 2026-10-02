@@ -60,6 +60,16 @@ else()
     target_include_directories(telemetrytls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
 
+    add_library(telemetrytransport STATIC TelemetryTransport.c TelemetryResolverLookup.c)
+    target_include_directories(telemetrytransport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(telemetrytransport PUBLIC telemetryhttp telemetryproxy
+        PRIVATE telemetrytls telemetryresolver rt)
+
+    # Explicit invocation only: never register a live collector send with ctest.
+    add_executable(telemetryariatest EXCLUDE_FROM_ALL TelemetryAriaTest.c)
+    target_include_directories(telemetryariatest PRIVATE ../commonutils)
+    target_link_libraries(telemetryariatest PRIVATE telemetrytransport telemetryencoder rt)
+
     add_library(telemetry
         STATIC
             Telemetry.c)

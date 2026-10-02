@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <TelemetryTls.h>
 #include <TelemetryDeadline.h>
+#include <TelemetryTransport.h>
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -63,7 +64,28 @@ public:
         }
     }
 
-    int Start(const char* mode)
+    int Wait()
+    {
+        if (child <= 0) return ECHILD;
+        int64_t deadline = Deadline(15000);
+        for (;;)
+        {
+            int result = 0;
+            pid_t done = waitpid(child, &result, WNOHANG);
+            if (done == child)
+            {
+                child = -1;
+                return WIFEXITED(result) && WEXITSTATUS(result) == 0 ? 0 : EIO;
+            }
+            if (done < 0 && errno != EINTR) return errno;
+            int remaining = 0;
+            int status = TelemetryDeadlineRemaining(deadline, &remaining);
+            if (status) return status;
+            poll(NULL, 0, 5);
+        }
+    }
+
+    int Start(const char* mode, bool tlsSocket = true)
     {
         char temporary[] = "/tmp/osconfig-tls-test-XXXXXX";
         if (NULL == mkdtemp(temporary)) return errno;
@@ -128,6 +150,16 @@ public:
         if (number <= 0 || number > 65535) return EPROTO;
         if (setenv("SSL_CERT_FILE", (directory + "/root.pem").c_str(), 1) ||
             setenv("SSL_CERT_DIR", directory.c_str(), 1)) return errno;
+        if (!tlsSocket)
+        {
+            for (const char* variable : {"https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY", "no_proxy", "NO_PROXY"})
+            {
+                if (unsetenv(variable)) return errno;
+            }
+            const std::string credentials = strcmp(mode, "aria-auth") == 0 ? "user:p%40ss@" : "";
+            const std::string proxy = "http://" + credentials + "127.0.0.1:" + port;
+            return setenv("https_proxy", proxy.c_str(), 1) ? errno : 0;
+        }
         descriptor = socket(AF_INET, SOCK_STREAM, 0);
         if (descriptor < 0) return errno;
         struct sockaddr_in address = {};
@@ -319,6 +351,193 @@ void WriteTimeout()
     EXPECT_LT(end - start, INT64_C(2000000000));
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(peer.tls, "x", 1, Deadline(), NULL));
 }
+
+class Transport
+{
+public:
+    TelemetryTransport* value = NULL;
+    ~Transport() { TelemetryTransportDestroy(&value, NULL); }
+    int Send(TelemetryHttpResponse* response, int milliseconds = 5000)
+    {
+        return TelemetryTransportSend(value, "fixture-token", "OSConfig-C/test", 1,
+            "encoded-fixture", strlen("encoded-fixture"), Deadline(milliseconds), response, NULL);
+    }
+};
+
+void TransportExchange(const char* mode)
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start(mode, false));
+    Transport transport;
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
+    // The invocation keeps its selected route even if the environment changes.
+    ASSERT_EQ(0, setenv("https_proxy", "unsupported://must-not-use.invalid", 1));
+    TelemetryHttpResponse response;
+    if (strcmp(mode, "aria-recover") == 0)
+    {
+        EXPECT_NE(0, transport.Send(&response));
+        EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
+    }
+    int count = strcmp(mode, "aria-recover") == 0 ? 1 : 2;
+    for (int i = 0; i < count; ++i)
+    {
+        ASSERT_EQ(0, transport.Send(&response));
+        EXPECT_TRUE(response.complete);
+        EXPECT_EQ(TelemetryAccepted, response.acceptance);
+        EXPECT_FALSE(TelemetryTransportSuppressed(transport.value));
+    }
+    TelemetryTransportDestroy(&transport.value, NULL);
+    EXPECT_EQ(0, peer.Wait());
+}
+
+void TransportFailure(const char* mode, int expected, bool slow = false)
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start(mode, false));
+    Transport transport;
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
+    TelemetryHttpResponse response;
+    int64_t begin = 0, end = 0;
+    ASSERT_EQ(0, TelemetryMonotonicTime(&begin));
+    EXPECT_EQ(expected, transport.Send(&response, slow ? 300 : 5000));
+    ASSERT_EQ(0, TelemetryMonotonicTime(&end));
+    EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
+    TelemetryTransportDestroy(&transport.value, NULL);
+    if (slow)
+    {
+        EXPECT_GE(end - begin, INT64_C(300000000));
+        EXPECT_LT(end - begin, INT64_C(2000000000));
+    }
+    else EXPECT_EQ(0, peer.Wait());
+}
+
+void TransportResponse(const char* mode, TelemetryAcceptance expected, bool suppressed)
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start(mode, false));
+    Transport transport;
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
+    TelemetryHttpResponse response;
+    ASSERT_EQ(0, transport.Send(&response));
+    EXPECT_EQ(expected, response.acceptance);
+    EXPECT_EQ(suppressed, TelemetryTransportSuppressed(transport.value));
+    if (suppressed)
+    {
+        EXPECT_EQ(ECANCELED, transport.Send(&response));
+        EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
+    }
+    TelemetryTransportDestroy(&transport.value, NULL);
+    EXPECT_EQ(0, peer.Wait());
+}
+
+void TransportArguments()
+{
+    IgnorePipe();
+    for (const char* name : {"no_proxy", "NO_PROXY"}) ASSERT_EQ(0, unsetenv(name));
+    Transport transport;
+    EXPECT_EQ(EINVAL, TelemetryTransportCreate(NULL, NULL));
+    ASSERT_EQ(0, setenv("https_proxy", "https://proxy.invalid", 1));
+    EXPECT_EQ(ENOTSUP, TelemetryTransportCreate(&transport.value, NULL));
+    EXPECT_EQ(nullptr, transport.value);
+    ASSERT_EQ(0, setenv("https_proxy", "http://127.0.0.1:9", 1));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
+    TelemetryTransport* original = transport.value;
+    EXPECT_EQ(EALREADY, TelemetryTransportCreate(&transport.value, NULL));
+    EXPECT_EQ(original, transport.value);
+    TelemetryHttpResponse response;
+    EXPECT_EQ(EINVAL, TelemetryTransportSend(NULL, "fixture-token", "test", 1, "x", 1, Deadline(), &response, NULL));
+    EXPECT_EQ(EINVAL, TelemetryTransportSend(transport.value, NULL, "test", 1, "x", 1, Deadline(), &response, NULL));
+    EXPECT_EQ(EINVAL, TelemetryTransportSend(transport.value, "fixture-token", "test", 1, NULL, 1, Deadline(), &response, NULL));
+    EXPECT_EQ(EINVAL, TelemetryTransportSend(transport.value, "fixture-token", "test", 1, "x", 1, Deadline(), NULL, NULL));
+    EXPECT_EQ(ETIMEDOUT, TelemetryTransportSend(transport.value, "fixture-token", "test", 1, "x", 1, 0, &response, NULL));
+}
+
+class LiveTestProcess
+{
+public:
+    pid_t child = -1;
+    int output = -1;
+    ~LiveTestProcess()
+    {
+        if (output >= 0) close(output);
+        if (child > 0)
+        {
+            pid_t waited;
+            do { waited = waitpid(child, NULL, WNOHANG); } while (waited < 0 && errno == EINTR);
+            if (waited == 0)
+            {
+                kill(child, SIGKILL);
+                do { waited = waitpid(child, NULL, 0); } while (waited < 0 && errno == EINTR);
+            }
+        }
+    }
+};
+
+void HundredEvents(const char* mode, const char* expected, int exitCode)
+{
+    IgnorePipe();
+    Peer peer;
+    ASSERT_EQ(0, peer.Start(mode, false));
+    ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
+    LiveTestProcess process;
+    int output[2];
+    ASSERT_EQ(0, pipe(output));
+    process.output = output[0];
+    posix_spawn_file_actions_t actions;
+    int status = posix_spawn_file_actions_init(&actions);
+    if (status) { close(output[1]); FAIL() << "spawn action initialization failed"; }
+    char* arguments[] = {const_cast<char*>(TELEMETRY_ARIA_TEST_PATH),
+        const_cast<char*>("--send-status-trace-100"), NULL};
+    if ((0 == (status = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO))) &&
+        (0 == (status = posix_spawn_file_actions_addclose(&actions, output[0]))) &&
+        (0 == (status = posix_spawn_file_actions_addclose(&actions, output[1]))))
+    {
+        status = posix_spawn(&process.child, TELEMETRY_ARIA_TEST_PATH, &actions, NULL, arguments, environ);
+    }
+    posix_spawn_file_actions_destroy(&actions);
+    close(output[1]);
+    if (status) process.child = -1;
+    ASSERT_EQ(0, status);
+    std::string text;
+    int64_t deadline = Deadline(15000);
+    for (;;)
+    {
+        int remaining = 0;
+        ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+        struct pollfd item = {process.output, POLLIN, 0};
+        int ready = poll(&item, 1, remaining);
+        if (ready < 0 && errno == EINTR) continue;
+        ASSERT_GT(ready, 0);
+        char bytes[1024];
+        ssize_t size = read(process.output, bytes, sizeof(bytes));
+        if (size < 0 && errno == EINTR) continue;
+        ASSERT_GE(size, 0);
+        if (!size) break;
+        text.append(bytes, static_cast<size_t>(size));
+        ASSERT_LE(text.size(), 32768U);
+    }
+    int result = 0;
+    for (;;)
+    {
+        pid_t done = waitpid(process.child, &result, WNOHANG);
+        if (done == process.child) { process.child = -1; break; }
+        if (done < 0 && errno == EINTR) continue;
+        ASSERT_GE(done, 0);
+        int remaining = 0;
+        ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+        poll(NULL, 0, 5);
+    }
+    ASSERT_TRUE(WIFEXITED(result)) << text;
+    EXPECT_EQ(exitCode, WEXITSTATUS(result)) << text;
+    EXPECT_NE(std::string::npos, text.find(expected)) << text;
+    EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
+    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test ***"));
+    EXPECT_EQ(std::string::npos, text.find("fixture-token"));
+    EXPECT_EQ(0, peer.Wait());
+}
 }
 
 // Each case has a fresh owned process: provider residency and environment/signal
@@ -341,3 +560,49 @@ TEST(TelemetryTlsDeathTest, RejectsInvalidArgumentsAndBlockingSockets) { TLS_CAS
 TEST(TelemetryTlsDeathTest, DoesNotChangeHostSignalDisposition) { TLS_CASE(PreservesSignalDisposition()); }
 TEST(TelemetryTlsDeathTest, DoesNotWriteAfterDeadline) { TLS_CASE(ExpiredWrite()); }
 TEST(TelemetryTlsDeathTest, TimesOutBackpressuredWriteWithoutResettingDeadline) { TLS_CASE(WriteTimeout()); }
+
+TEST(TelemetryTransportDeathTest, TunnelsAndReusesVerifiedConnection) { TLS_CASE(TransportExchange("aria-reuse")); }
+TEST(TelemetryTransportDeathTest, KeepsProxyCredentialsOutOfCollectorRequest) { TLS_CASE(TransportExchange("aria-auth")); }
+TEST(TelemetryTransportDeathTest, ReconnectsAfterConnectionClose) { TLS_CASE(TransportExchange("aria-close")); }
+TEST(TelemetryTransportDeathTest, DropsFailedEventAndReconnectsOnlyForNextCall) { TLS_CASE(TransportExchange("aria-recover")); }
+TEST(TelemetryTransportDeathTest, RejectsProxyAuthenticationFailure) { TLS_CASE(TransportFailure("aria-407", EACCES)); }
+TEST(TelemetryTransportDeathTest, DoesNotFollowProxyRedirect) { TLS_CASE(TransportFailure("aria-redirect", ECONNREFUSED)); }
+TEST(TelemetryTransportDeathTest, RejectsMalformedConnectHeaders) { TLS_CASE(TransportFailure("aria-bad-connect", EPROTO)); }
+TEST(TelemetryTransportDeathTest, BoundsConnectLine) { TLS_CASE(TransportFailure("aria-long-connect", EMSGSIZE)); }
+TEST(TelemetryTransportDeathTest, RejectsTruncatedConnectResponse) { TLS_CASE(TransportFailure("aria-truncated-connect", EPROTO)); }
+TEST(TelemetryTransportDeathTest, RejectsConnectUpgrade) { TLS_CASE(TransportFailure("aria-upgrade", ENOTSUP)); }
+TEST(TelemetryTransportDeathTest, BoundsConnectInformationalResponses) { TLS_CASE(TransportFailure("aria-many-interim", EMSGSIZE)); }
+TEST(TelemetryTransportDeathTest, VerifiesCollectorIdentityThroughProxy) { TLS_CASE(TransportFailure("aria-wrong-name", EACCES)); }
+TEST(TelemetryTransportDeathTest, TimesOutSilentProxy) { TLS_CASE(TransportFailure("aria-proxy-timeout", ETIMEDOUT, true)); }
+TEST(TelemetryTransportDeathTest, TimesOutCollectorResponse) { TLS_CASE(TransportFailure("aria-read-timeout", ETIMEDOUT, true)); }
+TEST(TelemetryTransportDeathTest, RejectsTruncatedTlsWithoutReplay) { TLS_CASE(TransportFailure("aria-drop", EPROTO)); }
+TEST(TelemetryTransportDeathTest, ReportsCollectorRejection) { TLS_CASE(TransportResponse("aria-reject", TelemetryRejected, false)); }
+TEST(TelemetryTransportDeathTest, EmptySuccessIsUnconfirmed) { TLS_CASE(TransportResponse("aria-empty", TelemetryUnconfirmed, false)); }
+TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnThrottling) { TLS_CASE(TransportResponse("aria-throttle", TelemetryRejected, true)); }
+TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnKillDirective) { TLS_CASE(TransportResponse("aria-kill", TelemetryAccepted, true)); }
+TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes) { TLS_CASE(TransportArguments()); }
+TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsHundredEventsToLoopbackOnly)
+{
+    TLS_CASE(HundredEvents("aria-live",
+        "requested=100 attempted=100 accepted=100 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
+}
+TEST(TelemetryTransportDeathTest, LiveTestStopsOnThrottling)
+{
+    TLS_CASE(HundredEvents("aria-live-throttle",
+        "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
+}
+TEST(TelemetryTransportDeathTest, LiveTestStopsOnExplicitRejection)
+{
+    TLS_CASE(HundredEvents("aria-live-reject",
+        "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
+}
+TEST(TelemetryTransportDeathTest, LiveTestDoesNotTreatEmpty200AsAcceptance)
+{
+    TLS_CASE(HundredEvents("aria-live-empty",
+        "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
+}
+TEST(TelemetryTransportDeathTest, LiveTestDoesNotReplayAmbiguousDelivery)
+{
+    TLS_CASE(HundredEvents("aria-live-drop",
+        "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
+}

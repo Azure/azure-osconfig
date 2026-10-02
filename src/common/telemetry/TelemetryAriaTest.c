@@ -1,0 +1,222 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#define _POSIX_C_SOURCE 200809L
+
+#include "TelemetryEncoder.h"
+#include "TelemetryTransport.h"
+#include "TelemetryDeadline.h"
+#include <version.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define TEST_COUNT 100
+#define TEST_RESULT "731001"
+#define TEST_MARKER "*** Distilled 1DS SDK test ***"
+#define TEST_CLIENT "OSConfig-C/0.1"
+
+static int InitializeTimer(timer_t* timer)
+{
+    struct sigaction action = {0};
+    sigset_t signals;
+    action.sa_handler = SIG_DFL;
+    sigemptyset(&action.sa_mask);
+    sigemptyset(&signals);
+    sigaddset(&signals, SIGALRM);
+    if (sigaction(SIGALRM, &action, NULL) || sigprocmask(SIG_UNBLOCK, &signals, NULL))
+        return errno ? errno : EIO;
+    action.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &action, NULL)) return errno ? errno : EIO;
+    struct sigevent notification = {0};
+    notification.sigev_notify = SIGEV_SIGNAL;
+    notification.sigev_signo = SIGALRM;
+    return timer_create(CLOCK_MONOTONIC, &notification, timer) ? (errno ? errno : EIO) : 0;
+}
+
+static int RunId(char* text)
+{
+    unsigned char bytes[16];
+    int descriptor = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+    if (descriptor < 0) return errno ? errno : EIO;
+    size_t size = 0;
+    int status = 0;
+    while (size < sizeof(bytes))
+    {
+        ssize_t count = read(descriptor, bytes + size, sizeof(bytes) - size);
+        if (count > 0) size += (size_t)count;
+        else if (!count) { status = EIO; break; }
+        else if (errno != EINTR) { status = errno ? errno : EIO; break; }
+    }
+    if (close(descriptor) && !status) status = errno ? errno : EIO;
+    if (status) return status;
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    size_t offset = 0;
+    for (size_t i = 0; i < sizeof(bytes); ++i)
+    {
+        if (i == 4 || i == 6 || i == 8 || i == 10) text[offset++] = '-';
+        static const char hex[] = "0123456789abcdef";
+        text[offset++] = hex[bytes[i] >> 4];
+        text[offset++] = hex[bytes[i] & 15];
+    }
+    text[offset] = '\0';
+    return 0;
+}
+
+static int Encode(const char* iKey, const char* correlation, unsigned int sequence,
+    unsigned char* bytes, size_t* size, int64_t* milliseconds, OsConfigLogHandle log)
+{
+    struct timespec now = {0, 0};
+    struct tm utc;
+    char timestamp[40], line[16];
+    if (clock_gettime(CLOCK_REALTIME, &now) || !gmtime_r(&now.tv_sec, &utc))
+    {
+        OsConfigLogError(log, "TelemetryAriaTest: Cannot read UTC clock");
+        return EIO;
+    }
+    if (now.tv_sec < 0 || (uint64_t)now.tv_sec > UINT64_C(253402300799) ||
+        !strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S+0000", &utc))
+    {
+        OsConfigLogError(log, "TelemetryAriaTest: Invalid UTC clock");
+        return EOVERFLOW;
+    }
+    snprintf(line, sizeof(line), "%u", sequence);
+    *milliseconds = (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+    const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "FileName",
+        "LineNumber", "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName",
+        "Microseconds", "ResultCode", "ResultString"};
+    const char* values[] = {"Synthetic Linux test", correlation, OSCONFIG_VERSION, timestamp,
+        "TelemetryAriaTest.c", line, "DistilledTelemetryTest", "TelemetryAriaTest",
+        "DistilledTelemetryTest", "TelemetryTransportSend", "0", TEST_RESULT, TEST_MARKER};
+    TelemetryProperty properties[ARRAY_SIZE(names)] = {0};
+    for (size_t i = 0; i < ARRAY_SIZE(names); ++i)
+    {
+        properties[i].name = names[i];
+        properties[i].type = TelemetryPropertyString;
+        properties[i].value.stringValue = values[i];
+    }
+    TelemetryEvent event = {0};
+    event.name = "StatusTrace";
+    event.iKey = iKey;
+    event.time = INT64_C(621355968000000000) + (int64_t)now.tv_sec * 10000000 + now.tv_nsec / 100;
+    event.flags = 0x0101;
+    event.sdkVersion = TEST_CLIENT;
+    event.sdkEpoch = correlation;
+    event.sequence = sequence;
+    event.properties = properties;
+    event.propertyCount = ARRAY_SIZE(properties);
+    return TelemetryEncodeEvent(&event, bytes, TELEMETRY_MAX_EVENT_SIZE, size, log);
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 2 || strcmp(argv[1], "--send-status-trace-100"))
+    {
+        fprintf(stderr, "Explicit live test only: %s --send-status-trace-100\n"
+            "Sends 100 synthetic StatusTrace events to Aria using local OsConfigTelemetryApiKey.\n"
+            "Honors inherited HTTPS proxy settings. Never scheduled by ctest.\n", argv[0]);
+        return 2;
+    }
+    timer_t timer = 0;
+    int status = InitializeTimer(&timer);
+    int64_t started = 0;
+    if (!status) status = TelemetryMonotonicTime(&started);
+    if (!status && started > INT64_MAX - INT64_C(300000000000)) status = EOVERFLOW;
+    if (!status) status = TelemetryArmDeadline(timer, started + INT64_C(15000000000));
+    if (status)
+    {
+        fprintf(stderr, "Live test timer initialization failed (status=%d).\n", status);
+        return 1;
+    }
+    SetConsoleLoggingEnabled(false);
+    OsConfigLogHandle log = OpenLog("/var/log/osconfig_telemetry.log", "/var/log/osconfig_telemetry.bak");
+    if (!log || !GetLogFile(log))
+    {
+        fprintf(stderr, "Cannot open /var/log/osconfig_telemetry.log; no events sent.\n");
+        if (log) CloseLog(&log);
+        return 1;
+    }
+    TelemetryTransport* transport = NULL;
+    unsigned int attempted = 0, accepted = 0, rejected = 0, unconfirmed = 0;
+    char correlation[37] = {0};
+    char iKey[TELEMETRY_HTTP_TOKEN_LIMIT + 3] = {0};
+    const char* token = getenv("OsConfigTelemetryApiKey");
+    char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1];
+    size_t headerSize = 0;
+    if (!token || !*token)
+    {
+        status = EINVAL;
+        OsConfigLogError(log, "TelemetryAriaTest: OsConfigTelemetryApiKey is not set");
+        fprintf(stderr, "Set OsConfigTelemetryApiKey locally and preserve it through sudo; no events sent.\n");
+        goto cleanup;
+    }
+    status = TelemetryHttpBuildRequest(token, TEST_CLIENT, 0, 1, headers, sizeof(headers), &headerSize, log);
+    if (status) goto cleanup;
+    size_t tenantLength = strcspn(token, "-");
+    if (!tenantLength || token[tenantLength] != '-')
+    {
+        status = EINVAL;
+        OsConfigLogError(log, "TelemetryAriaTest: Ingestion token lacks tenant prefix");
+        goto cleanup;
+    }
+    memcpy(iKey, "o:", 2);
+    memcpy(iKey + 2, token, tenantLength);
+    status = RunId(correlation);
+    if (!status) status = TelemetryTransportCreate(&transport, log);
+    if (status) goto cleanup;
+    printf("LIVE StatusTrace test: requested=%d ResultCode=%s\n"
+        "ResultString=%s\nCorrelationId=%s\n"
+        "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.\n",
+        TEST_COUNT, TEST_RESULT, TEST_MARKER, correlation);
+    fflush(stdout);
+    for (unsigned int i = 0; i < TEST_COUNT; ++i)
+    {
+        int64_t now = 0, uploadTime = 0;
+        status = TelemetryMonotonicTime(&now);
+        if (status) break;
+        const int64_t lifetime = started + INT64_C(300000000000);
+        if (now >= lifetime) { status = ETIMEDOUT; break; }
+        const int64_t deadline = lifetime - now > INT64_C(15000000000) ?
+            now + INT64_C(15000000000) : lifetime;
+        status = TelemetryArmDeadline(timer, deadline);
+        if (status) break;
+        unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
+        size_t size = 0;
+        status = Encode(iKey, correlation, i + 1, bytes, &size, &uploadTime, log);
+        if (status) break;
+        TelemetryHttpResponse response;
+        ++attempted;
+        status = TelemetryTransportSend(transport, token, TEST_CLIENT, uploadTime, bytes, size,
+            deadline, &response, log);
+        if (!status && response.acceptance == TelemetryAccepted) ++accepted;
+        else if (!status && response.acceptance == TelemetryRejected) ++rejected;
+        else ++unconfirmed;
+        printf("event=%u http=%u accepted=%u rejected=%u unconfirmed=%u status=%d controls=%zu\n",
+            i + 1, response.status, accepted, rejected, unconfirmed, status, response.controlCount);
+        fflush(stdout);
+        if (status || response.acceptance != TelemetryAccepted || TelemetryTransportSuppressed(transport))
+        {
+            if (!status) status = ECANCELED;
+            fprintf(stderr, "Stopped without replay. Inspect the log and collector controls before another pass.\n");
+            break;
+        }
+    }
+
+cleanup:
+    if (status) OsConfigLogError(log, "TelemetryAriaTest: Run stopped (status=%d)", status);
+    TelemetryTransportDestroy(&transport, log);
+    // Keep the self-timer armed through log/runtime cleanup; process exit reclaims it.
+    printf("requested=%d attempted=%u accepted=%u rejected=%u unconfirmed=%u unsent=%u status=%d\n"
+        "CorrelationId=%s\n",
+        TEST_COUNT, attempted, accepted, rejected, unconfirmed, TEST_COUNT - attempted, status, correlation);
+    if (status) fprintf(stderr, "See /var/log/osconfig_telemetry.log; do not print the ingestion token.\n");
+    CloseLog(&log);
+    return (!status && accepted == TEST_COUNT) ? 0 : 1;
+}

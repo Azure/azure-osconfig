@@ -38,6 +38,7 @@ target_link_libraries(commontests
     telemetryhttp
     telemetryproxy
     telemetrytls
+    telemetrytransport
     telemetryresolver
     telemetryworkerclient
 )
@@ -91,3 +92,7 @@ target_compile_definitions(commontests PRIVATE
     TELEMETRY_TLS_PYTHON="${Python3_EXECUTABLE}"
     TELEMETRY_TLS_OPENSSL="${TELEMETRY_TLS_OPENSSL_EXECUTABLE}"
     TELEMETRY_TLS_PEER_SCRIPT="${CMAKE_CURRENT_SOURCE_DIR}/TelemetryTlsPeer.py")
+
+add_dependencies(commontests telemetryariatest)
+target_compile_definitions(commontests PRIVATE
+    TELEMETRY_ARIA_TEST_PATH="$<TARGET_FILE:telemetryariatest>")

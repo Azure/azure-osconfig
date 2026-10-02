@@ -35,4 +35,17 @@ static inline int TelemetryDeadlineRemaining(int64_t deadline, int* milliseconds
     return 0;
 }
 
+static inline int TelemetryArmDeadline(timer_t timer, int64_t deadline)
+{
+    struct itimerspec expiration = {{0, 0}, {0, 0}};
+    int remaining = 0;
+    if ((deadline <= 0) || ((int64_t)(time_t)(deadline / 1000000000) != deadline / 1000000000))
+        return EINVAL;
+    int status = TelemetryDeadlineRemaining(deadline, &remaining);
+    if (status) return status;
+    expiration.it_value.tv_sec = (time_t)(deadline / 1000000000);
+    expiration.it_value.tv_nsec = (long)(deadline % 1000000000);
+    return timer_settime(timer, TIMER_ABSTIME, &expiration, NULL) ? (errno ? errno : EIO) : 0;
+}
+
 #endif // TELEMETRY_DEADLINE_H

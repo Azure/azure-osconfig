@@ -5,6 +5,7 @@
 
 #include "TelemetryWorkerProtocol.h"
 #include "TelemetryResolverProtocol.h"
+#include "TelemetryDeadline.h"
 #include <Logging.h>
 
 #include <dirent.h>
@@ -70,28 +71,6 @@ static int SendReply(uint32_t operation, uint32_t sequence, int status, void* bo
             ", sequence=%" PRIu32 ", status=%d)", operation, sequence, error);
     }
     return error;
-}
-
-static int ArmTimer(timer_t timer, int64_t deadline)
-{
-    struct itimerspec expiration = {0};
-    struct timespec now;
-    if ((deadline <= 0) || ((int64_t)(time_t)(deadline / 1000000000) != deadline / 1000000000))
-    {
-        return EINVAL;
-    }
-    expiration.it_value.tv_sec = (time_t)(deadline / 1000000000);
-    expiration.it_value.tv_nsec = (long)(deadline % 1000000000);
-    if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
-    {
-        return errno;
-    }
-    if ((now.tv_sec > expiration.it_value.tv_sec) ||
-        ((now.tv_sec == expiration.it_value.tv_sec) && (now.tv_nsec >= expiration.it_value.tv_nsec)))
-    {
-        return ETIMEDOUT;
-    }
-    return (0 == timer_settime(timer, TIMER_ABSTIME, &expiration, NULL)) ? 0 : errno;
 }
 
 static int CloseInheritedDescriptors(int logDescriptor)
@@ -202,7 +181,7 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
     {
         return errno;
     }
-    return ArmTimer(*timer, startup);
+    return TelemetryArmDeadline(*timer, startup);
 }
 
 int main(int argc, char** argv)
@@ -252,7 +231,7 @@ int main(int argc, char** argv)
         TelemetryWorkerFrame request = {0};
         char host[TELEMETRY_RESOLVER_HOST_LIMIT + 1];
         TelemetryResolverReply reply = {0};
-        if (0 != (status = ArmTimer(timer, lifetime)))
+        if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
         {
             OsConfigLogError(log, "OSConfigTelemetry: Cannot arm lifetime timer (status=%d)", status);
             break;
@@ -284,7 +263,7 @@ int main(int argc, char** argv)
             break;
         }
         sequence = request.sequence;
-        status = ArmTimer(timer, request.deadline);
+        status = TelemetryArmDeadline(timer, request.deadline);
         if (0 == status)
         {
             OsConfigLogInfo(log, "OSConfigTelemetry: Receiving request (sequence=%" PRIu32 ")", sequence);
