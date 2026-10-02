@@ -6,6 +6,7 @@
 #include "TelemetryEncoder.h"
 #include "TelemetryTransport.h"
 #include "TelemetryDeadline.h"
+#include "Keys.h"
 #include <version.h>
 
 #include <errno.h>
@@ -120,7 +121,8 @@ int main(int argc, char** argv)
     if (argc != 2 || strcmp(argv[1], "--send-status-trace-100"))
     {
         fprintf(stderr, "Explicit live test only: %s --send-status-trace-100\n"
-            "Sends 100 synthetic StatusTrace events to Aria using local OsConfigTelemetryApiKey.\n"
+            "Sends 100 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
+            "OsConfigTelemetryApiKey in the runtime environment overrides that key.\n"
             "Honors inherited HTTPS proxy settings. Never scheduled by ctest.\n", argv[0]);
         return 2;
     }
@@ -148,13 +150,14 @@ int main(int argc, char** argv)
     char correlation[37] = {0};
     char iKey[TELEMETRY_HTTP_TOKEN_LIMIT + 3] = {0};
     const char* token = getenv("OsConfigTelemetryApiKey");
+    if (!token) token = API_KEY;
     char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1];
     size_t headerSize = 0;
     if (!token || !*token)
     {
         status = EINVAL;
-        OsConfigLogError(log, "TelemetryAriaTest: OsConfigTelemetryApiKey is not set");
-        fprintf(stderr, "Set OsConfigTelemetryApiKey locally and preserve it through sudo; no events sent.\n");
+        OsConfigLogError(log, "TelemetryAriaTest: No ingestion key configured");
+        fprintf(stderr, "Configure the build with OsConfigTelemetryApiKey or supply a nonempty runtime override; no events sent.\n");
         goto cleanup;
     }
     status = TelemetryHttpBuildRequest(token, TEST_CLIENT, 0, 1, headers, sizeof(headers), &headerSize, log);

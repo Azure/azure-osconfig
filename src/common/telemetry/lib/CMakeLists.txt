@@ -47,14 +47,9 @@ if(BUILD_EXTERNAL)
 endif()
 
 # Add telemetry ingestion key (if defined)
-if(DEFINED ENV{OsConfigTelemetryApiKey} AND NOT "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
-    set(OsConfigTelemetryApiKey $ENV{OsConfigTelemetryApiKey})
-    message(STATUS "Using OsConfigTelemetryApiKey from environment variable")
-else()
-    message(WARNING "OsConfigTelemetryApiKey not set, using default value")
-    set(OsConfigTelemetryApiKey "999999999999999999999999999999999-999999999-9999-9999-9999-999999999999-9999")
-endif()
-configure_file(Keys.h.in ${CMAKE_CURRENT_BINARY_DIR}/Keys.h @ONLY)
+include(../../../cmake/TelemetryKey.cmake)
+osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h"
+    "999999999999999999999999999999999-999999999-9999-9999-9999-999999999999-9999")
 
 add_library(telemetrylib STATIC
     Telemetry.cpp

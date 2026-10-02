@@ -66,8 +66,10 @@ else()
         PRIVATE telemetrytls telemetryresolver rt)
 
     # Explicit invocation only: never register a live collector send with ctest.
+    include(../../cmake/TelemetryKey.cmake)
+    osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h" "")
     add_executable(telemetryariatest EXCLUDE_FROM_ALL TelemetryAriaTest.c)
-    target_include_directories(telemetryariatest PRIVATE ../commonutils)
+    target_include_directories(telemetryariatest PRIVATE ../commonutils ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(telemetryariatest PRIVATE telemetrytransport telemetryencoder rt)
 
     add_library(telemetry
