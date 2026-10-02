@@ -40,7 +40,8 @@ target_link_libraries(telemetryworkerclient PUBLIC telemetryresolver telemetryev
 
 add_library(telemetry STATIC Telemetry.c)
 target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(telemetry PRIVATE commonutils telemetryworkerclient ${CMAKE_DL_LIBS})
+target_link_libraries(telemetry PUBLIC logging
+    PRIVATE commonutils telemetryworkerclient ${CMAKE_DL_LIBS})
 
 include(../../cmake/TelemetryKey.cmake)
 osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h" "")
