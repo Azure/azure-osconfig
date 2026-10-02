@@ -16,6 +16,7 @@ add_executable(commontests
     TelemetryUT.cpp
     TelemetryEncoderUT.cpp
     TelemetryHttpUT.cpp
+    TelemetryProxyUT.cpp
     TelemetryTlsUT.cpp
     TelemetryResolverUT.cpp
     TelemetryWorkerUT.cpp
@@ -35,6 +36,7 @@ target_link_libraries(commontests
     telemetry
     telemetryencoder
     telemetryhttp
+    telemetryproxy
     telemetrytls
     telemetryresolver
     telemetryworkerclient
