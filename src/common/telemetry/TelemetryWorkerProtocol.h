@@ -15,7 +15,7 @@
 
 // Private native-endian protocol: the SO and worker must come from one package.
 // One outstanding request, no event queue. Deadlines are absolute monotonic ns.
-// Replies have deadline == 0; a nonzero status has no body.
+// Replies have 0 == deadline; a nonzero status has no body.
 typedef struct TelemetryWorkerFrame
 {
     uint32_t magic;

@@ -34,7 +34,7 @@ static int WaitSocket(int descriptor, short events, int64_t deadline)
     struct pollfd item = {0};
     int ready = 0;
 
-    while (!status && ready <= 0)
+    while ((!status) && (ready <= 0))
     {
         remaining = 0;
         status = TelemetryDeadlineRemaining(deadline, &remaining);
@@ -46,7 +46,7 @@ static int WaitSocket(int descriptor, short events, int64_t deadline)
             {
                 status = (item.revents & POLLNVAL) ? EBADF : 0;
             }
-            else if (ready < 0 && errno != EINTR)
+            else if ((ready < 0) && (EINTR != errno))
             {
                 status = errno ? errno : EIO;
             }
@@ -102,7 +102,7 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
             break;
         }
         address = &addresses.addresses[i];
-        if (address->ss_family == AF_INET)
+        if (AF_INET == address->ss_family)
         {
             memcpy(&ipv4, address, sizeof(ipv4));
             ipv4.sin_port = port;
@@ -125,7 +125,7 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
         {
             status = 0;
         }
-        else if (errno != EINPROGRESS)
+        else if (EINPROGRESS != errno)
         {
             status = errno ? errno : EIO;
         }
@@ -161,7 +161,7 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
     int status = 0;
     ssize_t count = 0;
 
-    while (!status && offset < size)
+    while ((!status) && (offset < size))
     {
         remaining = 0;
         status = TelemetryDeadlineRemaining(deadline, &remaining);
@@ -178,11 +178,11 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
             {
                 status = EPROTO;
             }
-            else if (errno == EAGAIN || errno == EWOULDBLOCK)
+            else if ((EAGAIN == errno) || (EWOULDBLOCK == errno))
             {
                 status = WaitSocket(descriptor, writing ? POLLOUT : POLLIN, deadline);
             }
-            else if (errno != EINTR)
+            else if (EINTR != errno)
             {
                 status = errno ? errno : EIO;
             }
@@ -193,8 +193,8 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
 
 static bool FieldCharacter(unsigned char c)
 {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-        (c && strchr("!#$%&'*+-.^_`|~", c));
+    return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) ||
+        ((c) && (strchr("!#$%&'*+-.^_`|~", c)));
 }
 
 static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHandle log)
@@ -238,21 +238,21 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
             {
                 return EMSGSIZE;
             }
-            if (byte == '\n')
+            if ('\n' == byte)
             {
-                if (!length || line[length - 1] != '\r')
+                if ((!length) || ('\r' != line[length - 1]))
                 {
                     return EPROTO;
                 }
                 line[--length] = '\0';
                 break;
             }
-            if (length == TELEMETRY_HTTP_LINE_LIMIT)
+            if (TELEMETRY_HTTP_LINE_LIMIT == length)
             {
                 return EMSGSIZE;
             }
-            if ((byte < 32 && byte != '\t' && byte != '\r') || byte >= 127 ||
-                (length && line[length - 1] == '\r'))
+            if (((byte < 32) && ('\t' != byte) && ('\r' != byte)) || (byte >= 127) ||
+                ((length) && ('\r' == line[length - 1])))
             {
                 return EPROTO;
             }
@@ -260,15 +260,15 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
         }
         if (first)
         {
-            if (length < 12 || memcmp(line, "HTTP/1.", 7) ||
-                (line[7] != '0' && line[7] != '1') || line[8] != ' ' ||
-                line[9] < '1' || line[9] > '5' || line[10] < '0' || line[10] > '9' ||
-                line[11] < '0' || line[11] > '9' || (length > 12 && line[12] != ' '))
+            if ((length < 12) || (memcmp(line, "HTTP/1.", 7)) ||
+                (('0' != line[7]) && ('1' != line[7])) || (' ' != line[8]) ||
+                (line[9] < '1') || (line[9] > '5') || (line[10] < '0') || (line[10] > '9') ||
+                (line[11] < '0') || (line[11] > '9') || ((length > 12) && (' ' != line[12])))
             {
                 return EPROTO;
             }
             code = (unsigned int)((line[9] - '0') * 100 + (line[10] - '0') * 10 + line[11] - '0');
-            if (code == 101)
+            if (101 == code)
             {
                 return ENOTSUP;
             }
@@ -288,7 +288,7 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
             {
                 OsConfigLogInfo(log, "TelemetryTransport: CONNECT response (http=%u)", code);
                 // Successful CONNECT has no HTTP body, regardless of CL/TE.
-                return code >= 200 && code < 300 ? 0 : code == 407 ? EACCES : ECONNREFUSED;
+                return ((code >= 200) && (code < 300)) ? 0 : 407 == code ? EACCES : ECONNREFUSED;
             }
         }
         else
@@ -298,7 +298,7 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
                 return EMSGSIZE;
             }
             colon = strchr(line, ':');
-            if (!colon || colon == line)
+            if ((!colon) || (colon == line))
             {
                 return EPROTO;
             }
@@ -319,7 +319,7 @@ int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, O
     TelemetryTransport* created = NULL;
     TelemetryProxySelection selection = {0};
 
-    if (transport && *transport)
+    if ((transport) && (*transport))
     {
         status = EALREADY;
     }
@@ -332,7 +332,7 @@ int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, O
             created->descriptor = -1;
             created->forceMinTls = forceMinTls;
             status = TelemetryProxyDiscover(&selection, log);
-            if (!status && selection.kind == TelemetryProxyConfigured)
+            if ((!status) && (TelemetryProxyConfigured == selection.kind))
             {
                 created->proxied = true;
                 status = TelemetryProxyParseHttp(selection.url, &created->proxy, log);
@@ -355,13 +355,13 @@ static void CaptureSuppression(TelemetryTransport* transport, const TelemetryHtt
 {
     size_t i = 0;
 
-    if (response->status == 429 || response->status == 503)
+    if ((429 == response->status) || (503 == response->status))
     {
         transport->suppressed = true;
     }
     for (i = 0; i < response->controlCount; ++i)
     {
-        if (response->controls[i].kind != TelemetryTimeDeltaMillis)
+        if (TelemetryTimeDeltaMillis != response->controls[i].kind)
         {
             transport->suppressed = true;
         }
@@ -385,7 +385,7 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
     {
         TelemetryHttpResponseInitialize(response, log);
     }
-    if (!transport || !response || !event)
+    if ((!transport) || (!response) || (!event))
     {
         goto failed;
     }
@@ -460,12 +460,12 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
     CaptureSuppression(transport, response);
     for (i = 0; i < response->controlCount; ++i)
     {
-        if (response->controls[i].kind == TelemetryTimeDeltaMillis)
+        if (TelemetryTimeDeltaMillis == response->controls[i].kind)
         {
             OsConfigLogDebug(log, "TelemetryTransport: Clock guidance preserved; sender uses local UTC");
         }
     }
-    if (!response->reusable || transport->suppressed)
+    if ((!response->reusable) || (transport->suppressed))
     {
         Disconnect(transport, log);
     }
@@ -488,12 +488,12 @@ failed:
 
 bool TelemetryTransportSuppressed(const TelemetryTransport* transport)
 {
-    return transport && transport->suppressed;
+    return (transport) && (transport->suppressed);
 }
 
 void TelemetryTransportDestroy(TelemetryTransport** transport, OsConfigLogHandle log)
 {
-    if (transport && *transport)
+    if ((transport) && (*transport))
     {
         Disconnect(*transport, log);
         free(*transport);

@@ -385,12 +385,12 @@ TEST_F(TelemetryHttpTest, HandlesSparseLiveAcknowledgmentAcrossFramingAndEverySp
             ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, NULL));
             ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, wire.data(), split, false, NULL));
             ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, wire.data() + split,
-                wire.size() - split, framing == 2, NULL));
+                wire.size() - split, 2 == framing, NULL));
             EXPECT_TRUE(response.complete);
             EXPECT_EQ(TelemetryAccepted, response.acceptance);
             EXPECT_EQ(body, std::string(response.body, response.bodySize));
-            EXPECT_EQ(framing != 2, response.reusable);
-            if (framing == 0)
+            EXPECT_EQ(2 != framing, response.reusable);
+            if (0 == framing)
             {
                 ASSERT_EQ(1U, response.controlCount);
                 EXPECT_EQ(TelemetryTimeDeltaMillis, response.controls[0].kind);

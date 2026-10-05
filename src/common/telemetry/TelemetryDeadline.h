@@ -43,7 +43,7 @@ static inline int TelemetryDeadlineRemaining(int64_t deadline, int* milliseconds
         }
         else
         {
-            remaining = (deadline - now) / 1000000 + ((deadline - now) % 1000000 != 0);
+            remaining = (deadline - now) / 1000000 + (0 != (deadline - now) % 1000000);
             *milliseconds = (remaining > INT_MAX) ? INT_MAX : (int)remaining;
         }
     }

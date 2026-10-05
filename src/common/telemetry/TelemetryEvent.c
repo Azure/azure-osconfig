@@ -45,8 +45,8 @@ int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, si
     {
         *size = 0;
     }
-    if (!size || !payload || !properties || !count || count > TELEMETRY_MAX_PROPERTY_COUNT ||
-        capacity < sizeof(uint32_t) || capacity > TELEMETRY_MAX_EVENT_SIZE)
+    if ((!size) || (!payload) || (!properties) || (!count) || (count > TELEMETRY_MAX_PROPERTY_COUNT) ||
+        (capacity < sizeof(uint32_t)) || (capacity > TELEMETRY_MAX_EVENT_SIZE))
     {
         OsConfigLogError(log, "TelemetryPackEvent: Invalid or oversized event (status=%d)", status);
         return status;
@@ -55,9 +55,9 @@ int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, si
     memcpy(payload, &propertyCount, sizeof(propertyCount));
     offset = sizeof(propertyCount);
     status = AppendString(name, payload, capacity, &offset);
-    for (i = 0; !status && i < count; ++i)
+    for (i = 0; (!status) && (i < count); ++i)
     {
-        if (properties[i].type != TelemetryPropertyString)
+        if (TelemetryPropertyString != properties[i].type)
         {
             status = EINVAL;
         }
@@ -138,8 +138,8 @@ static bool SchemaMatches(const char* name, const TelemetryProperty* properties,
         fields = crash;
         fieldCount = ARRAY_SIZE(crash);
     }
-    matches = fields && count == fieldCount + ARRAY_SIZE(common);
-    for (i = 0; matches && i < count; ++i)
+    matches = (fields) && (count == fieldCount + ARRAY_SIZE(common));
+    for (i = 0; (matches) && (i < count); ++i)
     {
         required = i < ARRAY_SIZE(common) ? common[i] : fields[i - ARRAY_SIZE(common)];
         occurrences = 0;
@@ -150,7 +150,7 @@ static bool SchemaMatches(const char* name, const TelemetryProperty* properties,
                 ++occurrences;
             }
         }
-        matches = occurrences == 1;
+        matches = 1 == occurrences;
     }
     return matches;
 }
@@ -176,14 +176,14 @@ int TelemetryEncodePayload(const unsigned char* payload, size_t size, const char
     {
         *uploadTime = 0;
     }
-    if (!payload || size <= sizeof(uint32_t) || size > TELEMETRY_MAX_EVENT_SIZE ||
-        !encodedSize || !uploadTime || !bytes)
+    if ((!payload) || (size <= sizeof(uint32_t)) || (size > TELEMETRY_MAX_EVENT_SIZE) ||
+        (!encodedSize) || (!uploadTime) || (!bytes))
     {
         OsConfigLogError(log, "TelemetryEncodePayload: Invalid event or clock (status=%d)", status);
         return status;
     }
     memcpy(&count, payload, sizeof(count));
-    if (count && count <= TELEMETRY_MAX_PROPERTY_COUNT)
+    if ((count) && (count <= TELEMETRY_MAX_PROPERTY_COUNT))
     {
         offset = sizeof(count);
         name = ReadString(payload, size, &offset);
@@ -192,19 +192,19 @@ int TelemetryEncodePayload(const unsigned char* payload, size_t size, const char
             status = 0;
         }
     }
-    for (i = 0; !status && i < count; ++i)
+    for (i = 0; (!status) && (i < count); ++i)
     {
         properties[i].name = ReadString(payload, size, &offset);
         properties[i].type = TelemetryPropertyString;
         properties[i].value.stringValue = ReadString(payload, size, &offset);
-        if (!properties[i].name || !properties[i].value.stringValue)
+        if ((!properties[i].name) || (!properties[i].value.stringValue))
         {
             status = EINVAL;
         }
     }
     if (!status)
     {
-        if (offset != size || !SchemaMatches(name, properties, count))
+        if ((offset != size) || (!SchemaMatches(name, properties, count)))
         {
             status = EINVAL;
         }
@@ -212,7 +212,7 @@ int TelemetryEncodePayload(const unsigned char* payload, size_t size, const char
         {
             status = errno ? errno : EIO;
         }
-        else if (now.tv_sec < 0 || (uint64_t)now.tv_sec > UINT64_C(253402300799))
+        else if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > UINT64_C(253402300799)))
         {
             status = EOVERFLOW;
         }
@@ -263,7 +263,7 @@ int TelemetryCreateEpoch(char* epoch, OsConfigLogHandle log)
     {
         status = errno ? errno : EIO;
     }
-    while (!status && size < sizeof(bytes))
+    while ((!status) && (size < sizeof(bytes)))
     {
         count = read(descriptor, bytes + size, sizeof(bytes) - size);
         if (count > 0)
@@ -274,12 +274,12 @@ int TelemetryCreateEpoch(char* epoch, OsConfigLogHandle log)
         {
             status = EIO;
         }
-        else if (errno != EINTR)
+        else if (EINTR != errno)
         {
             status = errno ? errno : EIO;
         }
     }
-    if (descriptor >= 0 && close(descriptor) && !status)
+    if ((descriptor >= 0) && (close(descriptor)) && (!status))
     {
         status = errno ? errno : EIO;
     }
@@ -293,7 +293,7 @@ int TelemetryCreateEpoch(char* epoch, OsConfigLogHandle log)
         bytes[8] = (bytes[8] & 63) | 128;
         for (i = 0; i < sizeof(bytes); ++i)
         {
-            if (i == 4 || i == 6 || i == 8 || i == 10)
+            if ((4 == i) || (6 == i) || (8 == i) || (10 == i))
             {
                 epoch[offset++] = '-';
             }

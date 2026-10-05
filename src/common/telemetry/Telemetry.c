@@ -32,7 +32,7 @@ char* GetModuleDirectory(void)
     char* path = NULL;
     char* slash = NULL;
 
-    if (dladdr((void*)&GetModuleDirectory, &info) && info.dli_fname)
+    if ((dladdr((void*)&GetModuleDirectory, &info)) && (info.dli_fname))
     {
         path = realpath(info.dli_fname, NULL);
         if (path)
@@ -149,7 +149,7 @@ static bool BeginEvent(int64_t* started)
 
     // Some library callers emit outside a telemetry invocation. Never use a
     // missing log handle or implicitly start a worker from those call sites.
-    if (g_initialized && g_worker)
+    if ((g_initialized) && (g_worker))
     {
         status = TelemetryMonotonicTime(started);
         if (status)
@@ -202,7 +202,7 @@ void OSConfigTimeStampSave(void)
     else
     {
         snprintf(value, sizeof(value), "%" PRId64, TsToUs(now));
-        if (setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, value, 1) && g_initialized)
+        if ((setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, value, 1)) && (g_initialized))
         {
             OsConfigLogError(g_log, "Telemetry: Cannot save rule start clock (status=%d)", errno);
         }
@@ -227,7 +227,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
     {
         errno = 0;
         start = strtoll(value, &end, 10);
-        if (errno || end == value || *end || start <= 0)
+        if ((errno) || (end == value) || (*end) || (start <= 0))
         {
             if (g_initialized)
             {

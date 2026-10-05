@@ -26,7 +26,7 @@
 
 extern char** environ;
 
-_Static_assert(sizeof(TelemetryWorkerFrame) == 32, "Unexpected worker frame layout");
+_Static_assert(32 == sizeof(TelemetryWorkerFrame), "Unexpected worker frame layout");
 
 struct TelemetryWorker
 {
@@ -115,7 +115,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         if (worker->child == waited)
         {
             worker->child = -1;
-            if (!WIFEXITED(childStatus) || (0 != WEXITSTATUS(childStatus)))
+            if ((!WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
             {
                 OsConfigLogInfo(log, "TelemetryWorker: Child ended abnormally (wait status=%d)", childStatus);
                 return status ? status : EIO;
@@ -151,7 +151,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
             }
             break;
         }
-        if (poll(NULL, 0, (remaining > 10) ? 10 : remaining) < 0 && EINTR != errno)
+        if ((poll(NULL, 0, (remaining > 10) ? 10 : remaining) < 0) && (EINTR != errno))
         {
             status = errno;
             OsConfigLogInfo(log, "TelemetryWorker: Cannot wait for child exit (status=%d)", status);
@@ -244,8 +244,8 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
     {
         return status;
     }
-    if ((reply.magic != TELEMETRY_WORKER_MAGIC) || (reply.version != TELEMETRY_WORKER_VERSION) ||
-        (reply.operation != operation) || (reply.sequence != sequence) || (reply.deadline != 0) ||
+    if ((TELEMETRY_WORKER_MAGIC != reply.magic) || (TELEMETRY_WORKER_VERSION != reply.version) ||
+        (reply.operation != operation) || (reply.sequence != sequence) || (0 != reply.deadline) ||
         (reply.status < 0) || (reply.size != ((0 != reply.status) ? 0 : size)))
     {
         return EPROTO;
@@ -561,13 +561,13 @@ int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, 
 {
     int status = 0;
 
-    if (!worker || started <= 0)
+    if ((!worker) || (started <= 0))
     {
         OsConfigLogError(log, "TelemetryWorker: Invalid preparation accounting");
         return EINVAL;
     }
     status = ChargeBudget(worker, started, log);
-    if (!status && worker->budget <= 0)
+    if ((!status) && (worker->budget <= 0))
     {
         status = ETIMEDOUT;
         OsConfigLogInfo(log, "TelemetryWorker: Preparation exhausted invocation budget");
@@ -630,12 +630,12 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
     {
         goto failed;
     }
-    if (reply.status < 0 || reply.suppressed > 1)
+    if ((reply.status < 0) || (reply.suppressed > 1))
     {
         status = EPROTO;
         goto failed;
     }
-    worker->suppressed = reply.suppressed != 0;
+    worker->suppressed = 0 != reply.suppressed;
     status = reply.status;
     goto finished;
 failed:
@@ -650,7 +650,7 @@ finished:
     if (start > 0)
     {
         error = ChargeBudget(worker, start, log);
-        if (!status && error)
+        if ((!status) && (error))
         {
             status = error;
             worker->suppressed = true;

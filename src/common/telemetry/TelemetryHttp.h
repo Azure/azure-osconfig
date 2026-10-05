@@ -88,7 +88,7 @@ int TelemetryHttpBuildRequest(const char* token, const char* clientVersion,
 int TelemetryHttpResponseInitialize(TelemetryHttpResponse* response, OsConfigLogHandle log);
 
 // Zero means these bytes were processed, NOT collector acceptance. Require
-// complete && acceptance == TelemetryAccepted to report confirmed acceptance.
+// (complete) && (TelemetryAccepted == acceptance) to report confirmed acceptance.
 // endOfStream means a valid transport EOF, not an unauthenticated TLS truncation.
 // Preserved control headers must be handled by the invocation owner before its
 // next send; the parser neither ignores them nor implements suppression policy.

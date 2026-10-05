@@ -43,7 +43,7 @@ public:
         if (child > 0)
         {
             int status = 0;
-            if (!Wait(&status, 100) && (child > 0))
+            if ((!Wait(&status, 100)) && (child > 0))
             {
                 kill(child, SIGKILL);
                 while ((waitpid(child, NULL, 0) < 0) && (EINTR == errno))
@@ -120,7 +120,7 @@ public:
                 bytes += count;
                 size -= static_cast<size_t>(count);
             }
-            else if ((count == 0) || (EINTR != errno))
+            else if ((0 == count) || (EINTR != errno))
             {
                 return false;
             }
@@ -148,20 +148,20 @@ public:
                 bytes += count;
                 size -= static_cast<size_t>(count);
             }
-            else if ((count == 0) || (EINTR != errno))
+            else if ((0 == count) || (EINTR != errno))
             {
                 return false;
             }
         }
-        return size == 0;
+        return 0 == size;
     }
 
     bool Ready()
     {
         TelemetryWorkerFrame frame = {};
-        return Read(&frame, sizeof(frame)) && frame.magic == TELEMETRY_WORKER_MAGIC &&
-            frame.version == TELEMETRY_WORKER_VERSION && frame.operation == TELEMETRY_WORKER_READY &&
-            frame.sequence == 0 && frame.status == 0 && frame.size == 0 && frame.deadline == 0;
+        return (Read(&frame, sizeof(frame))) && (TELEMETRY_WORKER_MAGIC == frame.magic) &&
+            (TELEMETRY_WORKER_VERSION == frame.version) && (TELEMETRY_WORKER_READY == frame.operation) &&
+            (0 == frame.sequence) && (0 == frame.status) && (0 == frame.size) && (0 == frame.deadline);
     }
 
     bool Wait(int* status, int timeoutMs = 5000)
@@ -552,7 +552,7 @@ TEST(TelemetryWorkerProtocolTest, DoesNotRetainUnrelatedInheritedDescriptors)
     RawWorker worker;
     int status = worker.Start(TELEMETRY_WORKER_PATH);
     close(descriptors[1]);
-    bool ready = (0 == status) && worker.Ready();
+    bool ready = (0 == status) && (worker.Ready());
     struct pollfd item = {descriptors[0], POLLIN, 0};
     int polled = poll(&item, 1, 1000);
     char byte;
@@ -583,9 +583,9 @@ TEST(TelemetryWorkerDeathTest, ReapsOwnedChildrenAndPreservesOtherChildren)
             int status = 0;
             pid_t waited;
             do { waited = waitpid(other, &status, 0); } while ((waited < 0) && (EINTR == errno));
-            if ((waited != other) || !WIFEXITED(status) || WEXITSTATUS(status) != 37) _exit(5);
+            if ((waited != other) || (!WIFEXITED(status)) || (37 != WEXITSTATUS(status))) _exit(5);
             errno = 0;
-            if ((waitpid(-1, NULL, WNOHANG) != -1) || (errno != ECHILD)) _exit(6);
+            if ((-1 != waitpid(-1, NULL, WNOHANG)) || (ECHILD != errno)) _exit(6);
             _exit(0);
         }, ::testing::ExitedWithCode(0), "");
 }
@@ -604,7 +604,7 @@ TEST(TelemetryWorkerDeathTest, HandlesClosedStandardDescriptors)
             if (0 != TelemetryWorkerResolve(worker, "many", &result, NULL)) _exit(2);
             if (0 != TelemetryWorkerDestroy(&worker, NULL)) _exit(3);
             errno = 0;
-            if ((waitpid(-1, NULL, WNOHANG) != -1) || (errno != ECHILD)) _exit(4);
+            if ((-1 != waitpid(-1, NULL, WNOHANG)) || (ECHILD != errno)) _exit(4);
             _exit(0);
         }, ::testing::ExitedWithCode(0), "");
 }

@@ -9,8 +9,8 @@
 #include <math.h>
 #include <string.h>
 
-_Static_assert(CHAR_BIT == 8, "Telemetry encoding requires eight-bit bytes");
-_Static_assert(sizeof(double) == sizeof(uint64_t) && DBL_MANT_DIG == 53 && DBL_MAX_EXP == 1024,
+_Static_assert(8 == CHAR_BIT, "Telemetry encoding requires eight-bit bytes");
+_Static_assert((sizeof(double) == sizeof(uint64_t)) && (53 == DBL_MANT_DIG) && (1024 == DBL_MAX_EXP),
     "Telemetry encoding requires IEEE-754 binary64 doubles");
 
 enum TelemetryBondType
@@ -167,7 +167,7 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
         }
     }
 
-    if (property && (('.' == name[0]) || ('.' == name[*length - 1])))
+    if ((property) && (('.' == name[0]) || ('.' == name[*length - 1])))
     {
         OsConfigLogInfo(log, "TelemetryEncodeEvent: Property name starts or ends with a dot");
         return EINVAL;

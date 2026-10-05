@@ -34,7 +34,7 @@ static int Transfer(void* bytes, size_t size, bool writing, bool split)
         {
             offset += (size_t)done;
         }
-        else if ((done == 0) || (errno != EINTR))
+        else if ((0 == done) || (EINTR != errno))
         {
             return -1;
         }
@@ -64,7 +64,7 @@ int main(void)
         if ((0 != Transfer(&request, sizeof(request), false, false)) ||
             (request.size < 1) || (request.size > sizeof(host)) ||
             (0 != Transfer(host, request.size, false, false)) ||
-            (host[request.size - 1] != '\0'))
+            ('\0' != host[request.size - 1]))
         {
             return EXIT_SUCCESS;
         }

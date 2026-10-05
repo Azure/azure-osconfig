@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 
     puts("\nMissing libraries, symbols, and paths are inventory findings, not probe errors.");
     puts("Exit 0 means inventory completed, NOT that telemetry TLS is supported.");
-    if ((0 != fflush(stdout)) || ferror(stdout))
+    if ((0 != fflush(stdout)) || (ferror(stdout)))
     {
         fprintf(stderr, "Cannot write complete TLS inventory output\n");
         failed = 1;

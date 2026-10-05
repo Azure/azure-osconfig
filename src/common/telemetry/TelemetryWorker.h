@@ -40,7 +40,7 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
 // started is a monotonic nanosecond timestamp from immediately before that work.
 int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log);
 
-// Idempotent for *worker == NULL. Always closes IPC and handles the exact child.
+// Idempotent for NULL == *worker. Always closes IPC and handles the exact child.
 // If child ownership cannot be discharged, retains *worker for cleanup retry.
 // Termination/reaping can exceed deadlines if the kernel cannot make progress.
 int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log);

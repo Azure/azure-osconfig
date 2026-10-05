@@ -36,11 +36,11 @@ static bool DomainMatches(const char* token, size_t size)
     size_t i = 0;
     unsigned char value = '\0';
 
-    if (size && ('.' == token[size - 1]))
+    if ((size) && ('.' == token[size - 1]))
     {
         --size;
     }
-    if (size && ('.' == *token))
+    if ((size) && ('.' == *token))
     {
         ++token;
         --size;
@@ -50,7 +50,7 @@ static bool DomainMatches(const char* token, size_t size)
         return false;
     }
     offset = hostSize - size;
-    if (offset && ('.' != host[offset - 1]))
+    if ((offset) && ('.' != host[offset - 1]))
     {
         return false;
     }
@@ -84,7 +84,7 @@ static bool BypassesAria(const char* list)
             ++list;
         }
         token = list;
-        while (*list && !Blank(*list) && (',' != *list))
+        while ((*list) && (!Blank(*list)) && (',' != *list))
         {
             ++list;
         }
@@ -165,15 +165,15 @@ static int Hex(unsigned char c)
 {
     int value = -1;
 
-    if (c >= '0' && c <= '9')
+    if ((c >= '0') && (c <= '9'))
     {
         value = c - '0';
     }
-    else if (c >= 'a' && c <= 'f')
+    else if ((c >= 'a') && (c <= 'f'))
     {
         value = c - 'a' + 10;
     }
-    else if (c >= 'A' && c <= 'F')
+    else if ((c >= 'A') && (c <= 'F'))
     {
         value = c - 'A' + 10;
     }
@@ -197,11 +197,11 @@ static int DecodeCredential(const char* begin, const char* end, bool user, char*
             c = (unsigned char)(Hex(begin[0]) * 16 + Hex(begin[1]));
             begin += 2;
         }
-        if ((c < 32) || (c == 127) || (user && c == ':'))
+        if ((c < 32) || (127 == c) || ((user) && (':' == c)))
         {
             return EINVAL;
         }
-        if (*size == 256)
+        if (256 == *size)
         {
             return E2BIG;
         }
@@ -275,7 +275,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
     char c = '\0';
     unsigned int number = 1080;
 
-    if ((NULL == url) || !*url)
+    if ((NULL == url) || (!*url))
     {
         return EINVAL;
     }
@@ -294,16 +294,16 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
     scheme = strstr(url, "://");
     if (NULL != scheme)
     {
-        if (scheme - url != 4 || (url[0] != 'h' && url[0] != 'H') ||
-            (url[1] != 't' && url[1] != 'T') || (url[2] != 't' && url[2] != 'T') ||
-            (url[3] != 'p' && url[3] != 'P'))
+        if ((4 != scheme - url) || (('h' != url[0]) && ('H' != url[0])) ||
+            (('t' != url[1]) && ('T' != url[1])) || (('t' != url[2]) && ('T' != url[2])) ||
+            (('p' != url[3]) && ('P' != url[3])))
         {
             return ENOTSUP;
         }
         url = scheme + 3;
     }
     end = url + strcspn(url, "/?#");
-    if (*end && (end[0] != '/' || end[1] != '\0'))
+    if ((*end) && (('/' != end[0]) || ('\0' != end[1])))
     {
         return ENOTSUP;
     }
@@ -318,7 +318,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         url = at + 1;
     }
     hostEnd = end;
-    ipv6 = url < end && *url == '[';
+    ipv6 = (url < end) && ('[' == *url);
     if (ipv6)
     {
         ++url;
@@ -329,7 +329,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         }
         if (hostEnd + 1 != end)
         {
-            if (hostEnd[1] != ':')
+            if (':' != hostEnd[1])
             {
                 return EINVAL;
             }
@@ -346,7 +346,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         }
     }
     hostSize = (size_t)(hostEnd - url);
-    if (!hostSize || hostSize >= sizeof(proxy->host))
+    if ((!hostSize) || (hostSize >= sizeof(proxy->host)))
     {
         return EINVAL;
     }
@@ -364,8 +364,8 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         for (size_t i = 0; i < hostSize; ++i)
         {
             c = proxy->host[i];
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') || c == '-' || c == '.' || c == '_'))
+            if (!(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) ||
+                ((c >= '0') && (c <= '9')) || ('-' == c) || ('.' == c) || ('_' == c)))
             {
                 return EINVAL;
             }
@@ -380,7 +380,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         number = 0;
         while (port < end)
         {
-            if (*port < '0' || *port > '9')
+            if ((*port < '0') || (*port > '9'))
             {
                 return EINVAL;
             }
@@ -429,7 +429,7 @@ int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, siz
     {
         *size = 0;
     }
-    if (proxy && bytes && size && proxy->port)
+    if ((proxy) && (bytes) && (size) && (proxy->port))
     {
         // Only the validated parser output is accepted by this internal builder.
         count = snprintf(request, sizeof(request),
@@ -437,7 +437,7 @@ int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, siz
             "Host: " TELEMETRY_ARIA_HOST ":443\r\n%s%s%s\r\n",
             proxy->authorization[0] ? "Proxy-Authorization: " : "",
             proxy->authorization, proxy->authorization[0] ? "\r\n" : "");
-        status = (count < 0) ? EIO : ((size_t)count >= sizeof(request) || (size_t)count >= capacity) ?
+        status = (count < 0) ? EIO : (((size_t)count >= sizeof(request)) || ((size_t)count >= capacity)) ?
             EMSGSIZE : 0;
         if (!status)
         {

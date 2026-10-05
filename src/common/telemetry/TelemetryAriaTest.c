@@ -35,7 +35,7 @@ static int InitializeTimer(timer_t* timer)
     sigemptyset(&action.sa_mask);
     sigemptyset(&signals);
     sigaddset(&signals, SIGALRM);
-    if (sigaction(SIGALRM, &action, NULL) || sigprocmask(SIG_UNBLOCK, &signals, NULL))
+    if ((sigaction(SIGALRM, &action, NULL)) || (sigprocmask(SIG_UNBLOCK, &signals, NULL)))
     {
         status = errno ? errno : EIO;
     }
@@ -70,13 +70,13 @@ static int Encode(const char* iKey, const char* correlation, unsigned int sequen
     size_t i = 0;
     TelemetryEvent event = {0};
 
-    if (clock_gettime(CLOCK_REALTIME, &now) || !gmtime_r(&now.tv_sec, &utc))
+    if ((clock_gettime(CLOCK_REALTIME, &now)) || (!gmtime_r(&now.tv_sec, &utc)))
     {
         OsConfigLogError(log, "TelemetryAriaTest: Cannot read UTC clock");
         return EIO;
     }
-    if (now.tv_sec < 0 || (uint64_t)now.tv_sec > UINT64_C(253402300799) ||
-        !strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S+0000", &utc))
+    if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > UINT64_C(253402300799)) ||
+        (!strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S+0000", &utc)))
     {
         OsConfigLogError(log, "TelemetryAriaTest: Invalid UTC clock");
         return EOVERFLOW;
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
     size_t size = 0;
     TelemetryHttpResponse response = {0};
 
-    if (argc != 2 || strcmp(argv[1], "--send-status-trace-10000"))
+    if ((2 != argc) || (strcmp(argv[1], "--send-status-trace-10000")))
     {
         fprintf(stderr, "Explicit live test only: %s --send-status-trace-10000\n"
             "Sends 10000 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     {
         status = TelemetryMonotonicTime(&started);
     }
-    if (!status && started > INT64_MAX - INT64_C(15000000000))
+    if ((!status) && (started > INT64_MAX - INT64_C(15000000000)))
     {
         status = EOVERFLOW;
     }
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     }
     SetConsoleLoggingEnabled(false);
     log = OpenLog("/var/log/osconfig_telemetry.log", "/var/log/osconfig_telemetry.bak");
-    if (!log || !GetLogFile(log))
+    if ((!log) || (!GetLogFile(log)))
     {
         fprintf(stderr, "Cannot open /var/log/osconfig_telemetry.log; no events sent.\n");
         if (log)
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     {
         token = API_KEY;
     }
-    if (!token || !*token)
+    if ((!token) || (!*token))
     {
         status = EINVAL;
         OsConfigLogError(log, "TelemetryAriaTest: No ingestion key configured");
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
         goto cleanup;
     }
     tenantLength = strcspn(token, "-");
-    if (!tenantLength || token[tenantLength] != '-')
+    if ((!tenantLength) || ('-' != token[tenantLength]))
     {
         status = EINVAL;
         OsConfigLogError(log, "TelemetryAriaTest: Ingestion token lacks tenant prefix");
@@ -235,11 +235,11 @@ int main(int argc, char** argv)
         ++attempted;
         status = TelemetryTransportSend(transport, token, TEST_CLIENT, uploadTime, bytes, size,
             deadline, &response, log);
-        if (!status && response.acceptance == TelemetryAccepted)
+        if ((!status) && (TelemetryAccepted == response.acceptance))
         {
             ++accepted;
         }
-        else if (!status && response.acceptance == TelemetryRejected)
+        else if ((!status) && (TelemetryRejected == response.acceptance))
         {
             ++rejected;
         }
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
         {
             ++unconfirmed;
         }
-        if (status || response.acceptance != TelemetryAccepted || TelemetryTransportSuppressed(transport))
+        if ((status) || (TelemetryAccepted != response.acceptance) || (TelemetryTransportSuppressed(transport)))
         {
             fprintf(stderr, "event=%u http=%u status=%d controls=%zu\n",
                 i + 1, response.status, status, response.controlCount);
@@ -275,5 +275,5 @@ cleanup:
         fprintf(stderr, "See /var/log/osconfig_telemetry.log; do not print the ingestion token.\n");
     }
     CloseLog(&log);
-    return (!status && accepted == TEST_COUNT) ? 0 : 1;
+    return ((!status) && (TEST_COUNT == accepted)) ? 0 : 1;
 }

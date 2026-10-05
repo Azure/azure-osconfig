@@ -298,7 +298,7 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
                 goto cleanup;
             }
         }
-        if (reaped && eof)
+        if ((reaped) && (eof))
         {
             break;
         }
@@ -306,7 +306,7 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
         {
             goto cleanup;
         }
-        if (eof && (remaining > 10))
+        if ((eof) && (remaining > 10))
         {
             remaining = 10;
         }
@@ -318,12 +318,12 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "worker exit";
-    if (WIFSIGNALED(childStatus) && (SIGALRM == WTERMSIG(childStatus)))
+    if ((WIFSIGNALED(childStatus)) && (SIGALRM == WTERMSIG(childStatus)))
     {
         status = ETIMEDOUT;
         goto cleanup;
     }
-    if (!WIFEXITED(childStatus) || (0 != WEXITSTATUS(childStatus)))
+    if ((!WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
     {
         status = EIO;
         goto cleanup;
@@ -343,7 +343,7 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     status = TelemetryDecodeResolverReply(&reply, &resolved);
 
 cleanup:
-    if ((child > 0) && !reaped)
+    if ((child > 0) && (!reaped))
     {
         pid_t waited = 0;
         if ((0 != kill(child, SIGKILL)) && (ESRCH != errno))

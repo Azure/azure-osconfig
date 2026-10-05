@@ -29,7 +29,7 @@ protected:
             "no_proxy", "NO_PROXY", "http_proxy", "HTTP_PROXY"})
         {
             const char* value = getenv(name);
-            saved.push_back({name, value != NULL, value ? value : ""});
+            saved.push_back({name, NULL != value, value ? value : ""});
             ASSERT_EQ(0, unsetenv(name));
         }
     }

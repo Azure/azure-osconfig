@@ -244,7 +244,7 @@ TEST(TelemetryResolverDeathTest, ReapsEveryOwnedChildAndLeavesOtherChildrenAlone
             {
                 waited = waitpid(other, &status, 0);
             } while ((waited < 0) && (EINTR == errno));
-            if ((waited != other) || !WIFEXITED(status) || (37 != WEXITSTATUS(status)))
+            if ((waited != other) || (!WIFEXITED(status)) || (37 != WEXITSTATUS(status)))
             {
                 _exit(4);
             }
