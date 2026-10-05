@@ -824,7 +824,7 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_EQ(exitCode, WEXITSTATUS(result)) << text;
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
-    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 3 ***"));
+    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 66 ***"));
     EXPECT_NE(std::string::npos, text.find("TLS mode: mintls only (OS OpenSSL discovery disabled)"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));

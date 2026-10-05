@@ -180,7 +180,7 @@ def aria_peer(listener, context, mode, seen_names):
                         raise RuntimeError("Invalid collector request length")
                     body = receive(secured, size)
                     if mode.startswith("aria-live"):
-                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test No. 3 ***", b"731001",
+                        for required in (b"StatusTrace", b"*** Distilled 1DS SDK test No. 66 ***", b"731001",
                                          b"CorrelationId", b"ResultString", b"o:fixture"):
                             if required not in body:
                                 raise RuntimeError("Synthetic event missing required field")
