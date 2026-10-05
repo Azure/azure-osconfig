@@ -1,6 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/*
+ * How to run this
+ *
+ * From ~/azure-osconfig/build on Linux:
+ *
+ * sudo --preserve-env=OsConfigTelemetryApiKey cmake --build . --target telemetryariatest
+ * sudo --preserve-env=https_proxy,HTTPS_PROXY,all_proxy,ALL_PROXY,no_proxy,NO_PROXY ./common/telemetry/telemetryariatest --send-status-trace-10000
+ *
+ * Sends 10,000 synthetic StatusTrace events to Aria using the compiled ingestion key.
+ * Save the printed correlation ID and final counts to verify the run in Aria.
+ * This exercises the encoder/transport directly, not TelemetryWorkerMain.c or worker IPC.
+ */
+
 #define _POSIX_C_SOURCE 200809L
 
 #include "TelemetryEncoder.h"
