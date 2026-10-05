@@ -712,7 +712,9 @@ TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnThrottling) { TLS_CASE
 TEST(TelemetryTransportDeathTest, SuppressesFurtherSendsOnKillDirective) { TLS_CASE(TransportResponse("aria-kill", TelemetryAccepted, true)); }
 TEST(TelemetryTransportDeathTest, PreservesKillDirectiveWhenBodyIsMalformed) { TLS_CASE(MalformedKill()); }
 TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes) { TLS_CASE(TransportArguments()); }
-TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsTenThousandEventsToLoopbackOnly)
+// End-to-end functional test. Run explicitly with its exact --gtest_filter
+// and --gtest_also_run_disabled_tests; exclude it from normal unit-test runs.
+TEST(TelemetryTransportDeathTest, DISABLED_LiveTestExecutableSendsTenThousandEventsToLoopbackOnly)
 {
     TLS_CASE(LiveEvents("aria-live",
         "requested=10000 attempted=10000 accepted=10000 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
