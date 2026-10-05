@@ -140,17 +140,18 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
     }
 
     *length = i;
+
     return 0;
 }
 
 static int ValidateName(const char* name, bool property, size_t* length, OsConfigLogHandle log)
 {
     size_t i = 0;
-    int status = ValidateString(name, property ? 1 : 4, TELEMETRY_MAX_NAME_LENGTH,
-        length, property ? "property name" : "event name", log);
+    int status = 0;
     char byte = '\0';
 
-    if (0 != status)
+    if (0 != (status = ValidateString(name, property ? 1 : 4, TELEMETRY_MAX_NAME_LENGTH,
+        length, property ? "property name" : "event name", log)))
     {
         return status;
     }
@@ -198,9 +199,8 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
     }
 
     validated->event = event;
-    status = ValidateName(event->name, false, &validated->nameLength, log);
 
-    if (0 == status)
+    if (0 == (status = ValidateName(event->name, false, &validated->nameLength, log)))
     {
         status = ValidateString(event->iKey, 3, TELEMETRY_MAX_EVENT_SIZE, &validated->iKeyLength, "iKey", log);
     }
@@ -216,10 +216,8 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
         return EINVAL;
     }
 
-    status = ValidateString(event->deviceId, 0, TELEMETRY_MAX_EVENT_SIZE,
-        &validated->deviceIdLength, "device ID", log);
-
-    if (0 == status)
+    if (0 == (status = ValidateString(event->deviceId, 0, TELEMETRY_MAX_EVENT_SIZE,
+        &validated->deviceIdLength, "device ID", log)))
     {
         status = ValidateString(event->sdkVersion, 0, TELEMETRY_MAX_EVENT_SIZE,
             &validated->sdkVersionLength, "SDK version", log);
@@ -242,9 +240,8 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
         entry = (TelemetryValidatedProperty){0};
 
         entry.property = property;
-        status = ValidateName(property->name, true, &entry.nameLength, log);
 
-        if (0 != status)
+        if (0 != (status = ValidateName(property->name, true, &entry.nameLength, log)))
         {
             return status;
         }
@@ -268,6 +265,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
                     OsConfigLogInfo(log, "TelemetryEncodeEvent: Non-finite double at property %zu", i);
                     return EINVAL;
                 }
+
                 break;
 
             case TelemetryPropertyInt64:
@@ -341,6 +339,7 @@ static void WriteUnsigned(TelemetryWriter* writer, uint64_t value)
 static void WriteSigned(TelemetryWriter* writer, int64_t value)
 {
     uint64_t encoded = ((uint64_t)value << 1) ^ (UINT64_C(0) - (uint64_t)(value < 0));
+
     WriteUnsigned(writer, encoded);
 }
 
@@ -402,12 +401,15 @@ static void WriteProperty(TelemetryWriter* writer, const TelemetryValidatedPrope
         case TelemetryPropertyInt64:
             kind = 0;
             break;
+
         case TelemetryPropertyDouble:
             kind = 4;
             break;
+
         case TelemetryPropertyBoolean:
             kind = 6;
             break;
+
         case TelemetryPropertyString:
             break;
     }
@@ -435,7 +437,6 @@ static void WriteProperty(TelemetryWriter* writer, const TelemetryValidatedPrope
         case TelemetryPropertyDouble:
             if (0.0 != property->value.doubleValue)
             {
-
                 memcpy(&bits, &property->value.doubleValue, sizeof(bits));
                 WriteField(writer, TelemetryBondDouble, 5);
 
@@ -444,6 +445,7 @@ static void WriteProperty(TelemetryWriter* writer, const TelemetryValidatedPrope
                     WriteByte(writer, (unsigned char)(bits >> (i * 8)));
                 }
             }
+
             break;
     }
 
@@ -515,9 +517,7 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
         return EINVAL;
     }
 
-    status = ValidateEvent(event, &validated, log);
-
-    if (0 != status)
+    if (0 != (status = ValidateEvent(event, &validated, log)))
     {
         return status;
     }
@@ -539,5 +539,6 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
 
     *encodedSize = writer.size;
     OsConfigLogDebug(log, "TelemetryEncodeEvent: Encoded %zu properties into %zu bytes", event->propertyCount, writer.size);
+
     return 0;
 }

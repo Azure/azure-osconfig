@@ -55,23 +55,29 @@ static inline int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
 {
     (void)forceMinTls;
     (void)log;
+
     return 0;
 }
+
 static inline void TelemetryCleanup(OsConfigLogHandle log)
 {
     (void)log;
 }
+
 static inline char* GetModuleDirectory(void)
 {
     return NULL;
 }
+
 static inline char* GetCachedDistroName(void)
 {
     return NULL;
 }
+
 static inline void OSConfigTimeStampSave(void)
 {
 }
+
 static inline void OSConfigGetElapsedTime(int64_t* value)
 {
     if (value)
@@ -79,6 +85,7 @@ static inline void OSConfigGetElapsedTime(int64_t* value)
         *value = 0;
     }
 }
+
 #define OSConfigTelemetryStatusTrace(callingFunction, status) \
     do \
     { \

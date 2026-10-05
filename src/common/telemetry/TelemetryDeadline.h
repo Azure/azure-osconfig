@@ -26,16 +26,17 @@ static inline int TelemetryMonotonicTime(int64_t* value)
     {
         *value = (int64_t)now.tv_sec * INT64_C(1000000000) + now.tv_nsec;
     }
+
     return status;
 }
 
 static inline int TelemetryDeadlineRemaining(int64_t deadline, int* milliseconds)
 {
     int64_t now = 0;
-    int status = TelemetryMonotonicTime(&now);
+    int status = 0;
     int64_t remaining = 0;
 
-    if (0 == status)
+    if (0 == (status = TelemetryMonotonicTime(&now)))
     {
         if (now >= deadline)
         {
@@ -47,6 +48,7 @@ static inline int TelemetryDeadlineRemaining(int64_t deadline, int* milliseconds
             *milliseconds = (remaining > INT_MAX) ? INT_MAX : (int)remaining;
         }
     }
+
     return status;
 }
 
@@ -60,13 +62,14 @@ static inline int TelemetryArmDeadline(timer_t timer, int64_t deadline)
     {
         return EINVAL;
     }
-    status = TelemetryDeadlineRemaining(deadline, &remaining);
-    if (0 == status)
+
+    if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
     {
         expiration.it_value.tv_sec = (time_t)(deadline / 1000000000);
         expiration.it_value.tv_nsec = (long)(deadline % 1000000000);
         status = timer_settime(timer, TIMER_ABSTIME, &expiration, NULL) ? (errno ? errno : EIO) : 0;
     }
+
     return status;
 }
 

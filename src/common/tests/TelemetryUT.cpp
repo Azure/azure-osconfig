@@ -30,41 +30,58 @@ extern "C" int TelemetryWorkerCreate(const char* path, int lifetimeMs, int budge
     budget = budgetMs;
     operation = operationMs;
     workerForceMinTls = forceMinTls;
-    if (!createStatus) *worker = &workerInstance;
+
+    if (!createStatus)
+    {
+        *worker = &workerInstance;
+    }
+
     return createStatus;
 }
 
 extern "C" int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle)
 {
-    if (*worker) ++destroys;
+    if (*worker)
+    {
+        ++destroys;
+    }
+
     *worker = nullptr;
+
     return 0;
 }
 
 extern "C" int TelemetryWorkerSend(TelemetryWorker*, const char* name,
     const TelemetryProperty* properties, size_t count, OsConfigLogHandle)
 {
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
+    unsigned char encoded[TELEMETRY_MAX_EVENT_SIZE] = {};
+    size_t size = 0, encodedSize = 0;
+    int64_t uploadTime = 0;
+    size_t i = 0;
+
     ++sends;
     eventName = name;
     fields.clear();
-    for (size_t i = 0; i < count; ++i)
+
+    for (i = 0; i < count; ++i)
     {
         EXPECT_EQ(TelemetryPropertyString, properties[i].type);
         fields[properties[i].name] = properties[i].value.stringValue;
     }
-    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE], encoded[TELEMETRY_MAX_EVENT_SIZE];
-    size_t size = 0, encodedSize = 0;
-    int64_t uploadTime = 0;
+
     EXPECT_EQ(0, TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, nullptr));
     EXPECT_EQ(0, TelemetryEncodePayload(payload, size, "o:fixture", "test-epoch", sends,
         encoded, &encodedSize, &uploadTime, nullptr));
     EXPECT_GT(encodedSize, 0U);
+
     return 0;
 }
 
 extern "C" int TelemetryWorkerAccountPreparation(TelemetryWorker*, int64_t started, OsConfigLogHandle)
 {
     EXPECT_GT(started, 0);
+
     return preparationStatus;
 }
 
@@ -87,7 +104,11 @@ class TelemetryProducerTest : public ::testing::Test
         workerForceMinTls = false;
         fields.clear();
     }
-    void TearDown() override { TelemetryCleanup(nullptr); }
+
+    void TearDown() override
+    {
+        TelemetryCleanup(nullptr);
+    }
 };
 
 TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)

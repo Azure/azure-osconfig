@@ -106,11 +106,13 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
 #define LOAD_TLS_NAMED(member, name) do \
 { \
     symbol = dlsym(library, name); \
+    \
     if (NULL == symbol) \
     { \
         OsConfigLogInfo(log, "TelemetryTls: Provider lacks %s", name); \
         return ENOSYS; \
     } \
+    \
     _Static_assert(sizeof(symbol) == sizeof(api->member), "Unsupported POSIX function pointer ABI"); \
     memcpy(&api->member, &symbol, sizeof(symbol)); \
 } while (0)
@@ -142,6 +144,7 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
     LOAD_TLS_SYMBOL(SSL_read);
     LOAD_TLS_SYMBOL(ERR_clear_error);
     LOAD_TLS_SYMBOL(ERR_get_error);
+
     // The options ABI changed from unsigned long to uint64_t in OpenSSL 3.
     if (api->OpenSSL_version_num() >= 0x30000000UL)
     {
@@ -154,18 +157,23 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
     }
 #undef LOAD_TLS_SYMBOL
 #undef LOAD_TLS_NAMED
+
     peer = dlsym(library, "SSL_get1_peer_certificate");
+
     if (NULL == peer)
     {
         peer = dlsym(library, "SSL_get_peer_certificate");
     }
+
     if (NULL == peer)
     {
         OsConfigLogInfo(log, "TelemetryTls: Provider lacks peer-certificate access");
         return ENOSYS;
     }
+
     _Static_assert(sizeof(peer) == sizeof(api->GetPeerCertificate), "Unsupported POSIX function pointer ABI");
     memcpy(&api->GetPeerCertificate, &peer, sizeof(peer));
+
     return 0;
 }
 
@@ -181,36 +189,45 @@ static int LoadProvider(OsConfigLogHandle log)
     {
         return g_providerStatus;
     }
+
     g_attempted = true;
+
     for (i = 0; i < ARRAY_SIZE(names); ++i)
     {
         api = (TlsApi){0};
         g_libraries[i] = dlopen(names[i], RTLD_NOW | RTLD_LOCAL);
+
         if (NULL == g_libraries[i])
         {
             OsConfigLogInfo(log, "TelemetryTls: OS provider %s unavailable", names[i]);
             continue;
         }
+
         if (0 != LoadApi(g_libraries[i], &api, log))
         {
             continue;
         }
+
         version = api.OpenSSL_version_num();
         supported = (0 == i) ?
             ((version >= 0x30000000UL) && (version < 0x40000000UL)) :
             ((version >= 0x10100000UL) && (version < 0x10200000UL));
+
         if (!supported)
         {
             OsConfigLogInfo(log, "TelemetryTls: Unsupported provider ABI in %s", names[i]);
             continue;
         }
+
         g_api = api;
         // Respect the OS OpenSSL configuration, including provider/security policy.
         g_providerStatus = (1 == g_api.OPENSSL_init_ssl(TlsLoadConfiguration, NULL)) ? 0 : EIO;
         OsConfigLogInfo(log, "TelemetryTls: Selected %s (version=0x%lx, status=%d)",
             names[i], version, g_providerStatus);
+
         return g_providerStatus;
     }
+
     return g_providerStatus;
 }
 
@@ -227,6 +244,7 @@ static int WorkerSignals(void)
     {
         status = (SIG_IGN == action.sa_handler) ? 0 : ENOTSUP;
     }
+
     return status;
 }
 
@@ -237,6 +255,7 @@ static void Disconnect(TelemetryTls* tls)
         g_api.SSL_free(tls->connection);
         tls->connection = NULL;
     }
+
     tls->connected = false;
     tls->descriptor = -1;
 }
@@ -244,12 +263,15 @@ static void Disconnect(TelemetryTls* tls)
 static int Failure(TelemetryTls* tls, const char* operation, int status, OsConfigLogHandle log)
 {
     unsigned long providerError = ((g_attempted) && (g_api.ERR_get_error)) ? g_api.ERR_get_error() : 0;
+
     OsConfigLogError(log, "TelemetryTls: %s failed (status=%d, provider=0x%lx)",
         operation, status, providerError);
+
     if (NULL != tls)
     {
         Disconnect(tls);
     }
+
     return status;
 }
 
@@ -280,11 +302,12 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
         while ((0 == status) && (ready <= 0))
         {
             remaining = 0;
-            status = TelemetryDeadlineRemaining(deadline, &remaining);
-            if (0 == status)
+
+            if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
             {
                 item = (struct pollfd){tls->descriptor, (short)((TlsWantRead == sslError) ? POLLIN : POLLOUT), 0};
                 ready = poll(&item, 1, remaining);
+
                 if (ready > 0)
                 {
                     status = item.revents & POLLNVAL ? EBADF : 0;
@@ -296,6 +319,7 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
             }
         }
     }
+
     return status;
 }
 
@@ -319,33 +343,41 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
         (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining))))
     {
         status = forceMinTls ? ENOTSUP : LoadProvider(log);
+
 #ifdef OSCONFIG_TELEMETRY_MINTLS
         if (ENOTSUP == status)
         {
             created = calloc(1, sizeof(*created));
+
             if (!created)
             {
                 return Failure(NULL, "fallback allocation", ENOMEM, log);
             }
+
             created->descriptor = -1;
-            status = MinTlsCreate(&created->fallback, NULL, deadline, log);
-            if (status)
+
+            if (0 != (status = MinTlsCreate(&created->fallback, NULL, deadline, log)))
             {
                 TelemetryTlsDestroy(&created, log);
                 return Failure(NULL, "fallback initialization", status, log);
             }
+
             *tls = created;
             OsConfigLogInfo(log, "TelemetryTls: Selected in-tree mintls (forced=%d)", (int)forceMinTls);
+
             return 0;
         }
 #endif
+
         // Provider initialization/configuration failures never trigger fallback.
         if (status)
         {
             return Failure(NULL, forceMinTls ? "mintls unavailable" : "OS provider initialization", status, log);
         }
+
         g_api.ERR_clear_error();
         created = calloc(1, sizeof(*created));
+
         if (NULL == created)
         {
             status = ENOMEM;
@@ -354,6 +386,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
         {
             created->descriptor = -1;
             created->context = g_api.SSL_CTX_new(g_api.TLS_client_method());
+
             if (NULL == created->context)
             {
                 status = EIO;
@@ -361,16 +394,20 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
             else
             {
                 minimum = g_api.SSL_CTX_ctrl(created->context, TlsGetMinimumVersion, 0, NULL);
+
                 if ((minimum < TlsVersion12) &&
                     (1 != g_api.SSL_CTX_ctrl(created->context, TlsSetMinimumVersion, TlsVersion12, NULL)))
                 {
                     status = EIO;
                 }
+
                 g_api.SSL_CTX_set_verify(created->context, TlsVerifyPeer, NULL);
+
                 if (0 != g_api.SSL_CTX_set_alpn_protos(created->context, http11, sizeof(http11)))
                 {
                     status = EIO;
                 }
+
                 if (NULL != g_api.SetOptions3)
                 {
                     if ((!(g_api.SetOptions3(created->context, TlsNoCompression) & TlsNoCompression)) ||
@@ -383,10 +420,12 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
                 {
                     status = EIO;
                 }
+
                 if ((0 == status) && (1 != g_api.SSL_CTX_set_default_verify_paths(created->context)))
                 {
                     status = EIO;
                 }
+
                 if (0 == status)
                 {
                     status = TelemetryDeadlineRemaining(deadline, &remaining);
@@ -394,6 +433,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
             }
         }
     }
+
     if (0 != status)
     {
         Failure(NULL, "initialization", status, log);
@@ -404,6 +444,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
         *tls = created;
         OsConfigLogInfo(log, "TelemetryTls: Initialized OS trust and peer verification");
     }
+
     return status;
 }
 
@@ -428,14 +469,15 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
 #ifdef OSCONFIG_TELEMETRY_MINTLS
     if ((tls) && (tls->fallback))
     {
-        int signals = WorkerSignals();
-        if (signals)
+        if (0 != (status = WorkerSignals()))
         {
-            return Failure(NULL, "worker signals", signals, log);
+            return Failure(NULL, "worker signals", status, log);
         }
+
         return MinTlsHandshake(tls->fallback, descriptor, peer, deadline, log);
     }
 #endif
+
     if ((NULL == tls) || (NULL == peer) || ('\0' == *peer) ||
         (strnlen(peer, 254) > 253) || (descriptor < 0))
     {
@@ -449,6 +491,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
     else
     {
         ip = (1 == inet_pton(AF_INET, peer, address)) || (1 == inet_pton(AF_INET6, peer, address));
+
         for (c = peer; (*c) && (!status) && (!ip); ++c)
         {
             if (!(((*c >= 'a') && (*c <= 'z')) || ((*c >= 'A') && (*c <= 'Z')) ||
@@ -457,7 +500,9 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
                 status = EINVAL;
             }
         }
+
         flags = fcntl(descriptor, F_GETFL);
+
         if (flags < 0)
         {
             status = errno ? errno : EIO;
@@ -466,15 +511,18 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
         {
             status = EINVAL;
         }
+
         if (0 == status)
         {
             status = WorkerSignals();
         }
+
         if (0 == status)
         {
             status = TelemetryDeadlineRemaining(deadline, &remaining);
         }
     }
+
     if (0 != status)
     {
         return Failure(NULL, "handshake arguments", status, log);
@@ -483,17 +531,22 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
     g_api.ERR_clear_error();
     tls->descriptor = descriptor;
     tls->connection = g_api.SSL_new(tls->context);
+
     if (NULL == tls->connection)
     {
         return Failure(tls, "session allocation", EIO, log);
     }
+
     parameters = g_api.SSL_get0_param(tls->connection);
+
     if ((NULL == parameters) || (1 != g_api.SSL_set_fd(tls->connection, descriptor)))
     {
         return Failure(tls, "socket setup", EIO, log);
     }
+
     g_api.X509_VERIFY_PARAM_set_hostflags(parameters,
         g_api.X509_VERIFY_PARAM_get_hostflags(parameters) | TlsNoPartialWildcards);
+
     if (ip)
     {
         if (1 != g_api.X509_VERIFY_PARAM_set1_ip_asc(parameters, peer))
@@ -506,6 +559,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
     {
         status = EIO;
     }
+
     if (0 != status)
     {
         return Failure(tls, "peer identity setup", status, log);
@@ -513,48 +567,57 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
 
     for (;;)
     {
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (0 != status)
+        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             return Failure(tls, "handshake deadline", status, log);
         }
+
         g_api.ERR_clear_error();
         errno = 0;
         done = g_api.SSL_connect(tls->connection);
         systemError = errno;
+
         if (1 == done)
         {
             break;
         }
+
         sslError = g_api.SSL_get_error(tls->connection, done);
-        status = Wait(tls, sslError, systemError, deadline);
-        if (0 != status)
+
+        if (0 != (status = Wait(tls, sslError, systemError, deadline)))
         {
             return Failure(tls, "handshake", status, log);
         }
     }
+
     certificate = g_api.GetPeerCertificate(tls->connection);
     verified = (NULL != certificate) && (0 == g_api.SSL_get_verify_result(tls->connection));
+
     if (NULL != certificate)
     {
         g_api.X509_free(certificate);
     }
+
     if (!verified)
     {
         return Failure(tls, "certificate verification", EACCES, log);
     }
+
     g_api.SSL_get0_alpn_selected(tls->connection, &protocol, &protocolSize);
+
     if ((protocolSize) && ((8 != protocolSize) || (NULL == protocol) || (memcmp(protocol, "http/1.1", 8))))
     {
         return Failure(tls, "negotiated HTTP protocol", ENOTSUP, log);
     }
-    status = TelemetryDeadlineRemaining(deadline, &remaining);
-    if (0 != status)
+
+    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
     {
         return Failure(tls, "handshake deadline", status, log);
     }
+
     tls->connected = true;
     OsConfigLogInfo(log, "TelemetryTls: Verified secure connection established");
+
     return 0;
 }
 
@@ -565,6 +628,8 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
     int done = 0;
     int systemError = 0;
     int sslError = 0;
+    int remaining = 0;
+    int status = 0;
 
 #ifdef OSCONFIG_TELEMETRY_MINTLS
     if ((tls) && (tls->fallback))
@@ -572,36 +637,43 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
         return MinTlsWrite(tls->fallback, bytes, size, deadline, log);
     }
 #endif
+
     if ((NULL == tls) || (!tls->connected) || ((NULL == bytes) && (size)) || (size > INT_MAX))
     {
         return Failure(NULL, "write arguments", EINVAL, log);
     }
+
     while (offset < size)
     {
-        int remaining = 0;
-        int status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (0 != status)
+        remaining = 0;
+
+        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             return Failure(tls, "write deadline", status, log);
         }
+
         g_api.ERR_clear_error();
         errno = 0;
         done = g_api.SSL_write(tls->connection, (const unsigned char*)bytes + offset, (int)(size - offset));
         systemError = errno;
+
         if (done > 0)
         {
             offset += (size_t)done;
             continue;
         }
+
         sslError = g_api.SSL_get_error(tls->connection, done);
-        status = Wait(tls, sslError, systemError, deadline);
-        if (0 != status)
+
+        if (0 != (status = Wait(tls, sslError, systemError, deadline)))
         {
             return Failure(tls, "write", status, log);
         }
     }
-    int remaining = 0;
-    int status = TelemetryDeadlineRemaining(deadline, &remaining);
+
+    remaining = 0;
+    status = TelemetryDeadlineRemaining(deadline, &remaining);
+
     return status ? Failure(tls, "write deadline", status, log) : 0;
 }
 
@@ -620,49 +692,57 @@ int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* si
         return MinTlsRead(tls->fallback, bytes, capacity, size, endOfStream, deadline, log);
     }
 #endif
+
     if (NULL != size)
     {
         *size = 0;
     }
+
     if (NULL != endOfStream)
     {
         *endOfStream = false;
     }
+
     if ((NULL == tls) || (!tls->connected) || (NULL == bytes) || (!capacity) ||
         (capacity > INT_MAX) || (NULL == size) || (NULL == endOfStream))
     {
         return Failure(NULL, "read arguments", EINVAL, log);
     }
+
     for (;;)
     {
         remaining = 0;
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (0 != status)
+
+        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             return Failure(tls, "read deadline", status, log);
         }
+
         g_api.ERR_clear_error();
         errno = 0;
         done = g_api.SSL_read(tls->connection, bytes, (int)capacity);
         systemError = errno;
         sslError = (done > 0) ? 0 : g_api.SSL_get_error(tls->connection, done);
+
         if ((done > 0) || (TlsClosed == sslError))
         {
-            status = TelemetryDeadlineRemaining(deadline, &remaining);
-            if (0 != status)
+            if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
             {
                 return Failure(tls, "read deadline", status, log);
             }
+
             *size = (done > 0) ? (size_t)done : 0;
             *endOfStream = (TlsClosed == sslError);
+
             if (*endOfStream)
             {
                 Disconnect(tls);
             }
+
             return 0;
         }
-        status = Wait(tls, sslError, systemError, deadline);
-        if (0 != status)
+
+        if (0 != (status = Wait(tls, sslError, systemError, deadline)))
         {
             return Failure(tls, "read", status, log);
         }
@@ -675,14 +755,17 @@ void TelemetryTlsDestroy(TelemetryTls** tls, OsConfigLogHandle log)
     {
         return;
     }
+
 #ifdef OSCONFIG_TELEMETRY_MINTLS
     MinTlsDestroy(&(*tls)->fallback, log);
 #endif
     Disconnect(*tls);
+
     if (NULL != (*tls)->context)
     {
         g_api.SSL_CTX_free((*tls)->context);
     }
+
     free(*tls);
     *tls = NULL;
     OsConfigLogInfo(log, "TelemetryTls: Released TLS context");

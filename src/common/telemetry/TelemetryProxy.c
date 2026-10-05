@@ -16,10 +16,12 @@
 static const char* Environment(const char* lower, const char* upper)
 {
     const char* value = getenv(lower);
+
     if ((NULL == value) || ('\0' == *value))
     {
         value = getenv(upper);
     }
+
     return ((NULL != value) && ('\0' != *value)) ? value : NULL;
 }
 
@@ -40,32 +42,40 @@ static bool DomainMatches(const char* token, size_t size)
     {
         --size;
     }
+
     if ((size) && ('.' == *token))
     {
         ++token;
         --size;
     }
+
     if ((0 == size) || (size > hostSize))
     {
         return false;
     }
+
     offset = hostSize - size;
+
     if ((offset) && ('.' != host[offset - 1]))
     {
         return false;
     }
+
     for (i = 0; i < size; ++i)
     {
         value = (unsigned char)token[i];
+
         if ((value >= 'A') && (value <= 'Z'))
         {
             value += 'a' - 'A';
         }
+
         if (value != (unsigned char)host[offset + i])
         {
             return false;
         }
     }
+
     return true;
 }
 
@@ -77,35 +87,43 @@ static bool BypassesAria(const char* list)
     {
         return true;
     }
+
     while (*list)
     {
         while (Blank(*list))
         {
             ++list;
         }
+
         token = list;
+
         while ((*list) && (!Blank(*list)) && (',' != *list))
         {
             ++list;
         }
+
         if (DomainMatches(token, (size_t)(list - token)))
         {
             return true;
         }
+
         while (Blank(*list))
         {
             ++list;
         }
+
         // curl uses commas, not whitespace, to separate bypass entries.
         if (',' != *list)
         {
             break;
         }
+
         while (',' == *list)
         {
             ++list;
         }
     }
+
     return false;
 }
 
@@ -120,9 +138,11 @@ int TelemetryProxyDiscover(TelemetryProxySelection* selection, OsConfigLogHandle
         OsConfigLogInfo(log, "TelemetryProxy: Missing selection output (status=%d)", EINVAL);
         return EINVAL;
     }
+
     memset(selection, 0, sizeof(*selection));
 
     bypass = Environment("no_proxy", "NO_PROXY");
+
     if (NULL != bypass)
     {
         if (strnlen(bypass, TELEMETRY_PROXY_BYPASS_LIMIT + 1) > TELEMETRY_PROXY_BYPASS_LIMIT)
@@ -130,6 +150,7 @@ int TelemetryProxyDiscover(TelemetryProxySelection* selection, OsConfigLogHandle
             OsConfigLogInfo(log, "TelemetryProxy: Bypass configuration exceeds limit (status=%d)", E2BIG);
             return E2BIG;
         }
+
         if (BypassesAria(bypass))
         {
             selection->kind = TelemetryProxyDirect;
@@ -139,25 +160,31 @@ int TelemetryProxyDiscover(TelemetryProxySelection* selection, OsConfigLogHandle
     }
 
     proxy = Environment("https_proxy", "HTTPS_PROXY");
+
     if (NULL == proxy)
     {
         proxy = Environment("all_proxy", "ALL_PROXY");
     }
+
     if (NULL == proxy)
     {
         selection->kind = TelemetryProxyDirect;
         OsConfigLogInfo(log, "TelemetryProxy: No HTTPS proxy configured; direct route selected");
         return 0;
     }
+
     size = strnlen(proxy, TELEMETRY_PROXY_URL_LIMIT + 1);
+
     if (size > TELEMETRY_PROXY_URL_LIMIT)
     {
         OsConfigLogInfo(log, "TelemetryProxy: Proxy configuration exceeds limit (status=%d)", E2BIG);
         return E2BIG;
     }
+
     memcpy(selection->url, proxy, size + 1);
     selection->kind = TelemetryProxyConfigured;
     OsConfigLogInfo(log, "TelemetryProxy: Configured proxy selected; endpoint validation required");
+
     return 0;
 }
 
@@ -177,6 +204,7 @@ static int Hex(unsigned char c)
     {
         value = c - 'A' + 10;
     }
+
     return value;
 }
 
@@ -185,28 +213,35 @@ static int DecodeCredential(const char* begin, const char* end, bool user, char*
     unsigned char c = '\0';
 
     *size = 0;
+
     while (begin < end)
     {
         c = (unsigned char)*begin++;
+
         if ('%' == c)
         {
             if ((end - begin < 2) || (Hex(begin[0]) < 0) || (Hex(begin[1]) < 0))
             {
                 return EINVAL;
             }
+
             c = (unsigned char)(Hex(begin[0]) * 16 + Hex(begin[1]));
             begin += 2;
         }
+
         if ((c < 32) || (127 == c) || ((user) && (':' == c)))
         {
             return EINVAL;
         }
+
         if (256 == *size)
         {
             return E2BIG;
         }
+
         output[(*size)++] = (char)c;
     }
+
     return 0;
 }
 
@@ -225,37 +260,45 @@ static int Credentials(const char* begin, const char* end, char* authorization)
     {
         colon = end;
     }
-    status = DecodeCredential(begin, colon, true, credentials, &userSize);
-    if (status)
+
+    if (0 != (status = DecodeCredential(begin, colon, true, credentials, &userSize)))
     {
         return status;
     }
+
     credentials[userSize] = ':';
-    status = DecodeCredential(colon == end ? end : colon + 1, end, false,
-        credentials + userSize + 1, &passwordSize);
-    if (status)
+
+    if (0 != (status = DecodeCredential(colon == end ? end : colon + 1, end, false,
+        credentials + userSize + 1, &passwordSize)))
     {
         return status;
     }
+
     const size_t size = userSize + 1 + passwordSize;
     memcpy(authorization, "Basic ", 6);
+
     for (i = 0; i < size; i += 3)
     {
         value = (unsigned char)credentials[i] << 16;
+
         if (i + 1 < size)
         {
             value |= (unsigned char)credentials[i + 1] << 8;
         }
+
         if (i + 2 < size)
         {
             value |= (unsigned char)credentials[i + 2];
         }
+
         authorization[written++] = alphabet[(value >> 18) & 63];
         authorization[written++] = alphabet[(value >> 12) & 63];
         authorization[written++] = i + 1 < size ? alphabet[(value >> 6) & 63] : '=';
         authorization[written++] = i + 2 < size ? alphabet[value & 63] : '=';
     }
+
     authorization[written] = '\0';
+
     return 0;
 }
 
@@ -279,11 +322,14 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
     {
         return EINVAL;
     }
+
     size = strnlen(url, TELEMETRY_PROXY_URL_LIMIT + 1);
+
     if (size > TELEMETRY_PROXY_URL_LIMIT)
     {
         return E2BIG;
     }
+
     for (size_t i = 0; i < size; ++i)
     {
         if (((unsigned char)url[i] <= 32) || ((unsigned char)url[i] >= 127))
@@ -291,7 +337,9 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
             return EINVAL;
         }
     }
+
     scheme = strstr(url, "://");
+
     if (NULL != scheme)
     {
         if ((4 != scheme - url) || (('h' != url[0]) && ('H' != url[0])) ||
@@ -300,58 +348,73 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         {
             return ENOTSUP;
         }
+
         url = scheme + 3;
     }
+
     end = url + strcspn(url, "/?#");
+
     if ((*end) && (('/' != end[0]) || ('\0' != end[1])))
     {
         return ENOTSUP;
     }
+
     at = memchr(url, '@', (size_t)(end - url));
+
     if (NULL != at)
     {
-        status = Credentials(url, at, proxy->authorization);
-        if (status)
+        if (0 != (status = Credentials(url, at, proxy->authorization)))
         {
             return status;
         }
+
         url = at + 1;
     }
+
     hostEnd = end;
     ipv6 = (url < end) && ('[' == *url);
+
     if (ipv6)
     {
         ++url;
         hostEnd = memchr(url, ']', (size_t)(end - url));
+
         if (NULL == hostEnd)
         {
             return EINVAL;
         }
+
         if (hostEnd + 1 != end)
         {
             if (':' != hostEnd[1])
             {
                 return EINVAL;
             }
+
             port = hostEnd + 2;
         }
     }
     else
     {
         colon = memchr(url, ':', (size_t)(end - url));
+
         if (NULL != colon)
         {
             hostEnd = colon;
             port = colon + 1;
         }
     }
+
     hostSize = (size_t)(hostEnd - url);
+
     if ((!hostSize) || (hostSize >= sizeof(proxy->host)))
     {
         return EINVAL;
     }
+
     memcpy(proxy->host, url, hostSize);
     proxy->host[hostSize] = '\0';
+
     if (ipv6)
     {
         if (1 != inet_pton(AF_INET6, proxy->host, address))
@@ -364,6 +427,7 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         for (size_t i = 0; i < hostSize; ++i)
         {
             c = proxy->host[i];
+
             if (!(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) ||
                 ((c >= '0') && (c <= '9')) || ('-' == c) || ('.' == c) || ('_' == c)))
             {
@@ -371,50 +435,61 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
             }
         }
     }
+
     if (NULL != port)
     {
         if (port == end)
         {
             return EINVAL;
         }
+
         number = 0;
+
         while (port < end)
         {
             if ((*port < '0') || (*port > '9'))
             {
                 return EINVAL;
             }
+
             number = number * 10 + (unsigned int)(*port++ - '0');
+
             if (number > 65535)
             {
                 return EINVAL;
             }
         }
+
         if (!number)
         {
             return EINVAL;
         }
     }
+
     proxy->port = (uint16_t)number;
+
     return 0;
 }
 
 int TelemetryProxyParseHttp(const char* url, TelemetryHttpProxy* proxy, OsConfigLogHandle log)
 {
     int status = EINVAL;
+
     if (NULL != proxy)
     {
         memset(proxy, 0, sizeof(*proxy));
-        status = ParseHttp(url, proxy);
-        if (status)
+
+        if (0 != (status = ParseHttp(url, proxy)))
         {
             memset(proxy, 0, sizeof(*proxy));
         }
     }
+
     if (status)
     {
         OsConfigLogInfo(log, "TelemetryProxy: Unsupported or invalid endpoint (status=%d)", status);
     }
+
     return status;
 }
 
@@ -429,6 +504,7 @@ int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, siz
     {
         *size = 0;
     }
+
     if ((proxy) && (bytes) && (size) && (proxy->port))
     {
         // Only the validated parser output is accepted by this internal builder.
@@ -439,15 +515,18 @@ int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, siz
             proxy->authorization, proxy->authorization[0] ? "\r\n" : "");
         status = (count < 0) ? EIO : (((size_t)count >= sizeof(request)) || ((size_t)count >= capacity)) ?
             EMSGSIZE : 0;
+
         if (!status)
         {
             memcpy(bytes, request, (size_t)count + 1);
             *size = (size_t)count;
         }
     }
+
     if (status)
     {
         OsConfigLogInfo(log, "TelemetryProxy: Cannot format CONNECT (status=%d)", status);
     }
+
     return status;
 }

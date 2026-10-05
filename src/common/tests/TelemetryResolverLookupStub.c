@@ -13,10 +13,11 @@
 int TelemetryTestGetAddrInfo(const char* host, const char* service,
     const struct addrinfo* hints, struct addrinfo** result)
 {
-    static struct addrinfo entries[TELEMETRY_RESOLVER_ADDRESS_LIMIT + 3];
-    static struct sockaddr_in ipv4[TELEMETRY_RESOLVER_ADDRESS_LIMIT + 3];
-    static struct sockaddr_in6 ipv6;
+    static struct addrinfo entries[TELEMETRY_RESOLVER_ADDRESS_LIMIT + 3] = {0};
+    static struct sockaddr_in ipv4[TELEMETRY_RESOLVER_ADDRESS_LIMIT + 3] = {0};
+    static struct sockaddr_in6 ipv6 = {0};
     size_t count = 1;
+    size_t i = 0;
 
     (void)service;
     (void)hints;
@@ -29,10 +30,12 @@ int TelemetryTestGetAddrInfo(const char* host, const char* service,
             pause();
         }
     }
+
     if (0 == strcmp(host, "lookup-failure"))
     {
         return EAI_NONAME;
     }
+
     if (0 == strcmp(host, "system-failure"))
     {
         errno = EACCES;
@@ -42,11 +45,13 @@ int TelemetryTestGetAddrInfo(const char* host, const char* service,
     memset(entries, 0, sizeof(entries));
     memset(ipv4, 0, sizeof(ipv4));
     memset(&ipv6, 0, sizeof(ipv6));
+
     if (0 == strcmp(host, "many"))
     {
         count = TELEMETRY_RESOLVER_ADDRESS_LIMIT + 3;
     }
-    for (size_t i = 0; i < count; ++i)
+
+    for (i = 0; i < count; ++i)
     {
         ipv4[i].sin_family = AF_INET;
         ipv4[i].sin_addr.s_addr = htonl(UINT32_C(0x7f000001) + (uint32_t)i);
@@ -55,6 +60,7 @@ int TelemetryTestGetAddrInfo(const char* host, const char* service,
         entries[i].ai_addrlen = sizeof(ipv4[i]);
         entries[i].ai_next = (i + 1 < count) ? &entries[i + 1] : NULL;
     }
+
     if ((0 == strcmp(host, "ipv6")) || (0 == strcmp(host, "worker-pid")))
     {
         ipv6.sin6_family = AF_INET6;
@@ -64,11 +70,14 @@ int TelemetryTestGetAddrInfo(const char* host, const char* service,
         entries[0].ai_addr = (struct sockaddr*)&ipv6;
         entries[0].ai_addrlen = sizeof(ipv6);
     }
+
     if (0 == strcmp(host, "unsupported"))
     {
         entries[0].ai_family = AF_UNSPEC;
     }
+
     *result = entries;
+
     return 0;
 }
 

@@ -24,8 +24,8 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    reply->lookupError = getaddrinfo(host, NULL, &hints, &addresses);
-    if (0 != reply->lookupError)
+
+    if (0 != (reply->lookupError = getaddrinfo(host, NULL, &hints, &addresses)))
     {
         reply->error = (EAI_SYSTEM == reply->lookupError) ? (errno ? errno : EIO) : EHOSTUNREACH;
     }
@@ -35,6 +35,7 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
             next = next->ai_next)
         {
             address = &reply->addresses[reply->count];
+
             if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) &&
                 (next->ai_addrlen >= sizeof(struct sockaddr_in)))
             {
@@ -55,6 +56,7 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
         }
 
         freeaddrinfo(addresses);
+
         if (0 == reply->count)
         {
             reply->error = EHOSTUNREACH;

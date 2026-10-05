@@ -16,18 +16,22 @@ int main(int argc, char** argv)
     unsigned char bytes[sizeof(reply) + 1] = {0};
     size_t length = sizeof(reply);
     size_t offset = 0;
+    ssize_t size = 0;
 
     if (argc < 2)
     {
         return EXIT_FAILURE;
     }
+
     if (0 == strcmp(argv[1], "nonzero-exit"))
     {
         return EXIT_FAILURE;
     }
+
     if (0 == strcmp(argv[1], "close-then-hang"))
     {
         close(STDOUT_FILENO);
+
         for (;;)
         {
             pause();
@@ -39,6 +43,7 @@ int main(int argc, char** argv)
     reply.addresses[0].family = AF_INET;
     reply.addresses[0].bytes[0] = 127;
     reply.addresses[0].bytes[3] = 1;
+
     if (0 == strcmp(argv[1], "wrong-version"))
     {
         ++reply.version;
@@ -59,10 +64,13 @@ int main(int argc, char** argv)
     {
         ++length;
     }
+
     memcpy(bytes, &reply, sizeof(reply));
+
     while (offset < length)
     {
-        ssize_t size = write(STDOUT_FILENO, bytes + offset, length - offset);
+        size = write(STDOUT_FILENO, bytes + offset, length - offset);
+
         if (size > 0)
         {
             offset += (size_t)size;
@@ -76,6 +84,7 @@ int main(int argc, char** argv)
             return EXIT_FAILURE;
         }
     }
+
     if (0 == strcmp(argv[1], "reply-then-hang"))
     {
         for (;;)
@@ -83,5 +92,6 @@ int main(int argc, char** argv)
             pause();
         }
     }
+
     return EXIT_SUCCESS;
 }

@@ -87,6 +87,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
 
     dlerror();
     library = dlopen(name, RTLD_NOW | RTLD_LOCAL);
+
     if (NULL == library)
     {
         error = dlerror();
@@ -96,6 +97,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
     }
 
     printf("Library %s: LOADABLE\n", name);
+
     if (NULL != symbols)
     {
         for (; NULL != symbols[count]; ++count)
@@ -105,6 +107,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
             dlerror();
             address = dlsym(library, symbols[count]);
             error = dlerror();
+
             if ((NULL != error) || (NULL == address))
             {
                 printf("  Symbol %s: MISSING (%s)\n", symbols[count],
@@ -142,6 +145,7 @@ static int InspectTrustPath(const char* path)
     }
 
     error = errno;
+
     if ((ENOENT == error) || (ENOTDIR == error))
     {
         printf("Trust path %s: ABSENT\n", path);
@@ -149,6 +153,7 @@ static int InspectTrustPath(const char* path)
     }
 
     fprintf(stderr, "Cannot inspect trust path %s: %s\n", path, strerror(error));
+
     return 1;
 }
 
@@ -185,6 +190,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Cannot identify platform: %s\n", strerror(errno));
         return EXIT_FAILURE;
     }
+
     printf("Platform: %s %s\n\n", platform.sysname, platform.machine);
 
     failed |= InspectLibrary("libssl.so.3", g_openSslSymbols);
@@ -204,6 +210,7 @@ int main(int argc, char** argv)
     failed |= InspectLibrary("libnsspem.so", g_trustModuleSymbols);
 
     puts("\nCommon trust locations; not an exhaustive list or runtime search order:");
+
     for (i = 0; i < sizeof(trustPaths) / sizeof(trustPaths[0]); ++i)
     {
         failed |= InspectTrustPath(trustPaths[i]);
@@ -211,10 +218,12 @@ int main(int argc, char** argv)
 
     puts("\nMissing libraries, symbols, and paths are inventory findings, not probe errors.");
     puts("Exit 0 means inventory completed, NOT that telemetry TLS is supported.");
+
     if ((0 != fflush(stdout)) || (ferror(stdout)))
     {
         fprintf(stderr, "Cannot write complete TLS inventory output\n");
         failed = 1;
     }
+
     return failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }

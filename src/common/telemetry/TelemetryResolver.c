@@ -35,6 +35,7 @@ static int RemainingMilliseconds(const struct timespec* deadline, int* remaining
 
     nanoseconds = ((int64_t)deadline->tv_sec - (int64_t)now.tv_sec) * INT64_C(1000000000) +
         deadline->tv_nsec - now.tv_nsec;
+
     if (nanoseconds <= 0)
     {
         return ETIMEDOUT;
@@ -42,6 +43,7 @@ static int RemainingMilliseconds(const struct timespec* deadline, int* remaining
 
     nanoseconds = (nanoseconds + 999999) / 1000000;
     *remaining = (nanoseconds > INT_MAX) ? INT_MAX : (int)nanoseconds;
+
     return 0;
 }
 
@@ -53,12 +55,15 @@ static int PreparePipeDescriptor(int* descriptor)
     if (*descriptor <= STDERR_FILENO)
     {
         replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+
         if (replacement < 0)
         {
             return errno;
         }
+
         status = (0 == close(*descriptor)) ? 0 : errno;
         *descriptor = replacement;
+
         return status;
     }
     else if (0 != fcntl(*descriptor, F_SETFD, FD_CLOEXEC))
@@ -81,10 +86,12 @@ int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryR
     {
         return EPROTO;
     }
+
     if (0 != reply->error)
     {
         return reply->error;
     }
+
     if ((0 == reply->count) || (0 != reply->lookupError))
     {
         return EPROTO;
@@ -116,6 +123,7 @@ int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryR
     }
 
     result->count = reply->count;
+
     return 0;
 }
 
@@ -150,11 +158,14 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     int waitError = 0;
     size_t i = 0;
     int closeError = 0;
+    pid_t waited = 0;
+    int destroyError = 0;
 
     if (NULL != result)
     {
         memset(result, 0, sizeof(*result));
     }
+
     if ((NULL == result) || (NULL == workerPath) || ('/' != workerPath[0]) ||
         (NULL == host) || ('\0' == host[0]) ||
         (strnlen(host, TELEMETRY_RESOLVER_HOST_LIMIT + 1) > TELEMETRY_RESOLVER_HOST_LIMIT) ||
@@ -165,11 +176,13 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "host child ownership";
+
     if (0 != sigaction(SIGCHLD, NULL, &childAction))
     {
         status = errno;
         goto cleanup;
     }
+
     if ((SIG_DFL != childAction.sa_handler) || (0 != (childAction.sa_flags & SA_NOCLDWAIT)))
     {
         status = ENOTSUP;
@@ -177,37 +190,45 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "deadline";
+
     if (0 != clock_gettime(CLOCK_MONOTONIC, &deadline))
     {
         status = errno;
         goto cleanup;
     }
+
     if ((int64_t)deadline.tv_sec > INT32_MAX - timeoutMilliseconds / 1000 - 1)
     {
         status = EOVERFLOW;
         goto cleanup;
     }
+
     deadline.tv_sec += timeoutMilliseconds / 1000;
     deadline.tv_nsec += (long)(timeoutMilliseconds % 1000) * 1000000L;
+
     if (deadline.tv_nsec >= 1000000000L)
     {
         ++deadline.tv_sec;
         deadline.tv_nsec -= 1000000000L;
     }
+
     snprintf(seconds, sizeof(seconds), "%ld", (long)deadline.tv_sec);
     snprintf(nanoseconds, sizeof(nanoseconds), "%ld", deadline.tv_nsec);
 
     stage = "pipe";
+
     if (0 != pipe(descriptors))
     {
         status = errno;
         goto cleanup;
     }
+
     if ((0 != (status = PreparePipeDescriptor(&descriptors[0]))) ||
         (0 != (status = PreparePipeDescriptor(&descriptors[1]))))
     {
         goto cleanup;
     }
+
     if (0 != fcntl(descriptors[0], F_SETFL, O_NONBLOCK))
     {
         status = errno;
@@ -215,11 +236,14 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "spawn setup";
+
     if (0 != (status = posix_spawn_file_actions_init(&actions)))
     {
         goto cleanup;
     }
+
     actionsInitialized = true;
+
     if ((0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDOUT_FILENO))) ||
         (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[0]))) ||
         (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[1]))) ||
@@ -227,11 +251,13 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     {
         goto cleanup;
     }
+
     attributesInitialized = true;
     sigemptyset(&defaults);
     sigaddset(&defaults, SIGALRM);
     sigaddset(&defaults, SIGPIPE);
     sigemptyset(&mask);
+
     if ((0 != (status = posix_spawnattr_setsigdefault(&attributes, &defaults))) ||
         (0 != (status = posix_spawnattr_setsigmask(&attributes, &mask))) ||
         (0 != (status = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK))))
@@ -240,33 +266,40 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "spawn";
+
     if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
     {
         goto cleanup;
     }
-    status = posix_spawn(&child, workerPath, &actions, &attributes, arguments, environ);
-    if (0 != status)
+
+    if (0 != (status = posix_spawn(&child, workerPath, &actions, &attributes, arguments, environ)))
     {
         child = -1;
         goto cleanup;
     }
+
     stage = "closing parent writer";
+
     if (0 != close(descriptors[1]))
     {
         status = errno;
         descriptors[1] = -1;
         goto cleanup;
     }
+
     descriptors[1] = -1;
 
     stage = "response";
+
     for (;;)
     {
         descriptor = (struct pollfd){descriptors[0], POLLIN, 0};
         size = read(descriptors[0], bytes + received, sizeof(bytes) - received);
+
         if (size > 0)
         {
             received += (size_t)size;
+
             if (received > sizeof(reply))
             {
                 status = EPROTO;
@@ -285,7 +318,8 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
 
         if (!reaped)
         {
-            pid_t waited = waitpid(child, &childStatus, WNOHANG);
+            waited = waitpid(child, &childStatus, WNOHANG);
+
             if (child == waited)
             {
                 reaped = true;
@@ -298,18 +332,22 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
                 goto cleanup;
             }
         }
+
         if ((reaped) && (eof))
         {
             break;
         }
+
         if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
         {
             goto cleanup;
         }
+
         if ((eof) && (remaining > 10))
         {
             remaining = 10;
         }
+
         if ((poll(eof ? NULL : &descriptor, eof ? 0 : 1, remaining) < 0) && (EINTR != errno))
         {
             status = errno;
@@ -318,82 +356,97 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     }
 
     stage = "worker exit";
+
     if ((WIFSIGNALED(childStatus)) && (SIGALRM == WTERMSIG(childStatus)))
     {
         status = ETIMEDOUT;
         goto cleanup;
     }
+
     if ((!WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
     {
         status = EIO;
         goto cleanup;
     }
+
     stage = "deadline";
+
     if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
     {
         goto cleanup;
     }
+
     stage = "reply validation";
+
     if (sizeof(reply) != received)
     {
         status = EPROTO;
         goto cleanup;
     }
+
     memcpy(&reply, bytes, sizeof(reply));
     status = TelemetryDecodeResolverReply(&reply, &resolved);
 
 cleanup:
     if ((child > 0) && (!reaped))
     {
-        pid_t waited = 0;
+        waited = 0;
+
         if ((0 != kill(child, SIGKILL)) && (ESRCH != errno))
         {
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot terminate resolver child (errno=%d)", errno);
         }
+
         do
         {
             waited = waitpid(child, &childStatus, 0);
         } while ((waited < 0) && (EINTR == errno));
+
         if (waited < 0)
         {
             waitError = errno;
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot reap resolver child (errno=%d)", waitError);
+
             if (0 == status)
             {
                 status = waitError;
             }
         }
     }
+
     if (actionsInitialized)
     {
-        int destroyError = posix_spawn_file_actions_destroy(&actions);
-        if (0 != destroyError)
+        if (0 != (destroyError = posix_spawn_file_actions_destroy(&actions)))
         {
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot release spawn actions (status=%d)", destroyError);
+
             if (0 == status)
             {
                 status = destroyError;
             }
         }
     }
+
     if (attributesInitialized)
     {
-        int destroyError = posix_spawnattr_destroy(&attributes);
-        if (0 != destroyError)
+        if (0 != (destroyError = posix_spawnattr_destroy(&attributes)))
         {
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot release spawn attributes (status=%d)", destroyError);
+
             if (0 == status)
             {
                 status = destroyError;
             }
         }
     }
+
     for (i = 0; i < ARRAY_SIZE(descriptors); ++i)
     {
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
             closeError = errno;
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot close IPC descriptor (errno=%d)", closeError);
+
             if (0 == status)
             {
                 status = closeError;
@@ -411,5 +464,6 @@ cleanup:
         *result = resolved;
         OsConfigLogDebug(log, "TelemetryResolveHost: Resolved %zu addresses", result->count);
     }
+
     return status;
 }

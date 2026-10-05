@@ -25,10 +25,12 @@ protected:
 
     void SetUp() override
     {
+        const char* value = NULL;
+
         for (const char* name : {"https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY",
             "no_proxy", "NO_PROXY", "http_proxy", "HTTP_PROXY"})
         {
-            const char* value = getenv(name);
+            value = getenv(name);
             saved.push_back({name, NULL != value, value ? value : ""});
             ASSERT_EQ(0, unsetenv(name));
         }
@@ -36,9 +38,11 @@ protected:
 
     void TearDown() override
     {
+        int status = 0;
+
         for (const auto& variable : saved)
         {
-            int status = variable.present ? setenv(variable.name, variable.value.c_str(), 1) :
+            status = variable.present ? setenv(variable.name, variable.value.c_str(), 1) :
                 unsetenv(variable.name);
             EXPECT_EQ(0, status);
         }
@@ -75,19 +79,31 @@ TEST_F(TelemetryProxyTest, UsesHttpsThenAllProxyWithLowercasePrecedence)
     const char* names[] = {"https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"};
     const char* urls[] = {"http://lower.invalid:81", "http://upper.invalid:82",
         "socks5h://lower.invalid:83", "https://upper.invalid:84"};
-    for (size_t i = 0; i < 4; ++i) Set(names[i], urls[i]);
-    for (size_t i = 0; i < 4; ++i)
+    size_t i = 0;
+
+    for (i = 0; i < 4; ++i)
+    {
+        Set(names[i], urls[i]);
+    }
+
+    for (i = 0; i < 4; ++i)
     {
         ExpectProxy(urls[i]);
         ASSERT_EQ(0, unsetenv(names[i]));
     }
+
     ExpectDirect();
 }
 
 TEST_F(TelemetryProxyTest, EmptyValuesFallThroughLikeCurlGetenv)
 {
     Set("ALL_PROXY", "http://fallback.invalid");
-    for (const char* name : {"https_proxy", "HTTPS_PROXY", "all_proxy"}) Set(name, "");
+
+    for (const char* name : {"https_proxy", "HTTPS_PROXY", "all_proxy"})
+    {
+        Set(name, "");
+    }
+
     ExpectProxy("http://fallback.invalid");
     Set("ALL_PROXY", "");
     ExpectDirect();
@@ -117,6 +133,7 @@ TEST_F(TelemetryProxyTest, LowercaseNoProxyOverridesUppercaseUnlessEmpty)
 TEST_F(TelemetryProxyTest, MatchesExactHostAndDomainSuffixAtLabelBoundaries)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {TELEMETRY_ARIA_HOST, "events.data.microsoft.com",
         "data.microsoft.com", "microsoft.com", "com"})
     {
@@ -124,6 +141,7 @@ TEST_F(TelemetryProxyTest, MatchesExactHostAndDomainSuffixAtLabelBoundaries)
         Set("no_proxy", bypass);
         ExpectDirect();
     }
+
     for (const char* bypass : {"icrosoft.com", "soft.com", "mobile.events", "microsoft",
         "sub.mobile.events.data.microsoft.com", "microsoft.com.invalid"})
     {
@@ -136,6 +154,7 @@ TEST_F(TelemetryProxyTest, MatchesExactHostAndDomainSuffixAtLabelBoundaries)
 TEST_F(TelemetryProxyTest, IgnoresCaseAndOneLeadingAndTrailingDot)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {"MOBILE.EVENTS.DATA.MICROSOFT.COM", ".microsoft.com",
         "microsoft.com.", ".MICROSOFT.COM."})
     {
@@ -143,6 +162,7 @@ TEST_F(TelemetryProxyTest, IgnoresCaseAndOneLeadingAndTrailingDot)
         Set("no_proxy", bypass);
         ExpectDirect();
     }
+
     for (const char* bypass : {"..microsoft.com", "microsoft.com..", ".", ".."})
     {
         SCOPED_TRACE(bypass);
@@ -154,6 +174,7 @@ TEST_F(TelemetryProxyTest, IgnoresCaseAndOneLeadingAndTrailingDot)
 TEST_F(TelemetryProxyTest, SupportsCommaListsWithSpacesTabsAndEmptyEntries)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {"other.invalid, microsoft.com", ",,,\t.microsoft.com. \t,,,",
         "other.invalid \t, \t microsoft.com \t, last.invalid", " \tmicrosoft.com\t "})
     {
@@ -161,6 +182,7 @@ TEST_F(TelemetryProxyTest, SupportsCommaListsWithSpacesTabsAndEmptyEntries)
         Set("no_proxy", bypass);
         ExpectDirect();
     }
+
     Set("no_proxy", " \t,,, ,,, ");
     ExpectProxy("http://proxy.invalid");
 }
@@ -168,6 +190,7 @@ TEST_F(TelemetryProxyTest, SupportsCommaListsWithSpacesTabsAndEmptyEntries)
 TEST_F(TelemetryProxyTest, WhitespaceDoesNotReplaceCommaSeparators)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {"other.invalid microsoft.com", "other.invalid\tmicrosoft.com",
         "other.invalid ignored.invalid,microsoft.com", "microsoft.com\n", "microsoft.com\r"})
     {
@@ -175,6 +198,7 @@ TEST_F(TelemetryProxyTest, WhitespaceDoesNotReplaceCommaSeparators)
         Set("no_proxy", bypass);
         ExpectProxy("http://proxy.invalid");
     }
+
     // A newline is part of a nonmatching token; the following comma still separates entries.
     Set("no_proxy", "other.invalid\n,microsoft.com");
     ExpectDirect();
@@ -187,6 +211,7 @@ TEST_F(TelemetryProxyTest, WildcardMustBeTheEntireUntrimmedValue)
     Set("https_proxy", "http://proxy.invalid");
     Set("no_proxy", "*");
     ExpectDirect();
+
     for (const char* bypass : {" *", "* ", "*,other.invalid", "other.invalid,*",
         "*.microsoft.com", "mobile.*", "*.*", "?"})
     {
@@ -199,6 +224,7 @@ TEST_F(TelemetryProxyTest, WildcardMustBeTheEntireUntrimmedValue)
 TEST_F(TelemetryProxyTest, DoesNotResolveDestinationForIpOrCidrBypass)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {"127.0.0.1", "0.0.0.0/0", "10.0.0.0/8", "::1",
         "[::1]", "::/0", "microsoft.com/24"})
     {
@@ -211,6 +237,7 @@ TEST_F(TelemetryProxyTest, DoesNotResolveDestinationForIpOrCidrBypass)
 TEST_F(TelemetryProxyTest, DoesNotTreatPortsOrUrlsAsBypassDomains)
 {
     Set("https_proxy", "http://proxy.invalid");
+
     for (const char* bypass : {"microsoft.com:443", TELEMETRY_ARIA_HOST ":443",
         "https://microsoft.com", "https://" TELEMETRY_ARIA_HOST "/", "<local>"})
     {
@@ -244,12 +271,17 @@ TEST_F(TelemetryProxyTest, CopiesSelectionAndDoesNotModifyEnvironment)
     ExpectProxy("http://replacement.invalid");
     Set("no_proxy", "*");
     ExpectDirect();
-    for (char value : selection.url) EXPECT_EQ('\0', value);
+
+    for (char value : selection.url)
+    {
+        EXPECT_EQ('\0', value);
+    }
 }
 
 TEST_F(TelemetryProxyTest, EnforcesExactProxyLimitWithoutTryingAnotherRoute)
 {
     std::string url = "http://proxy.invalid/";
+
     url.append(TELEMETRY_PROXY_URL_LIMIT - url.size(), 'a');
     Set("https_proxy", url);
     ExpectProxy(url.c_str());
@@ -258,13 +290,19 @@ TEST_F(TelemetryProxyTest, EnforcesExactProxyLimitWithoutTryingAnotherRoute)
     Set("https_proxy", url);
     EXPECT_EQ(E2BIG, TelemetryProxyDiscover(&selection, NULL));
     EXPECT_EQ(TelemetryProxyUnresolved, selection.kind);
-    for (char value : selection.url) EXPECT_EQ('\0', value);
+
+    for (char value : selection.url)
+    {
+        EXPECT_EQ('\0', value);
+    }
 }
 
 TEST_F(TelemetryProxyTest, EnforcesExactBypassLimitBeforeMakingRoutingDecision)
 {
+    std::string bypass = {};
+
     Set("https_proxy", "http://proxy.invalid");
-    std::string bypass(TELEMETRY_PROXY_BYPASS_LIMIT - strlen(",microsoft.com"), 'x');
+    bypass.assign(TELEMETRY_PROXY_BYPASS_LIMIT - strlen(",microsoft.com"), 'x');
     bypass += ",microsoft.com";
     Set("no_proxy", bypass);
     ExpectDirect();
@@ -279,8 +317,14 @@ TEST_F(TelemetryProxyTest, EnforcesExactBypassLimitBeforeMakingRoutingDecision)
 TEST_F(TelemetryProxyTest, DoesNotInspectOverriddenOrBypassedProxyValues)
 {
     std::string oversized(TELEMETRY_PROXY_URL_LIMIT + 1, 'x');
+
     Set("https_proxy", "http://proxy.invalid");
-    for (const char* name : {"HTTPS_PROXY", "all_proxy", "ALL_PROXY"}) Set(name, oversized);
+
+    for (const char* name : {"HTTPS_PROXY", "all_proxy", "ALL_PROXY"})
+    {
+        Set(name, oversized);
+    }
+
     ExpectProxy("http://proxy.invalid");
     Set("https_proxy", oversized);
     Set("no_proxy", "*");
@@ -297,6 +341,7 @@ TEST_F(TelemetryProxyTest, RejectsMissingOutput)
 TEST_F(TelemetryProxyTest, ParsesHttpProxyHostsPortsAndCurlDefault)
 {
     TelemetryHttpProxy proxy = {};
+
     for (const char* url : {"proxy.invalid", "http://proxy.invalid/", "HTTP://proxy.invalid"})
     {
         ASSERT_EQ(0, TelemetryProxyParseHttp(url, &proxy, NULL));
@@ -304,6 +349,7 @@ TEST_F(TelemetryProxyTest, ParsesHttpProxyHostsPortsAndCurlDefault)
         EXPECT_EQ(1080, proxy.port);
         EXPECT_STREQ("", proxy.authorization);
     }
+
     ASSERT_EQ(0, TelemetryProxyParseHttp("http://127.0.0.1:65535", &proxy, NULL));
     EXPECT_EQ(65535, proxy.port);
     ASSERT_EQ(0, TelemetryProxyParseHttp("http://[::1]:8080/", &proxy, NULL));
@@ -314,6 +360,7 @@ TEST_F(TelemetryProxyTest, ParsesHttpProxyHostsPortsAndCurlDefault)
 TEST_F(TelemetryProxyTest, DecodesCredentialsOnlyForProxyAuthorization)
 {
     TelemetryHttpProxy proxy = {};
+
     ASSERT_EQ(0, TelemetryProxyParseHttp("http://us%65r:p%40ss@proxy.invalid", &proxy, NULL));
     EXPECT_STREQ("Basic dXNlcjpwQHNz", proxy.authorization);
     ASSERT_EQ(0, TelemetryProxyParseHttp("user@proxy.invalid", &proxy, NULL));
@@ -325,6 +372,7 @@ TEST_F(TelemetryProxyTest, DecodesCredentialsOnlyForProxyAuthorization)
 TEST_F(TelemetryProxyTest, RejectsUnsupportedRoutesWithoutDirectFallback)
 {
     TelemetryHttpProxy proxy = {};
+
     for (const char* url : {"https://proxy.invalid", "socks5://proxy.invalid",
         "socks5h://proxy.invalid", "socks4a://proxy.invalid", "ftp://proxy.invalid",
         "http://proxy.invalid/path", "http://proxy.invalid?query", "http://proxy.invalid#fragment"})
@@ -340,6 +388,7 @@ TEST_F(TelemetryProxyTest, RejectsUnsupportedRoutesWithoutDirectFallback)
 TEST_F(TelemetryProxyTest, RejectsMalformedProxyAuthorityAndCredentials)
 {
     TelemetryHttpProxy proxy = {};
+
     for (const char* url : {"", "http://", "http://:8080", "http://proxy:0", "http://proxy:65536",
         "http://proxy:-1", "http://proxy:", "http://proxy:1x", "http://proxy:999999999999999999",
         "http://[::1", "http://[invalid]", "http://[::1]bad", "http://::1",
@@ -359,6 +408,7 @@ TEST_F(TelemetryProxyTest, BoundsDecodedCredentialsAndUrl)
 {
     TelemetryHttpProxy proxy = {};
     const std::string user(256, 'u'), password(256, 'p');
+
     EXPECT_EQ(0, TelemetryProxyParseHttp(("http://" + user + ":" + password + "@proxy").c_str(), &proxy, NULL));
     EXPECT_EQ(690U, strlen(proxy.authorization));
     EXPECT_EQ(E2BIG, TelemetryProxyParseHttp(("http://" + user + "u:@proxy").c_str(), &proxy, NULL));
@@ -369,12 +419,13 @@ TEST_F(TelemetryProxyTest, BoundsDecodedCredentialsAndUrl)
 TEST_F(TelemetryProxyTest, BuildsExactConnectWithoutCollectorTokenOrBody)
 {
     TelemetryHttpProxy proxy = {};
-    ASSERT_EQ(0, TelemetryProxyParseHttp("http://user:p%40ss@proxy.invalid:8080", &proxy, NULL));
     char bytes[1024] = {};
     size_t size = 0;
-    ASSERT_EQ(0, TelemetryProxyBuildConnect(&proxy, bytes, sizeof(bytes), &size, NULL));
     const std::string expected = "CONNECT " TELEMETRY_ARIA_HOST ":443 HTTP/1.1\r\n"
         "Host: " TELEMETRY_ARIA_HOST ":443\r\nProxy-Authorization: Basic dXNlcjpwQHNz\r\n\r\n";
+
+    ASSERT_EQ(0, TelemetryProxyParseHttp("http://user:p%40ss@proxy.invalid:8080", &proxy, NULL));
+    ASSERT_EQ(0, TelemetryProxyBuildConnect(&proxy, bytes, sizeof(bytes), &size, NULL));
     EXPECT_EQ(expected, std::string(bytes, size));
     EXPECT_EQ(EMSGSIZE, TelemetryProxyBuildConnect(&proxy, bytes, expected.size(), &size, NULL));
     EXPECT_EQ(0U, size);
@@ -391,6 +442,7 @@ TEST_F(TelemetryProxyTest, RejectsInvalidHttpProxyApiArguments)
     TelemetryHttpProxy proxy = {};
     char bytes[1024] = {};
     size_t size = 999;
+
     EXPECT_EQ(EINVAL, TelemetryProxyParseHttp(NULL, &proxy, NULL));
     EXPECT_EQ(EINVAL, TelemetryProxyParseHttp("proxy", NULL, NULL));
     EXPECT_EQ(EINVAL, TelemetryProxyBuildConnect(&proxy, bytes, sizeof(bytes), &size, NULL));

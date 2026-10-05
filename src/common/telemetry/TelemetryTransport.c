@@ -37,11 +37,12 @@ static int WaitSocket(int descriptor, short events, int64_t deadline)
     while ((!status) && (ready <= 0))
     {
         remaining = 0;
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (!status)
+
+        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             item = (struct pollfd){descriptor, events, 0};
             ready = poll(&item, 1, remaining);
+
             if (ready > 0)
             {
                 status = (item.revents & POLLNVAL) ? EBADF : 0;
@@ -52,18 +53,21 @@ static int WaitSocket(int descriptor, short events, int64_t deadline)
             }
         }
     }
+
     return status;
 }
 
 static void Disconnect(TelemetryTransport* transport, OsConfigLogHandle log)
 {
     TelemetryTlsDestroy(&transport->tls, log);
+
     if (transport->descriptor >= 0)
     {
         if (0 != close(transport->descriptor))
         {
             OsConfigLogInfo(log, "TelemetryTransport: Socket close failed (status=%d)", errno);
         }
+
         transport->descriptor = -1;
     }
 }
@@ -73,7 +77,7 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
     TelemetryResolverReply reply = {0};
     TelemetryResolvedHost addresses = {0};
     int remaining = 0;
-    int status = TelemetryDeadlineRemaining(deadline, &remaining);
+    int status = 0;
     uint16_t port = 0;
     size_t i = 0;
     struct sockaddr_storage* address = NULL;
@@ -83,25 +87,29 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
     int error = 0;
     socklen_t size = 0;
 
-    if (status)
+    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
     {
         return status;
     }
+
     TelemetryLookupHost(transport->proxied ? transport->proxy.host : TELEMETRY_ARIA_HOST, &reply);
-    status = TelemetryDecodeResolverReply(&reply, &addresses);
-    if (status)
+
+    if (0 != (status = TelemetryDecodeResolverReply(&reply, &addresses)))
     {
         return status;
     }
+
     port = htons(transport->proxied ? transport->proxy.port : 443);
+
     for (i = 0; i < addresses.count; ++i)
     {
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (status)
+        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             break;
         }
+
         address = &addresses.addresses[i];
+
         if (AF_INET == address->ss_family)
         {
             memcpy(&ipv4, address, sizeof(ipv4));
@@ -114,13 +122,16 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
             ipv6.sin6_port = port;
             memcpy(address, &ipv6, sizeof(ipv6));
         }
+
         descriptor = socket(address->ss_family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+
         if (descriptor < 0)
         {
             status = errno ? errno : EIO;
             OsConfigLogInfo(log, "TelemetryTransport: Socket creation failed (index=%zu, status=%d)", i, status);
             continue;
         }
+
         if (0 == connect(descriptor, (struct sockaddr*)address, addresses.lengths[i]))
         {
             status = 0;
@@ -131,8 +142,7 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
         }
         else
         {
-            status = WaitSocket(descriptor, POLLOUT, deadline);
-            if (!status)
+            if (0 == (status = WaitSocket(descriptor, POLLOUT, deadline)))
             {
                 error = 0;
                 size = sizeof(error);
@@ -140,17 +150,21 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
                     (errno ? errno : EIO) : error;
             }
         }
+
         if (!status)
         {
             transport->descriptor = descriptor;
             return 0;
         }
+
         OsConfigLogInfo(log, "TelemetryTransport: TCP address failed (index=%zu, status=%d)", i, status);
+
         if (close(descriptor))
         {
             OsConfigLogInfo(log, "TelemetryTransport: Failed candidate close (status=%d)", errno);
         }
     }
+
     return status;
 }
 
@@ -164,12 +178,13 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
     while ((!status) && (offset < size))
     {
         remaining = 0;
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
-        if (!status)
+
+        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             count = writing ?
                 send(descriptor, (char*)data + offset, size - offset, MSG_NOSIGNAL) :
                 recv(descriptor, (char*)data + offset, size - offset, 0);
+
             if (count > 0)
             {
                 offset += (size_t)count;
@@ -188,6 +203,7 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
             }
         }
     }
+
     return status;
 }
 
@@ -201,7 +217,7 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
 {
     char request[1024] = {0};
     size_t requestSize = 0;
-    int status = TelemetryProxyBuildConnect(&transport->proxy, request, sizeof(request), &requestSize, log);
+    int status = 0;
     size_t total = 0;
     size_t headers = 0;
     unsigned int informational = 0;
@@ -213,51 +229,60 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
     char* colon = NULL;
     char* c = NULL;
 
-    if (status)
+    if (0 != (status = TelemetryProxyBuildConnect(&transport->proxy, request, sizeof(request), &requestSize, log)))
     {
         return status;
     }
-    status = PlainTransfer(transport->descriptor, request, requestSize, true, deadline);
-    if (status)
+
+    if (0 != (status = PlainTransfer(transport->descriptor, request, requestSize, true, deadline)))
     {
         return status;
     }
+
     for (;;)
     {
         length = 0;
+
         for (;;)
         {
             byte = 0;
+
             // Do not consume tunneled bytes past the CONNECT header boundary.
-            status = PlainTransfer(transport->descriptor, &byte, 1, false, deadline);
-            if (status)
+            if (0 != (status = PlainTransfer(transport->descriptor, &byte, 1, false, deadline)))
             {
                 return status;
             }
+
             if (++total > TELEMETRY_HTTP_HEADER_LIMIT)
             {
                 return EMSGSIZE;
             }
+
             if ('\n' == byte)
             {
                 if ((!length) || ('\r' != line[length - 1]))
                 {
                     return EPROTO;
                 }
+
                 line[--length] = '\0';
                 break;
             }
+
             if (TELEMETRY_HTTP_LINE_LIMIT == length)
             {
                 return EMSGSIZE;
             }
+
             if (((byte < 32) && ('\t' != byte) && ('\r' != byte)) || (byte >= 127) ||
                 ((length) && ('\r' == line[length - 1])))
             {
                 return EPROTO;
             }
+
             line[length++] = (char)byte;
         }
+
         if (first)
         {
             if ((length < 12) || (memcmp(line, "HTTP/1.", 7)) ||
@@ -267,11 +292,14 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
             {
                 return EPROTO;
             }
+
             code = (unsigned int)((line[9] - '0') * 100 + (line[10] - '0') * 10 + line[11] - '0');
+
             if (101 == code)
             {
                 return ENOTSUP;
             }
+
             first = false;
         }
         else if (!length)
@@ -282,6 +310,7 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
                 {
                     return EMSGSIZE;
                 }
+
                 first = true;
             }
             else
@@ -297,11 +326,14 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
             {
                 return EMSGSIZE;
             }
+
             colon = strchr(line, ':');
+
             if ((!colon) || (colon == line))
             {
                 return EPROTO;
             }
+
             for (c = line; c < colon; ++c)
             {
                 if (!FieldCharacter((unsigned char)*c))
@@ -327,18 +359,20 @@ int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, O
     {
         created = calloc(1, sizeof(*created));
         status = created ? 0 : ENOMEM;
+
         if (!status)
         {
             created->descriptor = -1;
             created->forceMinTls = forceMinTls;
-            status = TelemetryProxyDiscover(&selection, log);
-            if ((!status) && (TelemetryProxyConfigured == selection.kind))
+
+            if ((0 == (status = TelemetryProxyDiscover(&selection, log))) && (TelemetryProxyConfigured == selection.kind))
             {
                 created->proxied = true;
                 status = TelemetryProxyParseHttp(selection.url, &created->proxy, log);
             }
         }
     }
+
     if (status)
     {
         free(created);
@@ -348,6 +382,7 @@ int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, O
     {
         *transport = created;
     }
+
     return status;
 }
 
@@ -359,6 +394,7 @@ static void CaptureSuppression(TelemetryTransport* transport, const TelemetryHtt
     {
         transport->suppressed = true;
     }
+
     for (i = 0; i < response->controlCount; ++i)
     {
         if (TelemetryTimeDeltaMillis != response->controls[i].kind)
@@ -385,79 +421,93 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
     {
         TelemetryHttpResponseInitialize(response, log);
     }
+
     if ((!transport) || (!response) || (!event))
     {
         goto failed;
     }
+
     if (transport->suppressed)
     {
         status = ECANCELED;
         goto failed;
     }
-    status = TelemetryHttpBuildRequest(token, clientVersion, uploadTimeMilliseconds, eventSize,
-        headers, sizeof(headers), &headerSize, log);
-    if (status)
+
+    if (0 != (status = TelemetryHttpBuildRequest(token, clientVersion, uploadTimeMilliseconds, eventSize,
+        headers, sizeof(headers), &headerSize, log)))
     {
         goto failed;
     }
+
     if (transport->descriptor < 0)
     {
         stage = "DNS/TCP";
         OsConfigLogInfo(log, "TelemetryTransport: Connecting (route=%s)",
             transport->proxied ? "HTTP CONNECT" : "direct");
-        status = Connect(transport, deadline, log);
-        if (status)
+
+        if (0 != (status = Connect(transport, deadline, log)))
         {
             goto failed;
         }
+
         OsConfigLogInfo(log, "TelemetryTransport: TCP connected");
+
         if (transport->proxied)
         {
             stage = "CONNECT";
-            status = Tunnel(transport, deadline, log);
-            if (status)
+
+            if (0 != (status = Tunnel(transport, deadline, log)))
             {
                 goto failed;
             }
         }
+
         stage = "TLS";
-        status = TelemetryTlsCreate(&transport->tls, deadline, transport->forceMinTls, log);
-        if (!status)
+
+        if (0 == (status = TelemetryTlsCreate(&transport->tls, deadline, transport->forceMinTls, log)))
         {
             status = TelemetryTlsHandshake(transport->tls, transport->descriptor,
                 TELEMETRY_ARIA_HOST, deadline, log);
         }
+
         if (status)
         {
             goto failed;
         }
     }
+
     stage = "request";
-    status = TelemetryTlsWrite(transport->tls, headers, headerSize, deadline, log);
-    if (!status)
+
+    if (0 == (status = TelemetryTlsWrite(transport->tls, headers, headerSize, deadline, log)))
     {
         status = TelemetryTlsWrite(transport->tls, event, eventSize, deadline, log);
     }
+
     if (status)
     {
         goto failed;
     }
+
     stage = "response";
+
     while (!response->complete)
     {
         size = 0;
         eof = false;
-        status = TelemetryTlsRead(transport->tls, bytes, sizeof(bytes), &size, &eof, deadline, log);
-        if (!status)
+
+        if (0 == (status = TelemetryTlsRead(transport->tls, bytes, sizeof(bytes), &size, &eof, deadline, log)))
         {
             status = TelemetryHttpResponseFeed(response, bytes, size, eof, log);
         }
+
         if (status)
         {
             goto failed;
         }
     }
+
     CaptureSuppression(transport, response);
+
     for (i = 0; i < response->controlCount; ++i)
     {
         if (TelemetryTimeDeltaMillis == response->controls[i].kind)
@@ -465,24 +515,30 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
             OsConfigLogDebug(log, "TelemetryTransport: Clock guidance preserved; sender uses local UTC");
         }
     }
+
     if ((!response->reusable) || (transport->suppressed))
     {
         Disconnect(transport, log);
     }
+
     OsConfigLogDebug(log, "TelemetryTransport: Response complete (http=%u, acceptance=%d, controls=%zu)",
         response->status, (int)response->acceptance, response->controlCount);
+
     return 0;
 
 failed:
     OsConfigLogInfo(log, "TelemetryTransport: %s failed; event not replayed (status=%d)", stage, status);
+
     if (transport)
     {
         if (response)
         {
             CaptureSuppression(transport, response);
         }
+
         Disconnect(transport, log);
     }
+
     return status;
 }
 

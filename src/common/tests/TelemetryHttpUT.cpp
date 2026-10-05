@@ -20,8 +20,7 @@ namespace
 {
 const std::string accepted = "{\"acc\":1,\"rej\":0}";
 
-std::string Response(const std::string& body = accepted, const std::string& headers = "",
-    const std::string& status = "HTTP/1.1 200 OK")
+std::string Response(const std::string& body = accepted, const std::string& headers = "", const std::string& status = "HTTP/1.1 200 OK")
 {
     return status + "\r\nContent-Length: " + std::to_string(body.size()) + "\r\n" + headers + "\r\n" + body;
 }
@@ -29,7 +28,9 @@ std::string Response(const std::string& body = accepted, const std::string& head
 std::string Chunk(const std::string& body, const std::string& extensions = "")
 {
     char size[32] = {};
+
     snprintf(size, sizeof(size), "%zx", body.size());
+
     return std::string(size) + extensions + "\r\n" + body + "\r\n";
 }
 
@@ -52,6 +53,7 @@ protected:
     int Parse(const std::string& wire, bool eof = false)
     {
         int status = TelemetryHttpResponseInitialize(&response, NULL);
+
         return status ? status : TelemetryHttpResponseFeed(&response, wire.data(), wire.size(), eof, NULL);
     }
 
@@ -73,8 +75,10 @@ protected:
 
     void SetUp() override
     {
+        int descriptor = -1;
+
         TelemetryHttpTest::SetUp();
-        int descriptor = mkstemp(path);
+        descriptor = mkstemp(path);
         ASSERT_GE(descriptor, 0);
         created = true;
         ASSERT_EQ(0, close(descriptor));
@@ -85,19 +89,26 @@ protected:
 
     void TearDown() override
     {
-        if (log) CloseLog(&log);
-        if (created) unlink(path);
+        CloseLog(&log);
+
+        if (created)
+        {
+            unlink(path);
+        }
     }
 
     void ExpectDiagnostic(const std::string& wire, int expected, const char* diagnostic)
     {
+        std::ifstream file;
+        std::string text = {};
+
         EXPECT_EQ(expected, TelemetryHttpResponseFeed(&response, wire.data(), wire.size(), false, log));
         EXPECT_FALSE(response.complete);
         EXPECT_FALSE(response.reusable);
         EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
-        std::ifstream file(path);
+        file.open(path);
         ASSERT_TRUE(file.is_open());
-        const std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        text.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
         EXPECT_NE(std::string::npos, text.find(diagnostic)) << text;
         EXPECT_NE(std::string::npos, text.find("TelemetryHttp: Response failure")) << text;
         EXPECT_EQ(std::string::npos, text.find("sensitive-marker")) << text;
@@ -144,8 +155,6 @@ TEST_F(TelemetryHttpTest, BuildsExactUncompressedSingleEventHeaders)
 {
     char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {};
     size_t size = 0;
-    ASSERT_EQ(0, TelemetryHttpBuildRequest("test-token", "OSConfig-C/1.0", 123456789, 17,
-        headers, sizeof(headers), &size, NULL));
     const std::string expected =
         "POST /OneCollector/1.0/ HTTP/1.1\r\n"
         "Host: mobile.events.data.microsoft.com\r\n"
@@ -156,24 +165,32 @@ TEST_F(TelemetryHttpTest, BuildsExactUncompressedSingleEventHeaders)
         "SDK-Version: OSConfig-C/1.0\r\n"
         "Upload-Time: 123456789\r\n"
         "Accept-Encoding: identity\r\n\r\n";
+
+    ASSERT_EQ(0, TelemetryHttpBuildRequest("test-token", "OSConfig-C/1.0", 123456789, 17,
+        headers, sizeof(headers), &size, NULL));
     EXPECT_EQ(expected, std::string(headers, size));
     EXPECT_EQ('\0', headers[size]);
 }
 
 TEST_F(TelemetryHttpTest, RejectsHeaderInjectionAndMultipleTokensWithoutChangingOutput)
 {
-    std::array<char, TELEMETRY_HTTP_HEADER_LIMIT + 1> headers;
+    std::array<char, TELEMETRY_HTTP_HEADER_LIMIT + 1> headers = {};
+    std::array<char, TELEMETRY_HTTP_HEADER_LIMIT + 1> original = {};
+    size_t size = 999;
+
     headers.fill('x');
-    const auto original = headers;
+    original = headers;
+
     for (const char* token : {"", "a\r\nInjected: yes", "a\nb", "a b", "a\tb", "a,b", "\x7f", "\x80"})
     {
-        size_t size = 999;
+        size = 999;
         EXPECT_EQ(EINVAL, TelemetryHttpBuildRequest(token, "OSConfig-C/1.0", 1, 17,
             headers.data(), headers.size(), &size, NULL));
         EXPECT_EQ(0U, size);
         EXPECT_EQ(original, headers);
     }
-    size_t size = 999;
+
+    size = 999;
     EXPECT_EQ(EINVAL, TelemetryHttpBuildRequest("test", "a\r\nb", 1, 17,
         headers.data(), headers.size(), &size, NULL));
     EXPECT_EQ(0U, size);
@@ -186,9 +203,11 @@ TEST_F(TelemetryHttpTest, EnforcesRequestLimitsAndExactOutputCapacity)
     size_t size = 0;
     const std::string token(TELEMETRY_HTTP_TOKEN_LIMIT, 't');
     const std::string version(TELEMETRY_HTTP_VERSION_LIMIT, 'v');
+    size_t required = 0;
+
     ASSERT_EQ(0, TelemetryHttpBuildRequest(token.c_str(), version.c_str(), INT64_MAX,
         TELEMETRY_MAX_EVENT_SIZE, headers, sizeof(headers), &size, NULL));
-    const size_t required = size;
+    required = size;
     ASSERT_EQ(0, TelemetryHttpBuildRequest(token.c_str(), version.c_str(), INT64_MAX,
         TELEMETRY_MAX_EVENT_SIZE, headers, required + 1, &size, NULL));
     EXPECT_EQ(EMSGSIZE, TelemetryHttpBuildRequest(token.c_str(), version.c_str(), INT64_MAX,
@@ -208,6 +227,7 @@ TEST_F(TelemetryHttpTest, RejectsInvalidApiArguments)
 {
     char headers[512] = {};
     size_t size = 0;
+
     EXPECT_EQ(EINVAL, TelemetryHttpBuildRequest(NULL, "v", 0, 1, headers, sizeof(headers), &size, NULL));
     EXPECT_EQ(EINVAL, TelemetryHttpBuildRequest("t", NULL, 0, 1, headers, sizeof(headers), &size, NULL));
     EXPECT_EQ(EINVAL, TelemetryHttpBuildRequest("t", "v", 0, 1, NULL, 512, &size, NULL));
@@ -235,7 +255,10 @@ TEST_F(TelemetryHttpTest, HandlesEverySplitPointAndSingleByteFragments)
 {
     const std::string wire = "HTTP/1.1 100 Continue\r\n\r\n" +
         Response(accepted, "X-Extension: value\r\n");
-    for (size_t split = 0; split <= wire.size(); ++split)
+    size_t split = 0;
+    size_t i = 0;
+
+    for (split = 0; split <= wire.size(); ++split)
     {
         SCOPED_TRACE(split);
         ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, NULL));
@@ -245,8 +268,10 @@ TEST_F(TelemetryHttpTest, HandlesEverySplitPointAndSingleByteFragments)
         EXPECT_TRUE(response.reusable);
         EXPECT_EQ(TelemetryAccepted, response.acceptance);
     }
+
     ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, NULL));
-    for (size_t i = 0; i < wire.size(); ++i)
+
+    for (i = 0; i < wire.size(); ++i)
     {
         ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, &wire[i], 1, false, NULL));
         EXPECT_EQ(i + 1 == wire.size(), response.complete);
@@ -257,7 +282,9 @@ TEST_F(TelemetryHttpTest, HandlesChunkedExtensionsAndTrailersAtEverySplitPoint)
 {
     const std::string wire = Chunked(Chunk(accepted.substr(0, 5), ";a=\"x\\\"y\";b=token") +
         Chunk(accepted.substr(5)) + "0\r\nX-Trace: done\r\n\r\n");
-    for (size_t split = 0; split <= wire.size(); ++split)
+    size_t split = 0;
+
+    for (split = 0; split <= wire.size(); ++split)
     {
         ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, NULL));
         ASSERT_EQ(0, TelemetryHttpResponseFeed(&response, wire.data(), split, false, NULL));
@@ -272,6 +299,7 @@ TEST_F(TelemetryHttpTest, HandlesChunkedExtensionsAndTrailersAtEverySplitPoint)
 TEST_F(TelemetryHttpTest, CloseDelimitedResponseRequiresValidEofAndCannotBeReused)
 {
     const std::string wire = "HTTP/1.1 200 OK\r\n\r\n" + accepted;
+
     ASSERT_EQ(0, Parse(wire));
     EXPECT_FALSE(response.complete);
     EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
@@ -321,6 +349,7 @@ TEST_F(TelemetryHttpTest, DoesNotTreatRedirectsOrServerErrorsAsAccepted)
         EXPECT_TRUE(response.complete);
         EXPECT_EQ(TelemetryRejected, response.acceptance);
     }
+
     ASSERT_EQ(0, Parse(Response("<html>unavailable</html>", "", "HTTP/1.1 503 Unavailable")));
     EXPECT_EQ(TelemetryRejected, response.acceptance);
 }
@@ -341,6 +370,7 @@ TEST_F(TelemetryHttpTest, HonorsExplicitRejectionAndIndexedEventFailures)
         EXPECT_TRUE(response.complete);
         EXPECT_EQ(TelemetryRejected, response.acceptance);
     }
+
     ASSERT_EQ(0, Parse(Response("{\"acc\":1,\"rej\":0,\"efi\":{\"failure\":[]},\"extra\":{\"v\":true}}")));
     EXPECT_EQ(TelemetryAccepted, response.acceptance);
 }
@@ -357,6 +387,7 @@ TEST_F(TelemetryHttpTest, AcceptsExplicitSingleEventCountWithOmittedZeroCounter)
         {"{\"acc\":1,\"efi\":{}}", TelemetryAccepted},
         {"{\"acc\":1,\"efi\":{\"failure\":[]}}", TelemetryAccepted}
     };
+
     for (const auto& item : cases)
     {
         SCOPED_TRACE(item.body);
@@ -375,10 +406,14 @@ TEST_F(TelemetryHttpTest, HandlesSparseLiveAcknowledgmentAcrossFramingAndEverySp
         Chunked(Chunk(body) + "0\r\n\r\n"),
         "HTTP/1.1 200 OK\r\n\r\n" + body
     };
-    for (size_t framing = 0; framing < 3; ++framing)
+    size_t framing = 0;
+    size_t split = 0;
+
+    for (framing = 0; framing < 3; ++framing)
     {
         const std::string& wire = wires[framing];
-        for (size_t split = 0; split <= wire.size(); ++split)
+
+        for (split = 0; split <= wire.size(); ++split)
         {
             SCOPED_TRACE(framing);
             SCOPED_TRACE(split);
@@ -390,6 +425,7 @@ TEST_F(TelemetryHttpTest, HandlesSparseLiveAcknowledgmentAcrossFramingAndEverySp
             EXPECT_EQ(TelemetryAccepted, response.acceptance);
             EXPECT_EQ(body, std::string(response.body, response.bodySize));
             EXPECT_EQ(2 != framing, response.reusable);
+
             if (0 == framing)
             {
                 ASSERT_EQ(1U, response.controlCount);
@@ -444,6 +480,7 @@ TEST_F(TelemetryHttpTest, RejectsTrailingJsonValuesAndEmbeddedNulls)
 TEST_F(TelemetryHttpTest, BoundsJsonNestingBeforeCallingParson)
 {
     const std::string prefix = "{\"acc\":1,\"rej\":0,\"extra\":";
+
     ASSERT_EQ(0, Parse(Response(prefix + std::string(15, '[') + "0" + std::string(15, ']') + "}")));
     ExpectFailure(Response(prefix + std::string(16, '[') + "0" + std::string(16, ']') + "}"), EMSGSIZE);
 }
@@ -452,10 +489,12 @@ TEST_F(TelemetryHttpTest, RejectsInvalidUtf8AndNonJsonWhitespace)
 {
     ASSERT_EQ(0, Parse(Response("{\"acc\":1,\"rej\":0,\"extra\":\"caf\xc3\xa9\"}")));
     EXPECT_EQ(TelemetryAccepted, response.acceptance);
+
     for (const char* text : {"\x80", "\xc0\xaf", "\xed\xa0\x80", "\xf4\x90\x80\x80", "\xc3"})
     {
         ExpectFailure(Response(std::string("{\"acc\":1,\"rej\":0,\"extra\":\"") + text + "\"}"), EPROTO);
     }
+
     ExpectFailure(Response("{\"acc\":1,\v\"rej\":0}"), EPROTO);
     ExpectFailure(Response("{\"acc\":1,\f\"rej\":0}"), EPROTO);
 }
@@ -469,6 +508,7 @@ TEST_F(TelemetryHttpTest, PreservesRepeatedMixedCaseCollectorControlFields)
         "kill-tokens: token-b:details\r\n"
         "kill-duration: 1200\r\n"
         "time-delta-millis: -500\r\n";
+
     ASSERT_EQ(0, Parse(Response(accepted, headers)));
     ASSERT_EQ(6U, response.controlCount);
     EXPECT_EQ(TelemetryRetryAfter, response.controls[0].kind);
@@ -483,8 +523,14 @@ TEST_F(TelemetryHttpTest, PreservesRepeatedMixedCaseCollectorControlFields)
 
 TEST_F(TelemetryHttpTest, BoundsControlCountWithoutDiscardingDirectives)
 {
-    std::string headers;
-    for (int i = 0; i < TELEMETRY_HTTP_CONTROL_LIMIT; ++i) headers += "kill-tokens: t\r\n";
+    std::string headers = {};
+    int i = 0;
+
+    for (i = 0; i < TELEMETRY_HTTP_CONTROL_LIMIT; ++i)
+    {
+        headers += "kill-tokens: t\r\n";
+    }
+
     ASSERT_EQ(0, Parse(Response(accepted, headers)));
     EXPECT_EQ(static_cast<size_t>(TELEMETRY_HTTP_CONTROL_LIMIT), response.controlCount);
     ExpectFailure(Response(accepted, headers + "Retry-After: 1\r\n"), EMSGSIZE);
@@ -510,12 +556,15 @@ TEST_F(TelemetryHttpTest, RejectsUnexpectedResponseCompression)
     {
         ExpectFailure(Response(accepted, std::string("Content-Encoding: ") + encoding + "\r\n"), ENOTSUP);
     }
+
     ASSERT_EQ(0, Parse(Response(accepted, "Content-Encoding: Identity\r\n")));
     EXPECT_EQ(TelemetryAccepted, response.acceptance);
 }
 
 TEST_F(TelemetryHttpTest, RejectsMalformedStatusLinesAndHeaderSyntax)
 {
+    const std::string prefix = "HTTP/1.1 200 OK\r\nX: ";
+
     for (const char* wire : {"HTTP/2.0 200 OK\r\n\r\n", "HTTP/1.1 20 OK\r\n\r\n",
         "HTTP/1.1 600 Invalid\r\n\r\n", "HTTP/1.1 200OK\r\n\r\n", "HTTP/1.1 200 OK\n\n",
         "HTTP/1.1 200 OK\rX", "HTTP/1.1 200 OK\r\n Header: folded\r\n",
@@ -525,14 +574,20 @@ TEST_F(TelemetryHttpTest, RejectsMalformedStatusLinesAndHeaderSyntax)
         SCOPED_TRACE(wire);
         ExpectFailure(wire, EPROTO);
     }
-    const std::string prefix = "HTTP/1.1 200 OK\r\nX: ";
+
     ExpectFailure(prefix + std::string("\0", 1) + "\r\n", EPROTO);
 }
 
 TEST_F(TelemetryHttpTest, BoundsInformationalResponsesAndRejectsUpgrades)
 {
-    std::string prefix;
-    for (int i = 0; i < 4; ++i) prefix += "HTTP/1.1 103 Early Hints\r\nX-Hint: x\r\n\r\n";
+    std::string prefix = {};
+    int i = 0;
+
+    for (i = 0; i < 4; ++i)
+    {
+        prefix += "HTTP/1.1 103 Early Hints\r\nX-Hint: x\r\n\r\n";
+    }
+
     ASSERT_EQ(0, Parse(prefix + Response()));
     EXPECT_EQ(TelemetryAccepted, response.acceptance);
     ExpectFailure(prefix + "HTTP/1.1 100 Continue\r\n\r\n" + Response(), EMSGSIZE);
@@ -544,9 +599,11 @@ TEST_F(TelemetryHttpTest, BoundsInformationalResponsesAndRejectsUpgrades)
 
 TEST_F(TelemetryHttpTest, RejectsTruncatedResponsesAtEveryPrefix)
 {
+    size_t size = 0;
+
     for (const std::string& wire : {Response(), Chunked(Chunk(accepted) + "0\r\n\r\n")})
     {
-        for (size_t size = 0; size < wire.size(); ++size)
+        for (size = 0; size < wire.size(); ++size)
         {
             SCOPED_TRACE(size);
             ExpectFailure(wire.substr(0, size), EPROTO, true);
@@ -577,12 +634,14 @@ TEST_F(TelemetryHttpTest, RejectsMalformedChunksAndUnsafeTrailers)
         SCOPED_TRACE(chunks);
         ExpectFailure(Chunked(chunks), EPROTO);
     }
+
     ExpectFailure(Chunked("ffffffffffffffffffffffff\r\n"), EOVERFLOW);
 }
 
 TEST_F(TelemetryHttpTest, EnforcesBodyLimitForAllFramingModes)
 {
     const std::string maximum = accepted + std::string(TELEMETRY_HTTP_BODY_LIMIT - accepted.size(), ' ');
+
     ASSERT_EQ(0, Parse(Response(maximum)));
     EXPECT_EQ(static_cast<size_t>(TELEMETRY_HTTP_BODY_LIMIT), response.bodySize);
     ExpectFailure(Response(maximum + " "), EMSGSIZE);
@@ -594,20 +653,31 @@ TEST_F(TelemetryHttpTest, EnforcesBodyLimitForAllFramingModes)
 
 TEST_F(TelemetryHttpTest, EnforcesLineHeaderCountAndTotalHeaderLimits)
 {
+    std::string headers = {};
+    std::string wire = {};
+    int i = 0;
+    size_t size = 0;
+
     ASSERT_EQ(0, Parse(Response(accepted, "X: " + std::string(TELEMETRY_HTTP_LINE_LIMIT - 3, 'a') + "\r\n")));
     ExpectFailure(Response(accepted, "X: " + std::string(TELEMETRY_HTTP_LINE_LIMIT - 2, 'a') + "\r\n"), EMSGSIZE);
-    std::string headers;
-    for (int i = 0; i < 63; ++i) headers += "X: a\r\n";
+
+    for (i = 0; i < 63; ++i)
+    {
+        headers += "X: a\r\n";
+    }
+
     ASSERT_EQ(0, Parse(Response(accepted, headers)));
     ExpectFailure(Response(accepted, headers + "X: a\r\n"), EMSGSIZE);
 
-    std::string wire = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(accepted.size()) + "\r\n";
+    wire = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(accepted.size()) + "\r\n";
+
     while (wire.size() < TELEMETRY_HTTP_HEADER_LIMIT - 2)
     {
-        size_t size = std::min<size_t>(2000, TELEMETRY_HTTP_HEADER_LIMIT - 2 - wire.size());
+        size = std::min<size_t>(2000, TELEMETRY_HTTP_HEADER_LIMIT - 2 - wire.size());
         ASSERT_GE(size, 5U);
         wire += "X: " + std::string(size - 5, 'a') + "\r\n";
     }
+
     ASSERT_EQ(0, Parse(wire + "\r\n" + accepted));
     EXPECT_EQ(static_cast<size_t>(TELEMETRY_HTTP_HEADER_LIMIT), response.headerBytes);
     ExpectFailure(wire + "X: a\r\n\r\n" + accepted, EMSGSIZE);
@@ -615,8 +685,14 @@ TEST_F(TelemetryHttpTest, EnforcesLineHeaderCountAndTotalHeaderLimits)
 
 TEST_F(TelemetryHttpTest, BoundsWireOverheadFromManyTinyChunks)
 {
-    std::string chunks;
-    for (size_t i = 0; i < TELEMETRY_HTTP_BODY_LIMIT; ++i) chunks += "1\r\n \r\n";
+    std::string chunks = {};
+    size_t i = 0;
+
+    for (i = 0; i < TELEMETRY_HTTP_BODY_LIMIT; ++i)
+    {
+        chunks += "1\r\n \r\n";
+    }
+
     ExpectFailure(Chunked(chunks + "0\r\n\r\n"), EMSGSIZE);
     EXPECT_GT(response.wireBytes, static_cast<size_t>(TELEMETRY_HTTP_WIRE_LIMIT));
 }

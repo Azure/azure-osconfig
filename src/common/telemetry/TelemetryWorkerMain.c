@@ -14,8 +14,8 @@
 
 #include <dirent.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <limits.h>
+#include <netdb.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -27,37 +27,56 @@
 #define LOG_FILE "/var/log/osconfig_telemetry.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_telemetry.bak"
 
-_Static_assert(32 == sizeof(TelemetryWorkerFrame), "Unexpected worker frame layout");
-
-static int Transfer(void* buffer, size_t size, bool writing)
+static int Transfer(void* buffer, size_t size, bool writing, OsConfigLogHandle log)
 {
-    unsigned char* bytes = buffer;
+    unsigned char* bytes = NULL;
     size_t offset = 0;
     ssize_t count = 0;
+    int error = 0;
+
+    if ((NULL == buffer) && (0 != size))
+    {
+        OsConfigLogError(log, "Transfer called with invalid arguments");
+        return EINVAL;
+    }
+
+    bytes = buffer;
 
     while (offset < size)
     {
         count = writing ?
             send(STDIN_FILENO, bytes + offset, size - offset, MSG_NOSIGNAL) :
             recv(STDIN_FILENO, bytes + offset, size - offset, 0);
+
         if (count > 0)
         {
             offset += (size_t)count;
         }
         else if (0 == count)
         {
-            return (0 == offset) ? ENODATA : EPROTO;
+            error = (0 == offset) ? ENODATA : EPROTO;
+            break;
         }
         else if (EINTR != errno)
         {
-            return errno;
+            error = errno;
+            break;
         }
     }
-    return 0;
+
+    if (ENODATA == error)
+    {
+        OsConfigLogInfo(log, "Transfer: connection closed while %s (transferred: %zu, requested: %zu)", writing ? "writing" : "reading", offset, size);
+    }
+    else if (0 != error)
+    {
+        OsConfigLogError(log, "Transfer: %s failed with %d (%s) (transferred: %zu, requested: %zu)", writing ? "write" : "read", error, strerror(error), offset, size);
+    }
+
+    return error;
 }
 
-static int SendReply(uint32_t operation, uint32_t sequence, int status, void* body, uint32_t size,
-    OsConfigLogHandle log)
+static int SendReply(uint32_t operation, uint32_t sequence, int status, void* body, uint32_t size, OsConfigLogHandle log)
 {
     TelemetryWorkerFrame reply = {0};
     int error = 0;
@@ -68,200 +87,314 @@ static int SendReply(uint32_t operation, uint32_t sequence, int status, void* bo
     reply.sequence = sequence;
     reply.status = status;
     reply.size = (0 == status) ? size : 0;
-    error = Transfer(&reply, sizeof(reply), true);
-    if (0 == error)
+
+    if (0 == (error = Transfer(&reply, sizeof(reply), true, log)))
     {
-        error = Transfer(body, reply.size, true);
+        error = Transfer(body, reply.size, true, log);
     }
-    if ((0 != error) && (NULL != log))
+
+    if (0 != error)
     {
-        OsConfigLogError(log, "OSConfigTelemetry: Cannot send reply (operation=%" PRIu32
-            ", sequence=%" PRIu32 ", status=%d)", operation, sequence, error);
+        OsConfigLogError(log, "SendReply failed with %d (%s)", error, strerror(error));
     }
+
     return error;
 }
 
-static int CloseInheritedDescriptors(int logDescriptor)
+static int CloseInheritedDescriptors(int logDescriptor, OsConfigLogHandle log)
 {
-    // This Linux worker must not keep unrelated gc_worker descriptors alive.
     DIR* directory = opendir("/proc/self/fd");
     int ownDescriptor = 0;
     struct dirent* entry = NULL;
     char* end = NULL;
     long descriptor = 0;
+    int status = 0;
+    int closeStatus = 0;
 
     if (NULL == directory)
     {
-        return errno;
-    }
-    ownDescriptor = dirfd(directory);
-    if (ownDescriptor < 0)
-    {
-        int status = errno;
-        closedir(directory);
+        status = errno;
+        OsConfigLogError(log, "CloseInheritedDescriptors: opendir failed with %d (%s)", status, strerror(status));
         return status;
     }
-    int status = 0;
+
+    ownDescriptor = dirfd(directory);
+
+    if (ownDescriptor < 0)
+    {
+        status = errno;
+        OsConfigLogError(log, "CloseInheritedDescriptors: dirfd failed with %d (%s)", status, strerror(status));
+
+        if (0 != closedir(directory))
+        {
+            closeStatus = errno;
+            OsConfigLogError(log, "CloseInheritedDescriptors: closedir failed with %d (%s)", closeStatus, strerror(closeStatus));
+        }
+
+        return status;
+    }
+
     for (;;)
     {
         errno = 0;
         entry = readdir(directory);
+
         if (NULL == entry)
         {
             status = errno;
+
+            if (0 != status)
+            {
+                OsConfigLogError(log, "CloseInheritedDescriptors: readdir failed with %d (%s)", status, strerror(status));
+            }
+
             break;
         }
+
         if ((entry->d_name[0] < '0') || (entry->d_name[0] > '9'))
         {
             continue;
         }
+
         end = NULL;
         descriptor = strtol(entry->d_name, &end, 10);
+
         if ((0 != errno) || ('\0' != *end) || (descriptor > INT_MAX))
         {
             status = EPROTO;
+            OsConfigLogError(log, "CloseInheritedDescriptors: invalid descriptor entry");
             break;
         }
+
         if ((descriptor > STDERR_FILENO) && (descriptor != ownDescriptor) && (descriptor != logDescriptor) &&
             (0 != close((int)descriptor)))
         {
             status = errno;
+            OsConfigLogError(log, "CloseInheritedDescriptors: close(%ld) failed with %d (%s)", descriptor, status, strerror(status));
             break;
         }
     }
-    if ((0 != closedir(directory)) && (0 == status))
+
+    if (0 != closedir(directory))
     {
-        status = errno;
+        closeStatus = errno;
+        OsConfigLogError(log, "CloseInheritedDescriptors: closedir failed with %d (%s)", closeStatus, strerror(closeStatus));
+
+        if (0 == status)
+        {
+            status = closeStatus;
+        }
     }
+
     return status;
 }
 
-static int ParseDeadline(const char* text, int64_t* deadline)
+static int ParseDeadline(const char* text, int64_t* deadline, OsConfigLogHandle log)
 {
     char* end = NULL;
     long long value = 0;
+    int status = 0;
 
     if ((text[0] < '0') || (text[0] > '9'))
     {
+        OsConfigLogError(log, "ParseDeadline called with invalid arguments");
         return EINVAL;
     }
+
     errno = 0;
     value = strtoll(text, &end, 10);
+
     if ((0 != errno) || ('\0' != *end) || (value <= 0))
     {
+        status = errno;
+        OsConfigLogError(log, "ParseDeadline: expected a positive decimal deadline in range (conversion errno: %d)", status);
         return EINVAL;
     }
+
     *deadline = (int64_t)value;
-    return ((long long)*deadline == value) ? 0 : EOVERFLOW;
+
+    status = ((long long)*deadline == value) ? 0 : EOVERFLOW;
+
+    if (status)
+    {
+        OsConfigLogError(log, "ParseDeadline failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
 }
 
-static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime, bool* forceMinTls)
+static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* lifetime, bool* forceMinTls, OsConfigLogHandle log)
 {
     int64_t startup = 0;
     int status = 0;
     struct sigaction action = {0};
     sigset_t signals = {0};
     struct sigevent notification = {0};
+    FILE* logFile = NULL;
+    int logDescriptor = -1;
 
-    if (((4 != argc) && (5 != argc)) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)) ||
-        ((5 == argc) && (0 != strcmp(argv[4], "--force-mintls"))))
+    if (((4 != argc) && (5 != argc)) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)) || ((5 == argc) && (0 != strcmp(argv[4], "--force-mintls"))))
     {
+        OsConfigLogError(log, "InitializeTelemetry called with invalid arguments");
         return EINVAL;
     }
+
     *forceMinTls = 5 == argc;
-    if ((0 != (status = ParseDeadline(argv[2], lifetime))) ||
-        (0 != (status = ParseDeadline(argv[3], &startup))))
+
+    if (0 != (status = ParseDeadline(argv[2], lifetime, log)))
     {
+        OsConfigLogError(log, "InitializeTelemetry: cannot parse lifetime deadline, status: %d (%s)", status, strerror(status));
         return status;
     }
+
+    if (0 != (status = ParseDeadline(argv[3], &startup, log)))
+    {
+        OsConfigLogError(log, "InitializeTelemetry: cannot parse startup deadline, status: %d (%s)", status, strerror(status));
+        return status;
+    }
+
     if (startup > *lifetime)
     {
+        OsConfigLogError(log, "InitializeTelemetry: startup deadline exceeds lifetime deadline");
         return EINVAL;
     }
+
     action.sa_handler = SIG_DFL;
     sigemptyset(&action.sa_mask);
     sigemptyset(&signals);
     sigaddset(&signals, SIGALRM);
-    if ((0 != sigaction(SIGALRM, &action, NULL)) ||
-        (0 != sigprocmask(SIG_UNBLOCK, &signals, NULL)))
+
+    if (0 != sigaction(SIGALRM, &action, NULL))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "InitializeTelemetry: sigaction(SIGALRM) failed with %d (%s)", status, strerror(status));
+        return status;
     }
+
+    if (0 != sigprocmask(SIG_UNBLOCK, &signals, NULL))
+    {
+        status = errno;
+        OsConfigLogError(log, "InitializeTelemetry: sigprocmask(SIG_UNBLOCK) failed with %d (%s)", status, strerror(status));
+        return status;
+    }
+
     // After exec these dispositions belong only to this worker, never the host.
     action.sa_handler = SIG_IGN;
+
     if (0 != sigaction(SIGPIPE, &action, NULL))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "InitializeTelemetry: sigaction(SIGPIPE) failed with %d (%s)", status, strerror(status));
+        return status;
     }
+
     notification.sigev_notify = SIGEV_SIGNAL;
     notification.sigev_signo = SIGALRM;
+
     if (0 != timer_create(CLOCK_MONOTONIC, &notification, timer))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "InitializeTelemetry: timer_create failed with %d (%s)", status, strerror(status));
+        return status;
     }
-    return TelemetryArmDeadline(*timer, startup);
+
+    if (0 != (status = TelemetryArmDeadline(*timer, startup)))
+    {
+        OsConfigLogError(log, "InitializeTelemetry: arming startup deadline failed with %d (%s)", status, strerror(status));
+        return status;
+    }
+
+    logFile = GetLogFile(log);
+
+    if (NULL != logFile)
+    {
+        if ((logDescriptor = fileno(logFile)) < 0)
+        {
+            status = errno;
+            OsConfigLogError(log, "InitializeTelemetry: fileno(logFile) failed with %d (%s)", status, strerror(status));
+            return status;
+        }
+    }
+
+    if (0 != (status = CloseInheritedDescriptors(logDescriptor, log)))
+    {
+        OsConfigLogError(log, "InitializeTelemetry: CloseInheritedDescriptors failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
 }
 
-static int SendEvent(TelemetryTransport** transport, char* epoch,
-    const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline,
-    bool forceMinTls, OsConfigLogHandle log)
+static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline, bool forceMinTls, OsConfigLogHandle log)
 {
-    // The package's key is compiled only into the owned executable. A runtime
-    // override also permits offline tests with a deliberately fake token.
     const char* token = getenv("OsConfigTelemetryApiKey");
     char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {0};
     size_t headerSize = 0;
-    int status = 0;
     size_t tenantLength = 0;
     char iKey[TELEMETRY_HTTP_TOKEN_LIMIT + 3] = "o:";
     unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE] = {0};
     size_t encodedSize = 0;
     int64_t uploadTime = 0;
     TelemetryHttpResponse response = {0};
+    int status = 0;
 
     if (!token)
     {
         token = API_KEY;
     }
-    status = TelemetryHttpBuildRequest(token, TELEMETRY_CLIENT_VERSION, 0, 1,
-        headers, sizeof(headers), &headerSize, log);
-    if (!status)
+
+    if (0 == (status = TelemetryHttpBuildRequest(token, TELEMETRY_CLIENT_VERSION, 0, 1, headers, sizeof(headers), &headerSize, log)))
     {
         tenantLength = strcspn(token, "-");
-        if ((!tenantLength) || ('-' != token[tenantLength]))
+
+        if ((0 == tenantLength) || ('-' != token[tenantLength]))
         {
-            OsConfigLogError(log, "OSConfigTelemetry: Ingestion key lacks tenant prefix");
+            OsConfigLogError(log, "SendEvent: Ingestion key lacks tenant prefix");
             status = EINVAL;
         }
         else
         {
             memcpy(iKey + 2, token, tenantLength);
+
             if (!epoch[0])
             {
-                status = TelemetryCreateEpoch(epoch, log);
+                if (0 != (status = TelemetryCreateEpoch(epoch, log)))
+                {
+                    OsConfigLogError(log, "SendEvent: TelemetryCreateEpoch failed with %d (%s)", status, strerror(status));
+                }
             }
         }
     }
+
     if (!status)
     {
-        status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes,
-            &encodedSize, &uploadTime, log);
+        if (0 != (status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes, &encodedSize, &uploadTime, log)))
+        {
+            OsConfigLogError(log, "SendEvent: TelemetryEncodePayload failed with %d (%s)", status, strerror(status));
+        }
     }
+
     if ((!status) && (!*transport))
     {
-        status = TelemetryTransportCreate(transport, forceMinTls, log);
+        if (0 != (status = TelemetryTransportCreate(transport, forceMinTls, log)))
+        {
+            OsConfigLogError(log, "SendEvent: TelemetryTransportCreate failed with %d (%s)", status, strerror(status));
+        }
     }
-    if (!status)
+
+    if (0 == status)
     {
-        status = TelemetryTransportSend(*transport, token, TELEMETRY_CLIENT_VERSION,
-            uploadTime, bytes, encodedSize, deadline, &response, log);
+        if (0 != (status = TelemetryTransportSend(*transport, token, TELEMETRY_CLIENT_VERSION, uploadTime, bytes, encodedSize, deadline, &response, log)))
+        {
+            OsConfigLogError(log, "SendEvent: TelemetryTransportSend failed with %d (%s)", status, strerror(status));
+        }
     }
+
     if ((!status) && (TelemetryAccepted != response.acceptance))
     {
         status = TelemetryRejected == response.acceptance ? ECANCELED : EPROTO;
-        OsConfigLogInfo(log, "OSConfigTelemetry: Event not accepted (http=%u, acceptance=%d)",
-            response.status, (int)response.acceptance);
+        OsConfigLogInfo(log, "SendEvent: event not accepted (http: %u, acceptance: %d)", response.status, (int)response.acceptance);
     }
+
     return status;
 }
 
@@ -274,168 +407,150 @@ int main(int argc, char** argv)
     TelemetryTransport* transport = NULL;
     char epoch[TELEMETRY_EPOCH_SIZE] = {0};
     int status = 0;
-    char* configuration = NULL;
     TelemetryWorkerFrame request = {0};
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
     TelemetryResolverReply reply = {0};
     TelemetryWorkerSendReply sent = {0};
     bool forceMinTls = false;
 
-    SetConsoleLoggingEnabled(false);
-    status = Initialize(argc, argv, &timer, &lifetime, &forceMinTls);
-    if (0 == status)
+    log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+
+    OsConfigLogInfo(log, "OSConfigTelemetry starting (PID: %ld, PPID: %ld)", (long)getpid(), (long)getppid());
+
+    if (0 != (status = InitializeTelemetry(argc, argv, &timer, &lifetime, &forceMinTls, log)))
     {
-        log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-        if (NULL == log)
+        OsConfigLogError(log, "OSConfigTelemetry: InitializeTelemetry failed with %d (%s)", status, strerror(status));
+        SendReply(TELEMETRY_WORKER_READY, 0, status, NULL, 0, log);
+    }
+    else if (0 != (status = SendReply(TELEMETRY_WORKER_READY, 0, 0, NULL, 0, log)))
+    {
+        OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+    }
+    else
+    {
+        OsConfigLogInfo(log, "OSConfigTelemetry: ready");
+
+        for (;;)
         {
-            status = ENOMEM;
-        }
-        else if (NULL == GetLogFile(log))
-        {
-            status = EIO;
-            CloseLog(&log);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "OSConfigTelemetry: Starting (PID=%ld, PPID=%ld)",
-                (long)getpid(), (long)getppid());
-            status = CloseInheritedDescriptors(fileno(GetLogFile(log)));
-            if ((!status) && (FileExists("/etc/osconfig/osconfig.json")))
+            request = (TelemetryWorkerFrame){0};
+            reply = (TelemetryResolverReply){0};
+
+            if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
             {
-                configuration = LoadStringFromFile("/etc/osconfig/osconfig.json", false, log);
-                if (!configuration)
+                OsConfigLogError(log, "OSConfigTelemetry: TelemetryArmDeadline failed with %d (%s)", status, strerror(status));
+                break;
+            }
+
+            if (0 != (status = Transfer(&request, sizeof(request), false, log)))
+            {
+                if (ENODATA == status)
                 {
-                    status = EIO;
+                    OsConfigLogInfo(log, "OSConfigTelemetry: Transfer failed with ENODATA, parent disconnected");
+                    status = 0;
                 }
                 else
                 {
-                    SetLoggingLevel(GetLoggingLevelFromJsonConfig(configuration, log));
-                    SetMaxLogSize(GetMaxLogSizeFromJsonConfig(configuration, log));
-                    SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, log));
-                    free(configuration);
+                    OsConfigLogError(log, "OSConfigTelemetry: Transfer failed with %d (%s)", status, strerror(status));
                 }
-            }
-        }
-    }
-    if (0 != status)
-    {
-        if (NULL != log)
-        {
-            OsConfigLogError(log, "OSConfigTelemetry: Startup failed (status=%d)", status);
-        }
-        SendReply(TELEMETRY_WORKER_READY, 0, status, NULL, 0, log);
-        goto cleanup;
-    }
-    if (0 != (status = SendReply(TELEMETRY_WORKER_READY, 0, 0, NULL, 0, log)))
-    {
-        goto cleanup;
-    }
-    OsConfigLogInfo(log, "OSConfigTelemetry: Ready");
 
-    for (;;)
-    {
-        request = (TelemetryWorkerFrame){0};
-        reply = (TelemetryResolverReply){0};
-        if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
-        {
-            OsConfigLogError(log, "OSConfigTelemetry: Cannot arm lifetime timer (status=%d)", status);
-            break;
-        }
-        status = Transfer(&request, sizeof(request), false);
-        if (0 != status)
-        {
-            if (ENODATA == status)
+                break;
+            }
+
+            if ((TELEMETRY_WORKER_MAGIC != request.magic) ||
+                (TELEMETRY_WORKER_VERSION != request.version) ||
+                ((TELEMETRY_WORKER_RESOLVE != request.operation) && (TELEMETRY_WORKER_SEND != request.operation)) ||
+                (0 != request.status) ||
+                (UINT32_MAX == sequence) || (request.sequence != sequence + 1) ||
+                (request.size < 2) ||
+                (request.size > sizeof(payload)) ||
+                ((TELEMETRY_WORKER_RESOLVE == request.operation) && (request.size > TELEMETRY_RESOLVER_HOST_LIMIT + 1)) ||
+                (request.deadline <= 0) ||
+                (request.deadline > lifetime))
             {
-                OsConfigLogInfo(log, "OSConfigTelemetry: Parent disconnected");
-                status = 0;
+                status = EPROTO;
+
+                OsConfigLogError(log, "OSConfigTelemetry: invalid request (operation: %u, sequence: %u)", (unsigned int)request.operation, (unsigned int)request.sequence);
+                SendReply(request.operation, request.sequence, status, NULL, 0, log);
+                break;
+            }
+
+            sequence = request.sequence;
+
+            if (0 == (status = TelemetryArmDeadline(timer, request.deadline)))
+            {
+                OsConfigLogDebug(log, "OSConfigTelemetry: receiving request (sequence: %u)", (unsigned int)sequence);
+                status = Transfer(payload, request.size, false, log);
             }
             else
             {
-                OsConfigLogError(log, "OSConfigTelemetry: Cannot read request (status=%d)", status);
+                OsConfigLogError(log, "OSConfigTelemetry: arming request deadline failed with %d (%s) (sequence: %u)", status, strerror(status), (unsigned int)sequence);
             }
-            break;
-        }
-        if ((TELEMETRY_WORKER_MAGIC != request.magic) || (TELEMETRY_WORKER_VERSION != request.version) ||
-            ((TELEMETRY_WORKER_RESOLVE != request.operation) &&
-                (TELEMETRY_WORKER_SEND != request.operation)) || (0 != request.status) ||
-            (UINT32_MAX == sequence) || (request.sequence != sequence + 1) ||
-            (request.size < 2) || (request.size > sizeof(payload)) ||
-            ((TELEMETRY_WORKER_RESOLVE == request.operation) &&
-                (request.size > TELEMETRY_RESOLVER_HOST_LIMIT + 1)) ||
-            (request.deadline <= 0) || (request.deadline > lifetime))
-        {
-            status = EPROTO;
-            OsConfigLogError(log, "OSConfigTelemetry: Invalid request frame (operation=%" PRIu32
-                ", sequence=%" PRIu32 ")", request.operation, request.sequence);
-            SendReply(request.operation, request.sequence, status, NULL, 0, log);
-            break;
-        }
-        sequence = request.sequence;
-        status = TelemetryArmDeadline(timer, request.deadline);
-        if (0 == status)
-        {
-            OsConfigLogDebug(log, "OSConfigTelemetry: Receiving request (sequence=%" PRIu32 ")", sequence);
-            status = Transfer(payload, request.size, false);
-        }
-        if ((0 == status) && (TELEMETRY_WORKER_RESOLVE == request.operation) &&
-            (strnlen((const char*)payload, request.size) != request.size - 1))
-        {
-            status = EINVAL;
-        }
-        if (0 != status)
-        {
-            OsConfigLogError(log, "OSConfigTelemetry: Request deadline/body failed (sequence=%" PRIu32
-                ", status=%d)", sequence, status);
-            SendReply(request.operation, sequence, status, NULL, 0, log);
-            break;
-        }
 
-        if (TELEMETRY_WORKER_SEND == request.operation)
-        {
-            sent = (TelemetryWorkerSendReply){0};
-            sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline,
-                forceMinTls, log);
-            sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
-            if (sent.status)
+            if ((0 == status) && (TELEMETRY_WORKER_RESOLVE == request.operation) && (strnlen((const char*)payload, request.size) != request.size - 1))
             {
-                OsConfigLogInfo(log, "OSConfigTelemetry: SEND failed (sequence=%" PRIu32 ", status=%d)",
-                    sequence, sent.status);
+                OsConfigLogError(log, "OSConfigTelemetry: invalid hostname payload, expected one trailing NUL and no embedded NUL (sequence: %u)", (unsigned int)sequence);
+                status = EINVAL;
             }
-            if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log)))
+
+            if (0 != status)
             {
+                OsConfigLogError(log, "OSConfigTelemetry: request deadline/body failed with %d (%s) (sequence: %u)", status, strerror(status), (unsigned int)sequence);
+                SendReply(request.operation, sequence, status, NULL, 0, log);
                 break;
             }
-            continue;
+
+            if (TELEMETRY_WORKER_SEND == request.operation)
+            {
+                sent = (TelemetryWorkerSendReply){0};
+                sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, forceMinTls, log);
+                sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
+
+                if (sent.status)
+                {
+                    OsConfigLogError(log, "OSConfigTelemetry: SEND failed with %d (%s) (sequence: %u)", sent.status, strerror(sent.status), (unsigned int)sequence);
+                }
+
+                if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log)))
+                {
+                    OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+                    break;
+                }
+
+                continue;
+            }
+
+            OsConfigLogInfo(log, "OSConfigTelemetry: resolving request (sequence: %u)", (unsigned int)sequence);
+            TelemetryLookupHost((const char*)payload, &reply);
+
+            if (0 != reply.error)
+            {
+                OsConfigLogError(log, "OSConfigTelemetry: lookup failed with %d (%s), resolver: %d (%s), sequence: %u", 
+                    (int)reply.error, strerror(reply.error), (int)reply.lookupError, 
+                    (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error", (unsigned int)sequence);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "OSConfigTelemetry: lookup complete (sequence: %u, reply count: %u)", (unsigned int)sequence, (unsigned int)reply.count);
+            }
+
+            if (0 != (status = SendReply(request.operation, sequence, 0, &reply, sizeof(reply), log)))
+            {
+                OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+                break;
+            }
+
+            // Keep the operation timer armed through the reply; the next loop restores the lifetime timer while waiting for the caller's next event.
         }
-        OsConfigLogInfo(log, "OSConfigTelemetry: Resolving request (sequence=%" PRIu32 ")", sequence);
-        TelemetryLookupHost((const char*)payload, &reply);
-        if (0 != reply.error)
-        {
-            OsConfigLogError(log, "OSConfigTelemetry: Lookup failed (sequence=%" PRIu32
-                ", status=%" PRId32 ", lookup=%" PRId32 ")", sequence, reply.error, reply.lookupError);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "OSConfigTelemetry: Lookup complete (sequence=%" PRIu32
-                ", addresses=%" PRIu32 ")", sequence, reply.count);
-        }
-        if (0 != (status = SendReply(request.operation, sequence, 0, &reply, sizeof(reply), log)))
-        {
-            break;
-        }
-        // Keep the operation timer armed through the reply; the next loop
-        // restores the lifetime timer while waiting for the caller's next event.
     }
 
-cleanup:
     if (NULL != transport)
     {
         TelemetryTransportDestroy(&transport, log);
     }
-    if (NULL != log)
-    {
-        OsConfigLogInfo(log, "OSConfigTelemetry: Exiting (status=%d)", status);
-        CloseLog(&log);
-    }
+
+    OsConfigLogInfo(log, "OSConfigTelemetry: exiting with status: %d (%s)", status, strerror(status));
+
+    CloseLog(&log);
+
     _exit((0 == status) ? EXIT_SUCCESS : EXIT_FAILURE);
 }

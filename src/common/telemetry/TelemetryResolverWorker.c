@@ -21,6 +21,7 @@ static void SendReplyAndExit(const TelemetryResolverReply* reply)
     while (remaining > 0)
     {
         written = write(STDOUT_FILENO, bytes, remaining);
+
         if (written > 0)
         {
             bytes += written;
@@ -51,6 +52,7 @@ static int ParseNonnegativeLong(const char* text, long* value)
 
     errno = 0;
     *value = strtol(text, &end, 10);
+
     return ((0 != errno) || ('\0' != *end) || (*value < 0)) ? EINVAL : 0;
 }
 
@@ -79,6 +81,7 @@ int main(int argc, char** argv)
 
     expiration.it_value.tv_sec = (time_t)seconds;
     expiration.it_value.tv_nsec = nanoseconds;
+
     if (((long)expiration.it_value.tv_sec != seconds) || (0 != clock_gettime(CLOCK_MONOTONIC, &now)))
     {
         reply.error = errno ? errno : EINVAL;
@@ -97,6 +100,7 @@ int main(int argc, char** argv)
     sigemptyset(&action.sa_mask);
     sigemptyset(&timerSignal);
     sigaddset(&timerSignal, SIGALRM);
+
     if ((0 != sigaction(SIGALRM, &action, NULL)) ||
         (0 != sigprocmask(SIG_UNBLOCK, &timerSignal, NULL)))
     {
@@ -106,6 +110,7 @@ int main(int argc, char** argv)
 
     notification.sigev_notify = SIGEV_SIGNAL;
     notification.sigev_signo = SIGALRM;
+
     if ((0 != timer_create(CLOCK_MONOTONIC, &notification, &timer)) ||
         (0 != timer_settime(timer, TIMER_ABSTIME, &expiration, NULL)))
     {
@@ -117,5 +122,6 @@ int main(int argc, char** argv)
 
     // Keep the timer armed through IPC; process exit releases it.
     SendReplyAndExit(&reply);
+
     return EXIT_FAILURE;
 }

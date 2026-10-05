@@ -16,7 +16,12 @@ namespace
 int64_t Deadline()
 {
     struct timespec now = {};
-    if (clock_gettime(CLOCK_MONOTONIC, &now)) return 0;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &now))
+    {
+        return 0;
+    }
+
     return static_cast<int64_t>(now.tv_sec) * 1000000000 + now.tv_nsec + 5000000000;
 }
 
@@ -24,13 +29,16 @@ void ClearOverrides()
 {
     for (const char* name : {"SSL_CERT_FILE", "SSL_CERT_DIR", "OPENSSL_CONF",
         "OPENSSL_CONF_INCLUDE", "OPENSSL_MODULES", "OPENSSL_FIPS", "OPENSSL_FORCE_FIPS_MODE"})
+    {
         ASSERT_EQ(0, unsetenv(name));
+    }
 }
 
 void InvalidTrust()
 {
-    ClearOverrides();
     MinTls* tls = nullptr;
+
+    ClearOverrides();
     EXPECT_NE(0, MinTlsCreate(&tls, "/nonexistent-osconfig-test-ca.pem", Deadline(), nullptr));
     EXPECT_EQ(nullptr, tls);
     EXPECT_NE(0, MinTlsCreate(&tls, "", Deadline(), nullptr));
@@ -50,12 +58,15 @@ void InvalidTrust()
 
 void ExplicitPolicy()
 {
+    MinTls* tls = nullptr;
+
     ClearOverrides();
+
     for (const char* name : {"OPENSSL_CONF", "OPENSSL_CONF_INCLUDE", "OPENSSL_MODULES",
         "OPENSSL_FIPS", "OPENSSL_FORCE_FIPS_MODE"})
     {
         ASSERT_EQ(0, setenv(name, "", 1));
-        MinTls* tls = nullptr;
+        tls = nullptr;
         EXPECT_EQ(ENOTSUP, MinTlsCreate(&tls, nullptr, Deadline(), nullptr));
         EXPECT_EQ(nullptr, tls);
         ASSERT_EQ(0, unsetenv(name));
@@ -66,14 +77,15 @@ void ExplicitPolicy()
 TEST(MinTls, InvalidArgumentsAndExpiredDeadline)
 {
     MinTls* tls = nullptr;
+    char byte = 0;
+    size_t size = 99;
+    bool eof = true;
+
     EXPECT_EQ(EINVAL, MinTlsCreate(nullptr, nullptr, Deadline(), nullptr));
     EXPECT_EQ(ETIMEDOUT, MinTlsCreate(&tls, nullptr, 0, nullptr));
     EXPECT_EQ(nullptr, tls);
     EXPECT_EQ(EINVAL, MinTlsHandshake(nullptr, -1, nullptr, Deadline(), nullptr));
     EXPECT_EQ(EINVAL, MinTlsWrite(nullptr, nullptr, 1, Deadline(), nullptr));
-    char byte = 0;
-    size_t size = 99;
-    bool eof = true;
     EXPECT_EQ(EINVAL, MinTlsRead(nullptr, &byte, 1, &size, &eof, Deadline(), nullptr));
     EXPECT_EQ(0U, size);
     EXPECT_FALSE(eof);
@@ -83,13 +95,21 @@ TEST(MinTls, InvalidArgumentsAndExpiredDeadline)
 
 TEST(MinTlsDeathTest, DoesNotReplaceExplicitInvalidTrustWithSystemRoots)
 {
-    EXPECT_EXIT({ InvalidTrust(); _exit(::testing::Test::HasFailure() ? 1 : 0); },
+    EXPECT_EXIT(
+    {
+        InvalidTrust();
+        _exit(::testing::Test::HasFailure() ? 1 : 0);
+    },
         ::testing::ExitedWithCode(0), "");
 }
 
 TEST(MinTlsDeathTest, DoesNotBypassExplicitOpenSslPolicy)
 {
-    EXPECT_EXIT({ ExplicitPolicy(); _exit(::testing::Test::HasFailure() ? 1 : 0); },
+    EXPECT_EXIT(
+    {
+        ExplicitPolicy();
+        _exit(::testing::Test::HasFailure() ? 1 : 0);
+    },
         ::testing::ExitedWithCode(0), "");
 }
 
@@ -102,6 +122,7 @@ TEST(MinTlsCore, Sha256KnownAnswer)
         0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
     };
     unsigned char digest[32] = {};
+
     ASSERT_EQ(0, mbedtls_sha256(reinterpret_cast<const unsigned char*>("abc"), 3, digest, 0));
     EXPECT_EQ(0, memcmp(digest, expected, sizeof(expected)));
 }
@@ -118,7 +139,8 @@ TEST(MinTlsCore, AesGcmKnownAnswerAndAuthenticationFailure)
     };
     unsigned char key[16] = {}, nonce[12] = {}, plaintext[16] = {};
     unsigned char ciphertext[16] = {}, tag[16] = {}, decoded[16] = {};
-    mbedtls_gcm_context context;
+    mbedtls_gcm_context context = {};
+
     mbedtls_gcm_init(&context);
     EXPECT_EQ(0, mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key, 128));
     EXPECT_EQ(0, mbedtls_gcm_crypt_and_tag(&context, MBEDTLS_GCM_ENCRYPT, sizeof(plaintext),

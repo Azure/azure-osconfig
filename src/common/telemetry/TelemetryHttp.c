@@ -37,20 +37,24 @@ static bool Equal(const char* left, const char* right)
     {
         a = (unsigned char)*left;
         b = (unsigned char)*right;
+
         if ((a >= 'A') && (a <= 'Z'))
         {
             a += 'a' - 'A';
         }
+
         if ((b >= 'A') && (b <= 'Z'))
         {
             b += 'a' - 'A';
         }
+
         if (a != b)
         {
             equal = false;
             break;
         }
     }
+
     return (equal) && (*left == *right);
 }
 
@@ -69,11 +73,14 @@ static char* Trim(char* value)
     {
         ++value;
     }
+
     length = strlen(value);
+
     while ((length) && ((' ' == value[length - 1]) || ('\t' == value[length - 1])))
     {
         value[--length] = '\0';
     }
+
     return value;
 }
 
@@ -87,8 +94,10 @@ static bool HeaderValue(const char* value, size_t limit)
     {
         return false;
     }
+
     size = strnlen(value, limit + 1);
     valid = size <= limit;
+
     for (i = 0; (valid) && (i < size); ++i)
     {
         if (((unsigned char)value[i] <= 32) || ((unsigned char)value[i] >= 127))
@@ -96,6 +105,7 @@ static bool HeaderValue(const char* value, size_t limit)
             valid = false;
         }
     }
+
     return valid;
 }
 
@@ -111,6 +121,7 @@ int TelemetryHttpBuildRequest(const char* token, const char* clientVersion,
     {
         *headerSize = 0;
     }
+
     if ((NULL == headerSize) || (NULL == headers) ||
         (!HeaderValue(token, TELEMETRY_HTTP_TOKEN_LIMIT)) ||
         (!HeaderValue(clientVersion, TELEMETRY_HTTP_VERSION_LIMIT)) ||
@@ -133,6 +144,7 @@ int TelemetryHttpBuildRequest(const char* token, const char* clientVersion,
             "Upload-Time: %" PRId64 "\r\n"
             "Accept-Encoding: identity\r\n\r\n",
             eventSize, token, clientVersion, uploadTimeMilliseconds);
+
         if (length < 0)
         {
             status = EIO;
@@ -147,10 +159,12 @@ int TelemetryHttpBuildRequest(const char* token, const char* clientVersion,
             *headerSize = (size_t)length;
         }
     }
+
     if (0 != status)
     {
         OsConfigLogInfo(log, "TelemetryHttpBuildRequest: Failed (status=%d)", status);
     }
+
     return status;
 }
 
@@ -166,9 +180,11 @@ static int Number(const char* text, size_t length, unsigned int base, size_t* va
     {
         return EPROTO;
     }
+
     for (i = 0; (!status) && (i < length); ++i)
     {
         c = (unsigned char)text[i];
+
         if ((c >= '0') && (c <= '9'))
         {
             digit = c - '0';
@@ -185,6 +201,7 @@ static int Number(const char* text, size_t length, unsigned int base, size_t* va
         {
             status = EPROTO;
         }
+
         if (!status)
         {
             if ((digit >= base) || (number > (SIZE_MAX - digit) / base))
@@ -197,10 +214,12 @@ static int Number(const char* text, size_t length, unsigned int base, size_t* va
             }
         }
     }
+
     if (!status)
     {
         *value = number;
     }
+
     return status;
 }
 
@@ -213,15 +232,19 @@ static int Connection(TelemetryHttpResponse* response, char* value)
     for (;;)
     {
         comma = strchr(value, ',');
+
         if (NULL != comma)
         {
             *comma = '\0';
         }
+
         token = Trim(value);
+
         if ('\0' == *token)
         {
             return EPROTO;
         }
+
         for (c = token; *c; ++c)
         {
             if (!TokenCharacter((unsigned char)*c))
@@ -229,18 +252,22 @@ static int Connection(TelemetryHttpResponse* response, char* value)
                 return EPROTO;
             }
         }
+
         if (Equal(token, "close"))
         {
             response->connectionClose = true;
         }
+
         if (Equal(token, "keep-alive"))
         {
             response->connectionKeepAlive = true;
         }
+
         if (NULL == comma)
         {
             return 0;
         }
+
         value = comma + 1;
     }
 }
@@ -264,6 +291,7 @@ static int SaveControl(TelemetryHttpResponse* response, TelemetryHttpControlKind
         memcpy(response->controlValues + response->controlBytes, value, length);
         response->controlBytes += length;
     }
+
     return status;
 }
 
@@ -289,11 +317,14 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
     {
         return EMSGSIZE;
     }
+
     colon = strchr(response->line, ':');
+
     if ((NULL == colon) || (colon == response->line))
     {
         return EPROTO;
     }
+
     for (nameCharacter = response->line; nameCharacter < colon; ++nameCharacter)
     {
         if (!TokenCharacter((unsigned char)*nameCharacter))
@@ -301,8 +332,10 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
             return EPROTO;
         }
     }
+
     *colon = '\0';
     value = Trim(colon + 1);
+
     for (valueCharacter = value; *valueCharacter; ++valueCharacter)
     {
         if ((((unsigned char)*valueCharacter < 32) && ('\t' != *valueCharacter)) ||
@@ -311,6 +344,7 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
             return EPROTO;
         }
     }
+
     name = response->line;
     length = Equal(name, "Content-Length");
     transfer = Equal(name, "Transfer-Encoding");
@@ -320,22 +354,25 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
     kills = Equal(name, "kill-tokens");
     duration = Equal(name, "kill-duration");
     delta = Equal(name, "time-delta-millis");
+
     if (trailer)
     {
         // Trailers cannot replace framing, decoding, or collector control decisions.
         return ((length) || (transfer) || (connection) || (encoding) || (retry) || (kills) || (duration) || (delta)) ? EPROTO : 0;
     }
+
     if (length)
     {
-        status = Number(value, strlen(value), 10, &parsed);
-        if (0 != status)
+        if (0 != (status = Number(value, strlen(value), 10, &parsed)))
         {
             return status;
         }
+
         if ((response->hasLength) && (response->contentLength != parsed))
         {
             return EPROTO;
         }
+
         response->contentLength = parsed;
         response->hasLength = true;
     }
@@ -345,10 +382,12 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
         {
             return EPROTO;
         }
+
         if (!Equal(value, "chunked"))
         {
             return ENOTSUP;
         }
+
         response->chunked = true;
     }
     else if (connection)
@@ -368,19 +407,23 @@ static int Header(TelemetryHttpResponse* response, bool trailer)
         {
             return SaveControl(response, TelemetryRetryAfter, value);
         }
+
         if (kills)
         {
             return SaveControl(response, TelemetryKillTokens, value);
         }
+
         if (duration)
         {
             return SaveControl(response, TelemetryKillDuration, value);
         }
+
         if (delta)
         {
             return SaveControl(response, TelemetryTimeDeltaMillis, value);
         }
     }
+
     return 0;
 }
 
@@ -405,26 +448,32 @@ static int JsonEnvelope(const char* body, size_t size)
     for (i = 0; i < size; ++i)
     {
         c = body[i];
+
         if ('\0' == c)
         {
             return EPROTO;
         }
+
         if ((!quoted) && ((unsigned char)c < 32) && (!JsonWhitespace(c)))
         {
             return EPROTO;
         }
+
         if ((ended) || (!started))
         {
             if (JsonWhitespace(c))
             {
                 continue;
             }
+
             if ((ended) || ('{' != c))
             {
                 return EPROTO;
             }
+
             started = true;
         }
+
         if (quoted)
         {
             if (escaped)
@@ -450,6 +499,7 @@ static int JsonEnvelope(const char* body, size_t size)
             {
                 return EMSGSIZE;
             }
+
             stack[depth++] = c;
         }
         else if (('}' == c) || (']' == c))
@@ -458,12 +508,14 @@ static int JsonEnvelope(const char* body, size_t size)
             {
                 return EPROTO;
             }
+
             if (!depth)
             {
                 ended = true;
             }
         }
     }
+
     return ((ended) && (!quoted)) ? 0 : EPROTO;
 }
 
@@ -482,33 +534,42 @@ static int EventFailures(const JSON_Object* object, bool* rejected)
     {
         return 0;
     }
+
     entries = json_value_get_object(failures);
+
     if (NULL == entries)
     {
         return EPROTO;
     }
+
     for (i = 0; i < json_object_get_count(entries); ++i)
     {
         entry = json_object_get_value_at(entries, i);
+
         if (JSONString == json_value_get_type(entry))
         {
             value = json_value_get_string(entry);
+
             if ((3 != json_value_get_string_len(entry)) || (0 != strcmp(value, "all")))
             {
                 return EPROTO;
             }
+
             *rejected = true;
         }
         else if (JSONArray == json_value_get_type(entry))
         {
             indices = json_value_get_array(entry);
+
             for (j = 0; j < json_array_get_count(indices); ++j)
             {
                 index = json_array_get_value(indices, j);
+
                 if ((JSONNumber != json_value_get_type(index)) || (0 != json_value_get_number(index)))
                 {
                     return EPROTO;
                 }
+
                 *rejected = true;
             }
         }
@@ -517,6 +578,7 @@ static int EventFailures(const JSON_Object* object, bool* rejected)
             return EPROTO;
         }
     }
+
     return 0;
 }
 
@@ -551,6 +613,7 @@ static const char* JsonType(const JSON_Value* value)
                 break;
         }
     }
+
     return type;
 }
 
@@ -571,32 +634,38 @@ static int Acknowledge(TelemetryHttpResponse* response, OsConfigLogHandle log)
         response->acceptance = TelemetryRejected;
         return 0;
     }
+
     if (0 == response->bodySize)
     {
         response->acceptance = TelemetryUnconfirmed;
         return 0;
     }
-    status = JsonEnvelope(response->body, response->bodySize);
-    if (0 != status)
+
+    if (0 != (status = JsonEnvelope(response->body, response->bodySize)))
     {
         OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment envelope invalid (status=%d, bodyBytes=%zu)",
             status, response->bodySize);
         return status;
     }
+
     // Parson's string constructor validates UTF-8; its JSON parser does not.
     utf8 = json_value_init_string_with_len(response->body, response->bodySize);
+
     if (NULL == utf8)
     {
         OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment UTF-8 validation or allocation failed");
         return EPROTO;
     }
+
     json_value_free(utf8);
     value = json_parse_string(response->body);
+
     if (NULL == value)
     {
         OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment JSON parse or allocation failed");
         return EPROTO;
     }
+
     object = json_value_get_object(value);
     accepted = json_object_get_value(object, "acc");
     rejected = json_object_get_value(object, "rej");
@@ -604,13 +673,13 @@ static int Acknowledge(TelemetryHttpResponse* response, OsConfigLogHandle log)
     acc = accepted ? json_value_get_number(accepted) : 0;
     rej = rejected ? json_value_get_number(rejected) : 0;
     failed = NULL != json_object_get_value(object, "TokenCrackingFailure");
+
     if (((accepted) && (JSONNumber != json_value_get_type(accepted))) ||
         ((rejected) && (JSONNumber != json_value_get_type(rejected))) ||
         (!(((0 == acc) && (1 == rej)) || ((1 == acc) && (0 == rej)))))
     {
         status = EPROTO;
-        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment counts invalid "
-            "(accType=%s, acc=%.17g, rejType=%s, rej=%.17g, efiType=%s, tokenFailure=%d)",
+        OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment counts invalid (accType=%s, acc=%.17g, rejType=%s, rej=%.17g, efiType=%s, tokenFailure=%d)",
             JsonType(accepted), acc, JsonType(rejected), rej,
             JsonType(json_object_get_value(object, "efi")), (int)failed);
     }
@@ -623,7 +692,9 @@ static int Acknowledge(TelemetryHttpResponse* response, OsConfigLogHandle log)
         OsConfigLogInfo(log, "TelemetryHttp: Acknowledgment event failures invalid (efiType=%s, status=%d)",
             JsonType(json_object_get_value(object, "efi")), status);
     }
+
     json_value_free(value);
+
     return status;
 }
 
@@ -632,14 +703,15 @@ static int Complete(TelemetryHttpResponse* response, OsConfigLogHandle log)
     int status = 0;
 
     response->body[response->bodySize] = '\0';
-    status = Acknowledge(response, log);
-    if (0 == status)
+
+    if (0 == (status = Acknowledge(response, log)))
     {
         response->complete = true;
         response->state = HttpComplete;
         response->reusable = (!response->connectionClose) &&
             ((1 == response->minorVersion) || (response->connectionKeepAlive));
     }
+
     return status;
 }
 
@@ -649,43 +721,53 @@ static int EndHeaders(TelemetryHttpResponse* response, OsConfigLogHandle log)
     {
         return EPROTO;
     }
+
     if (response->status < 200)
     {
         if (101 == response->status)
         {
             return ENOTSUP;
         }
+
         if ((response->hasLength) || (response->chunked))
         {
             return EPROTO;
         }
+
         if (++response->informationalCount > 4)
         {
             return EMSGSIZE;
         }
+
         response->state = HttpStatus;
         response->connectionClose = false;
         response->connectionKeepAlive = false;
+
         return 0;
     }
+
     if (204 == response->status)
     {
         if ((response->hasLength) || (response->chunked))
         {
             return EPROTO;
         }
+
         return Complete(response, log);
     }
+
     if (304 == response->status)
     {
         return Complete(response, log);
     }
+
     if (response->chunked)
     {
         if (1 != response->minorVersion)
         {
             return EPROTO;
         }
+
         response->state = HttpChunkSize;
     }
     else if (response->hasLength)
@@ -694,8 +776,10 @@ static int EndHeaders(TelemetryHttpResponse* response, OsConfigLogHandle log)
         {
             return EMSGSIZE;
         }
+
         response->remaining = response->contentLength;
         response->state = HttpLengthBody;
+
         if (!response->remaining)
         {
             return Complete(response, log);
@@ -706,6 +790,7 @@ static int EndHeaders(TelemetryHttpResponse* response, OsConfigLogHandle log)
         response->connectionClose = true;
         response->state = HttpEofBody;
     }
+
     return 0;
 }
 
@@ -718,11 +803,12 @@ static int ChunkSize(TelemetryHttpResponse* response)
     {
         ++end;
     }
-    status = Number(response->line, (size_t)(end - response->line), 16, &response->remaining);
-    if (0 != status)
+
+    if (0 != (status = Number(response->line, (size_t)(end - response->line), 16, &response->remaining)))
     {
         return status;
     }
+
     // Accept bounded RFC chunk extensions, including quoted values/escapes.
     while (*end)
     {
@@ -730,48 +816,60 @@ static int ChunkSize(TelemetryHttpResponse* response)
         {
             ++end;
         }
+
         if (';' != *end++)
         {
             return EPROTO;
         }
+
         while ((' ' == *end) || ('\t' == *end))
         {
             ++end;
         }
+
         if (!TokenCharacter((unsigned char)*end))
         {
             return EPROTO;
         }
+
         while (TokenCharacter((unsigned char)*end))
         {
             ++end;
         }
+
         while ((' ' == *end) || ('\t' == *end))
         {
             ++end;
         }
+
         if ('=' == *end)
         {
             ++end;
+
             while ((' ' == *end) || ('\t' == *end))
             {
                 ++end;
             }
+
             if ('"' == *end)
             {
                 ++end;
+
                 while ((*end) && ('"' != *end))
                 {
                     if ('\\' == *end)
                     {
                         ++end;
                     }
+
                     if ((((unsigned char)*end < 32) && ('\t' != *end)) || ((unsigned char)*end >= 127))
                     {
                         return EPROTO;
                     }
+
                     ++end;
                 }
+
                 if ('"' != *end++)
                 {
                     return EPROTO;
@@ -783,6 +881,7 @@ static int ChunkSize(TelemetryHttpResponse* response)
                 {
                     return EPROTO;
                 }
+
                 while (TokenCharacter((unsigned char)*end))
                 {
                     ++end;
@@ -790,11 +889,14 @@ static int ChunkSize(TelemetryHttpResponse* response)
             }
         }
     }
+
     if (response->remaining > TELEMETRY_HTTP_BODY_LIMIT - response->bodySize)
     {
         return EMSGSIZE;
     }
+
     response->state = response->remaining ? HttpChunkBody : HttpTrailers;
+
     return 0;
 }
 
@@ -815,18 +917,22 @@ static int Line(TelemetryHttpResponse* response, OsConfigLogHandle log)
             {
                 return EPROTO;
             }
+
             for (i = 13; i < response->lineSize; ++i)
             {
                 c = (unsigned char)response->line[i];
+
                 if (((c < 32) && ('\t' != c)) || (c >= 127))
                 {
                     return EPROTO;
                 }
             }
+
             response->minorVersion = response->line[7] - '0';
             response->status = (unsigned int)(response->line[9] - '0') * 100 +
                 (unsigned int)(response->line[10] - '0') * 10 + (unsigned int)(response->line[11] - '0');
             response->state = HttpHeaders;
+
             return 0;
         case HttpHeaders:
             return response->lineSize ? Header(response, false) : EndHeaders(response, log);
@@ -847,6 +953,7 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte, OsConfigLog
     {
         return EMSGSIZE;
     }
+
     switch (response->state)
     {
         case HttpStatus:
@@ -857,32 +964,40 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte, OsConfigLog
             {
                 return EMSGSIZE;
             }
+
             if (response->carriageReturn)
             {
                 if ('\n' != byte)
                 {
                     return EPROTO;
                 }
+
                 response->carriageReturn = false;
                 response->line[response->lineSize] = '\0';
                 status = Line(response, log);
                 response->lineSize = 0;
+
                 return status;
             }
+
             if ((0 == byte) || ('\n' == byte))
             {
                 return EPROTO;
             }
+
             if ('\r' == byte)
             {
                 response->carriageReturn = true;
                 return 0;
             }
+
             if (TELEMETRY_HTTP_LINE_LIMIT == response->lineSize)
             {
                 return EMSGSIZE;
             }
+
             response->line[response->lineSize++] = (char)byte;
+
             return 0;
         case HttpLengthBody:
         case HttpEofBody:
@@ -891,7 +1006,9 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte, OsConfigLog
             {
                 return EMSGSIZE;
             }
+
             response->body[response->bodySize++] = (char)byte;
+
             if (HttpEofBody != response->state)
             {
                 if (0 == --response->remaining)
@@ -900,23 +1017,29 @@ static int Byte(TelemetryHttpResponse* response, unsigned char byte, OsConfigLog
                     {
                         return Complete(response, log);
                     }
+
                     response->state = HttpChunkCr;
                 }
             }
+
             return 0;
         case HttpChunkCr:
             if ('\r' != byte)
             {
                 return EPROTO;
             }
+
             response->state = HttpChunkLf;
+
             return 0;
         case HttpChunkLf:
             if ('\n' != byte)
             {
                 return EPROTO;
             }
+
             response->state = HttpChunkSize;
+
             return 0;
         default:
             return EPROTO;
@@ -930,8 +1053,10 @@ int TelemetryHttpResponseInitialize(TelemetryHttpResponse* response, OsConfigLog
         OsConfigLogInfo(log, "TelemetryHttpResponseInitialize: Invalid response pointer");
         return EINVAL;
     }
+
     memset(response, 0, sizeof(*response));
     response->state = HttpStatus;
+
     return 0;
 }
 
@@ -949,10 +1074,12 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
     else
     {
         input = bytes;
+
         for (size_t i = 0; (i < size) && (!status); ++i)
         {
             status = Byte(response, input[i], log);
         }
+
         if ((!status) && (endOfStream))
         {
             if (HttpEofBody == response->state)
@@ -963,30 +1090,34 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
             {
                 status = EPROTO;
             }
+
             response->reusable = false;
         }
     }
+
     if (0 != status)
     {
         if (NULL != response)
         {
-            OsConfigLogInfo(log, "TelemetryHttp: Response failure "
-                "(state=%u, http=%u, bodyBytes=%zu, wireBytes=%zu, hasLength=%d, contentLength=%zu, "
-                "chunked=%d, remaining=%zu, eof=%d, controls=%zu)",
+            OsConfigLogInfo(log, "TelemetryHttp: Response failure (state=%u, http=%u, bodyBytes=%zu, wireBytes=%zu, hasLength=%d, contentLength=%zu, chunked=%d, remaining=%zu, eof=%d, controls=%zu)",
                 response->state, response->status, response->bodySize, response->wireBytes,
                 (int)response->hasLength, response->contentLength, (int)response->chunked,
                 response->remaining, (int)endOfStream, response->controlCount);
+
             for (size_t i = 0; i < response->controlCount; ++i)
             {
                 OsConfigLogInfo(log, "TelemetryHttp: Preserved control (index=%zu, kind=%d)",
                     i, (int)response->controls[i].kind);
             }
+
             response->state = HttpFailed;
             response->complete = false;
             response->reusable = false;
             response->acceptance = TelemetryUnconfirmed;
         }
+
         OsConfigLogInfo(log, "TelemetryHttpResponseFeed: Invalid or unsupported response (status=%d)", status);
     }
+
     return status;
 }

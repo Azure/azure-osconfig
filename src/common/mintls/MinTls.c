@@ -53,6 +53,7 @@ static int Remaining(int64_t deadline, int* milliseconds)
     else
     {
         time = (int64_t)now.tv_sec * 1000000000 + now.tv_nsec;
+
         if (deadline <= time)
         {
             status = ETIMEDOUT;
@@ -63,6 +64,7 @@ static int Remaining(int64_t deadline, int* milliseconds)
             *milliseconds = left > INT_MAX ? INT_MAX : (int)left;
         }
     }
+
     return status;
 }
 
@@ -78,10 +80,12 @@ static void Disconnect(MinTls* tls)
 static int Failure(MinTls* tls, const char* operation, int status, int core, OsConfigLogHandle log)
 {
     OsConfigLogError(log, "MinTls: %s failed (status=%d, core=%d)", operation, status, core);
+
     if (tls)
     {
         Disconnect(tls);
     }
+
     return status;
 }
 
@@ -103,6 +107,7 @@ static int Send(void* context, const unsigned char* bytes, size_t size)
     {
         tls->ioError = count < 0 ? errno : EIO;
     }
+
     return result;
 }
 
@@ -128,6 +133,7 @@ static int Receive(void* context, unsigned char* bytes, size_t size)
     {
         tls->ioError = errno;
     }
+
     return result;
 }
 
@@ -142,6 +148,7 @@ static int Wait(MinTls* tls, int core, int64_t deadline)
     if ((MBEDTLS_ERR_SSL_WANT_READ != core) && (MBEDTLS_ERR_SSL_WANT_WRITE != core))
     {
         verified = mbedtls_ssl_get_verify_result(&tls->session);
+
         if ((MBEDTLS_ERR_X509_CERT_VERIFY_FAILED == core) ||
             ((0 != verified) && (UINT32_MAX != verified)))
         {
@@ -157,12 +164,13 @@ static int Wait(MinTls* tls, int core, int64_t deadline)
         while ((0 == status) && (ready <= 0))
         {
             remaining = 0;
-            status = Remaining(deadline, &remaining);
-            if (0 == status)
+
+            if (0 == (status = Remaining(deadline, &remaining)))
             {
                 item = (struct pollfd){tls->descriptor,
                     (short)(MBEDTLS_ERR_SSL_WANT_READ == core ? POLLIN : POLLOUT), 0};
                 ready = poll(&item, 1, remaining);
+
                 if (ready > 0)
                 {
                     status = item.revents & POLLNVAL ? EBADF : 0;
@@ -174,6 +182,7 @@ static int Wait(MinTls* tls, int core, int64_t deadline)
             }
         }
     }
+
     return status;
 }
 
@@ -194,11 +203,13 @@ static int VerifyIp(void* context, mbedtls_x509_crt* certificate, int depth, uin
                 matched = true;
             }
         }
+
         if (!matched)
         {
             *flags |= MBEDTLS_X509_BADCERT_CN_MISMATCH;
         }
     }
+
     return 0;
 }
 
@@ -224,6 +235,7 @@ static int CheckPolicy(OsConfigLogHandle log)
             status = ENOTSUP;
         }
     }
+
     for (i = 0; (0 == status) && (i < ARRAY_SIZE(policies)); ++i)
     {
         if (!lstat(policies[i], &info))
@@ -237,9 +249,11 @@ static int CheckPolicy(OsConfigLogHandle log)
             OsConfigLogError(log, "MinTls: Cannot inspect system cryptographic policy (status=%d)", status);
         }
     }
+
     if (0 == status)
     {
         descriptor = open("/proc/sys/crypto/fips_enabled", O_RDONLY | O_CLOEXEC);
+
         if (descriptor < 0)
         {
             if (ENOENT != errno)
@@ -254,14 +268,17 @@ static int CheckPolicy(OsConfigLogHandle log)
             {
                 count = read(descriptor, value, sizeof(value));
             } while ((count < 0) && (EINTR == errno));
+
             status = count < 0 ? errno : ((2 == count) && ('0' == value[0]) && ('\n' == value[1])) ? 0 : ENOTSUP;
             close(descriptor);
+
             if (status)
             {
                 OsConfigLogError(log, "MinTls: Kernel FIPS policy prohibits fallback or could not be read (status=%d)", status);
             }
         }
     }
+
     return status;
 }
 
@@ -289,6 +306,7 @@ static int LoadTrust(MinTls* tls, const char* caFile, int64_t deadline, OsConfig
     {
         caFile = getenv("SSL_CERT_FILE");
     }
+
     if ((!caFile) && (getenv("SSL_CERT_DIR")))
     {
         OsConfigLogError(log, "MinTls: Directory-only trust override unsupported; configure SSL_CERT_FILE");
@@ -309,6 +327,7 @@ static int LoadTrust(MinTls* tls, const char* caFile, int64_t deadline, OsConfig
             }
         }
     }
+
     if (0 == status)
     {
         if ((!caFile) || (!*caFile))
@@ -335,6 +354,7 @@ static int LoadTrust(MinTls* tls, const char* caFile, int64_t deadline, OsConfig
         {
             length = (size_t)info.st_size;
             bytes = malloc(length + 1);
+
             if (!bytes)
             {
                 status = ENOMEM;
@@ -342,43 +362,52 @@ static int LoadTrust(MinTls* tls, const char* caFile, int64_t deadline, OsConfig
             }
         }
     }
+
     while (0 == status)
     {
-        status = Remaining(deadline, &remaining);
-        if (status)
+        if (0 != (status = Remaining(deadline, &remaining)))
         {
             break;
         }
+
         count = read(descriptor, bytes + size, length + 1 - size);
+
         if (count < 0)
         {
             if (EINTR == errno)
             {
                 continue;
             }
+
             status = errno;
             break;
         }
+
         if (!count)
         {
             break;
         }
+
         size += (size_t)count;
+
         if (size > length)
         {
             status = EFBIG;
         }
     }
+
     if (descriptor >= 0)
     {
         close(descriptor);
     }
+
     if (bytes)
     {
         if ((0 == status) && (size != length))
         {
             status = EIO;
         }
+
         if (status)
         {
             OsConfigLogError(log, "MinTls: CA bundle read failed or file changed (status=%d)", status);
@@ -386,16 +415,18 @@ static int LoadTrust(MinTls* tls, const char* caFile, int64_t deadline, OsConfig
         else
         {
             bytes[size] = '\0';
-            core = mbedtls_x509_crt_parse(&tls->roots, bytes, size + 1);
+
             // Positive means partial parsing. Never silently ignore unrecognized trust.
-            if ((core) || (!tls->roots.raw.p))
+            if ((0 != (core = mbedtls_x509_crt_parse(&tls->roots, bytes, size + 1))) || (!tls->roots.raw.p))
             {
                 status = EACCES;
                 OsConfigLogError(log, "MinTls: CA bundle parsing failed (core=%d)", core);
             }
         }
+
         free(bytes);
     }
+
     return status;
 }
 
@@ -412,14 +443,16 @@ int MinTlsCreate(MinTls** tls, const char* caFile, int64_t deadline, OsConfigLog
         return Failure(NULL, tls ? "duplicate initialization" : "initialization",
             tls ? EALREADY : EINVAL, 0, log);
     }
-    status = Remaining(deadline, &remaining);
-    if (0 == status)
+
+    if (0 == (status = Remaining(deadline, &remaining)))
     {
         status = CheckPolicy(log);
     }
+
     if (0 == status)
     {
         created = calloc(1, sizeof(*created));
+
         if (!created)
         {
             status = ENOMEM;
@@ -435,6 +468,7 @@ int MinTlsCreate(MinTls** tls, const char* caFile, int64_t deadline, OsConfigLog
             status = LoadTrust(created, caFile, deadline, log);
         }
     }
+
     if (0 == status)
     {
         if (0 != (core = mbedtls_ctr_drbg_seed(&created->random, mbedtls_entropy_func, &created->entropy,
@@ -459,6 +493,7 @@ int MinTlsCreate(MinTls** tls, const char* caFile, int64_t deadline, OsConfigLog
             status = core ? EIO : Remaining(deadline, &remaining);
         }
     }
+
     if (status)
     {
         MinTlsDestroy(&created, log);
@@ -469,6 +504,7 @@ int MinTlsCreate(MinTls** tls, const char* caFile, int64_t deadline, OsConfigLog
         *tls = created;
         OsConfigLogInfo(log, "MinTls: Initialized in-tree TLS 1.2 client with verified CA trust");
     }
+
     return status;
 }
 
@@ -485,26 +521,32 @@ int MinTlsHandshake(MinTls* tls, int descriptor, const char* peer, int64_t deadl
     {
         return Failure(NULL, "handshake arguments", EINVAL, 0, log);
     }
+
     if (tls->attached)
     {
         return Failure(NULL, "duplicate handshake", EALREADY, 0, log);
     }
+
     flags = fcntl(descriptor, F_GETFL);
+
     if (flags < 0)
     {
         return Failure(NULL, "socket flags", errno, 0, log);
     }
+
     if (!(flags & O_NONBLOCK))
     {
         return Failure(NULL, "blocking socket", EINVAL, 0, log);
     }
-    status = Remaining(deadline, &remaining);
-    if (status)
+
+    if (0 != (status = Remaining(deadline, &remaining)))
     {
         return Failure(NULL, "handshake deadline", status, 0, log);
     }
+
     tls->ipSize = 1 == inet_pton(AF_INET, peer, tls->ip) ? 4 :
         1 == inet_pton(AF_INET6, peer, tls->ip) ? 16 : 0;
+
     if (!tls->ipSize)
     {
         for (c = peer; *c; ++c)
@@ -516,54 +558,62 @@ int MinTlsHandshake(MinTls* tls, int descriptor, const char* peer, int64_t deadl
             }
         }
     }
+
     tls->descriptor = descriptor;
     tls->ioError = 0;
-    core = mbedtls_ssl_setup(&tls->session, &tls->configuration);
-    if (core)
+
+    if (0 != (core = mbedtls_ssl_setup(&tls->session, &tls->configuration)))
     {
         return Failure(tls, "session setup", EIO, core, log);
     }
+
     tls->attached = true;
-    core = mbedtls_ssl_set_hostname(&tls->session, tls->ipSize ? NULL : peer);
-    if (core)
+
+    if (0 != (core = mbedtls_ssl_set_hostname(&tls->session, tls->ipSize ? NULL : peer)))
     {
         return Failure(tls, "peer setup", EIO, core, log);
     }
+
     mbedtls_ssl_set_bio(&tls->session, tls, Send, Receive, NULL);
+
     for (;;)
     {
-        status = Remaining(deadline, &remaining);
-        if (status)
+        if (0 != (status = Remaining(deadline, &remaining)))
         {
             return Failure(tls, "handshake deadline", status, 0, log);
         }
-        core = mbedtls_ssl_handshake(&tls->session);
-        if (!core)
+
+        if (0 == (core = mbedtls_ssl_handshake(&tls->session)))
         {
             break;
         }
-        status = Wait(tls, core, deadline);
-        if (status)
+
+        if (0 != (status = Wait(tls, core, deadline)))
         {
             return Failure(tls, "handshake", status, core, log);
         }
     }
+
     if ((!mbedtls_ssl_get_peer_cert(&tls->session)) || (mbedtls_ssl_get_verify_result(&tls->session)))
     {
         return Failure(tls, "peer verification", EACCES, 0, log);
     }
+
     protocol = mbedtls_ssl_get_alpn_protocol(&tls->session);
+
     if ((protocol) && (strcmp(protocol, "http/1.1")))
     {
         return Failure(tls, "HTTP protocol", ENOTSUP, 0, log);
     }
-    status = Remaining(deadline, &remaining);
-    if (status)
+
+    if (0 != (status = Remaining(deadline, &remaining)))
     {
         return Failure(tls, "handshake deadline", status, 0, log);
     }
+
     tls->connected = true;
     OsConfigLogInfo(log, "MinTls: Verified TLS 1.2 connection established");
+
     return 0;
 }
 
@@ -572,38 +622,47 @@ int MinTlsWrite(MinTls* tls, const void* bytes, size_t size, int64_t deadline, O
     size_t offset = 0;
     size_t chunk = 0;
     int core = 0;
+    int remaining = 0;
+    int status = 0;
 
     if ((!tls) || (!tls->connected) || ((!bytes) && (size)) || (size > INT_MAX))
     {
         return Failure(NULL, "write arguments", EINVAL, 0, log);
     }
+
     while (offset < size)
     {
-        int remaining = 0;
-        int status = Remaining(deadline, &remaining);
-        if (status)
+        remaining = 0;
+
+        if (0 != (status = Remaining(deadline, &remaining)))
         {
             return Failure(tls, "write deadline", status, 0, log);
         }
+
         chunk = size - offset;
+
         if (chunk > MBEDTLS_SSL_OUT_CONTENT_LEN)
         {
             chunk = MBEDTLS_SSL_OUT_CONTENT_LEN;
         }
-        core = mbedtls_ssl_write(&tls->session, (const unsigned char*)bytes + offset, chunk);
-        if (core > 0)
+
+        if ((core = mbedtls_ssl_write(&tls->session, (const unsigned char*)bytes + offset, chunk)) > 0)
         {
             offset += (size_t)core;
             continue;
         }
+
         status = core ? Wait(tls, core, deadline) : EPROTO;
+
         if (status)
         {
             return Failure(tls, "write", status, core, log);
         }
     }
-    int remaining = 0;
-    int status = Remaining(deadline, &remaining);
+
+    remaining = 0;
+    status = Remaining(deadline, &remaining);
+
     return status ? Failure(tls, "write deadline", status, 0, log) : 0;
 }
 
@@ -618,39 +677,46 @@ int MinTlsRead(MinTls* tls, void* bytes, size_t capacity, size_t* size,
     {
         *size = 0;
     }
+
     if (endOfStream)
     {
         *endOfStream = false;
     }
+
     if ((!tls) || (!tls->connected) || (!bytes) || (!capacity) || (capacity > INT_MAX) || (!size) || (!endOfStream))
     {
         return Failure(NULL, "read arguments", EINVAL, 0, log);
     }
+
     for (;;)
     {
         remaining = 0;
-        status = Remaining(deadline, &remaining);
-        if (status)
+
+        if (0 != (status = Remaining(deadline, &remaining)))
         {
             return Failure(tls, "read deadline", status, 0, log);
         }
-        core = mbedtls_ssl_read(&tls->session, bytes, capacity);
-        if ((core > 0) || (MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY == core))
+
+        if (((core = mbedtls_ssl_read(&tls->session, bytes, capacity)) > 0) || (MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY == core))
         {
-            status = Remaining(deadline, &remaining);
-            if (status)
+            if (0 != (status = Remaining(deadline, &remaining)))
             {
                 return Failure(tls, "read deadline", status, core, log);
             }
+
             *size = core > 0 ? (size_t)core : 0;
             *endOfStream = MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY == core;
+
             if (*endOfStream)
             {
                 Disconnect(tls);
             }
+
             return 0;
         }
+
         status = core ? Wait(tls, core, deadline) : EPROTO;
+
         if (status)
         {
             return Failure(tls, "read", status, core, log);
@@ -664,6 +730,7 @@ void MinTlsDestroy(MinTls** tls, OsConfigLogHandle log)
     {
         return;
     }
+
     mbedtls_ssl_free(&(*tls)->session);
     mbedtls_ssl_config_free(&(*tls)->configuration);
     mbedtls_x509_crt_free(&(*tls)->roots);

@@ -35,9 +35,11 @@ char* GetModuleDirectory(void)
     if ((dladdr((void*)&GetModuleDirectory, &info)) && (info.dli_fname))
     {
         path = realpath(info.dli_fname, NULL);
+
         if (path)
         {
             slash = strrchr(path, '/');
+
             if (!slash)
             {
                 free(path);
@@ -50,6 +52,7 @@ char* GetModuleDirectory(void)
             }
         }
     }
+
     return path;
 }
 
@@ -76,8 +79,8 @@ int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
     {
         g_initialized = true;
         g_log = log;
-        status = TelemetryMonotonicTime(&start);
-        if (0 == status)
+
+        if (0 == (status = TelemetryMonotonicTime(&start)))
         {
             if (NULL == (directory = GetModuleDirectory()))
             {
@@ -92,14 +95,17 @@ int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
                 status = SetFileAccess(path, 0, 0, 0700, log);
             }
         }
+
         if (0 == status)
         {
             g_distroName = GetOsPrettyName(log);
             status = TelemetryMonotonicTime(&now);
         }
+
         if (0 == status)
         {
             elapsedMs = (now - start + 999999) / 1000000;
+
             if (elapsedMs >= TELEMETRY_WORK_BUDGET_MS)
             {
                 status = ETIMEDOUT;
@@ -110,23 +116,28 @@ int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
                     TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, forceMinTls, log);
             }
         }
+
         if (status)
         {
             OsConfigLogError(log, "TelemetryInitialize: Disabled for this invocation (status=%d)", status);
         }
     }
+
     free(directory);
     free(path);
+
     return status;
 }
 
 void TelemetryCleanup(OsConfigLogHandle log)
 {
-    int status = TelemetryWorkerDestroy(&g_worker, log);
-    if (status)
+    int status = 0;
+
+    if (0 != (status = TelemetryWorkerDestroy(&g_worker, log)))
     {
         OsConfigLogError(log, "TelemetryCleanup: Worker cleanup failed (status=%d)", status);
     }
+
     // Retain ownership if the exact child could not be reaped.
     if (!g_worker)
     {
@@ -151,8 +162,7 @@ static bool BeginEvent(int64_t* started)
     // missing log handle or implicitly start a worker from those call sites.
     if ((g_initialized) && (g_worker))
     {
-        status = TelemetryMonotonicTime(started);
-        if (status)
+        if (0 != (status = TelemetryMonotonicTime(started)))
         {
             OsConfigLogError(g_log, "Telemetry: Cannot time event preparation (status=%d)", status);
         }
@@ -161,6 +171,7 @@ static bool BeginEvent(int64_t* started)
             ready = true;
         }
     }
+
     return ready;
 }
 
@@ -181,6 +192,7 @@ static void Submit(const char* name, const char* const* names, const char* const
         properties[i].value.stringValue = Value(i < ARRAY_SIZE(commonNames) ?
             commonValues[i] : values[i - ARRAY_SIZE(commonNames)]);
     }
+
     if (0 == TelemetryWorkerAccountPreparation(g_worker, started, g_log))
     {
         TelemetryWorkerSend(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
@@ -202,6 +214,7 @@ void OSConfigTimeStampSave(void)
     else
     {
         snprintf(value, sizeof(value), "%" PRId64, TsToUs(now));
+
         if ((setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, value, 1)) && (g_initialized))
         {
             OsConfigLogError(g_log, "Telemetry: Cannot save rule start clock (status=%d)", errno);
@@ -221,12 +234,15 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
     {
         return;
     }
+
     *microseconds = 0;
     value = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);
+
     if (value)
     {
         errno = 0;
         start = strtoll(value, &end, 10);
+
         if ((errno) || (end == value) || (*end) || (start <= 0))
         {
             if (g_initialized)
@@ -244,6 +260,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
         else
         {
             elapsed = TsToUs(now) - start;
+
             if (elapsed >= 0)
             {
                 *microseconds = elapsed;

@@ -47,10 +47,12 @@ protected:
     static std::vector<unsigned char> PropertyRecord(const std::vector<unsigned char>& value)
     {
         auto bytes = RecordPrefix();
+
         AppendDataHeader(bytes);
         bytes.insert(bytes.end(), {0x2D, 0x09, 0x0A, 0x01, 0x01, 'P'});
         bytes.insert(bytes.end(), value.begin(), value.end());
         bytes.insert(bytes.end(), {0x00, 0x00});
+
         return bytes;
     }
 
@@ -68,8 +70,10 @@ protected:
 
     void ExpectFailure(int status, size_t capacity = TELEMETRY_MAX_EVENT_SIZE)
     {
+        std::array<unsigned char, TELEMETRY_MAX_EVENT_SIZE + 2> original = {};
+
         buffer.fill(0xA5);
-        const auto original = buffer;
+        original = buffer;
         encodedSize = 99;
         EXPECT_EQ(status, TelemetryEncodeEvent(&event, buffer.data(), capacity, &encodedSize, NULL));
         EXPECT_EQ(0U, encodedSize);
@@ -86,6 +90,7 @@ protected:
 TEST_F(TelemetryEncoderTest, EncodesOneCommonSchemaRecordWithoutAnOuterEnvelope)
 {
     auto expected = RecordPrefix();
+
     AppendDataHeader(expected);
     expected.insert(expected.end(), {0x00, 0x00});
     ExpectEncoded(expected);
@@ -93,13 +98,15 @@ TEST_F(TelemetryEncoderTest, EncodesOneCommonSchemaRecordWithoutAnOuterEnvelope)
 
 TEST_F(TelemetryEncoderTest, EncodesFlagsAndDeviceAndSdkExtensions)
 {
+    std::vector<unsigned char> expected = {};
+
     event.flags = 0x0202;
     event.deviceId = "c:d";
     event.sdkVersion = "v";
     event.sdkEpoch = "e";
     event.sequence = 5;
 
-    auto expected = RecordPrefix();
+    expected = RecordPrefix();
     expected.insert(expected.end(), {
         0xD1, 0x06, 0x84, 0x08,
         0xCB, 0x17, 0x0A, 0x01, 0x49, 0x03, 'c', ':', 'd', 0x00,
@@ -113,10 +120,12 @@ TEST_F(TelemetryEncoderTest, EncodesFlagsAndDeviceAndSdkExtensions)
 
 TEST_F(TelemetryEncoderTest, OmitsEmptyOptionalMetadata)
 {
+    std::vector<unsigned char> expected = {};
+
     event.deviceId = "";
     event.sdkVersion = "";
     event.sdkEpoch = "";
-    auto expected = RecordPrefix();
+    expected = RecordPrefix();
     AppendDataHeader(expected);
     expected.insert(expected.end(), {0x00, 0x00});
     ExpectEncoded(expected);
@@ -125,6 +134,7 @@ TEST_F(TelemetryEncoderTest, OmitsEmptyOptionalMetadata)
 TEST_F(TelemetryEncoderTest, EncodesStringPropertyAndItsDefaultKind)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyString;
     property.value.stringValue = "x";
@@ -138,6 +148,7 @@ TEST_F(TelemetryEncoderTest, EncodesStringPropertyAndItsDefaultKind)
 TEST_F(TelemetryEncoderTest, UsesUtf8ByteLengthsWithoutJsonEscaping)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyString;
     property.value.stringValue = "\xC3\xA9\xE2\x82\xAC\xF0\x9F\x98\x80";
@@ -151,15 +162,18 @@ TEST_F(TelemetryEncoderTest, UsesUtf8ByteLengthsWithoutJsonEscaping)
 TEST_F(TelemetryEncoderTest, EncodesStringLengthVarintBoundary)
 {
     TelemetryProperty property = {};
+    std::string text = {};
+    std::vector<unsigned char> value = {};
+
     property.name = "P";
     property.type = TelemetryPropertyString;
     UseProperty(property);
 
     for (size_t length : {127U, 128U})
     {
-        std::string text(length, 'x');
+        text.assign(length, 'x');
         property.value.stringValue = text.c_str();
-        std::vector<unsigned char> value = {0x69};
+        value = {0x69};
 
         if (127 == length)
         {
@@ -192,6 +206,7 @@ TEST_F(TelemetryEncoderTest, EncodesSignedValuesWithoutLosingIntegerPrecision)
             {0x30, 0x00, 0x91, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00}}
     };
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyInt64;
     UseProperty(property);
@@ -207,6 +222,7 @@ TEST_F(TelemetryEncoderTest, EncodesSignedValuesWithoutLosingIntegerPrecision)
 TEST_F(TelemetryEncoderTest, EncodesBooleanKindEvenWhenFalse)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyBoolean;
     property.value.booleanValue = true;
@@ -220,6 +236,7 @@ TEST_F(TelemetryEncoderTest, EncodesBooleanKindEvenWhenFalse)
 TEST_F(TelemetryEncoderTest, EncodesDoubleAsLittleEndianAndOmitsZeroSlot)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyDouble;
     property.value.doubleValue = 1.5;
@@ -238,6 +255,8 @@ TEST_F(TelemetryEncoderTest, EncodesDoubleAsLittleEndianAndOmitsZeroSlot)
 TEST_F(TelemetryEncoderTest, SortsPropertiesLikeTheSdkMapWithoutChangingInputs)
 {
     TelemetryProperty properties[2] = {};
+    std::vector<unsigned char> expected = {};
+
     properties[0].name = "Z";
     properties[0].type = TelemetryPropertyString;
     properties[0].value.stringValue = "z";
@@ -247,7 +266,7 @@ TEST_F(TelemetryEncoderTest, SortsPropertiesLikeTheSdkMapWithoutChangingInputs)
     event.properties = properties;
     event.propertyCount = ARRAY_SIZE(properties);
 
-    auto expected = RecordPrefix();
+    expected = RecordPrefix();
     AppendDataHeader(expected);
     expected.insert(expected.end(), {
         0x2D, 0x09, 0x0A, 0x02,
@@ -262,6 +281,7 @@ TEST_F(TelemetryEncoderTest, SortsPropertiesLikeTheSdkMapWithoutChangingInputs)
 TEST_F(TelemetryEncoderTest, RejectsDuplicatePropertiesIncludingAfterInsertionShifts)
 {
     TelemetryProperty properties[3] = {};
+
     properties[0].name = "A";
     properties[1].name = "Z";
     properties[2].name = "A";
@@ -279,6 +299,7 @@ TEST_F(TelemetryEncoderTest, RejectsDuplicatePropertiesIncludingAfterInsertionSh
 TEST_F(TelemetryEncoderTest, RejectsNullArgumentsWithoutChangingOutput)
 {
     const auto original = buffer;
+
     encodedSize = 99;
     EXPECT_EQ(EINVAL, TelemetryEncodeEvent(NULL, buffer.data(), buffer.size(), &encodedSize, NULL));
     EXPECT_EQ(0U, encodedSize);
@@ -324,6 +345,7 @@ TEST_F(TelemetryEncoderTest, RejectsInvalidRequiredMetadata)
 TEST_F(TelemetryEncoderTest, RejectsInvalidPropertyNamesAndValues)
 {
     TelemetryProperty property = {};
+
     property.type = TelemetryPropertyString;
     property.value.stringValue = "x";
     UseProperty(property);
@@ -344,6 +366,8 @@ TEST_F(TelemetryEncoderTest, RejectsInvalidPropertyNamesAndValues)
 TEST_F(TelemetryEncoderTest, AcceptsNameLimitsAndRejectsOversizedNames)
 {
     std::string name(TELEMETRY_MAX_NAME_LENGTH, 'A');
+    TelemetryProperty property = {};
+
     event.name = name.c_str();
     ASSERT_EQ(0, TelemetryEncodeEvent(&event, buffer.data(), buffer.size(), &encodedSize, NULL));
     name.push_back('A');
@@ -351,7 +375,6 @@ TEST_F(TelemetryEncoderTest, AcceptsNameLimitsAndRejectsOversizedNames)
     ExpectFailure(EMSGSIZE);
 
     event.name = "Test";
-    TelemetryProperty property = {};
     property.type = TelemetryPropertyBoolean;
     property.name = name.c_str();
     UseProperty(property);
@@ -364,6 +387,7 @@ TEST_F(TelemetryEncoderTest, AcceptsNameLimitsAndRejectsOversizedNames)
 TEST_F(TelemetryEncoderTest, RejectsNonFiniteDoubles)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyDouble;
     UseProperty(property);
@@ -379,6 +403,7 @@ TEST_F(TelemetryEncoderTest, RejectsNonFiniteDoubles)
 TEST_F(TelemetryEncoderTest, RejectsMalformedUtf8WithoutTouchingBuffer)
 {
     TelemetryProperty property = {};
+
     property.name = "P";
     property.type = TelemetryPropertyString;
     UseProperty(property);
@@ -408,13 +433,14 @@ TEST_F(TelemetryEncoderTest, RejectsMalformedUtf8WithoutTouchingBuffer)
 
 TEST_F(TelemetryEncoderTest, EnforcesPropertyArrayAndCountLimits)
 {
+    std::array<TelemetryProperty, TELEMETRY_MAX_PROPERTY_COUNT> properties = {};
+    std::array<std::string, TELEMETRY_MAX_PROPERTY_COUNT> names = {};
+    size_t i = 0;
+
     event.propertyCount = 1;
     ExpectFailure(EINVAL);
 
-    std::array<TelemetryProperty, TELEMETRY_MAX_PROPERTY_COUNT> properties = {};
-    std::array<std::string, TELEMETRY_MAX_PROPERTY_COUNT> names = {};
-
-    for (size_t i = 0; i < properties.size(); ++i)
+    for (i = 0; i < properties.size(); ++i)
     {
         names[i] = "P" + std::to_string(i);
         properties[i].name = names[i].c_str();
@@ -430,8 +456,10 @@ TEST_F(TelemetryEncoderTest, EnforcesPropertyArrayAndCountLimits)
 
 TEST_F(TelemetryEncoderTest, RequiresExactCapacityAndLeavesFailedOutputUnchanged)
 {
+    size_t required = 0;
+
     ASSERT_EQ(0, TelemetryEncodeEvent(&event, buffer.data(), buffer.size(), &encodedSize, NULL));
-    const size_t required = encodedSize;
+    required = encodedSize;
     ExpectFailure(EMSGSIZE, 0);
     ExpectFailure(EMSGSIZE, required - 1);
     buffer.fill(0xA5);
@@ -443,13 +471,16 @@ TEST_F(TelemetryEncoderTest, RequiresExactCapacityAndLeavesFailedOutputUnchanged
 TEST_F(TelemetryEncoderTest, EnforcesSerializedLimitEvenWithLargerOutputBuffer)
 {
     TelemetryProperty property = {};
+    std::string value = {};
+    size_t overhead = 0;
+
     property.name = "P";
     property.type = TelemetryPropertyString;
-    std::string value(16000, 'x');
+    value.assign(16000, 'x');
     property.value.stringValue = value.c_str();
     UseProperty(property);
     ASSERT_EQ(0, TelemetryEncodeEvent(&event, buffer.data(), buffer.size(), &encodedSize, NULL));
-    const size_t overhead = encodedSize - value.size();
+    overhead = encodedSize - value.size();
     ASSERT_GT(static_cast<size_t>(TELEMETRY_MAX_EVENT_SIZE), overhead);
     value.resize(TELEMETRY_MAX_EVENT_SIZE - overhead, 'x');
     property.value.stringValue = value.c_str();
@@ -468,9 +499,10 @@ TEST_F(TelemetryEncoderTest, EnforcesSerializedLimitEvenWithLargerOutputBuffer)
 TEST_F(TelemetryEncoderTest, BorrowsPropertiesOnlyForTheDurationOfTheCall)
 {
     TelemetryProperty property = {};
+    char value[] = "x";
+
     property.name = "P";
     property.type = TelemetryPropertyString;
-    char value[] = "x";
     property.value.stringValue = value;
     UseProperty(property);
     ExpectEncoded(PropertyRecord({0x69, 0x01, 'x', 0x00}));
