@@ -9,6 +9,7 @@
 #endif
 
 #include <Logging.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -32,7 +33,8 @@ static inline int64_t TsToUs(struct timespec ts)
 #ifdef BUILD_TELEMETRY
 // Serialized invocation scope. Reinitialization returns EALREADY without
 // resetting its deadlines. The caller keeps log valid until cleanup.
-int TelemetryInitialize(OsConfigLogHandle log);
+// Production passes false; tests pass true to exercise mintls directly.
+int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log);
 void TelemetryCleanup(OsConfigLogHandle log);
 char* GetModuleDirectory(void);
 char* GetCachedDistroName(void);
@@ -49,8 +51,9 @@ void OSConfigTelemetryCrashDetected(const char* crashInfo);
 #define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
     TelemetryStatusTrace((callingFunction), (status), __FILE__, __func__, (line))
 #else
-static inline int TelemetryInitialize(OsConfigLogHandle log)
+static inline int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
 {
+    (void)forceMinTls;
     (void)log;
     return 0;
 }

@@ -78,7 +78,7 @@ public:
         char deadline[32];
         snprintf(deadline, sizeof(deadline), "%lld", static_cast<long long>(lifetime));
         char* arguments[] = {const_cast<char*>(path), const_cast<char*>(TELEMETRY_WORKER_ARGUMENT),
-            deadline, deadline, NULL};
+            deadline, deadline, const_cast<char*>("--force-mintls"), NULL};
         if ((0 == status) &&
             (0 == (status = posix_spawn_file_actions_adddup2(&actions, sockets[1], STDIN_FILENO))) &&
             (0 == (status = posix_spawn_file_actions_addclose(&actions, sockets[0]))) &&
@@ -220,7 +220,7 @@ protected:
     int Create(const char* path = TELEMETRY_WORKER_LOOKUP_PATH,
         int lifetime = 30000, int budget = 10000, int operation = 5000)
     {
-        return TelemetryWorkerCreate(path, lifetime, budget, operation, &worker, NULL);
+        return TelemetryWorkerCreate(path, lifetime, budget, operation, &worker, true, NULL);
     }
 
     uint32_t Pid()
@@ -269,12 +269,12 @@ TEST_F(TelemetryWorkerTest, ResolvesNumericAddressesWithoutExternalDns)
 
 TEST_F(TelemetryWorkerTest, RejectsInvalidArgumentsAndDoesNotResetAnActiveContext)
 {
-    EXPECT_EQ(EINVAL, TelemetryWorkerCreate(NULL, 1, 1, 1, &worker, NULL));
+    EXPECT_EQ(EINVAL, TelemetryWorkerCreate(NULL, 1, 1, 1, &worker, true, NULL));
     EXPECT_EQ(EINVAL, Create("relative"));
     EXPECT_EQ(EINVAL, Create(TELEMETRY_WORKER_PATH, 0));
     EXPECT_EQ(EINVAL, Create(TELEMETRY_WORKER_PATH, 1, 0));
     EXPECT_EQ(EINVAL, Create(TELEMETRY_WORKER_PATH, 1, 1, 0));
-    EXPECT_EQ(EINVAL, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 1, 1, 1, NULL, NULL));
+    EXPECT_EQ(EINVAL, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 1, 1, 1, NULL, true, NULL));
     EXPECT_EQ(EINVAL, TelemetryWorkerResolve(NULL, "127.0.0.1", &result, NULL));
     EXPECT_EQ(EINVAL, TelemetryWorkerDestroy(NULL, NULL));
     ASSERT_EQ(nullptr, worker);
@@ -573,7 +573,7 @@ TEST(TelemetryWorkerDeathTest, ReapsOwnedChildrenAndPreservesOtherChildren)
             if (other < 0) _exit(1);
             TelemetryWorker* worker = NULL;
             TelemetryResolvedHost result = {};
-            if (0 != TelemetryWorkerCreate(TELEMETRY_WORKER_FAULT_PATH, 30000, 10000, 100, &worker, NULL))
+            if (0 != TelemetryWorkerCreate(TELEMETRY_WORKER_FAULT_PATH, 30000, 10000, 100, &worker, true, NULL))
                 _exit(2);
             for (const char* mode : {"wrong-version", "short", "close-hang", "hang"})
             {
@@ -599,7 +599,7 @@ TEST(TelemetryWorkerDeathTest, HandlesClosedStandardDescriptors)
             close(STDERR_FILENO);
             TelemetryWorker* worker = NULL;
             TelemetryResolvedHost result = {};
-            if (0 != TelemetryWorkerCreate(TELEMETRY_WORKER_LOOKUP_PATH, 30000, 10000, 5000, &worker, NULL))
+            if (0 != TelemetryWorkerCreate(TELEMETRY_WORKER_LOOKUP_PATH, 30000, 10000, 5000, &worker, true, NULL))
                 _exit(1);
             if (0 != TelemetryWorkerResolve(worker, "many", &result, NULL)) _exit(2);
             if (0 != TelemetryWorkerDestroy(&worker, NULL)) _exit(3);

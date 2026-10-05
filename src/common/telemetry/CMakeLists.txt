@@ -21,9 +21,8 @@ target_include_directories(telemetryproxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetryproxy PUBLIC logging)
 
 option(OSCONFIG_TELEMETRY_MINTLS "Include in-tree TLS fallback in the owned executable" ON)
-option(OSCONFIG_TELEMETRY_FORCE_MINTLS "Test-only: bypass system TLS discovery" OFF)
-if(OSCONFIG_TELEMETRY_FORCE_MINTLS AND (NOT BUILD_TESTS OR NOT OSCONFIG_TELEMETRY_MINTLS))
-    message(FATAL_ERROR "Forced mintls requires BUILD_TESTS and OSCONFIG_TELEMETRY_MINTLS")
+if(BUILD_TESTS AND NOT OSCONFIG_TELEMETRY_MINTLS)
+    message(FATAL_ERROR "Telemetry tests pass forceMinTls=true and require OSCONFIG_TELEMETRY_MINTLS=ON")
 endif()
 
 # TLS providers are used only by the owned executable, never by the policy SO.
@@ -33,11 +32,6 @@ target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
 if(OSCONFIG_TELEMETRY_MINTLS)
     target_link_libraries(telemetrytls PRIVATE mintls)
     target_compile_definitions(telemetrytls PRIVATE OSCONFIG_TELEMETRY_MINTLS=1)
-endif()
-if(OSCONFIG_TELEMETRY_FORCE_MINTLS)
-    target_compile_definitions(telemetrytls PRIVATE OSCONFIG_TELEMETRY_FORCE_MINTLS=1)
-    target_compile_definitions(commontests PRIVATE OSCONFIG_TELEMETRY_FORCE_MINTLS=1)
-    message(WARNING "Test-only forced mintls build: do not distribute these executables")
 endif()
 
 add_library(telemetryresolver STATIC TelemetryResolver.c)
@@ -82,19 +76,6 @@ add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TelemetryTlsProbe.c)
 target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
 
 # Explicit live invocation only; not installed or registered with ctest.
-# Temporarily force the No. 3 sender through mintls, independently of the
-# production worker and its OS-provider selection.
-add_library(telemetrytlsariatest STATIC EXCLUDE_FROM_ALL TelemetryTls.c)
-target_include_directories(telemetrytlsariatest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(telemetrytlsariatest PRIVATE
-    OSCONFIG_TELEMETRY_MINTLS=1 OSCONFIG_TELEMETRY_FORCE_MINTLS=1)
-target_link_libraries(telemetrytlsariatest PUBLIC logging PRIVATE mintls ${CMAKE_DL_LIBS} rt)
-
-add_library(telemetrytransportariatest STATIC EXCLUDE_FROM_ALL TelemetryTransport.c TelemetryResolverLookup.c)
-target_include_directories(telemetrytransportariatest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(telemetrytransportariatest PUBLIC telemetryhttp telemetryproxy
-    PRIVATE telemetrytlsariatest telemetryresolver rt)
-
 add_executable(telemetryariatest EXCLUDE_FROM_ALL TelemetryAriaTest.c)
 target_include_directories(telemetryariatest PRIVATE ../commonutils ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(telemetryariatest PRIVATE telemetrytransportariatest telemetryevent rt)
+target_link_libraries(telemetryariatest PRIVATE telemetrytransport telemetryevent rt)

@@ -177,10 +177,6 @@ static int LoadProvider(OsConfigLogHandle log)
     unsigned long version = 0;
     bool supported = false;
 
-#ifdef OSCONFIG_TELEMETRY_FORCE_MINTLS
-    OsConfigLogInfo(log, "TelemetryTls: Test build forces mintls; OS provider discovery disabled");
-    return ENOTSUP;
-#endif
     if (g_attempted)
     {
         return g_providerStatus;
@@ -303,7 +299,7 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
     return status;
 }
 
-int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle log)
+int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, OsConfigLogHandle log)
 {
     int remaining = 0;
     int status = 0;
@@ -322,7 +318,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
     else if ((0 == (status = WorkerSignals())) &&
         (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining))))
     {
-        status = LoadProvider(log);
+        status = forceMinTls ? ENOTSUP : LoadProvider(log);
 #ifdef OSCONFIG_TELEMETRY_MINTLS
         if (status == ENOTSUP)
         {
@@ -339,14 +335,14 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
                 return Failure(NULL, "fallback initialization", status, log);
             }
             *tls = created;
-            OsConfigLogInfo(log, "TelemetryTls: Selected in-tree mintls fallback");
+            OsConfigLogInfo(log, "TelemetryTls: Selected in-tree mintls (forced=%d)", (int)forceMinTls);
             return 0;
         }
 #endif
         // Provider initialization/configuration failures never trigger fallback.
         if (status)
         {
-            return Failure(NULL, "OS provider initialization", status, log);
+            return Failure(NULL, forceMinTls ? "mintls unavailable" : "OS provider initialization", status, log);
         }
         g_api.ERR_clear_error();
         created = calloc(1, sizeof(*created));

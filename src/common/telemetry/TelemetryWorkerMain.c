@@ -155,7 +155,7 @@ static int ParseDeadline(const char* text, int64_t* deadline)
     return ((long long)*deadline == value) ? 0 : EOVERFLOW;
 }
 
-static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
+static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime, bool* forceMinTls)
 {
     int64_t startup = 0;
     int status = 0;
@@ -163,10 +163,12 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
     sigset_t signals = {0};
     struct sigevent notification = {0};
 
-    if ((4 != argc) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)))
+    if ((4 != argc && 5 != argc) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)) ||
+        (5 == argc && 0 != strcmp(argv[4], "--force-mintls")))
     {
         return EINVAL;
     }
+    *forceMinTls = 5 == argc;
     if ((0 != (status = ParseDeadline(argv[2], lifetime))) ||
         (0 != (status = ParseDeadline(argv[3], &startup))))
     {
@@ -202,7 +204,7 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
 
 static int SendEvent(TelemetryTransport** transport, char* epoch,
     const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline,
-    OsConfigLogHandle log)
+    bool forceMinTls, OsConfigLogHandle log)
 {
     // The package's key is compiled only into the owned executable. A runtime
     // override also permits offline tests with a deliberately fake token.
@@ -247,7 +249,7 @@ static int SendEvent(TelemetryTransport** transport, char* epoch,
     }
     if (!status && !*transport)
     {
-        status = TelemetryTransportCreate(transport, log);
+        status = TelemetryTransportCreate(transport, forceMinTls, log);
     }
     if (!status)
     {
@@ -277,9 +279,10 @@ int main(int argc, char** argv)
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
     TelemetryResolverReply reply = {0};
     TelemetryWorkerSendReply sent = {0};
+    bool forceMinTls = false;
 
     SetConsoleLoggingEnabled(false);
-    status = Initialize(argc, argv, &timer, &lifetime);
+    status = Initialize(argc, argv, &timer, &lifetime, &forceMinTls);
     if (0 == status)
     {
         log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
@@ -390,7 +393,8 @@ int main(int argc, char** argv)
         if (request.operation == TELEMETRY_WORKER_SEND)
         {
             sent = (TelemetryWorkerSendReply){0};
-            sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, log);
+            sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline,
+                forceMinTls, log);
             sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
             if (sent.status)
             {

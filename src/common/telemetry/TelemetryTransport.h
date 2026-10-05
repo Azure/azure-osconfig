@@ -17,7 +17,8 @@ typedef struct TelemetryTransport TelemetryTransport;
 // self-timer armed. Create snapshots inherited routing but performs no networking.
 // Initial routes: direct or plain HTTP CONNECT, optionally URL Basic credentials.
 // Unsupported proxy configuration fails explicitly without a direct fallback.
-int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle log);
+// Production passes forceMinTls=false; the test override persists on reconnect.
+int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, OsConfigLogHandle log);
 
 // One encoded record per request. Reuses a verified connection; never retries
 // an event, redirects, or changes route following failure. Only a later call may

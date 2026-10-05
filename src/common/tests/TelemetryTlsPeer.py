@@ -11,6 +11,7 @@ import ssl
 import struct
 import subprocess
 import sys
+import tempfile
 import time
 
 
@@ -30,6 +31,57 @@ def certificate(openssl, directory, name, subject, ecdsa=False):
         stderr=subprocess.DEVNULL,
         timeout=10,
     )
+
+
+def expired_certificate(openssl, directory, subject, san):
+    certificate(openssl, directory, "root", "Expiry Test Root")
+    root = os.path.join(directory, "root.pem")
+    server = os.path.join(directory, "server.pem")
+    with tempfile.TemporaryDirectory(dir=directory) as authority:
+        config = os.path.join(authority, "ca.cnf")
+        request = os.path.join(authority, "server.csr")
+        with open(os.path.join(authority, "index"), "w"):
+            pass
+        with open(os.path.join(authority, "serial"), "w") as serial:
+            serial.write("01\n")
+        with open(config, "w") as output:
+            output.write(
+                "[ca]\ndefault_ca=issuer\n[issuer]\n"
+                "database=" + os.path.join(authority, "index") + "\n"
+                "serial=" + os.path.join(authority, "serial") + "\n"
+                "new_certs_dir=" + authority + "\n"
+                "default_md=sha256\ndefault_days=1\npolicy=policy\n"
+                "[policy]\ncommonName=supplied\n"
+                "[server]\nbasicConstraints=critical,CA:FALSE\n"
+                "keyUsage=critical,digitalSignature,keyEncipherment\n"
+                "extendedKeyUsage=serverAuth\nsubjectAltName=" + san + "\n"
+            )
+        subprocess.check_call(
+            [openssl, "req", "-new", "-key", os.path.join(directory, "server-key.pem"),
+             "-subj", "/CN=" + subject, "-config", os.path.join(directory, "openssl.cnf"),
+             "-out", request],
+            stdout=subprocess.DEVNULL, timeout=10)
+        # Explicit dates work across OpenSSL versions that reject negative -days.
+        subprocess.check_call(
+            [openssl, "ca", "-batch", "-notext", "-config", config,
+             "-cert", root, "-keyfile", os.path.join(directory, "root-key.pem"),
+             "-in", request, "-out", server, "-extensions", "server",
+             "-startdate", "20000101000000Z", "-enddate", "20000102000000Z"],
+            stdout=subprocess.DEVNULL, timeout=10)
+
+    verify = [openssl, "verify", "-CAfile", root, "-purpose", "sslserver",
+              "-verify_hostname", subject]
+    # The fixture must fail for expiry, not an unrelated chain or identity error.
+    subprocess.check_call(verify + ["-no_check_time", server],
+                          stdout=subprocess.DEVNULL, timeout=10)
+    try:
+        subprocess.check_output(verify + [server], stderr=subprocess.STDOUT, timeout=10)
+    except subprocess.CalledProcessError as error:
+        if not re.search(rb"error 10 at 0 depth lookup:\s*certificate has expired", error.output):
+            raise RuntimeError("Unexpected certificate verification failure: " +
+                               error.output.decode("utf-8", errors="replace")) from error
+    else:
+        raise RuntimeError("Expired certificate fixture unexpectedly verified")
 
 
 def receive(connection, count):
@@ -213,13 +265,8 @@ def main():
         )
     certificate(openssl, directory, "server", name, mode == "ecdsa")
     if mode == "expired":
-        subprocess.check_call(
-            [openssl, "x509", "-in", os.path.join(directory, "server.pem"),
-             "-signkey", os.path.join(directory, "server-key.pem"), "-days", "-1",
-             "-out", os.path.join(directory, "expired.pem")],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
-        os.replace(os.path.join(directory, "expired.pem"), os.path.join(directory, "server.pem"))
-    if mode == "untrusted":
+        expired_certificate(openssl, directory, name, san)
+    elif mode == "untrusted":
         certificate(openssl, directory, "root", "Other Test Root")
     else:
         with open(os.path.join(directory, "server.pem"), "rb") as source:

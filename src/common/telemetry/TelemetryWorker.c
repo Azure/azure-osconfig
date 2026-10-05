@@ -38,6 +38,7 @@ struct TelemetryWorker
     int64_t budget;
     int64_t operationLimit;
     bool suppressed;
+    bool forceMinTls;
 };
 
 static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* deadline)
@@ -307,7 +308,8 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     sigset_t mask = {0};
     char lifetime[32] = {0};
     char startup[32] = {0};
-    char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT, lifetime, startup, NULL};
+    char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT, lifetime, startup,
+        worker->forceMinTls ? "--force-mintls" : NULL, NULL};
     int flags = 0;
     pid_t child = -1;
     size_t i = 0;
@@ -418,7 +420,7 @@ cleanup:
 
 int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
     int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker,
-    OsConfigLogHandle log)
+    bool forceMinTls, OsConfigLogHandle log)
 {
     int status = 0;
     int64_t now = 0;
@@ -451,6 +453,7 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
         {
             created->descriptor = -1;
             created->child = -1;
+            created->forceMinTls = forceMinTls;
             created->lifetimeDeadline = now + (int64_t)lifetimeMilliseconds * 1000000;
             created->budget = (int64_t)budgetMilliseconds * 1000000;
             created->operationLimit = (int64_t)operationMilliseconds * 1000000;

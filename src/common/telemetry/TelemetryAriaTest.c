@@ -194,7 +194,7 @@ int main(int argc, char** argv)
     status = TelemetryCreateEpoch(correlation, log);
     if (!status)
     {
-        status = TelemetryTransportCreate(&transport, log);
+        status = TelemetryTransportCreate(&transport, true, log);
     }
     if (status)
     {

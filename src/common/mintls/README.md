@@ -8,9 +8,15 @@ On Linux distributions or custom images that lack a supported system OpenSSL pro
 
 No roots ship with mintls. An explicit `MinTlsCreate` CA file takes precedence, then `SSL_CERT_FILE`, then a recognized OS PEM bundle. A supplied invalid or empty override fails; it never falls back to unrelated trust. A directory-only `SSL_CERT_DIR` override is unsupported. When both variables exist, the file is the complete trust input. Missing, partially unparseable, nonregular, empty, or over-4-MiB bundles fail closed. Custom images need to provision their CA bundle, including approved interception roots when applicable.
 
-mintls is not FIPS validated and cannot interpret arbitrary OpenSSL policy. It refuses explicit `OPENSSL_CONF`, `OPENSSL_CONF_INCLUDE`, `OPENSSL_MODULES`, `OPENSSL_FIPS`, or `OPENSSL_FORCE_FIPS_MODE` overrides, `/etc/system-fips`, a system crypto-policy configuration, and an enabled or unreadable kernel FIPS setting. These checks also apply in the forced test build. Sites imposing other cryptographic restrictions must keep `OSCONFIG_TELEMETRY_MINTLS=OFF`; the fallback is not a substitute for their OS provider policy. There is no accept-any-certificate or policy-bypass switch.
+mintls is not FIPS validated and cannot interpret arbitrary OpenSSL policy. It refuses explicit `OPENSSL_CONF`, `OPENSSL_CONF_INCLUDE`, `OPENSSL_MODULES`, `OPENSSL_FIPS`, or `OPENSSL_FORCE_FIPS_MODE` overrides, `/etc/system-fips`, a system crypto-policy configuration, and an enabled or unreadable kernel FIPS setting. These checks also apply when tests force mintls at runtime. Sites imposing other cryptographic restrictions must keep `OSCONFIG_TELEMETRY_MINTLS=OFF`; the fallback is not a substitute for their OS provider policy. There is no accept-any-certificate or policy-bypass switch.
 
 The API borrows a connected nonblocking socket and preserves absolute deadlines across retries. Chain, dates, and DNS/IP identity are mandatory; numeric IP identities require an IP SAN and are not sent as SNI. Only a TLS close-notify is EOF. Failure discards the TLS session without closing the caller's socket or replaying application data. The caller must arm its process watchdog: filesystem, entropy, and cryptographic operations cannot all be interrupted safely inside the C library. The telemetry worker keeps its existing 500 ms work allowance and 10-minute lifetime.
+
+## Test provider selection
+
+Production calls `TelemetryInitialize(false, log)` to prefer the OS provider with the normal fallback rules. Tests call `TelemetryInitialize(true, log)`; lower-level tests likewise pass `true` to worker, transport, or TLS creation. The `forceMinTls` argument is retained across worker restarts and transport reconnects. It bypasses OS-provider discovery, not trust or system-policy enforcement, and does not change cached OS-provider selection.
+
+Tests and the explicit live sender use the same TLS/transport libraries as production, without a forced-provider build macro or duplicate libraries. Test builds require the existing mintls inclusion option to remain enabled (the default); production builds can still exclude mintls. The 10,000-event loopback functional test is disabled in the normal pass and requires its exact GoogleTest filter together with `--gtest_also_run_disabled_tests`.
 
 ## License and provenance
 

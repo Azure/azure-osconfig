@@ -58,7 +58,7 @@ char* GetCachedDistroName(void)
     return g_distroName;
 }
 
-int TelemetryInitialize(OsConfigLogHandle log)
+int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
 {
     int64_t start = 0;
     int64_t now = 0;
@@ -107,7 +107,7 @@ int TelemetryInitialize(OsConfigLogHandle log)
             else
             {
                 status = TelemetryWorkerCreate(path, TELEMETRY_LIFETIME_MS,
-                    TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, log);
+                    TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, forceMinTls, log);
             }
         }
         if (status)

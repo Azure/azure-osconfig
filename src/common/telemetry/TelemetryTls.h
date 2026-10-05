@@ -22,7 +22,9 @@ typedef struct TelemetryTls TelemetryTls;
 // All deadlines are absolute CLOCK_MONOTONIC nanoseconds, never reset by I/O.
 // Prefers OS OpenSSL; the in-tree fallback is only for unavailable/unsupported
 // providers, never for a failed OS initialization, handshake, or verification.
-int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle log);
+// Production passes forceMinTls=false. Tests may force mintls without changing
+// OS-provider discovery state or bypassing mintls trust/system-policy checks.
+int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, OsConfigLogHandle log);
 
 // Borrows an already connected O_NONBLOCK socket (direct or tunneled). Does not
 // discover routing, connect TCP, own/close the descriptor, or bypass a proxy.

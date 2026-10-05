@@ -18,9 +18,11 @@ typedef struct TelemetryWorker TelemetryWorker;
 // handling while it is owned. workerPath is a trusted absolute executable path.
 // *worker must initially be NULL. Creation does not spawn or perform network I/O.
 // Lifetime includes audit time; the telemetry budget charges only API execution.
+// Production passes forceMinTls=false; tests can retain forced mintls across
+// child restarts without changing deadlines or the selected route.
 int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
     int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker,
-    OsConfigLogHandle log);
+    bool forceMinTls, OsConfigLogHandle log);
 
 // Starts the worker lazily and reuses it. IPC/process failure drops this operation
 // and reaps the child; a later call may start another within the ORIGINAL budget.
