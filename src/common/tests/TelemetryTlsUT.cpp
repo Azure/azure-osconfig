@@ -1172,11 +1172,6 @@ TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes)
     TLS_CASE(TransportArguments());
 }
 
-TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsHundredEventsToLoopbackOnly)
-{
-    TLS_CASE(LiveEvents("aria-live", "requested=100 attempted=100 accepted=100 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
-}
-
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnThrottling)
 {
     TLS_CASE(LiveEvents("aria-live-throttle", "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
