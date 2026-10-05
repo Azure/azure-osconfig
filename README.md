@@ -23,22 +23,11 @@ Build environments have many dependencies required, the easiest way to get start
 Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
 
 **Common build dependencies across distributions:**
-- git, tar, unzip, zip
 - cmake (>= 3.21)
 - build-essential (gcc >= 4.4.7, g++, make)
-- python3 and the OS `openssl` command for test fixtures when tests are enabled
-
-This branch's distilled telemetry prototype does not fetch or build the 1DS
-C++ SDK, curl, OpenSSL, zlib, SQLite, or nlohmann JSON. GoogleTest is still fetched
-when tests are enabled. The sender prefers **OS-installed OpenSSL 3 or 1.1**.
-When neither supported provider is available, the owned executable can use
-the in-tree [mintls fallback](src/common/mintls/README.md), built directly from
-a maintained client-only source subset, with no TLS dependency download.
-Both paths require trusted certificates; no root bundle is shipped.
-Fallback cannot replace a failed OS-provider initialization or handshake.
-Fallback validation, size measurement, and the final compiler/distribution
-matrix remain pending. CI/download utilities may still use the `curl`
-command; that is not a telemetry library dependency.
+- perl (perl-core, perl-IPC-Cmd)
+- tar
+- python3
 
 Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example. The environments do also contain tools used in our CI which are not required for building (bc, jq, libubsan1, libasan8, clang, clang-tools, file).
 
@@ -46,8 +35,7 @@ Refer to the specific Dockerfile for your distribution under [devops/docker/](de
 Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
 
 ```bash
-sudo apt -y update && sudo apt-get -y install software-properties-common
-sudo apt -y update && sudo apt-get -y install build-essential cmake git curl pkg-config tar unzip wget zip
+sudo apt -y update && sudo apt-get -y install build-essential cmake git python3 openssl
 ```
 
 Verify that CMake is at least version 3.21 and gcc is at least version 4.4.7.
@@ -91,34 +79,7 @@ Source | Destination | Description
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The DeviceInfo module binary
 [src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
-[src/common/telemetry/](src/common/telemetry/) | /usr/bin/OSConfigTelemetry and /usr/lib/osconfig/OSConfigTelemetry | Owned C telemetry worker, installed beside executable/module callers when telemetry is enabled
-
-### Distilled telemetry prototype
-
-The four ASB/SSH policy ZIPs package the same C worker beside
-`libOsConfigResource.so`, under the existing `OSConfigTelemetry` filename.
-`telemetrybin` remains a build target for that executable. Producer calls use
-synchronous, bounded memory-only IPC; there is no JSONL spool, SDK queue,
-database, shutdown upload, or event replay. The old file-input CLI is removed.
-Existing crash files and SDK caches are not read or deleted by this migration.
-Previous-crash evidence in the component log still generates `CrashDetected`
-at the next startup.
-
-The prototype preserves `StatusTrace`, `BaselineRun`, `RuleComplete`, and
-`CrashDetected`, with their existing string-valued custom properties.
-The parent uses a 500 ms cumulative telemetry-work budget and 500 ms per
-operation, with a 10-minute worker lifetime. Audit time between calls does not
-consume the work budget. Telemetry failure drops the event without changing
-the policy result. Collector suppression lasts for the invocation; full
-cross-invocation control handling remains a production follow-up.
-
-Configure `OsConfigTelemetryApiKey` before CMake to embed the ingestion key in
-the worker. A present runtime environment variable overrides it; an empty or
-missing effective key fails explicitly without sending. No Debug/Release
-setting selects PROD/NONPROD: the key determines the project.
-The separate `telemetryariatest --send-status-trace-10000` remains an explicit
-live diagnostic, not installed, packaged, or run by CTest. Its demonstration
-of NONPROD delivery does not validate the newly wired policy path.
+[src/common/telemetry/](src/common/telemetry/) | /var/lib/osconfig/telemetry | The OSConfig telemetry directory
 
 ### Enable and start OSConfig for the first time
 
@@ -149,16 +110,13 @@ To replace a service unit while the daemon is running: stop the Agent daemon, di
 OSConfig logs to its own logs at `/var/log/osconfig*.log*`:
 
 ```bash
+sudo cat /var/log/osconfig_nrp.log
 sudo cat /var/log/osconfig_agent.log
 sudo cat /var/log/osconfig_platform.log
-sudo cat /var/log/osconfig_commandrunner.log
-sudo cat /var/log/osconfig_networking.log
-sudo cat /var/log/osconfig_firewall.log
-sudo cat /var/log/osconfig_tpm.log
 ...
 ```
 
-Each of these log files when it reaches maximum size (128 KB) gets rolled over to a file with the same name and a .bak extension (osconfig_agent.bak, for example).
+Each of these log files when it reaches maximum size (1 MB) gets rolled over to a file with the same name and a .bak extension (osconfig_agent.bak, for example).
 
 When OSConfig exists prematurely (crashes) the Agent's log (osconfig_agent.log) at the very end may contain an indication of that. For example:
 
