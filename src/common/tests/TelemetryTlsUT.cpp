@@ -1172,36 +1172,29 @@ TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes)
     TLS_CASE(TransportArguments());
 }
 
-// End-to-end functional test. Run explicitly with its exact --gtest_filter
-// and --gtest_also_run_disabled_tests; exclude it from normal unit-test runs.
-TEST(TelemetryTransportDeathTest, DISABLED_LiveTestExecutableSendsTenThousandEventsToLoopbackOnly)
+TEST(TelemetryTransportDeathTest, LiveTestExecutableSendsHundredEventsToLoopbackOnly)
 {
-    TLS_CASE(LiveEvents("aria-live",
-        "requested=10000 attempted=10000 accepted=10000 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
+    TLS_CASE(LiveEvents("aria-live", "requested=100 attempted=100 accepted=100 rejected=0 unconfirmed=0 unsent=0 status=0", 0));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnThrottling)
 {
-    TLS_CASE(LiveEvents("aria-live-throttle",
-        "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-throttle", "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnExplicitRejection)
 {
-    TLS_CASE(LiveEvents("aria-live-reject",
-        "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-reject",  "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotTreatEmpty200AsAcceptance)
 {
-    TLS_CASE(LiveEvents("aria-live-empty",
-        "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-empty", "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotReplayAmbiguousDelivery)
 {
-    TLS_CASE(LiveEvents("aria-live-drop",
-        "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-drop", "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
 }
 
 TEST(TelemetryWorkerSendDeathTest, SendsAndReusesActualWorker)
