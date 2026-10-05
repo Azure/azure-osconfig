@@ -34,7 +34,7 @@
 
 #define TEST_COUNT 10000
 #define TEST_RESULT "731001"
-#define TEST_MARKER "*** Distilled 1DS SDK test No. 3 ***"
+#define TEST_MARKER "*** Distilled 1DS SDK test No. 66 ***"
 #define TEST_CLIENT "OSConfig-C/0.1"
 
 static int InitializeTimer(timer_t* timer)
