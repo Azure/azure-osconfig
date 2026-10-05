@@ -170,6 +170,8 @@ set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 
 # Common packaging
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md" DESTINATION share/licenses/osconfig)
+
 set(CPACK_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_PACKAGE_HOMEPAGE_URL ${OsConfigProjectUrl})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${OsConfigProjectLongName})
@@ -194,6 +196,9 @@ set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, g
 set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/changelog")
 set(CPACK_RPM_PACKAGE_AUTOREQ 1)
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+if(BUILD_TELEMETRY AND OSCONFIG_TELEMETRY_MINTLS)
+    set(CPACK_RPM_PACKAGE_LICENSE "MIT AND Apache-2.0")
+endif()
 set(CPACK_RPM_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_RPM_PACKAGE_DESCRIPTION ${OsConfigProjectDescription})
 set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/postinst")

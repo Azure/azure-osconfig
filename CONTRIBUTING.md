@@ -1,6 +1,6 @@
 # Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular configuration stack for�Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management (such as from Out Of Box Experience, OOBE). For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md).
+Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management (such as from Out Of Box Experience, OOBE). For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md).
 
 # Code of conduct
 
@@ -15,6 +15,8 @@ Pull requests needs to be formatted according to .pre-commit-config.yaml. Each p
 Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
 ## Submitting a PR
+
+When importing or updating third-party code, record its upstream source and revision, preserve its license and applicable copyright and attribution notices, and update the component-local documentation and applicable redistribution notices. Do not replace upstream notices with Microsoft's MIT header. Modified Apache-2.0 files must carry prominent notices stating that they were changed. A Contributor License Agreement does not replace third-party license obligations.
 
 1. Create a GitHub account if you do not have one yet: [Join GitHub](https://github.com/join).
 2. Fork the public GitHub repo: [https://github.com/Azure/azure-osconfig](https://github.com/Azure/azure-osconfig). [Learn more about forking a repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo).
