@@ -53,7 +53,3 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         "$<$<NOT:$<CONFIG:Debug>>:-Os>")
     target_link_options(mintls INTERFACE -Wl,--gc-sections)
 endif()
-
-if(BUILD_TESTS)
-    add_subdirectory(tests)
-endif()

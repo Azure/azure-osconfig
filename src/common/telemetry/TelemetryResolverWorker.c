@@ -16,10 +16,11 @@ static void SendReplyAndExit(const TelemetryResolverReply* reply)
 {
     const unsigned char* bytes = (const unsigned char*)reply;
     size_t remaining = sizeof(*reply);
+    ssize_t written = 0;
 
     while (remaining > 0)
     {
-        ssize_t written = write(STDOUT_FILENO, bytes, remaining);
+        written = write(STDOUT_FILENO, bytes, remaining);
         if (written > 0)
         {
             bytes += written;
@@ -60,8 +61,8 @@ int main(int argc, char** argv)
     struct sigaction action = {0};
     struct itimerspec expiration = {0};
     struct timespec now = {0};
-    sigset_t timerSignal;
-    timer_t timer;
+    sigset_t timerSignal = {0};
+    timer_t timer = 0;
     long seconds = 0;
     long nanoseconds = 0;
     size_t hostLength = (argc > 1) ? strnlen(argv[1], TELEMETRY_RESOLVER_HOST_LIMIT + 1) : 0;

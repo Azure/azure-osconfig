@@ -43,6 +43,8 @@ struct TelemetryWorker
 static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* deadline)
 {
     int status = TelemetryMonotonicTime(start);
+    int64_t limit = 0;
+
     if (0 != status)
     {
         worker->budget = 0;
@@ -52,7 +54,7 @@ static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* d
     {
         return ETIMEDOUT;
     }
-    int64_t limit = (worker->budget < worker->operationLimit) ? worker->budget : worker->operationLimit;
+    limit = (worker->budget < worker->operationLimit) ? worker->budget : worker->operationLimit;
     if (limit > worker->lifetimeDeadline - *start)
     {
         limit = worker->lifetimeDeadline - *start;
@@ -65,13 +67,15 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
 {
     int64_t now = 0;
     int status = TelemetryMonotonicTime(&now);
+    int64_t elapsed = 0;
+
     if (0 != status)
     {
         worker->budget = 0;
         OsConfigLogInfo(log, "TelemetryWorker: Cannot account for elapsed time (status=%d)", status);
         return status;
     }
-    int64_t elapsed = now - start;
+    elapsed = now - start;
     if (elapsed < 0)
     {
         worker->budget = 0;
@@ -85,6 +89,10 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
 static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsConfigLogHandle log)
 {
     int status = 0;
+    int childStatus = 0;
+    int remaining = 0;
+    int timingStatus = 0;
+
     if (worker->descriptor >= 0)
     {
         if (0 != close(worker->descriptor))
@@ -101,7 +109,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
 
     for (;;)
     {
-        int childStatus = 0;
+        childStatus = 0;
         pid_t waited = waitpid(worker->child, &childStatus, WNOHANG);
         if (worker->child == waited)
         {
@@ -128,8 +136,8 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         {
             break;
         }
-        int remaining = 0;
-        int timingStatus = TelemetryDeadlineRemaining(gracefulDeadline, &remaining);
+        remaining = 0;
+        timingStatus = TelemetryDeadlineRemaining(gracefulDeadline, &remaining);
         if (0 != timingStatus)
         {
             if (ETIMEDOUT != timingStatus)
@@ -156,7 +164,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         OsConfigLogInfo(log, "TelemetryWorker: Cannot terminate owned child (status=%d)", error);
         return status ? status : error;
     }
-    pid_t waited;
+    pid_t waited = 0;
     do
     {
         waited = waitpid(worker->child, NULL, 0);
@@ -180,15 +188,19 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
 {
     unsigned char* bytes = buffer;
     size_t offset = 0;
+    int remaining = 0;
+    int status = 0;
+    ssize_t count = 0;
+    struct pollfd item = {0};
+
     while (offset < size)
     {
-        int remaining;
-        int status = TelemetryDeadlineRemaining(deadline, &remaining);
+        status = TelemetryDeadlineRemaining(deadline, &remaining);
         if (0 != status)
         {
             return status;
         }
-        ssize_t count = writing ?
+        count = writing ?
             send(descriptor, bytes + offset, size - offset, MSG_NOSIGNAL) :
             recv(descriptor, bytes + offset, size - offset, 0);
         if (count > 0)
@@ -209,7 +221,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
         {
             return errno;
         }
-        struct pollfd item = {descriptor, (short)(writing ? POLLOUT : POLLIN), 0};
+        item = (struct pollfd){descriptor, (short)(writing ? POLLOUT : POLLIN), 0};
         if ((poll(&item, 1, remaining) < 0) && (EINTR != errno))
         {
             return errno;
@@ -223,6 +235,10 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
 {
     TelemetryWorkerFrame reply = {0};
     int status = Transfer(worker->descriptor, &reply, sizeof(reply), false, deadline);
+    unsigned char extra = '\0';
+    ssize_t count = 0;
+    int remaining = 0;
+
     if (0 != status)
     {
         return status;
@@ -242,8 +258,7 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
         return status;
     }
 
-    unsigned char extra;
-    ssize_t count = recv(worker->descriptor, &extra, 1, MSG_PEEK);
+    count = recv(worker->descriptor, &extra, 1, MSG_PEEK);
     if (count > 0)
     {
         return EPROTO;
@@ -256,20 +271,22 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
     {
         return errno;
     }
-    int remaining;
     return TelemetryDeadlineRemaining(deadline, &remaining);
 }
 
 static int PrepareDescriptor(int* descriptor)
 {
+    int replacement = 0;
+    int status = 0;
+
     if (*descriptor <= STDERR_FILENO)
     {
-        int replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+        replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
         if (replacement < 0)
         {
             return errno;
         }
-        int status = (0 == close(*descriptor)) ? 0 : errno;
+        status = (0 == close(*descriptor)) ? 0 : errno;
         *descriptor = replacement;
         return status;
     }
@@ -279,18 +296,21 @@ static int PrepareDescriptor(int* descriptor)
 static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHandle log)
 {
     struct sigaction action = {0};
-    posix_spawn_file_actions_t actions;
-    posix_spawnattr_t attributes;
+    posix_spawn_file_actions_t actions = {0};
+    posix_spawnattr_t attributes = {0};
     bool haveActions = false;
     bool haveAttributes = false;
     int descriptors[2] = {-1, -1};
     int status = 0;
-    int remaining;
-    sigset_t defaults;
-    sigset_t mask;
-    char lifetime[32];
-    char startup[32];
+    int remaining = 0;
+    sigset_t defaults = {0};
+    sigset_t mask = {0};
+    char lifetime[32] = {0};
+    char startup[32] = {0};
     char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT, lifetime, startup, NULL};
+    int flags = 0;
+    pid_t child = -1;
+    size_t i = 0;
 
     if (worker->child > 0)
     {
@@ -315,7 +335,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     {
         goto cleanup;
     }
-    int flags = fcntl(descriptors[0], F_GETFL);
+    flags = fcntl(descriptors[0], F_GETFL);
     if ((flags < 0) || (0 != fcntl(descriptors[0], F_SETFL, flags | O_NONBLOCK)))
     {
         status = errno;
@@ -347,7 +367,6 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     {
         goto cleanup;
     }
-    pid_t child = -1;
     status = posix_spawn(&child, worker->path, &actions, &attributes, arguments, environ);
     if (0 == status)
     {
@@ -382,7 +401,7 @@ cleanup:
             }
         }
     }
-    for (size_t i = 0; i < 2; ++i)
+    for (i = 0; i < 2; ++i)
     {
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
@@ -461,6 +480,9 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     int64_t start = 0;
     int64_t deadline = 0;
     int status = 0;
+    int remaining = 0;
+    int error = 0;
+
     if (NULL != result)
     {
         memset(result, 0, sizeof(*result));
@@ -500,7 +522,6 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     }
     if (0 == status)
     {
-        int remaining;
         status = TelemetryDeadlineRemaining(deadline, &remaining);
         if (0 != status)
         {
@@ -515,7 +536,7 @@ failed:
 finished:
     if (start > 0)
     {
-        int error = ChargeBudget(worker, start, log);
+        error = ChargeBudget(worker, start, log);
         if ((0 == status) && (0 != error))
         {
             status = error;
@@ -535,12 +556,14 @@ finished:
 
 int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log)
 {
+    int status = 0;
+
     if (!worker || started <= 0)
     {
         OsConfigLogError(log, "TelemetryWorker: Invalid preparation accounting");
         return EINVAL;
     }
-    int status = ChargeBudget(worker, started, log);
+    status = ChargeBudget(worker, started, log);
     if (!status && worker->budget <= 0)
     {
         status = ETIMEDOUT;
@@ -552,6 +575,16 @@ int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, 
 int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
     const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
 {
+    int64_t start = 0;
+    int64_t deadline = 0;
+    int status = 0;
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
+    size_t size = 0;
+    TelemetryWorkerSendReply reply = {0};
+    TelemetryWorkerFrame request = {0};
+    bool sendStarted = false;
+    int error = 0;
+
     if (!worker)
     {
         OsConfigLogError(log, "TelemetryWorkerSend: Missing invocation");
@@ -562,18 +595,25 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
         OsConfigLogInfo(log, "TelemetryWorkerSend: Invocation suppressed; event dropped");
         return ECANCELED;
     }
-    int64_t start = 0, deadline = 0;
-    int status = OperationDeadline(worker, &start, &deadline);
-    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE];
-    size_t size = 0;
-    TelemetryWorkerSendReply reply = {0};
-    TelemetryWorkerFrame request = {0};
-    bool sendStarted = false;
-    if (status) goto finished;
+    status = OperationDeadline(worker, &start, &deadline);
+    if (status)
+    {
+        goto finished;
+    }
     status = TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, log);
-    if (status) goto finished;
-    if (0 != (status = StartChild(worker, deadline, log))) goto failed;
-    if (UINT32_MAX == worker->sequence) { status = EOVERFLOW; goto failed; }
+    if (status)
+    {
+        goto finished;
+    }
+    if (0 != (status = StartChild(worker, deadline, log)))
+    {
+        goto failed;
+    }
+    if (UINT32_MAX == worker->sequence)
+    {
+        status = EOVERFLOW;
+        goto failed;
+    }
     request.magic = TELEMETRY_WORKER_MAGIC;
     request.version = TELEMETRY_WORKER_VERSION;
     request.operation = TELEMETRY_WORKER_SEND;
@@ -584,20 +624,29 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
     if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline))) ||
         (0 != (status = Transfer(worker->descriptor, payload, size, true, deadline))) ||
         (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline))))
+    {
         goto failed;
-    if (reply.status < 0 || reply.suppressed > 1) { status = EPROTO; goto failed; }
+    }
+    if (reply.status < 0 || reply.suppressed > 1)
+    {
+        status = EPROTO;
+        goto failed;
+    }
     worker->suppressed = reply.suppressed != 0;
     status = reply.status;
     goto finished;
 failed:
     // An ambiguous SEND reply could hide collector suppression. Stop this
     // invocation rather than restarting a child and losing that control.
-    if (sendStarted) worker->suppressed = true;
+    if (sendStarted)
+    {
+        worker->suppressed = true;
+    }
     ReleaseChild(worker, 0, log);
 finished:
     if (start > 0)
     {
-        int error = ChargeBudget(worker, start, log);
+        error = ChargeBudget(worker, start, log);
         if (!status && error)
         {
             status = error;
@@ -605,12 +654,20 @@ finished:
             ReleaseChild(worker, 0, log);
         }
     }
-    if (status) OsConfigLogInfo(log, "TelemetryWorkerSend: Event not delivered (status=%d)", status);
+    if (status)
+    {
+        OsConfigLogInfo(log, "TelemetryWorkerSend: Event not delivered (status=%d)", status);
+    }
     return status;
 }
 
 int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 {
+    int64_t start = 0;
+    int64_t deadline = 0;
+    int timingStatus = 0;
+    int status = 0;
+
     if (NULL == worker)
     {
         OsConfigLogInfo(log, "TelemetryWorkerDestroy: Invalid context pointer");
@@ -620,10 +677,8 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
     {
         return 0;
     }
-    int64_t start = 0;
-    int64_t deadline = 0;
-    int timingStatus = OperationDeadline(*worker, &start, &deadline);
-    int status = ReleaseChild(*worker, (0 == timingStatus) ? deadline : 0, log);
+    timingStatus = OperationDeadline(*worker, &start, &deadline);
+    status = ReleaseChild(*worker, (0 == timingStatus) ? deadline : 0, log);
     if ((0 != timingStatus) && (ETIMEDOUT != timingStatus))
     {
         OsConfigLogInfo(log, "TelemetryWorkerDestroy: Cannot time cleanup (status=%d)", timingStatus);

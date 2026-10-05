@@ -33,9 +33,11 @@ static int Transfer(void* buffer, size_t size, bool writing)
 {
     unsigned char* bytes = buffer;
     size_t offset = 0;
+    ssize_t count = 0;
+
     while (offset < size)
     {
-        ssize_t count = writing ?
+        count = writing ?
             send(STDIN_FILENO, bytes + offset, size - offset, MSG_NOSIGNAL) :
             recv(STDIN_FILENO, bytes + offset, size - offset, 0);
         if (count > 0)
@@ -58,13 +60,15 @@ static int SendReply(uint32_t operation, uint32_t sequence, int status, void* bo
     OsConfigLogHandle log)
 {
     TelemetryWorkerFrame reply = {0};
+    int error = 0;
+
     reply.magic = TELEMETRY_WORKER_MAGIC;
     reply.version = TELEMETRY_WORKER_VERSION;
     reply.operation = operation;
     reply.sequence = sequence;
     reply.status = status;
     reply.size = (0 == status) ? size : 0;
-    int error = Transfer(&reply, sizeof(reply), true);
+    error = Transfer(&reply, sizeof(reply), true);
     if (0 == error)
     {
         error = Transfer(body, reply.size, true);
@@ -81,11 +85,16 @@ static int CloseInheritedDescriptors(int logDescriptor)
 {
     // This Linux worker must not keep unrelated gc_worker descriptors alive.
     DIR* directory = opendir("/proc/self/fd");
+    int ownDescriptor = 0;
+    struct dirent* entry = NULL;
+    char* end = NULL;
+    long descriptor = 0;
+
     if (NULL == directory)
     {
         return errno;
     }
-    int ownDescriptor = dirfd(directory);
+    ownDescriptor = dirfd(directory);
     if (ownDescriptor < 0)
     {
         int status = errno;
@@ -96,7 +105,7 @@ static int CloseInheritedDescriptors(int logDescriptor)
     for (;;)
     {
         errno = 0;
-        struct dirent* entry = readdir(directory);
+        entry = readdir(directory);
         if (NULL == entry)
         {
             status = errno;
@@ -106,8 +115,8 @@ static int CloseInheritedDescriptors(int logDescriptor)
         {
             continue;
         }
-        char* end = NULL;
-        long descriptor = strtol(entry->d_name, &end, 10);
+        end = NULL;
+        descriptor = strtol(entry->d_name, &end, 10);
         if ((0 != errno) || ('\0' != *end) || (descriptor > INT_MAX))
         {
             status = EPROTO;
@@ -129,13 +138,15 @@ static int CloseInheritedDescriptors(int logDescriptor)
 
 static int ParseDeadline(const char* text, int64_t* deadline)
 {
+    char* end = NULL;
+    long long value = 0;
+
     if ((text[0] < '0') || (text[0] > '9'))
     {
         return EINVAL;
     }
-    char* end = NULL;
     errno = 0;
-    long long value = strtoll(text, &end, 10);
+    value = strtoll(text, &end, 10);
     if ((0 != errno) || ('\0' != *end) || (value <= 0))
     {
         return EINVAL;
@@ -147,7 +158,11 @@ static int ParseDeadline(const char* text, int64_t* deadline)
 static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
 {
     int64_t startup = 0;
-    int status;
+    int status = 0;
+    struct sigaction action = {0};
+    sigset_t signals = {0};
+    struct sigevent notification = {0};
+
     if ((4 != argc) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)))
     {
         return EINVAL;
@@ -161,8 +176,6 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
     {
         return EINVAL;
     }
-    struct sigaction action = {0};
-    sigset_t signals;
     action.sa_handler = SIG_DFL;
     sigemptyset(&action.sa_mask);
     sigemptyset(&signals);
@@ -178,7 +191,6 @@ static int Initialize(int argc, char** argv, timer_t* timer, int64_t* lifetime)
     {
         return errno;
     }
-    struct sigevent notification = {0};
     notification.sigev_notify = SIGEV_SIGNAL;
     notification.sigev_signo = SIGALRM;
     if (0 != timer_create(CLOCK_MONOTONIC, &notification, timer))
@@ -195,31 +207,53 @@ static int SendEvent(TelemetryTransport** transport, char* epoch,
     // The package's key is compiled only into the owned executable. A runtime
     // override also permits offline tests with a deliberately fake token.
     const char* token = getenv("OsConfigTelemetryApiKey");
-    if (!token) token = API_KEY;
-    char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1];
+    char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {0};
     size_t headerSize = 0;
-    int status = TelemetryHttpBuildRequest(token, TELEMETRY_CLIENT_VERSION, 0, 1,
-        headers, sizeof(headers), &headerSize, log);
-    if (status) return status;
-    size_t tenantLength = strcspn(token, "-");
-    if (!tenantLength || token[tenantLength] != '-')
-    {
-        OsConfigLogError(log, "OSConfigTelemetry: Ingestion key lacks tenant prefix");
-        return EINVAL;
-    }
+    int status = 0;
+    size_t tenantLength = 0;
     char iKey[TELEMETRY_HTTP_TOKEN_LIMIT + 3] = "o:";
-    memcpy(iKey + 2, token, tenantLength);
-    if (!epoch[0] && (0 != (status = TelemetryCreateEpoch(epoch, log)))) return status;
-    unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
+    unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE] = {0};
     size_t encodedSize = 0;
     int64_t uploadTime = 0;
-    status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes,
-        &encodedSize, &uploadTime, log);
-    if (status) return status;
-    if (!*transport && (0 != (status = TelemetryTransportCreate(transport, log)))) return status;
-    TelemetryHttpResponse response;
-    status = TelemetryTransportSend(*transport, token, TELEMETRY_CLIENT_VERSION,
-        uploadTime, bytes, encodedSize, deadline, &response, log);
+    TelemetryHttpResponse response = {0};
+
+    if (!token)
+    {
+        token = API_KEY;
+    }
+    status = TelemetryHttpBuildRequest(token, TELEMETRY_CLIENT_VERSION, 0, 1,
+        headers, sizeof(headers), &headerSize, log);
+    if (!status)
+    {
+        tenantLength = strcspn(token, "-");
+        if (!tenantLength || token[tenantLength] != '-')
+        {
+            OsConfigLogError(log, "OSConfigTelemetry: Ingestion key lacks tenant prefix");
+            status = EINVAL;
+        }
+        else
+        {
+            memcpy(iKey + 2, token, tenantLength);
+            if (!epoch[0])
+            {
+                status = TelemetryCreateEpoch(epoch, log);
+            }
+        }
+    }
+    if (!status)
+    {
+        status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes,
+            &encodedSize, &uploadTime, log);
+    }
+    if (!status && !*transport)
+    {
+        status = TelemetryTransportCreate(transport, log);
+    }
+    if (!status)
+    {
+        status = TelemetryTransportSend(*transport, token, TELEMETRY_CLIENT_VERSION,
+            uploadTime, bytes, encodedSize, deadline, &response, log);
+    }
     if (!status && response.acceptance != TelemetryAccepted)
     {
         status = response.acceptance == TelemetryRejected ? ECANCELED : EPROTO;
@@ -231,14 +265,21 @@ static int SendEvent(TelemetryTransport** transport, char* epoch,
 
 int main(int argc, char** argv)
 {
-    timer_t timer;
+    timer_t timer = 0;
     OsConfigLogHandle log = NULL;
     int64_t lifetime = 0;
     uint32_t sequence = 0;
     TelemetryTransport* transport = NULL;
     char epoch[TELEMETRY_EPOCH_SIZE] = {0};
+    int status = 0;
+    char* configuration = NULL;
+    TelemetryWorkerFrame request = {0};
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
+    TelemetryResolverReply reply = {0};
+    TelemetryWorkerSendReply sent = {0};
+
     SetConsoleLoggingEnabled(false);
-    int status = Initialize(argc, argv, &timer, &lifetime);
+    status = Initialize(argc, argv, &timer, &lifetime);
     if (0 == status)
     {
         log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
@@ -258,8 +299,11 @@ int main(int argc, char** argv)
             status = CloseInheritedDescriptors(fileno(GetLogFile(log)));
             if (!status && FileExists("/etc/osconfig/osconfig.json"))
             {
-                char* configuration = LoadStringFromFile("/etc/osconfig/osconfig.json", false, log);
-                if (!configuration) status = EIO;
+                configuration = LoadStringFromFile("/etc/osconfig/osconfig.json", false, log);
+                if (!configuration)
+                {
+                    status = EIO;
+                }
                 else
                 {
                     SetLoggingLevel(GetLoggingLevelFromJsonConfig(configuration, log));
@@ -287,9 +331,8 @@ int main(int argc, char** argv)
 
     for (;;)
     {
-        TelemetryWorkerFrame request = {0};
-        unsigned char payload[TELEMETRY_MAX_EVENT_SIZE];
-        TelemetryResolverReply reply = {0};
+        request = (TelemetryWorkerFrame){0};
+        reply = (TelemetryResolverReply){0};
         if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
         {
             OsConfigLogError(log, "OSConfigTelemetry: Cannot arm lifetime timer (status=%d)", status);
@@ -346,13 +389,18 @@ int main(int argc, char** argv)
 
         if (request.operation == TELEMETRY_WORKER_SEND)
         {
-            TelemetryWorkerSendReply sent = {0};
+            sent = (TelemetryWorkerSendReply){0};
             sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, log);
             sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
             if (sent.status)
+            {
                 OsConfigLogInfo(log, "OSConfigTelemetry: SEND failed (sequence=%" PRIu32 ", status=%d)",
                     sequence, sent.status);
-            if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log))) break;
+            }
+            if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log)))
+            {
+                break;
+            }
             continue;
         }
         OsConfigLogInfo(log, "OSConfigTelemetry: Resolving request (sequence=%" PRIu32 ")", sequence);
@@ -376,7 +424,10 @@ int main(int argc, char** argv)
     }
 
 cleanup:
-    if (NULL != transport) TelemetryTransportDestroy(&transport, log);
+    if (NULL != transport)
+    {
+        TelemetryTransportDestroy(&transport, log);
+    }
     if (NULL != log)
     {
         OsConfigLogInfo(log, "OSConfigTelemetry: Exiting (status=%d)", status);

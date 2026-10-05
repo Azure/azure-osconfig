@@ -15,6 +15,9 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
     struct addrinfo hints = {0};
     struct addrinfo* addresses = NULL;
     struct addrinfo* next = NULL;
+    TelemetryResolverAddress* address = NULL;
+    const struct sockaddr_in* ipv4 = NULL;
+    const struct sockaddr_in6* ipv6 = NULL;
 
     memset(reply, 0, sizeof(*reply));
     reply->version = TELEMETRY_RESOLVER_PROTOCOL_VERSION;
@@ -25,35 +28,36 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
     if (0 != reply->lookupError)
     {
         reply->error = (EAI_SYSTEM == reply->lookupError) ? (errno ? errno : EIO) : EHOSTUNREACH;
-        return;
     }
-
-    for (next = addresses; (NULL != next) && (reply->count < TELEMETRY_RESOLVER_ADDRESS_LIMIT);
-        next = next->ai_next)
+    else
     {
-        TelemetryResolverAddress* address = &reply->addresses[reply->count];
-        if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) &&
-            (next->ai_addrlen >= sizeof(struct sockaddr_in)))
+        for (next = addresses; (NULL != next) && (reply->count < TELEMETRY_RESOLVER_ADDRESS_LIMIT);
+            next = next->ai_next)
         {
-            const struct sockaddr_in* ipv4 = (const struct sockaddr_in*)next->ai_addr;
-            address->family = AF_INET;
-            memcpy(address->bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
-            ++reply->count;
+            address = &reply->addresses[reply->count];
+            if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) &&
+                (next->ai_addrlen >= sizeof(struct sockaddr_in)))
+            {
+                ipv4 = (const struct sockaddr_in*)next->ai_addr;
+                address->family = AF_INET;
+                memcpy(address->bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
+                ++reply->count;
+            }
+            else if ((AF_INET6 == next->ai_family) && (NULL != next->ai_addr) &&
+                (next->ai_addrlen >= sizeof(struct sockaddr_in6)))
+            {
+                ipv6 = (const struct sockaddr_in6*)next->ai_addr;
+                address->family = AF_INET6;
+                address->scopeId = ipv6->sin6_scope_id;
+                memcpy(address->bytes, &ipv6->sin6_addr, sizeof(ipv6->sin6_addr));
+                ++reply->count;
+            }
         }
-        else if ((AF_INET6 == next->ai_family) && (NULL != next->ai_addr) &&
-            (next->ai_addrlen >= sizeof(struct sockaddr_in6)))
-        {
-            const struct sockaddr_in6* ipv6 = (const struct sockaddr_in6*)next->ai_addr;
-            address->family = AF_INET6;
-            address->scopeId = ipv6->sin6_scope_id;
-            memcpy(address->bytes, &ipv6->sin6_addr, sizeof(ipv6->sin6_addr));
-            ++reply->count;
-        }
-    }
 
-    freeaddrinfo(addresses);
-    if (0 == reply->count)
-    {
-        reply->error = EHOSTUNREACH;
+        freeaddrinfo(addresses);
+        if (0 == reply->count)
+        {
+            reply->error = EHOSTUNREACH;
+        }
     }
 }

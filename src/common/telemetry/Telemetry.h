@@ -49,21 +49,66 @@ void OSConfigTelemetryCrashDetected(const char* crashInfo);
 #define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
     TelemetryStatusTrace((callingFunction), (status), __FILE__, __func__, (line))
 #else
-static inline int TelemetryInitialize(OsConfigLogHandle log) { (void)log; return 0; }
-static inline void TelemetryCleanup(OsConfigLogHandle log) { (void)log; }
-static inline char* GetModuleDirectory(void) { return NULL; }
-static inline char* GetCachedDistroName(void) { return NULL; }
-static inline void OSConfigTimeStampSave(void) {}
-static inline void OSConfigGetElapsedTime(int64_t* value) { if (value) *value = 0; }
+static inline int TelemetryInitialize(OsConfigLogHandle log)
+{
+    (void)log;
+    return 0;
+}
+static inline void TelemetryCleanup(OsConfigLogHandle log)
+{
+    (void)log;
+}
+static inline char* GetModuleDirectory(void)
+{
+    return NULL;
+}
+static inline char* GetCachedDistroName(void)
+{
+    return NULL;
+}
+static inline void OSConfigTimeStampSave(void)
+{
+}
+static inline void OSConfigGetElapsedTime(int64_t* value)
+{
+    if (value)
+    {
+        *value = 0;
+    }
+}
 #define OSConfigTelemetryStatusTrace(callingFunction, status) \
-    do { (void)(callingFunction); (void)(status); } while (0)
+    do \
+    { \
+        (void)(callingFunction); \
+        (void)(status); \
+    } while (0)
 #define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
-    do { (void)(callingFunction); (void)(status); (void)(line); } while (0)
+    do \
+    { \
+        (void)(callingFunction); \
+        (void)(status); \
+        (void)(line); \
+    } while (0)
 #define OSConfigTelemetryBaselineRun(baseline, mode, seconds) \
-    do { (void)(baseline); (void)(mode); (void)(seconds); } while (0)
+    do \
+    { \
+        (void)(baseline); \
+        (void)(mode); \
+        (void)(seconds); \
+    } while (0)
 #define OSConfigTelemetryRuleComplete(component, object, result, microseconds) \
-    do { (void)(component); (void)(object); (void)(result); (void)(microseconds); } while (0)
-#define OSConfigTelemetryCrashDetected(crashInfo) do { (void)(crashInfo); } while (0)
+    do \
+    { \
+        (void)(component); \
+        (void)(object); \
+        (void)(result); \
+        (void)(microseconds); \
+    } while (0)
+#define OSConfigTelemetryCrashDetected(crashInfo) \
+    do \
+    { \
+        (void)(crashInfo); \
+    } while (0)
 #endif
 
 #ifdef __cplusplus

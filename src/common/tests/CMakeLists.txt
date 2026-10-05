@@ -12,6 +12,7 @@ find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
+    MinTlsUT.cpp
     SshUtilsUT.cpp
     TelemetryEncoderUT.cpp
     TelemetryEventUT.cpp
@@ -30,6 +31,7 @@ target_link_libraries(commontests
     GTest::gmock_main
     pthread
     logging
+    mintls
     commonutils
     asb
     parsonlib
@@ -42,7 +44,11 @@ target_link_libraries(commontests
     telemetrytransport
     telemetryresolver
     telemetryworkerclient
+    rt
 )
+
+target_include_directories(commontests PRIVATE ../mintls/core/include)
+target_compile_definitions(commontests PRIVATE MBEDTLS_CONFIG_FILE="MinTlsConfig.h")
 
 add_executable(telemetryresolverlookupworker
     ../telemetry/TelemetryResolverWorker.c

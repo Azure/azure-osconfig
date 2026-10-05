@@ -83,6 +83,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
     const char* error = NULL;
     size_t missing = 0;
     size_t count = 0;
+    void* address = NULL;
 
     dlerror();
     library = dlopen(name, RTLD_NOW | RTLD_LOCAL);
@@ -99,7 +100,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
     {
         for (; NULL != symbols[count]; ++count)
         {
-            void* address = NULL;
+            address = NULL;
 
             dlerror();
             address = dlsym(library, symbols[count]);
@@ -129,7 +130,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
 
 static int InspectTrustPath(const char* path)
 {
-    struct stat metadata;
+    struct stat metadata = {0};
     int error = 0;
 
     if (0 == stat(path, &metadata))
@@ -162,7 +163,7 @@ int main(int argc, char** argv)
         "/var/lib/ca-certificates/ca-bundle.pem",
         "/etc/pki/nssdb"
     };
-    struct utsname platform;
+    struct utsname platform = {0};
     size_t i = 0;
     int failed = 0;
 

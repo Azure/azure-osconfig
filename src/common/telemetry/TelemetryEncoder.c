@@ -58,6 +58,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
     unsigned int remaining = 0;
     uint32_t codePoint = 0;
     uint32_t minimumCodePoint = 0;
+    unsigned char byte = '\0';
 
     *length = 0;
 
@@ -74,7 +75,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
 
     for (i = 0; '\0' != value[i]; ++i)
     {
-        unsigned char byte = (unsigned char)value[i];
+        byte = (unsigned char)value[i];
 
         if (i == maximumLength)
         {
@@ -147,6 +148,7 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
     size_t i = 0;
     int status = ValidateString(name, property ? 1 : 4, TELEMETRY_MAX_NAME_LENGTH,
         length, property ? "property name" : "event name", log);
+    char byte = '\0';
 
     if (0 != status)
     {
@@ -155,7 +157,7 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
 
     for (i = 0; i < *length; ++i)
     {
-        char byte = name[i];
+        byte = name[i];
 
         if (!(((byte >= 'a') && (byte <= 'z')) || ((byte >= 'A') && (byte <= 'Z')) ||
             ((byte >= '0') && (byte <= '9')) || ('_' == byte) || ('.' == byte)))
@@ -179,6 +181,8 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
     size_t i = 0;
     size_t j = 0;
     int status = 0;
+    const TelemetryProperty* property = NULL;
+    TelemetryValidatedProperty entry = {0};
 
     if ((event->time <= 0) || (event->flags < 0) || (event->sequence < 0) ||
         ((0 != event->propertyCount) && (NULL == event->properties)))
@@ -234,8 +238,8 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
 
     for (i = 0; i < event->propertyCount; ++i)
     {
-        const TelemetryProperty* property = &event->properties[i];
-        TelemetryValidatedProperty entry = {0};
+        property = &event->properties[i];
+        entry = (TelemetryValidatedProperty){0};
 
         entry.property = property;
         status = ValidateName(property->name, true, &entry.nameLength, log);
@@ -388,6 +392,8 @@ static void WriteProperty(TelemetryWriter* writer, const TelemetryValidatedPrope
 {
     const TelemetryProperty* property = entry->property;
     int kind = 5;
+    uint64_t bits = 0;
+    size_t i = 0;
 
     WriteString(writer, property->name, entry->nameLength);
 
@@ -429,8 +435,6 @@ static void WriteProperty(TelemetryWriter* writer, const TelemetryValidatedPrope
         case TelemetryPropertyDouble:
             if (0.0 != property->value.doubleValue)
             {
-                uint64_t bits = 0;
-                size_t i = 0;
 
                 memcpy(&bits, &property->value.doubleValue, sizeof(bits));
                 WriteField(writer, TelemetryBondDouble, 5);

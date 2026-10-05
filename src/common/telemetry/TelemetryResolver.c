@@ -25,8 +25,8 @@ _Static_assert(TELEMETRY_MAX_RESOLVED_ADDRESSES == TELEMETRY_RESOLVER_ADDRESS_LI
 
 static int RemainingMilliseconds(const struct timespec* deadline, int* remaining)
 {
-    struct timespec now;
-    int64_t nanoseconds;
+    struct timespec now = {0};
+    int64_t nanoseconds = 0;
 
     if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
     {
@@ -47,14 +47,17 @@ static int RemainingMilliseconds(const struct timespec* deadline, int* remaining
 
 static int PreparePipeDescriptor(int* descriptor)
 {
+    int replacement = 0;
+    int status = 0;
+
     if (*descriptor <= STDERR_FILENO)
     {
-        int replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+        replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
         if (replacement < 0)
         {
             return errno;
         }
-        int status = (0 == close(*descriptor)) ? 0 : errno;
+        status = (0 == close(*descriptor)) ? 0 : errno;
         *descriptor = replacement;
         return status;
     }
@@ -68,7 +71,9 @@ static int PreparePipeDescriptor(int* descriptor)
 
 int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryResolvedHost* result)
 {
-    size_t i;
+    size_t i = 0;
+    struct sockaddr_in ipv4 = {0};
+    struct sockaddr_in6 ipv6 = {0};
 
     if ((TELEMETRY_RESOLVER_PROTOCOL_VERSION != reply->version) ||
         (reply->count > TELEMETRY_RESOLVER_ADDRESS_LIMIT) || (reply->error < 0) ||
@@ -89,20 +94,20 @@ int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryR
     {
         if (AF_INET == reply->addresses[i].family)
         {
-            struct sockaddr_in address = {0};
-            address.sin_family = AF_INET;
-            memcpy(&address.sin_addr, reply->addresses[i].bytes, sizeof(address.sin_addr));
-            memcpy(&result->addresses[i], &address, sizeof(address));
-            result->lengths[i] = sizeof(address);
+            ipv4 = (struct sockaddr_in){0};
+            ipv4.sin_family = AF_INET;
+            memcpy(&ipv4.sin_addr, reply->addresses[i].bytes, sizeof(ipv4.sin_addr));
+            memcpy(&result->addresses[i], &ipv4, sizeof(ipv4));
+            result->lengths[i] = sizeof(ipv4);
         }
         else if (AF_INET6 == reply->addresses[i].family)
         {
-            struct sockaddr_in6 address = {0};
-            address.sin6_family = AF_INET6;
-            address.sin6_scope_id = reply->addresses[i].scopeId;
-            memcpy(&address.sin6_addr, reply->addresses[i].bytes, sizeof(address.sin6_addr));
-            memcpy(&result->addresses[i], &address, sizeof(address));
-            result->lengths[i] = sizeof(address);
+            ipv6 = (struct sockaddr_in6){0};
+            ipv6.sin6_family = AF_INET6;
+            ipv6.sin6_scope_id = reply->addresses[i].scopeId;
+            memcpy(&ipv6.sin6_addr, reply->addresses[i].bytes, sizeof(ipv6.sin6_addr));
+            memcpy(&result->addresses[i], &ipv6, sizeof(ipv6));
+            result->lengths[i] = sizeof(ipv6);
         }
         else
         {
@@ -121,10 +126,10 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     TelemetryResolvedHost resolved = {0};
     struct timespec deadline = {0};
     struct sigaction childAction = {0};
-    posix_spawn_file_actions_t actions;
-    posix_spawnattr_t attributes;
-    sigset_t defaults;
-    sigset_t mask;
+    posix_spawn_file_actions_t actions = {0};
+    posix_spawnattr_t attributes = {0};
+    sigset_t defaults = {0};
+    sigset_t mask = {0};
     int descriptors[2] = {-1, -1};
     pid_t child = -1;
     int childStatus = 0;
@@ -134,12 +139,17 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     bool attributesInitialized = false;
     bool reaped = false;
     bool eof = false;
-    unsigned char bytes[sizeof(reply) + 1];
+    unsigned char bytes[(sizeof(reply)) + 1] = {0};
     size_t received = 0;
-    char seconds[32];
-    char nanoseconds[16];
+    char seconds[32] = {0};
+    char nanoseconds[16] = {0};
     char* arguments[] = {(char*)workerPath, (char*)host, seconds, nanoseconds, NULL};
     const char* stage = "arguments";
+    struct pollfd descriptor = {0};
+    ssize_t size = 0;
+    int waitError = 0;
+    size_t i = 0;
+    int closeError = 0;
 
     if (NULL != result)
     {
@@ -252,8 +262,8 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
     stage = "response";
     for (;;)
     {
-        struct pollfd descriptor = {descriptors[0], POLLIN, 0};
-        ssize_t size = read(descriptors[0], bytes + received, sizeof(bytes) - received);
+        descriptor = (struct pollfd){descriptors[0], POLLIN, 0};
+        size = read(descriptors[0], bytes + received, sizeof(bytes) - received);
         if (size > 0)
         {
             received += (size_t)size;
@@ -335,7 +345,7 @@ int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMi
 cleanup:
     if ((child > 0) && !reaped)
     {
-        pid_t waited;
+        pid_t waited = 0;
         if ((0 != kill(child, SIGKILL)) && (ESRCH != errno))
         {
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot terminate resolver child (errno=%d)", errno);
@@ -346,7 +356,7 @@ cleanup:
         } while ((waited < 0) && (EINTR == errno));
         if (waited < 0)
         {
-            int waitError = errno;
+            waitError = errno;
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot reap resolver child (errno=%d)", waitError);
             if (0 == status)
             {
@@ -378,11 +388,11 @@ cleanup:
             }
         }
     }
-    for (size_t i = 0; i < ARRAY_SIZE(descriptors); ++i)
+    for (i = 0; i < ARRAY_SIZE(descriptors); ++i)
     {
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
-            int closeError = errno;
+            closeError = errno;
             OsConfigLogInfo(log, "TelemetryResolveHost: Cannot close IPC descriptor (errno=%d)", closeError);
             if (0 == status)
             {
