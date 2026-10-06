@@ -2215,8 +2215,6 @@ cleanup:
 #include <stdint.h>
 
 MBEDTLS_STATIC_TESTABLE
-
-MBEDTLS_STATIC_TESTABLE
 signed char mbedtls_ct_base64_dec_value(unsigned char c)
 {
     unsigned char val = 0;

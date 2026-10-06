@@ -16873,22 +16873,6 @@ void mbedtls_ssl_conf_ca_chain(mbedtls_ssl_config *conf,
                                mbedtls_x509_crt *ca_chain,
                                mbedtls_x509_crl *ca_crl);
 
-#if defined(MBEDTLS_KEY_EXCHANGE_CERT_REQ_ALLOWED_ENABLED)
-/**
- * \brief          Set DN hints sent to client in CertificateRequest message
- *
- * \note           If not set, subject distinguished names (DNs) are taken
- *                 from \c mbedtls_ssl_conf_ca_chain()
- *                 or \c mbedtls_ssl_set_hs_ca_chain())
- *
- * \param conf     SSL configuration
- * \param crt      crt chain whose subject DNs are issuer DNs of client certs
- *                 from which the client should select client peer certificate.
- */
-static inline
-
-#endif /* MBEDTLS_KEY_EXCHANGE_CERT_REQ_ALLOWED_ENABLED */
-
 #if defined(MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK)
 
 #endif
