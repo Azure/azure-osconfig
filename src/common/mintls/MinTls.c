@@ -4,11 +4,8 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "MinTls.h"
-#include "ctr_drbg.h"
 #include "MinTlsLog.h"
-#include "entropy.h"
-#include "ssl.h"
-#include "x509_crt.h"
+#include "tls.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>

@@ -3,18 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <MinTls.h>
-#include <common.h>
-#include <aes.h>
-#include <asn1write.h>
-#include <ctr_drbg.h>
-#include <debug.h>
-#include <ecp.h>
-#include <entropy.h>
-#include <gcm.h>
-#include <md.h>
-#include <sha256.h>
-#include <ssl_misc.h>
-#include <x509_crt.h>
+#include <tls.h>
 #include <cerrno>
 #include <cstdlib>
 #include <ctime>
@@ -28,6 +17,7 @@ extern "C" int ssl_calc_finished_tls_generic(mbedtls_ssl_context* ssl, void* con
     MinTlsDiagnostics* diagnostics);
 extern "C" int ssl_parse_signature_algorithm(mbedtls_ssl_context* ssl, uint16_t algorithm,
     mbedtls_md_type_t* digest, mbedtls_pk_type_t* key, MinTlsDiagnostics* diagnostics);
+extern "C" int ssl_parse_server_hello(mbedtls_ssl_context* ssl, MinTlsDiagnostics* diagnostics);
 
 namespace
 {
@@ -421,9 +411,7 @@ TEST_F(MinTlsDiagnosticsTest, DiscardsRecoveredProbeAndSuccessfulLengthResults)
 {
     MinTlsDiagnosticFrame outer = {};
     unsigned char encoded[] = {MBEDTLS_ASN1_BOOLEAN, 0x01, 0xff};
-    unsigned char output[16] = {};
     unsigned char* cursor = encoded;
-    unsigned char* write = output + sizeof(output);
     size_t length = 0;
     int value = 0;
 
@@ -433,7 +421,10 @@ TEST_F(MinTlsDiagnosticsTest, DiscardsRecoveredProbeAndSuccessfulLengthResults)
     EXPECT_EQ(0, mbedtls_asn1_get_bool(&cursor, encoded + sizeof(encoded), &value, diagnostics));
     EXPECT_EQ(1, value);
     EXPECT_EQ(0, MinTlsEndDiagnostic(diagnostics, &outer, "successful alternative", __FILE__, __LINE__, 0, false));
-    EXPECT_GT(mbedtls_asn1_write_int(&write, output, 1, diagnostics), 0);
+    MinTlsDiagnosticFrame lengthResult = {};
+    MinTlsBeginDiagnostic(diagnostics, &lengthResult);
+    EXPECT_EQ(16, MinTlsEndDiagnostic(diagnostics, &lengthResult,
+        "successful byte count", __FILE__, __LINE__, 16, false));
     EXPECT_EQ(nullptr, diagnosticContext.frame);
     EXPECT_TRUE(Contents().empty());
 }
@@ -628,4 +619,98 @@ TEST_F(MinTlsDiagnosticsTest, PositiveAlertCodeIsAFailureNotAByteCount)
     contents = Contents();
     EXPECT_NE(std::string::npos, contents.find("mbedtls_ssl_get_pk_type_and_md_alg_from_sig_alg failed"));
     EXPECT_NE(std::string::npos, contents.find("core status: 47"));
+    EXPECT_NE(std::string::npos, contents.find("peer selected unsupported signature algorithm 0xffff"));
+}
+
+TEST_F(MinTlsDiagnosticsTest, UnsupportedCurveReportsProfileFailure)
+{
+    mbedtls_ecp_group group = {};
+    std::string contents;
+
+    mbedtls_ecp_group_init(&group);
+    EXPECT_EQ(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE,
+        mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP192R1, diagnostics));
+    mbedtls_ecp_group_free(&group);
+    EXPECT_EQ(nullptr, diagnosticContext.frame);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("mbedtls_ecp_group_load failed")) << contents;
+    EXPECT_NE(std::string::npos, contents.find("unsupported elliptic-curve operation or group")) << contents;
+}
+
+TEST_F(MinTlsDiagnosticsTest, CombinedUnsupportedSignatureReportsReason)
+{
+    const int result = MBEDTLS_ERR_X509_UNKNOWN_SIG_ALG + MBEDTLS_ERR_OID_NOT_FOUND;
+    std::string contents;
+
+    errno = EBUSY;
+    MinTlsRecordDiagnostic(diagnostics, "certificate signature", __FILE__, __LINE__, result);
+    EXPECT_EQ(EBUSY, errno);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("unsupported key or certificate signature algorithm")) << contents;
+}
+
+TEST_F(MinTlsDiagnosticsTest, PeerFatalAlertReportsDescription)
+{
+    std::string contents;
+
+    session.MBEDTLS_PRIVATE(in_msgtype) = MBEDTLS_SSL_MSG_ALERT;
+    session.MBEDTLS_PRIVATE(in_msglen) = 2;
+    session.MBEDTLS_PRIVATE(in_msg)[0] = MBEDTLS_SSL_ALERT_LEVEL_FATAL;
+    session.MBEDTLS_PRIVATE(in_msg)[1] = MBEDTLS_SSL_ALERT_MSG_HANDSHAKE_FAILURE;
+    EXPECT_EQ(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE,
+        mbedtls_ssl_handle_message_type(&session, diagnostics));
+    EXPECT_EQ(nullptr, diagnosticContext.frame);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("peer fatal TLS alert, description: 40")) << contents;
+    EXPECT_NE(std::string::npos, contents.find("peer rejected the TLS operation")) << contents;
+}
+
+TEST_F(MinTlsDiagnosticsTest, PeerCloseNotifyRemainsQuiet)
+{
+    session.MBEDTLS_PRIVATE(in_msgtype) = MBEDTLS_SSL_MSG_ALERT;
+    session.MBEDTLS_PRIVATE(in_msglen) = 2;
+    session.MBEDTLS_PRIVATE(in_msg)[0] = MBEDTLS_SSL_ALERT_LEVEL_WARNING;
+    session.MBEDTLS_PRIVATE(in_msg)[1] = MBEDTLS_SSL_ALERT_MSG_CLOSE_NOTIFY;
+    EXPECT_EQ(MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY,
+        mbedtls_ssl_handle_message_type(&session, diagnostics));
+    EXPECT_EQ(nullptr, diagnosticContext.frame);
+    EXPECT_TRUE(Contents().empty());
+}
+
+TEST_F(MinTlsDiagnosticsTest, UnsupportedPeerVersionReportsProfile)
+{
+    std::string contents;
+
+    session.MBEDTLS_PRIVATE(keep_current_message) = 1;
+    session.MBEDTLS_PRIVATE(in_msgtype) = MBEDTLS_SSL_MSG_HANDSHAKE;
+    session.MBEDTLS_PRIVATE(in_hslen) = 42;
+    memset(session.MBEDTLS_PRIVATE(in_msg), 0, 42);
+    session.MBEDTLS_PRIVATE(in_msg)[0] = MBEDTLS_SSL_HS_SERVER_HELLO;
+    session.MBEDTLS_PRIVATE(in_msg)[4] = 3;
+    session.MBEDTLS_PRIVATE(in_msg)[5] = 2;
+    EXPECT_EQ(MBEDTLS_ERR_SSL_BAD_PROTOCOL_VERSION, ssl_parse_server_hello(&session, diagnostics));
+    EXPECT_EQ(nullptr, diagnosticContext.frame);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("peer TLS version 0x0302 is outside the TLS 1.2 profile")) << contents;
+    EXPECT_NE(std::string::npos, contents.find("ssl_parse_server_hello failed")) << contents;
+}
+
+TEST_F(MinTlsDiagnosticsTest, UnsupportedPeerCipherReportsSelection)
+{
+    std::string contents;
+
+    session.MBEDTLS_PRIVATE(keep_current_message) = 1;
+    session.MBEDTLS_PRIVATE(in_msgtype) = MBEDTLS_SSL_MSG_HANDSHAKE;
+    session.MBEDTLS_PRIVATE(in_hslen) = 42;
+    memset(session.MBEDTLS_PRIVATE(in_msg), 0, 42);
+    session.MBEDTLS_PRIVATE(in_msg)[0] = MBEDTLS_SSL_HS_SERVER_HELLO;
+    session.MBEDTLS_PRIVATE(in_msg)[4] = 3;
+    session.MBEDTLS_PRIVATE(in_msg)[5] = 3;
+    session.MBEDTLS_PRIVATE(in_msg)[39] = 0x13;
+    session.MBEDTLS_PRIVATE(in_msg)[40] = 0x01;
+    EXPECT_EQ(MBEDTLS_ERR_SSL_BAD_INPUT_DATA, ssl_parse_server_hello(&session, diagnostics));
+    EXPECT_EQ(nullptr, diagnosticContext.frame);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("peer selected unsupported ciphersuite 0x1301")) << contents;
+    EXPECT_NE(std::string::npos, contents.find("ssl_parse_server_hello failed")) << contents;
 }
