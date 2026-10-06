@@ -61,7 +61,7 @@ char* GetCachedDistroName(void)
     return g_distroName;
 }
 
-int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
+int TelemetryInitializeInternal(bool forceMinTls, OsConfigLogHandle log)
 {
     int64_t start = 0;
     int64_t now = 0;
@@ -127,6 +127,11 @@ int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
     free(path);
 
     return status;
+}
+
+void TelemetryInitialize(const OsConfigLogHandle log)
+{
+    TelemetryInitializeInternal(false, log);
 }
 
 void TelemetryCleanup(OsConfigLogHandle log)

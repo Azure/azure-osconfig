@@ -946,7 +946,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    TelemetryInitialize(false, log);
+    TelemetryInitialize(log);
 
     if (FileExists(g_configurationFile))
     {

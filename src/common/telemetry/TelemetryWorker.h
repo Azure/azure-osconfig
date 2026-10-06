@@ -14,6 +14,10 @@ extern "C"
 
 typedef struct TelemetryWorker TelemetryWorker;
 
+// Private producer initialization hook for fixtures that force mintls or inspect
+// status. Production callers use the unchanged TelemetryInitialize(log) API.
+int TelemetryInitializeInternal(bool forceMinTls, OsConfigLogHandle log);
+
 // All calls are serialized. The host must not reap our child or change SIGCHLD
 // handling while it is owned. workerPath is a trusted absolute executable path.
 // *worker must initially be NULL. Creation does not spawn or perform network I/O.

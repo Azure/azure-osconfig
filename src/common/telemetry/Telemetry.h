@@ -31,10 +31,9 @@ static inline int64_t TsToUs(struct timespec ts)
 }
 
 #ifdef BUILD_TELEMETRY
-// Serialized invocation scope. Reinitialization returns EALREADY without
-// resetting its deadlines. The caller keeps log valid until cleanup.
-// Production passes false; tests pass true to exercise mintls directly.
-int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log);
+// Serialized invocation scope. Failures are logged internally; callers retain
+// the initialize/emit/cleanup contract and keep log valid until cleanup.
+void TelemetryInitialize(const OsConfigLogHandle log);
 void TelemetryCleanup(OsConfigLogHandle log);
 char* GetModuleDirectory(void);
 char* GetCachedDistroName(void);
@@ -51,12 +50,9 @@ void OSConfigTelemetryCrashDetected(const char* crashInfo);
 #define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
     TelemetryStatusTrace((callingFunction), (status), __FILE__, __func__, (line))
 #else
-static inline int TelemetryInitialize(bool forceMinTls, OsConfigLogHandle log)
+static inline void TelemetryInitialize(const OsConfigLogHandle log)
 {
-    (void)forceMinTls;
     (void)log;
-
-    return 0;
 }
 
 static inline void TelemetryCleanup(OsConfigLogHandle log)

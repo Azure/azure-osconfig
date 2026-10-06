@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <Telemetry.h>
+#include <TelemetryWorker.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -35,7 +36,7 @@ int main(void)
         return 4;
     }
 
-    if (0 == (status = TelemetryInitialize(true, log)))
+    if (0 == (status = TelemetryInitializeInternal(true, log)))
     {
         OSConfigTelemetryCrashDetected("worker-fixture crash\"\\\n");
         OSConfigTelemetryBaselineRun("worker-fixture", "Audit", 1.25);
