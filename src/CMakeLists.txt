@@ -1,6 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# VCPKG integration
+if (DEFINED ENV{VCPKG_ROOT})
+    message (FATAL_ERROR "VCPKG_ROOT found, please unset the environment variable to use the git submodule version of vcpkg")
+endif()
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/vcpkg/scripts/buildsystems/vcpkg.cmake)
+        set (CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+        message (STATUS "VCPKG_ROOT not found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    else()
+        message (FATAL_ERROR "vcpkg toolchain not found at ${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/vcpkg. Run 'git submodule update --init --recursive' (or set VCPKG_ROOT) and install the vcpkg ports")
+    endif()
+endif()
+
 cmake_minimum_required(VERSION 3.21)
 project(osconfig)
 
@@ -31,8 +44,9 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
         set(BUILD_TESTS OFF)
     endif()
 endif()
-
-include(cmake/Dependencies.cmake)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.5" AND NOT VCPKG_OVERLAY_PORTS MATCHES "ports-overlay$")
+    message(FATAL_ERROR "GCC version less than 5.5 detected, set VCPKG_OVERLAY_PORTS to '${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'. eg 'cmake ... -DVCPKG_OVERLAY_PORTS=${CMAKE_CURRENT_SOURCE_DIR}/common/telemetry/ports-overlay'")
+endif()
 
 # Keep frame pointers (-fno-omit-frame-pointer, set globally above) and export symbols (-rdynamic)
 # so the crash handler's backtrace_symbols_fd() can resolve function names in crash stack traces
@@ -160,7 +174,7 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-if (BUILD_TELEMETRY AND BUILD_ADAPTERS AND BUILD_TESTS)
+if (BUILD_TELEMETRY)
     ExternalProject_Get_Property(telemetry-external BINARY_DIR)
     set(TELEMETRY_TESTS_DIR ${TELEMETRY_LIB_DIR}/tests)
     set(TELEMETRY_BIN_TESTS_DIR ${BINARY_DIR}/bin/tests)
