@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file sha256.h
  *
@@ -10,8 +13,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/sha256.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/sha256.h.
  */
 #ifndef MBEDTLS_SHA256_H
 #define MBEDTLS_SHA256_H
@@ -91,7 +94,7 @@ void mbedtls_sha256_clone(mbedtls_sha256_context *dst,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224);
+int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function feeds an input buffer into an ongoing
@@ -108,7 +111,7 @@ int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224);
  */
 int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
                           const unsigned char *input,
-                          size_t ilen);
+                          size_t ilen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function finishes the SHA-256 operation, and writes
@@ -124,7 +127,7 @@ int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
  * \return         A negative error code on failure.
  */
 int mbedtls_sha256_finish(mbedtls_sha256_context *ctx,
-                          unsigned char *output);
+                          unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function processes a single data block within
@@ -166,7 +169,7 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
 int mbedtls_sha256(const unsigned char *input,
                    size_t ilen,
                    unsigned char *output,
-                   int is224);
+                   int is224, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  *  Core bignum functions
  *
@@ -70,8 +73,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/bignum_core.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/bignum_core.h.
  */
 
 #ifndef MBEDTLS_BIGNUM_CORE_H
@@ -246,7 +249,7 @@ void mbedtls_mpi_core_cond_swap(mbedtls_mpi_uint *X,
 int mbedtls_mpi_core_read_le(mbedtls_mpi_uint *X,
                              size_t X_limbs,
                              const unsigned char *input,
-                             size_t input_length);
+                             size_t input_length, MinTlsDiagnostics* diagnostics);
 
 /** Import X from unsigned binary data, big-endian.
  *
@@ -268,7 +271,7 @@ int mbedtls_mpi_core_read_le(mbedtls_mpi_uint *X,
 int mbedtls_mpi_core_read_be(mbedtls_mpi_uint *X,
                              size_t X_limbs,
                              const unsigned char *input,
-                             size_t input_length);
+                             size_t input_length, MinTlsDiagnostics* diagnostics);
 
 /** Export A into unsigned binary data, little-endian.
  *
@@ -288,7 +291,7 @@ int mbedtls_mpi_core_read_be(mbedtls_mpi_uint *X,
 int mbedtls_mpi_core_write_le(const mbedtls_mpi_uint *A,
                               size_t A_limbs,
                               unsigned char *output,
-                              size_t output_length);
+                              size_t output_length, MinTlsDiagnostics* diagnostics);
 
 /** Export A into unsigned binary data, big-endian.
  *
@@ -308,7 +311,7 @@ int mbedtls_mpi_core_write_le(const mbedtls_mpi_uint *A,
 int mbedtls_mpi_core_write_be(const mbedtls_mpi_uint *A,
                               size_t A_limbs,
                               unsigned char *output,
-                              size_t output_length);
+                              size_t output_length, MinTlsDiagnostics* diagnostics);
 
 /** \brief              Shift an MPI in-place right by a number of bits.
  *
@@ -533,7 +536,7 @@ void mbedtls_mpi_core_montmul(mbedtls_mpi_uint *X,
  * \return        #MBEDTLS_ERR_MPI_NEGATIVE_VALUE if \p N modulus is negative.
  */
 int mbedtls_mpi_core_get_mont_r2_unsafe(mbedtls_mpi *X,
-                                        const mbedtls_mpi *N);
+                                        const mbedtls_mpi *N, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Fill an integer with a number of random bytes.
@@ -556,8 +559,8 @@ int mbedtls_mpi_core_get_mont_r2_unsafe(mbedtls_mpi *X,
  */
 int mbedtls_mpi_core_fill_random(mbedtls_mpi_uint *X, size_t X_limbs,
                                  size_t bytes,
-                                 int (*f_rng)(void *, unsigned char *, size_t),
-                                 void *p_rng);
+                                 int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                 void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /** Generate a random number uniformly in a range.
  *
@@ -593,8 +596,8 @@ int mbedtls_mpi_core_random(mbedtls_mpi_uint *X,
                             mbedtls_mpi_uint min,
                             const mbedtls_mpi_uint *N,
                             size_t limbs,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng);
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                            void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Returns the number of limbs of working memory required for

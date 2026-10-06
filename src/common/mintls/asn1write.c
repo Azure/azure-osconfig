@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  * ASN.1 buffer writing functionality
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/asn1write.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/asn1write.c.
  */
 
 #include "common.h"
@@ -19,11 +22,13 @@
 
 #include "asn1.h"
 
-int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start, size_t len)
+int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start, size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 #if SIZE_MAX > 0xFFFFFFFF
     if (len > 0xFFFFFFFF) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
 #endif
 
@@ -36,7 +41,7 @@ int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start, size_t
     }
 
     if (required > (*p - start)) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     do {
@@ -48,40 +53,46 @@ int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start, size_t
         *--(*p) = (unsigned char) (0x80 + required - 1);
     }
 
-    return required;
+    MINTLS_RETURN(required);
 }
 
-int mbedtls_asn1_write_tag(unsigned char **p, const unsigned char *start, unsigned char tag)
+int mbedtls_asn1_write_tag(unsigned char **p, const unsigned char *start, unsigned char tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (*p - start < 1) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     *--(*p) = tag;
 
-    return 1;
+    MINTLS_RETURN(1);
 }
 
 int mbedtls_asn1_write_len_and_tag(unsigned char **p,
                                           const unsigned char *start,
                                           size_t len,
-                                          unsigned char tag)
+                                          unsigned char tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_len(p, start, len));
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_tag(p, start, tag));
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_len(p, start, len, diagnostics));
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_tag(p, start, tag, diagnostics));
 
-    return (int) len;
+    MINTLS_RETURN((int) len);
 }
 
 int mbedtls_asn1_write_raw_buffer(unsigned char **p, const unsigned char *start,
-                                  const unsigned char *buf, size_t size)
+                                  const unsigned char *buf, size_t size, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t len = 0;
 
     if (*p < start || (size_t) (*p - start) < size) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     len = size;
@@ -90,11 +101,13 @@ int mbedtls_asn1_write_raw_buffer(unsigned char **p, const unsigned char *start,
         memcpy(*p, buf, len);
     }
 
-    return (int) len;
+    MINTLS_RETURN((int) len);
 }
 
-int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start, const mbedtls_mpi *X)
+int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start, const mbedtls_mpi *X, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
@@ -109,97 +122,109 @@ int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start, const 
     }
 
     if (*p < start || (size_t) (*p - start) < len) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     (*p) -= len;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(X, *p, len));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(X, *p, len, diagnostics));
 
     // DER format assumes 2s complement for numbers, so the leftmost bit
     // should be 0 for positive numbers and 1 for negative numbers.
     //
     if (X->s == 1 && **p & 0x80) {
         if (*p - start < 1) {
-            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
         }
 
         *--(*p) = 0x00;
         len += 1;
     }
 
-    ret = mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_INTEGER);
+    ret = mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_INTEGER, diagnostics);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
-int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start)
+int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     // Write NULL
     //
-    return mbedtls_asn1_write_len_and_tag(p, start, 0, MBEDTLS_ASN1_NULL);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, 0, MBEDTLS_ASN1_NULL, diagnostics));
 }
 
 int mbedtls_asn1_write_oid(unsigned char **p, const unsigned char *start,
-                           const char *oid, size_t oid_len)
+                           const char *oid, size_t oid_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start,
-                                                            (const unsigned char *) oid, oid_len));
-    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OID);
+                                                            (const unsigned char *) oid, oid_len, diagnostics));
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OID, diagnostics));
 }
 
 int mbedtls_asn1_write_algorithm_identifier(unsigned char **p, const unsigned char *start,
                                             const char *oid, size_t oid_len,
-                                            size_t par_len)
+                                            size_t par_len, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len, par_len, 1);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len, par_len, 1, diagnostics));
 }
 
 int mbedtls_asn1_write_algorithm_identifier_ext(unsigned char **p, const unsigned char *start,
                                                 const char *oid, size_t oid_len,
-                                                size_t par_len, int has_par)
+                                                size_t par_len, int has_par, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     if (has_par) {
         if (par_len == 0) {
-            MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_null(p, start));
+            MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_null(p, start, diagnostics));
         } else {
             len += par_len;
         }
     }
 
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_oid(p, start, oid, oid_len));
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_oid(p, start, oid, oid_len, diagnostics));
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len,
-                                          MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len,
+                                          MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE, diagnostics));
 }
 
-int mbedtls_asn1_write_bool(unsigned char **p, const unsigned char *start, int boolean)
+int mbedtls_asn1_write_bool(unsigned char **p, const unsigned char *start, int boolean, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t len = 0;
 
     if (*p - start < 1) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     *--(*p) = (boolean) ? 255 : 0;
     len++;
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BOOLEAN);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BOOLEAN, diagnostics));
 }
 
-int asn1_write_tagged_int(unsigned char **p, const unsigned char *start, int val, int tag)
+int asn1_write_tagged_int(unsigned char **p, const unsigned char *start, int val, int tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t len = 0;
 
     do {
         if (*p - start < 1) {
-            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
         }
         len += 1;
         *--(*p) = val & 0xff;
@@ -208,62 +233,76 @@ int asn1_write_tagged_int(unsigned char **p, const unsigned char *start, int val
 
     if (**p & 0x80) {
         if (*p - start < 1) {
-            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
         }
         *--(*p) = 0x00;
         len += 1;
     }
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len, tag);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, tag, diagnostics));
 }
 
-int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int val)
+int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int val, MinTlsDiagnostics* diagnostics)
 {
-    return asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_INTEGER);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_INTEGER, diagnostics));
 }
 
-int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int val)
+int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int val, MinTlsDiagnostics* diagnostics)
 {
-    return asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_ENUMERATED);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_ENUMERATED, diagnostics));
 }
 
 int mbedtls_asn1_write_tagged_string(unsigned char **p, const unsigned char *start, int tag,
-                                     const char *text, size_t text_len)
+                                     const char *text, size_t text_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start,
                                                             (const unsigned char *) text,
-                                                            text_len));
+                                                            text_len, diagnostics));
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len, tag);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, tag, diagnostics));
 }
 
 int mbedtls_asn1_write_utf8_string(unsigned char **p, const unsigned char *start,
-                                   const char *text, size_t text_len)
+                                   const char *text, size_t text_len, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_UTF8_STRING, text, text_len);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_UTF8_STRING, text, text_len, diagnostics));
 }
 
 int mbedtls_asn1_write_printable_string(unsigned char **p, const unsigned char *start,
-                                        const char *text, size_t text_len)
+                                        const char *text, size_t text_len, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_PRINTABLE_STRING, text,
-                                            text_len);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_PRINTABLE_STRING, text,
+                                            text_len, diagnostics));
 }
 
 int mbedtls_asn1_write_ia5_string(unsigned char **p, const unsigned char *start,
-                                  const char *text, size_t text_len)
+                                  const char *text, size_t text_len, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_IA5_STRING, text, text_len);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_IA5_STRING, text, text_len, diagnostics));
 }
 
 int mbedtls_asn1_write_named_bitstring(unsigned char **p,
                                        const unsigned char *start,
                                        const unsigned char *buf,
-                                       size_t bits)
+                                       size_t bits, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t unused_bits, byte_len;
     const unsigned char *cur_byte;
     unsigned char cur_byte_shifted;
@@ -300,12 +339,14 @@ int mbedtls_asn1_write_named_bitstring(unsigned char **p,
         }
     }
 
-    return mbedtls_asn1_write_bitstring(p, start, buf, bits);
+    MINTLS_RETURN(mbedtls_asn1_write_bitstring(p, start, buf, bits, diagnostics));
 }
 
 int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
-                                 const unsigned char *buf, size_t bits)
+                                 const unsigned char *buf, size_t bits, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t len = 0;
     size_t unused_bits, byte_len;
 
@@ -313,7 +354,7 @@ int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
     unused_bits = (byte_len * 8) - bits;
 
     if (*p < start || (size_t) (*p - start) < byte_len + 1) {
-        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_BUF_TOO_SMALL);
     }
 
     len = byte_len + 1;
@@ -329,18 +370,20 @@ int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
     /* Write unused bits */
     *--(*p) = (unsigned char) unused_bits;
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BIT_STRING);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BIT_STRING, diagnostics));
 }
 
 int mbedtls_asn1_write_octet_string(unsigned char **p, const unsigned char *start,
-                                    const unsigned char *buf, size_t size)
+                                    const unsigned char *buf, size_t size, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start, buf, size));
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start, buf, size, diagnostics));
 
-    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OCTET_STRING);
+    MINTLS_RETURN(mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OCTET_STRING, diagnostics));
 }
 
 #define asn1_find_named_data(list, oid, len) \

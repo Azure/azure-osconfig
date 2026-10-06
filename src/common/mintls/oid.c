@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file oid.c
  *
@@ -6,8 +9,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/oid.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/oid.c.
  */
 
 #include "common.h"
@@ -67,12 +70,13 @@
  * descriptor of an mbedtls_oid_descriptor_t wrapper.
  */
 #define FN_OID_GET_DESCRIPTOR_ATTR1(FN_NAME, TYPE_T, TYPE_NAME, ATTR1_TYPE, ATTR1) \
-    int FN_NAME(const mbedtls_asn1_buf *oid, ATTR1_TYPE * ATTR1)                  \
+    int FN_NAME(const mbedtls_asn1_buf *oid, ATTR1_TYPE * ATTR1, MinTlsDiagnostics* diagnostics)                  \
     {                                                                       \
+        MINTLS_BEGIN_DIAGNOSTIC(); \
         const TYPE_T *data = oid_ ## TYPE_NAME ## _from_asn1(oid);        \
-        if (data == NULL) return MBEDTLS_ERR_OID_NOT_FOUND;            \
+        if (data == NULL) MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_NOT_FOUND);            \
         *ATTR1 = data->descriptor.ATTR1;                                    \
-        return 0;                                                        \
+        MINTLS_RETURN(0);                                                        \
     }
 #endif /* MBEDTLS_X509_REMOVE_INFO */
 
@@ -81,12 +85,13 @@
  * mbedtls_oid_descriptor_t wrapper.
  */
 #define FN_OID_GET_ATTR1(FN_NAME, TYPE_T, TYPE_NAME, ATTR1_TYPE, ATTR1) \
-    int FN_NAME(const mbedtls_asn1_buf *oid, ATTR1_TYPE * ATTR1)                  \
+    int FN_NAME(const mbedtls_asn1_buf *oid, ATTR1_TYPE * ATTR1, MinTlsDiagnostics* diagnostics)                  \
     {                                                                       \
+        MINTLS_BEGIN_DIAGNOSTIC(); \
         const TYPE_T *data = oid_ ## TYPE_NAME ## _from_asn1(oid);        \
-        if (data == NULL) return MBEDTLS_ERR_OID_NOT_FOUND;            \
+        if (data == NULL) MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_NOT_FOUND);            \
         *ATTR1 = data->ATTR1;                                               \
-        return 0;                                                        \
+        MINTLS_RETURN(0);                                                        \
     }
 
 /*
@@ -96,13 +101,14 @@
 #define FN_OID_GET_ATTR2(FN_NAME, TYPE_T, TYPE_NAME, ATTR1_TYPE, ATTR1,     \
                          ATTR2_TYPE, ATTR2)                                 \
     int FN_NAME(const mbedtls_asn1_buf *oid, ATTR1_TYPE * ATTR1,               \
-                ATTR2_TYPE * ATTR2)              \
+                ATTR2_TYPE * ATTR2, MinTlsDiagnostics* diagnostics)              \
     {                                                                           \
+        MINTLS_BEGIN_DIAGNOSTIC(); \
         const TYPE_T *data = oid_ ## TYPE_NAME ## _from_asn1(oid);            \
-        if (data == NULL) return MBEDTLS_ERR_OID_NOT_FOUND;                 \
+        if (data == NULL) MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_NOT_FOUND);                 \
         *(ATTR1) = data->ATTR1;                                                 \
         *(ATTR2) = data->ATTR2;                                                 \
-        return 0;                                                            \
+        MINTLS_RETURN(0);                                                            \
     }
 
 /*
@@ -110,18 +116,19 @@
  * attribute from a mbedtls_oid_descriptor_t wrapper.
  */
 #define FN_OID_GET_OID_BY_ATTR1(FN_NAME, TYPE_T, LIST, ATTR1_TYPE, ATTR1)   \
-    int FN_NAME(ATTR1_TYPE ATTR1, const char **oid, size_t *olen)             \
+    int FN_NAME(ATTR1_TYPE ATTR1, const char **oid, size_t *olen, MinTlsDiagnostics* diagnostics)             \
     {                                                                           \
+        MINTLS_BEGIN_DIAGNOSTIC(); \
         const TYPE_T *cur = (LIST);                                             \
         while (cur->descriptor.asn1 != NULL) {                                 \
             if (cur->ATTR1 == (ATTR1)) {                                       \
                 *oid = cur->descriptor.asn1;                                    \
                 *olen = cur->descriptor.asn1_len;                               \
-                return 0;                                                    \
+                MINTLS_RETURN(0);                                                    \
             }                                                                   \
             cur++;                                                              \
         }                                                                       \
-        return MBEDTLS_ERR_OID_NOT_FOUND;                                    \
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_NOT_FOUND);                                    \
     }
 
 /*
@@ -131,18 +138,19 @@
 #define FN_OID_GET_OID_BY_ATTR2(FN_NAME, TYPE_T, LIST, ATTR1_TYPE, ATTR1,   \
                                 ATTR2_TYPE, ATTR2)                          \
     int FN_NAME(ATTR1_TYPE ATTR1, ATTR2_TYPE ATTR2, const char **oid,         \
-                size_t *olen)                                                 \
+                size_t *olen, MinTlsDiagnostics* diagnostics)                                                 \
     {                                                                           \
+        MINTLS_BEGIN_DIAGNOSTIC(); \
         const TYPE_T *cur = (LIST);                                             \
         while (cur->descriptor.asn1 != NULL) {                                 \
             if (cur->ATTR1 == (ATTR1) && cur->ATTR2 == (ATTR2)) {              \
                 *oid = cur->descriptor.asn1;                                    \
                 *olen = cur->descriptor.asn1_len;                               \
-                return 0;                                                    \
+                MINTLS_RETURN(0);                                                    \
             }                                                                   \
             cur++;                                                              \
         }                                                                       \
-        return MBEDTLS_ERR_OID_NOT_FOUND;                                   \
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_NOT_FOUND);                                   \
     }
 
 /*
@@ -674,8 +682,10 @@ FN_OID_GET_ATTR1(mbedtls_oid_get_md_hmac, oid_md_hmac_t, md_hmac, mbedtls_md_typ
 
 /* Return the x.y.z.... style numeric string for the given OID */
 int mbedtls_oid_get_numeric_string(char *buf, size_t size,
-                                   const mbedtls_asn1_buf *oid)
+                                   const mbedtls_asn1_buf *oid, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     char *p = buf;
     size_t n = size;
@@ -683,22 +693,22 @@ int mbedtls_oid_get_numeric_string(char *buf, size_t size,
 
     if (size > INT_MAX) {
         /* Avoid overflow computing return value */
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
 
     if (oid->len <= 0) {
         /* OID must not be empty */
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
     for (size_t i = 0; i < oid->len; i++) {
         /* Prevent overflow in value. */
         if (value > (UINT_MAX >> 7)) {
-            return MBEDTLS_ERR_ASN1_INVALID_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
         }
         if ((value == 0) && ((oid->p[i]) == 0x80)) {
             /* Overlong encoding is not allowed */
-            return MBEDTLS_ERR_ASN1_INVALID_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
         }
 
         value <<= 7;
@@ -725,7 +735,7 @@ int mbedtls_oid_get_numeric_string(char *buf, size_t size,
                 ret = mbedtls_snprintf(p, n, ".%u", value);
             }
             if (ret < 2 || (size_t) ret >= n) {
-                return MBEDTLS_ERR_OID_BUF_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_BUF_TOO_SMALL);
             }
             n -= (size_t) ret;
             p += ret;
@@ -735,14 +745,16 @@ int mbedtls_oid_get_numeric_string(char *buf, size_t size,
 
     if (value != 0) {
         /* Unterminated subidentifier */
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
-    return (int) (size - n);
+    MINTLS_RETURN((int) (size - n));
 }
 
-int oid_parse_number(unsigned int *num, const char **p, const char *bound)
+int oid_parse_number(unsigned int *num, const char **p, const char *bound, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
 
     *num = 0;
@@ -750,13 +762,13 @@ int oid_parse_number(unsigned int *num, const char **p, const char *bound)
     while (*p < bound && **p >= '0' && **p <= '9') {
         ret = 0;
         if (*num > (UINT_MAX / 10)) {
-            return MBEDTLS_ERR_ASN1_INVALID_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
         }
         *num *= 10;
         *num += **p - '0';
         (*p)++;
     }
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 size_t oid_subidentifier_num_bytes(unsigned int value)
@@ -773,12 +785,14 @@ size_t oid_subidentifier_num_bytes(unsigned int value)
 
 int oid_subidentifier_encode_into(unsigned char **p,
                                          unsigned char *bound,
-                                         unsigned int value)
+                                         unsigned int value, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t num_bytes = oid_subidentifier_num_bytes(value);
 
     if ((size_t) (bound - *p) < num_bytes) {
-        return MBEDTLS_ERR_OID_BUF_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_OID_BUF_TOO_SMALL);
     }
     (*p)[num_bytes - 1] = (unsigned char) (value & 0x7f);
     value >>= 7;
@@ -789,13 +803,15 @@ int oid_subidentifier_encode_into(unsigned char **p,
     }
     *p += num_bytes;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /* Return the OID for the given x.y.z.... style numeric string  */
 int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
-                                    const char *oid_str, size_t size)
+                                    const char *oid_str, size_t size, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
     const char *str_ptr = oid_str;
     const char *str_bound = oid_str + size;
@@ -815,7 +831,7 @@ int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
      * There are (num_dots + 1) integer components, but the first 2 share the
      * same subidentifier, so we only need num_dots subidentifiers maximum. */
     if (num_dots == 0 || (num_dots > MBEDTLS_OID_MAX_COMPONENTS - 1)) {
-        return MBEDTLS_ERR_ASN1_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
     }
     /* Each byte can store 7 bits, calculate number of bytes for a
      * subidentifier:
@@ -827,56 +843,56 @@ int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
     size_t max_possible_bytes = num_dots * bytes_per_subidentifier;
     oid->p = mbedtls_calloc(max_possible_bytes, 1);
     if (oid->p == NULL) {
-        return MBEDTLS_ERR_ASN1_ALLOC_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_ALLOC_FAILED);
     }
     unsigned char *out_ptr = oid->p;
     unsigned char *out_bound = oid->p + max_possible_bytes;
 
-    ret = oid_parse_number(&component1, &str_ptr, str_bound);
+    ret = oid_parse_number(&component1, &str_ptr, str_bound, diagnostics);
     if (ret != 0) {
         goto error;
     }
     if (component1 > 2) {
         /* First component can't be > 2 */
-        ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
         goto error;
     }
     if (str_ptr >= str_bound || *str_ptr != '.') {
-        ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
         goto error;
     }
     str_ptr++;
 
-    ret = oid_parse_number(&component2, &str_ptr, str_bound);
+    ret = oid_parse_number(&component2, &str_ptr, str_bound, diagnostics);
     if (ret != 0) {
         goto error;
     }
     if ((component1 < 2) && (component2 > 39)) {
         /* Root nodes 0 and 1 may have up to 40 children, numbered 0-39 */
-        ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
         goto error;
     }
     if (str_ptr < str_bound) {
         if (*str_ptr == '.') {
             str_ptr++;
         } else {
-            ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
             goto error;
         }
     }
 
     if (component2 > (UINT_MAX - (component1 * 40))) {
-        ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
         goto error;
     }
     ret = oid_subidentifier_encode_into(&out_ptr, out_bound,
-                                        (component1 * 40) + component2);
+                                        (component1 * 40) + component2, diagnostics);
     if (ret != 0) {
         goto error;
     }
 
     while (str_ptr < str_bound) {
-        ret = oid_parse_number(&val, &str_ptr, str_bound);
+        ret = oid_parse_number(&val, &str_ptr, str_bound, diagnostics);
         if (ret != 0) {
             goto error;
         }
@@ -884,12 +900,12 @@ int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
             if (*str_ptr == '.') {
                 str_ptr++;
             } else {
-                ret = MBEDTLS_ERR_ASN1_INVALID_DATA;
+                ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_INVALID_DATA);
                 goto error;
             }
         }
 
-        ret = oid_subidentifier_encode_into(&out_ptr, out_bound, val);
+        ret = oid_subidentifier_encode_into(&out_ptr, out_bound, val, diagnostics);
         if (ret != 0) {
             goto error;
         }
@@ -898,7 +914,7 @@ int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
     encoded_len = (size_t) (out_ptr - oid->p);
     resized_mem = mbedtls_calloc(encoded_len, 1);
     if (resized_mem == NULL) {
-        ret = MBEDTLS_ERR_ASN1_ALLOC_FAILED;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ASN1_ALLOC_FAILED);
         goto error;
     }
     memcpy(resized_mem, oid->p, encoded_len);
@@ -908,12 +924,12 @@ int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid,
 
     oid->tag = MBEDTLS_ASN1_OID;
 
-    return 0;
+    MINTLS_RETURN(0);
 
 error:
     mbedtls_free(oid->p);
     oid->p = NULL;
     oid->len = 0;
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

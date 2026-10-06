@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  CTR_DRBG implementation based on AES-256 (NIST SP 800-90)
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/ctr_drbg.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/ctr_drbg.c.
  */
 /*
  *  The NIST SP 800-90 DRBGs are described in the following publication.
@@ -69,23 +72,25 @@ void mbedtls_ctr_drbg_set_entropy_len(mbedtls_ctr_drbg_context *ctx,
 }
 
 int mbedtls_ctr_drbg_set_nonce_len(mbedtls_ctr_drbg_context *ctx,
-                                   size_t len)
+                                   size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     /* If mbedtls_ctr_drbg_seed() has already been called, it's
      * too late. Return the error code that's closest to making sense. */
     if (ctx->f_entropy != NULL) {
-        return MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED);
     }
 
     if (len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
 
     /* This shouldn't be an issue because
      * MBEDTLS_CTR_DRBG_MAX_SEED_INPUT < INT_MAX in any sensible
      * configuration, but make sure anyway. */
     if (len > INT_MAX) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
 
     /* For backward compatibility with Mbed TLS <= 2.19, store the
@@ -93,7 +98,7 @@ int mbedtls_ctr_drbg_set_nonce_len(mbedtls_ctr_drbg_context *ctx,
      * used until after the initial seeding. */
     /* Due to the capping of len above, the value fits in an int. */
     ctx->reseed_counter = (int) len;
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 void mbedtls_ctr_drbg_set_reseed_interval(mbedtls_ctr_drbg_context *ctx,
@@ -103,8 +108,10 @@ void mbedtls_ctr_drbg_set_reseed_interval(mbedtls_ctr_drbg_context *ctx,
 }
 
 int block_cipher_df(unsigned char *output,
-                           const unsigned char *data, size_t data_len)
+                           const unsigned char *data, size_t data_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char buf[MBEDTLS_CTR_DRBG_MAX_SEED_INPUT +
                       MBEDTLS_CTR_DRBG_BLOCKSIZE + 16];
     unsigned char tmp[MBEDTLS_CTR_DRBG_SEEDLEN];
@@ -118,7 +125,7 @@ int block_cipher_df(unsigned char *output,
     size_t buf_len, use_len;
 
     if (data_len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
 
     memset(buf, 0, MBEDTLS_CTR_DRBG_MAX_SEED_INPUT +
@@ -147,7 +154,7 @@ int block_cipher_df(unsigned char *output,
     mbedtls_aes_init(&aes_ctx);
 
     if ((ret = mbedtls_aes_setkey_enc(&aes_ctx, key,
-                                      MBEDTLS_CTR_DRBG_KEYBITS)) != 0) {
+                                      MBEDTLS_CTR_DRBG_KEYBITS, diagnostics)) != 0) {
         goto exit;
     }
 
@@ -166,7 +173,7 @@ int block_cipher_df(unsigned char *output,
                        MBEDTLS_CTR_DRBG_BLOCKSIZE : use_len;
 
             if ((ret = mbedtls_aes_crypt_ecb(&aes_ctx, MBEDTLS_AES_ENCRYPT,
-                                             chain, chain)) != 0) {
+                                             chain, chain, diagnostics)) != 0) {
                 goto exit;
             }
         }
@@ -183,7 +190,7 @@ int block_cipher_df(unsigned char *output,
      * Do final encryption with reduced data
      */
     if ((ret = mbedtls_aes_setkey_enc(&aes_ctx, tmp,
-                                      MBEDTLS_CTR_DRBG_KEYBITS)) != 0) {
+                                      MBEDTLS_CTR_DRBG_KEYBITS, diagnostics)) != 0) {
         goto exit;
     }
     iv = tmp + MBEDTLS_CTR_DRBG_KEYSIZE;
@@ -191,7 +198,7 @@ int block_cipher_df(unsigned char *output,
 
     for (j = 0; j < MBEDTLS_CTR_DRBG_SEEDLEN; j += MBEDTLS_CTR_DRBG_BLOCKSIZE) {
         if ((ret = mbedtls_aes_crypt_ecb(&aes_ctx, MBEDTLS_AES_ENCRYPT,
-                                         iv, iv)) != 0) {
+                                         iv, iv, diagnostics)) != 0) {
             goto exit;
         }
         memcpy(p, iv, MBEDTLS_CTR_DRBG_BLOCKSIZE);
@@ -213,7 +220,7 @@ exit:
         mbedtls_platform_zeroize(output, MBEDTLS_CTR_DRBG_SEEDLEN);
     }
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /* CTR_DRBG_Update (SP 800-90A &sect;10.2.1.2)
@@ -225,8 +232,10 @@ exit:
  *   ctx->counter = V
  */
 int ctr_drbg_update_internal(mbedtls_ctr_drbg_context *ctx,
-                                    const unsigned char data[MBEDTLS_CTR_DRBG_SEEDLEN])
+                                    const unsigned char data[MBEDTLS_CTR_DRBG_SEEDLEN], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char tmp[MBEDTLS_CTR_DRBG_SEEDLEN];
     unsigned char *p = tmp;
     int j;
@@ -244,7 +253,7 @@ int ctr_drbg_update_internal(mbedtls_ctr_drbg_context *ctx,
          * Crypt counter block
          */
         if ((ret = mbedtls_aes_crypt_ecb(&ctx->aes_ctx, MBEDTLS_AES_ENCRYPT,
-                                         ctx->counter, p)) != 0) {
+                                         ctx->counter, p, diagnostics)) != 0) {
             goto exit;
         }
 
@@ -257,7 +266,7 @@ int ctr_drbg_update_internal(mbedtls_ctr_drbg_context *ctx,
      * Update key and counter
      */
     if ((ret = mbedtls_aes_setkey_enc(&ctx->aes_ctx, tmp,
-                                      MBEDTLS_CTR_DRBG_KEYBITS)) != 0) {
+                                      MBEDTLS_CTR_DRBG_KEYBITS, diagnostics)) != 0) {
         goto exit;
     }
     memcpy(ctx->counter, tmp + MBEDTLS_CTR_DRBG_KEYSIZE,
@@ -265,7 +274,7 @@ int ctr_drbg_update_internal(mbedtls_ctr_drbg_context *ctx,
 
 exit:
     mbedtls_platform_zeroize(tmp, sizeof(tmp));
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /* CTR_DRBG_Instantiate with derivation function (SP 800-90A &sect;10.2.1.3.2)
@@ -282,25 +291,27 @@ exit:
  */
 int mbedtls_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
                             const unsigned char *additional,
-                            size_t add_len)
+                            size_t add_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char add_input[MBEDTLS_CTR_DRBG_SEEDLEN];
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (add_len == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
-    if ((ret = block_cipher_df(add_input, additional, add_len)) != 0) {
+    if ((ret = block_cipher_df(add_input, additional, add_len, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = ctr_drbg_update_internal(ctx, add_input)) != 0) {
+    if ((ret = ctr_drbg_update_internal(ctx, add_input, diagnostics)) != 0) {
         goto exit;
     }
 
 exit:
     mbedtls_platform_zeroize(add_input, sizeof(add_input));
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /* CTR_DRBG_Reseed with derivation function (SP 800-90A &sect;10.2.1.4.2)
@@ -319,34 +330,36 @@ exit:
 int mbedtls_ctr_drbg_reseed_internal(mbedtls_ctr_drbg_context *ctx,
                                             const unsigned char *additional,
                                             size_t len,
-                                            size_t nonce_len)
+                                            size_t nonce_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char seed[MBEDTLS_CTR_DRBG_MAX_SEED_INPUT];
     size_t seedlen = 0;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (ctx->entropy_len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
     if (nonce_len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT - ctx->entropy_len) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
     if (len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT - ctx->entropy_len - nonce_len) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
 
     memset(seed, 0, MBEDTLS_CTR_DRBG_MAX_SEED_INPUT);
 
     /* Gather entropy_len bytes of entropy to seed state. */
-    if (0 != ctx->f_entropy(ctx->p_entropy, seed, ctx->entropy_len)) {
-        return MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED;
+    if (0 != ctx->f_entropy(ctx->p_entropy, seed, ctx->entropy_len, diagnostics)) {
+        MINTLS_RETURN_CAUSE(MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED);
     }
     seedlen += ctx->entropy_len;
 
     /* Gather entropy for a nonce if requested. */
     if (nonce_len != 0) {
-        if (0 != ctx->f_entropy(ctx->p_entropy, seed + seedlen, nonce_len)) {
-            return MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED;
+        if (0 != ctx->f_entropy(ctx->p_entropy, seed + seedlen, nonce_len, diagnostics)) {
+            MINTLS_RETURN_CAUSE(MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED);
         }
         seedlen += nonce_len;
     }
@@ -358,25 +371,27 @@ int mbedtls_ctr_drbg_reseed_internal(mbedtls_ctr_drbg_context *ctx,
     }
 
     /* Reduce to 384 bits. */
-    if ((ret = block_cipher_df(seed, seed, seedlen)) != 0) {
+    if ((ret = block_cipher_df(seed, seed, seedlen, diagnostics)) != 0) {
         goto exit;
     }
 
     /* Update state. */
-    if ((ret = ctr_drbg_update_internal(ctx, seed)) != 0) {
+    if ((ret = ctr_drbg_update_internal(ctx, seed, diagnostics)) != 0) {
         goto exit;
     }
     ctx->reseed_counter = 0;
 
 exit:
     mbedtls_platform_zeroize(seed, sizeof(seed));
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_ctr_drbg_reseed(mbedtls_ctr_drbg_context *ctx,
-                            const unsigned char *additional, size_t len)
+                            const unsigned char *additional, size_t len, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ctr_drbg_reseed_internal(ctx, additional, len, 0);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ctr_drbg_reseed_internal(ctx, additional, len, 0, diagnostics));
 }
 
 /* Return a "good" nonce length for CTR_DRBG. The chosen nonce length
@@ -405,11 +420,13 @@ size_t good_nonce_len(size_t entropy_len)
  *   ctx = initial_working_state
  */
 int mbedtls_ctr_drbg_seed(mbedtls_ctr_drbg_context *ctx,
-                          int (*f_entropy)(void *, unsigned char *, size_t),
+                          int (*f_entropy)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                           void *p_entropy,
                           const unsigned char *custom,
-                          size_t len)
+                          size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char key[MBEDTLS_CTR_DRBG_KEYSIZE];
     size_t nonce_len;
@@ -434,16 +451,16 @@ int mbedtls_ctr_drbg_seed(mbedtls_ctr_drbg_context *ctx,
 
     /* Initialize with an empty key. */
     if ((ret = mbedtls_aes_setkey_enc(&ctx->aes_ctx, key,
-                                      MBEDTLS_CTR_DRBG_KEYBITS)) != 0) {
-        return ret;
+                                      MBEDTLS_CTR_DRBG_KEYBITS, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /* Do the initial seeding. */
     if ((ret = mbedtls_ctr_drbg_reseed_internal(ctx, custom, len,
-                                                nonce_len)) != 0) {
-        return ret;
+                                                nonce_len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /* CTR_DRBG_Generate with derivation function (SP 800-90A &sect;10.2.1.5.2)
@@ -467,8 +484,10 @@ int mbedtls_ctr_drbg_seed(mbedtls_ctr_drbg_context *ctx,
  */
 int mbedtls_ctr_drbg_random_with_add(void *p_rng,
                                      unsigned char *output, size_t output_len,
-                                     const unsigned char *additional, size_t add_len)
+                                     const unsigned char *additional, size_t add_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
     mbedtls_ctr_drbg_context *ctx = (mbedtls_ctr_drbg_context *) p_rng;
     unsigned char *p = output;
@@ -479,28 +498,28 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
     size_t use_len;
 
     if (output_len > MBEDTLS_CTR_DRBG_MAX_REQUEST) {
-        return MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG);
     }
 
     if (add_len > MBEDTLS_CTR_DRBG_MAX_INPUT) {
-        return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG);
     }
 
     memset(locals.add_input, 0, MBEDTLS_CTR_DRBG_SEEDLEN);
 
     if (ctx->reseed_counter >= ctx->reseed_interval ||
         ctx->prediction_resistance) {
-        if ((ret = mbedtls_ctr_drbg_reseed(ctx, additional, add_len)) != 0) {
-            return ret;
+        if ((ret = mbedtls_ctr_drbg_reseed(ctx, additional, add_len, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
         add_len = 0;
     }
 
     if (add_len > 0) {
-        if ((ret = block_cipher_df(locals.add_input, additional, add_len)) != 0) {
+        if ((ret = block_cipher_df(locals.add_input, additional, add_len, diagnostics)) != 0) {
             goto exit;
         }
-        if ((ret = ctr_drbg_update_internal(ctx, locals.add_input)) != 0) {
+        if ((ret = ctr_drbg_update_internal(ctx, locals.add_input, diagnostics)) != 0) {
             goto exit;
         }
     }
@@ -515,7 +534,7 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
          * Crypt counter block
          */
         if ((ret = mbedtls_aes_crypt_ecb(&ctx->aes_ctx, MBEDTLS_AES_ENCRYPT,
-                                         ctx->counter, locals.tmp)) != 0) {
+                                         ctx->counter, locals.tmp, diagnostics)) != 0) {
             goto exit;
         }
 
@@ -529,7 +548,7 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
         output_len -= use_len;
     }
 
-    if ((ret = ctr_drbg_update_internal(ctx, locals.add_input)) != 0) {
+    if ((ret = ctr_drbg_update_internal(ctx, locals.add_input, diagnostics)) != 0) {
         goto exit;
     }
 
@@ -537,17 +556,18 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
 
 exit:
     mbedtls_platform_zeroize(&locals, sizeof(locals));
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_ctr_drbg_random(void *p_rng, unsigned char *output,
-                            size_t output_len)
+                            size_t output_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ctr_drbg_context *ctx = (mbedtls_ctr_drbg_context *) p_rng;
 
-    ret = mbedtls_ctr_drbg_random_with_add(ctx, output, output_len, NULL, 0);
+    ret = mbedtls_ctr_drbg_random_with_add(ctx, output, output_len, NULL, 0, diagnostics);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
-

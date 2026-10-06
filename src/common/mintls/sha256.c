@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  FIPS-180-2 compliant SHA-256 implementation
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/sha256.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/sha256.c.
  */
 /*
  *  The SHA-256 Secure Hash Standard was published by NIST in 2002.
@@ -249,10 +252,12 @@ void mbedtls_sha256_clone(mbedtls_sha256_context *dst,
 /*
  * SHA-256 context setup
  */
-int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224)
+int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (is224 != 0) {
-        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_SHA256_BAD_INPUT_DATA);
     }
 
     ctx->total[0] = 0;
@@ -270,7 +275,7 @@ int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224)
     } else {
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #if !defined(MBEDTLS_SHA256_PROCESS_ALT)
@@ -616,14 +621,16 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
  */
 int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
                           const unsigned char *input,
-                          size_t ilen)
+                          size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
 
     if (ilen == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     left = ctx->total[0] & 0x3F;
@@ -640,7 +647,7 @@ int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, fill);
 
         if ((ret = mbedtls_internal_sha256_process(ctx, ctx->buffer)) != 0) {
-            return ret;
+            MINTLS_RETURN(ret);
         }
 
         input += fill;
@@ -652,7 +659,7 @@ int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
         size_t processed =
             mbedtls_internal_sha256_process_many(ctx, input, ilen);
         if (processed < SHA256_BLOCK_SIZE) {
-            return MBEDTLS_ERR_ERROR_GENERIC_ERROR;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ERROR_GENERIC_ERROR);
         }
 
         input += processed;
@@ -663,15 +670,17 @@ int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, ilen);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * SHA-256 final digest
  */
 int mbedtls_sha256_finish(mbedtls_sha256_context *ctx,
-                          unsigned char *output)
+                          unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
@@ -731,7 +740,7 @@ int mbedtls_sha256_finish(mbedtls_sha256_context *ctx,
 
 exit:
     mbedtls_sha256_free(ctx);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #endif /* !MBEDTLS_SHA256_ALT */
@@ -742,32 +751,34 @@ exit:
 int mbedtls_sha256(const unsigned char *input,
                    size_t ilen,
                    unsigned char *output,
-                   int is224)
+                   int is224, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha256_context ctx;
 
     if (is224 != 0) {
-        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_SHA256_BAD_INPUT_DATA);
     }
 
     mbedtls_sha256_init(&ctx);
 
-    if ((ret = mbedtls_sha256_starts(&ctx, is224)) != 0) {
+    if ((ret = mbedtls_sha256_starts(&ctx, is224, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha256_update(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_sha256_update(&ctx, input, ilen, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha256_finish(&ctx, output)) != 0) {
+    if ((ret = mbedtls_sha256_finish(&ctx, output, diagnostics)) != 0) {
         goto exit;
     }
 
 exit:
     mbedtls_sha256_free(&ctx);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file x509_crt.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/x509_crt.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/x509_crt.h.
  */
 #ifndef MBEDTLS_X509_CRT_H
 #define MBEDTLS_X509_CRT_H
@@ -338,7 +341,7 @@ extern const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none;
  */
 int mbedtls_x509_crt_parse_der(mbedtls_x509_crt *chain,
                                const unsigned char *buf,
-                               size_t buflen);
+                               size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          The type of certificate extension callbacks.
@@ -375,7 +378,7 @@ typedef int (*mbedtls_x509_crt_ext_cb_t)(void *p_ctx,
                                          mbedtls_x509_buf const *oid,
                                          int critical,
                                          const unsigned char *p,
-                                         const unsigned char *end);
+                                         const unsigned char *end, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief            Parse a single DER formatted certificate and add it
@@ -426,7 +429,7 @@ int mbedtls_x509_crt_parse_der_with_ext_cb(mbedtls_x509_crt *chain,
                                            size_t buflen,
                                            int make_copy,
                                            mbedtls_x509_crt_ext_cb_t cb,
-                                           void *p_ctx);
+                                           void *p_ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Parse a single DER formatted certificate and add it
@@ -461,7 +464,7 @@ int mbedtls_x509_crt_parse_der_with_ext_cb(mbedtls_x509_crt *chain,
  */
 int mbedtls_x509_crt_parse_der_nocopy(mbedtls_x509_crt *chain,
                                       const unsigned char *buf,
-                                      size_t buflen);
+                                      size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Parse one DER-encoded or one or more concatenated PEM-encoded
@@ -497,7 +500,7 @@ int mbedtls_x509_crt_parse_der_nocopy(mbedtls_x509_crt *chain,
  * \return         A negative X509 or PEM error code otherwise.
  *
  */
-int mbedtls_x509_crt_parse(mbedtls_x509_crt *chain, const unsigned char *buf, size_t buflen);
+int mbedtls_x509_crt_parse(mbedtls_x509_crt *chain, const unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics);
 
 #if !defined(MBEDTLS_X509_REMOVE_INFO)
 /**
@@ -513,7 +516,7 @@ int mbedtls_x509_crt_parse(mbedtls_x509_crt *chain, const unsigned char *buf, si
  *                 terminated nul byte), or a negative error code.
  */
 int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
-                          const mbedtls_x509_crt *crt);
+                          const mbedtls_x509_crt *crt, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Returns an informational string about the
@@ -528,7 +531,7 @@ int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
  *                 terminated nul byte), or a negative error code.
  */
 int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
-                                 uint32_t flags);
+                                 uint32_t flags, MinTlsDiagnostics* diagnostics);
 #endif /* !MBEDTLS_X509_REMOVE_INFO */
 
 /**
@@ -605,8 +608,8 @@ int mbedtls_x509_crt_verify(mbedtls_x509_crt *crt,
                             mbedtls_x509_crt *trust_ca,
                             mbedtls_x509_crl *ca_crl,
                             const char *cn, uint32_t *flags,
-                            int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
-                            void *p_vrfy);
+                            int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
+                            void *p_vrfy, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Verify a chain of certificates with respect to
@@ -647,8 +650,8 @@ int mbedtls_x509_crt_verify_with_profile(mbedtls_x509_crt *crt,
                                          mbedtls_x509_crl *ca_crl,
                                          const mbedtls_x509_crt_profile *profile,
                                          const char *cn, uint32_t *flags,
-                                         int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
-                                         void *p_vrfy);
+                                         int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
+                                         void *p_vrfy, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Restartable version of \c mbedtls_crt_verify_with_profile()
@@ -681,9 +684,9 @@ int mbedtls_x509_crt_verify_restartable(mbedtls_x509_crt *crt,
                                         mbedtls_x509_crl *ca_crl,
                                         const mbedtls_x509_crt_profile *profile,
                                         const char *cn, uint32_t *flags,
-                                        int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
+                                        int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
                                         void *p_vrfy,
-                                        mbedtls_x509_crt_restart_ctx *rs_ctx);
+                                        mbedtls_x509_crt_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The type of trusted certificate callbacks.
@@ -717,7 +720,7 @@ int mbedtls_x509_crt_verify_restartable(mbedtls_x509_crt *crt,
  */
 typedef int (*mbedtls_x509_crt_ca_cb_t)(void *p_ctx,
                                         mbedtls_x509_crt const *child,
-                                        mbedtls_x509_crt **candidate_cas);
+                                        mbedtls_x509_crt **candidate_cas, MinTlsDiagnostics* diagnostics);
 
 #if defined(MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK)
 /**
@@ -747,8 +750,8 @@ int mbedtls_x509_crt_verify_with_ca_cb(mbedtls_x509_crt *crt,
                                        void *p_ca_cb,
                                        const mbedtls_x509_crt_profile *profile,
                                        const char *cn, uint32_t *flags,
-                                       int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
-                                       void *p_vrfy);
+                                       int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
+                                       void *p_vrfy, MinTlsDiagnostics* diagnostics);
 
 #endif /* MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK */
 
@@ -774,7 +777,7 @@ int mbedtls_x509_crt_verify_with_ca_cb(mbedtls_x509_crt *crt,
  *                 checked by \c mbedtls_x509_crt_verify().
  */
 int mbedtls_x509_crt_check_key_usage(const mbedtls_x509_crt *crt,
-                                     unsigned int usage);
+                                     unsigned int usage, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Check usage of certificate against extendedKeyUsage.
@@ -791,7 +794,7 @@ int mbedtls_x509_crt_check_key_usage(const mbedtls_x509_crt *crt,
  */
 int mbedtls_x509_crt_check_extended_key_usage(const mbedtls_x509_crt *crt,
                                               const char *usage_oid,
-                                              size_t usage_len);
+                                              size_t usage_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Initialize a certificate (chain)
@@ -834,7 +837,7 @@ static inline int mbedtls_x509_crt_has_ext_type(const mbedtls_x509_crt *ctx,
  *                      the Optional Basic Constraint extension.
  *
  */
-int mbedtls_x509_crt_get_ca_istrue(const mbedtls_x509_crt *crt);
+int mbedtls_x509_crt_get_ca_istrue(const mbedtls_x509_crt *crt, MinTlsDiagnostics* diagnostics);
 
 /** \} name Structures and functions for parsing and writing X.509 certificates */
 

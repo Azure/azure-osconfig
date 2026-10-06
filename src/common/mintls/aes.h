@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file aes.h
  *
@@ -24,8 +27,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/aes.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/aes.h.
  */
 
 #ifndef MBEDTLS_AES_H
@@ -123,7 +126,7 @@ void mbedtls_aes_free(mbedtls_aes_context *ctx);
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
-                           unsigned int keybits);
+                           unsigned int keybits, MinTlsDiagnostics* diagnostics);
 
 #if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 /**
@@ -143,7 +146,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_aes_setkey_dec(mbedtls_aes_context *ctx, const unsigned char *key,
-                           unsigned int keybits);
+                           unsigned int keybits, MinTlsDiagnostics* diagnostics);
 #endif /* !MBEDTLS_BLOCK_CIPHER_NO_DECRYPT */
 
 /**
@@ -173,7 +176,7 @@ MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
                           int mode,
                           const unsigned char input[16],
-                          unsigned char output[16]);
+                          unsigned char output[16], MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Internal AES block encryption function. This is only

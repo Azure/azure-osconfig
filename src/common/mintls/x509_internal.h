@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file x509.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/x509_internal.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/x509_internal.h.
  */
 #ifndef MBEDTLS_X509_INTERNAL_H
 #define MBEDTLS_X509_INTERNAL_H
@@ -24,30 +27,30 @@
 #include "rsa.h"
 
 int mbedtls_x509_get_name(unsigned char **p, const unsigned char *end,
-                          mbedtls_x509_name *cur);
+                          mbedtls_x509_name *cur, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_alg_null(unsigned char **p, const unsigned char *end,
-                              mbedtls_x509_buf *alg);
+                              mbedtls_x509_buf *alg, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_alg(unsigned char **p, const unsigned char *end,
-                         mbedtls_x509_buf *alg, mbedtls_x509_buf *params);
+                         mbedtls_x509_buf *alg, mbedtls_x509_buf *params, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_rsassa_pss_params(const mbedtls_x509_buf *params,
                                        mbedtls_md_type_t *md_alg, mbedtls_md_type_t *mgf_md,
-                                       int *salt_len);
-int mbedtls_x509_get_sig(unsigned char **p, const unsigned char *end, mbedtls_x509_buf *sig);
+                                       int *salt_len, MinTlsDiagnostics* diagnostics);
+int mbedtls_x509_get_sig(unsigned char **p, const unsigned char *end, mbedtls_x509_buf *sig, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_sig_alg(const mbedtls_x509_buf *sig_oid, const mbedtls_x509_buf *sig_params,
                              mbedtls_md_type_t *md_alg, mbedtls_pk_type_t *pk_alg,
-                             void **sig_opts);
+                             void **sig_opts, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_time(unsigned char **p, const unsigned char *end,
-                          mbedtls_x509_time *t);
+                          mbedtls_x509_time *t, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_serial(unsigned char **p, const unsigned char *end,
-                            mbedtls_x509_buf *serial);
+                            mbedtls_x509_buf *serial, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_ext(unsigned char **p, const unsigned char *end,
-                         mbedtls_x509_buf *ext, int tag);
+                         mbedtls_x509_buf *ext, int tag, MinTlsDiagnostics* diagnostics);
 #if !defined(MBEDTLS_X509_REMOVE_INFO)
 int mbedtls_x509_sig_alg_gets(char *buf, size_t size, const mbedtls_x509_buf *sig_oid,
                               mbedtls_pk_type_t pk_alg, mbedtls_md_type_t md_alg,
-                              const void *sig_opts);
+                              const void *sig_opts, MinTlsDiagnostics* diagnostics);
 #endif
-int mbedtls_x509_key_size_helper(char *buf, size_t buf_size, const char *name);
+int mbedtls_x509_key_size_helper(char *buf, size_t buf_size, const char *name, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_set_extension(mbedtls_asn1_named_data **head, const char *oid, size_t oid_len,
                                int critical, const unsigned char *val,
                                size_t val_len);
@@ -61,24 +64,24 @@ int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
                            mbedtls_pk_type_t pk_alg);
 int mbedtls_x509_get_ns_cert_type(unsigned char **p,
                                   const unsigned char *end,
-                                  unsigned char *ns_cert_type);
+                                  unsigned char *ns_cert_type, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_key_usage(unsigned char **p,
                                const unsigned char *end,
-                               unsigned int *key_usage);
+                               unsigned int *key_usage, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_subject_alt_name(unsigned char **p,
                                       const unsigned char *end,
-                                      mbedtls_x509_sequence *subject_alt_name);
+                                      mbedtls_x509_sequence *subject_alt_name, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_get_subject_alt_name_ext(unsigned char **p,
                                           const unsigned char *end,
-                                          mbedtls_x509_sequence *subject_alt_name);
+                                          mbedtls_x509_sequence *subject_alt_name, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_info_subject_alt_name(char **buf, size_t *size,
                                        const mbedtls_x509_sequence
                                        *subject_alt_name,
-                                       const char *prefix);
+                                       const char *prefix, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_info_cert_type(char **buf, size_t *size,
-                                unsigned char ns_cert_type);
+                                unsigned char ns_cert_type, MinTlsDiagnostics* diagnostics);
 int mbedtls_x509_info_key_usage(char **buf, size_t *size,
-                                unsigned int key_usage);
+                                unsigned int key_usage, MinTlsDiagnostics* diagnostics);
 
 int mbedtls_x509_write_set_san_common(mbedtls_asn1_named_data **extensions,
                                       const mbedtls_x509_san_list *san_list);

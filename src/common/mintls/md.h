@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file md.h
  *
@@ -10,8 +13,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/md.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/md.h.
  */
 
 #ifndef MBEDTLS_MD_H
@@ -166,7 +169,7 @@ void mbedtls_md_free(mbedtls_md_context_t *ctx);
  * \return          #MBEDTLS_ERR_MD_ALLOC_FAILED on memory-allocation failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac);
+int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function clones the state of a message-digest
@@ -193,7 +196,7 @@ int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md_clone(mbedtls_md_context_t *dst,
-                     const mbedtls_md_context_t *src);
+                     const mbedtls_md_context_t *src, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function extracts the message-digest size from the
@@ -245,7 +248,7 @@ mbedtls_md_type_t mbedtls_md_get_type(const mbedtls_md_info_t *md_info);
  *                  failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_starts(mbedtls_md_context_t *ctx);
+int mbedtls_md_starts(mbedtls_md_context_t *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function feeds an input buffer into an ongoing
@@ -264,7 +267,7 @@ int mbedtls_md_starts(mbedtls_md_context_t *ctx);
  *                  failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen);
+int mbedtls_md_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function finishes the digest operation,
@@ -285,7 +288,7 @@ int mbedtls_md_update(mbedtls_md_context_t *ctx, const unsigned char *input, siz
  *                  failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_finish(mbedtls_md_context_t *ctx, unsigned char *output);
+int mbedtls_md_finish(mbedtls_md_context_t *ctx, unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function calculates the message-digest of a buffer,
@@ -307,7 +310,7 @@ int mbedtls_md_finish(mbedtls_md_context_t *ctx, unsigned char *output);
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md(const mbedtls_md_info_t *md_info, const unsigned char *input, size_t ilen,
-               unsigned char *output);
+               unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function returns the list of digests supported by the
@@ -377,7 +380,7 @@ const mbedtls_md_info_t *mbedtls_md_info_from_ctx(
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key,
-                           size_t keylen);
+                           size_t keylen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function feeds an input buffer into an ongoing HMAC
@@ -400,7 +403,7 @@ int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key,
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input,
-                           size_t ilen);
+                           size_t ilen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function finishes the HMAC operation, and writes
@@ -421,7 +424,7 @@ int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input
  *                  failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output);
+int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function prepares to authenticate a new message with
@@ -439,7 +442,7 @@ int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output);
  *                  failure.
  */
 MBEDTLS_CHECK_RETURN_TYPICAL
-int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx);
+int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function calculates the full generic HMAC
@@ -466,7 +469,7 @@ int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx);
 MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md_hmac(const mbedtls_md_info_t *md_info, const unsigned char *key, size_t keylen,
                     const unsigned char *input, size_t ilen,
-                    unsigned char *output);
+                    unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

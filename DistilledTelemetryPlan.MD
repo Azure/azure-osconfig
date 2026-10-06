@@ -3,6 +3,7 @@
 Created: 2026-09-30
 Refreshed in full against the October 5, 2026 owner evidence;
 TLS distillation source update: October 6, 2026
+Deep diagnostics/interface update: October 6, 2026; owner rebuild pending
 
 Canonical document: `D:\GitHub\azure-osconfig\DistilledTelemetryPlan.MD`
 
@@ -12,7 +13,12 @@ Canonical document: `D:\GitHub\azure-osconfig\DistilledTelemetryPlan.MD`
 and MinTls fallback are implemented. Owner builds and execution have progressed
 well beyond the old "not yet owner-build-validated" checkpoint.** The owner
 reported tests passing earlier on October 5 and demonstrated fresh No. 66
-standalone events in Aria later that afternoon.
+standalone events in Aria later that afternoon. On October 6, the owner supplied
+a fresh standalone Aria sample after the first TLS distillation pass and a
+passing rerun of all three corrected diagnostics tests.
+The subsequent deep-diagnostics/interface changes described in section 3 have
+not yet received owner build/runtime results; the earlier evidence is not their
+validation.
 
 This is not yet a release-readiness signoff. The latest complete post-edit
 regression summary, final 10,000-event counts, real packaged-policy-host results,
@@ -38,7 +44,7 @@ telemetry event writes, as recorded in section 14.
 | Worker | `TelemetryWorker.c` owns lazy child startup, READY/RESOLVE/SEND IPC, budgets, suppression and exact-child cleanup. |
 | Executable | `TelemetryWorkerMain.c` implements the packaged `OSConfigTelemetry` C executable, owns DNS/TLS/HTTP and its local log. |
 | Transport | `TelemetryTransport.c` implements direct or HTTP CONNECT routing, verified TLS, connection reuse, acknowledgment handling and no replay. |
-| TLS | OS OpenSSL 3/1.1 are preferred. MinTls fallback selection is unchanged. Its flat, reduced-source implementation and internal logging changes from October 6 await owner build/runtime validation. |
+| TLS | OS OpenSSL 3/1.1 are preferred. MinTls fallback selection is unchanged. The first October 6 reduction has standalone forced-MinTls Aria receipt and 3/3 diagnostics tests passing. The later deep-diagnostics/helper-interface pass awaits owner rebuilding and runtime results. |
 | Integration | Existing ASB/NRP and previous-crash producer paths use the C implementation. Actual host compatibility remains a runtime release gate. |
 | Packaging | Existing executable name, four policy ZIP names, resource-library names and staging destinations are preserved. The parent CMake target supplies the old artifact-copy contract from the new executable. |
 | Removed stack | Legacy SDK/C++ uploader, its external build/test import and telemetry-only curl, bundled OpenSSL, zlib, SQLite and nlohmann JSON build dependencies are removed. |
@@ -46,6 +52,16 @@ telemetry event writes, as recorded in section 14.
 
 ### Latest owner evidence
 
+- October 6, 09:23 -0700: owner supplied a fresh No. 66 Aria sample after
+  distillation: `StatusTrace`, sequence/LineNumber 67, SDK `OSConfig-C/0.1`,
+  ResultCode string `731001`, version `1.0.5.20261006-g6d550953`.
+  Event time was `2026-10-06T16:22:29.6106307Z`; recorded ingestion was
+  `2026-10-06T16:22:29.6140000Z`. This demonstrates downstream receipt from
+  the standalone sender, whose source forces MinTls. The payload itself does
+  not identify the TLS provider; it is not a full-run count or production-worker
+  validation.
+- October 6, 09:21 -0700: owner reran all three `MinTlsDiagnosticsTest` cases;
+  all passed after the test-only RNG fixture correction (section 3).
 - October 5, 13:52: owner said "Tests all passed now" after the earlier comparison/
   brace cleanup. No exact command, count or platform matrix accompanied this
   statement. It predates the later worker-main edits and is not their regression
@@ -129,8 +145,12 @@ The owner's October 6 build reached test execution. Three new diagnostics tests
 failed during shared setup because the fixture omitted the required RNG callback
 (`MBEDTLS_ERR_SSL_NO_RNG`, -29696). A test-only callback now satisfies setup and
 fails the test if randomness is actually requested; these are logging-only tests.
-The owner rerun is pending. Current work must preserve the owner's independent
-changes.
+On October 6 at 09:21 -0700, the owner supplied the focused rerun:
+`sudo ctest -R '^MinTlsDiagnosticsTest\.' --output-on-failure`.
+All three diagnostics tests passed, with zero failures. This confirms the fixture
+correction and the three logging contracts, not the complete TLS/telemetry suite
+or the supported-platform matrix. Current work must preserve the owner's
+independent changes.
 The public MinTls functions already accept OsConfigLogHandle. The owner selected
 propagating logging through internal contexts/callbacks rather than adding a log
 argument to every retained core function.
@@ -153,8 +173,10 @@ or upstream build invocation.
 
 The initial inventory verified 40 core C modules and 124 core headers.
 The first pass removed three disabled C modules and 62 unused headers.
-The current root has 39 C files (37 derivative modules plus two owned integration/
-logging files) and 64 headers (62 derivative headers plus MinTls.h/MinTlsConfig.h).
+After the first pass, the root had 39 C files (37 derivative modules plus two owned
+integration/logging files) and 64 headers (62 derivative headers plus
+MinTls.h/MinTlsConfig.h). The later diagnostics pass adds MinTlsLog.h, making
+65 headers and 104 C/header files.
 C/header source decreased from 5,061,019 to 2,414,724 bytes at this checkpoint,
 approximately 52%. These are source bytes, not a measured executable reduction.
 
@@ -169,8 +191,8 @@ approximately 52%. These are source bytes, not a measured executable reduction.
   statements were not translated. A source comparison confirmed matching retained
   tokens in 93 files before subsequent linkage/targeted edits. Multiline directive
   comment tails exposed during reduction were found and repaired.
-- Public MinTls APIs retain their log arguments. The per-context configuration
-  callback now routes 76 existing internal return-code diagnostic sites to the
+- Public MinTls APIs retained their log arguments. The first pass's per-context
+  configuration callback routed 76 existing internal return-code sites to the
   caller's log, with additional seed/configuration, socket and certificate-stage
   diagnostics. Handles refresh on synchronous operations and are never owned or
   closed by MinTls. Core callbacks preserve errno.
@@ -189,6 +211,55 @@ approximately 52%. These are source bytes, not a measured executable reduction.
   These statements concern assistant execution. The owner's subsequent build/test
   run and diagnostics-fixture correction are recorded above; a complete passing
   result is still needed before deeper pruning.
+
+### October 6 deep diagnostics and ownership notices
+
+The owner explicitly selected originating diagnostics inside low-level helpers,
+with context propagated through their interfaces. The new source pass replaces
+the earlier configuration debug bridge with an explicit, stack-owned
+`MinTlsDiagnostics` argument throughout failure-capable helper and callback
+interfaces. Public MinTls signatures, TLS selection, trust policy and transport
+deadlines remain unchanged. Core callers and tests were updated together.
+
+- A zero-initialized frame per status-returning call keeps operation/file/line
+  and numeric error metadata, not buffers or cryptographic values. Success
+  discards speculative failures. A failed outer operation emits through the
+  caller's borrowed log; no global/thread-local logging state or diagnostic
+  allocation was introduced.
+- Direct failures, propagated failures and explicit error translations are
+  distinguished so a recovered parser probe does not become a later failure's
+  explanation. Partial PEM parsing preserves its first certificate failure and
+  original positive count. TLS alert-code returns are failures, while positive
+  byte counts are not. Alert-send failures use a separate scope so they cannot
+  replace the primary diagnostic.
+- WANT_READ/WANT_WRITE, success and authenticated close-notify remain quiet.
+  Message/key/MPI/certificate/payload dumps remain disabled. Diagnostic output
+  preserves errno. Constant-time RSA unpadding is deliberately left untouched;
+  its RSA caller reports failures after sensitive-buffer cleanup.
+- The audit found two discarded results directly coupled to failure handling:
+  the Finished-message PRF result and the EC key-pair check's group-copy result.
+  Both now propagate their errors. No successful cryptographic calculation was
+  changed. Added regressions exercise these paths, nested ASN.1 causes, recovered
+  probes, error-code translation, entropy callback context, positive alert
+  results, first-PEM-error preservation, secondary-alert isolation and
+  sensitive-data suppression.
+- All 104 C/header files start with the owner's exact, unchanged two Microsoft
+  copyright/MIT lines. All 99 retained derivative files also retain upstream
+  copyright/SPDX and original-file provenance, with a prominent
+  `Modified by Microsoft for OSConfig on 2026-10-06` notice. The complete upstream
+  LICENSE is unchanged. No governance exemption is asserted.
+- Source-only checks cover named-function/callback wiring, scoped returns,
+  error-return macros, exact leading notices and preservation of retained
+  source tokens apart from diagnostic plumbing and the two reviewed
+  failure-propagation fixes. These are not compilation or runtime evidence.
+  No compiler/CMake is available on this session's PATH; the owner remains
+  responsible for builds, tests and authorized live sends.
+
+**Resume/validation boundary:** rebuild after these private interface changes and
+run the MinTls core/diagnostics and TLS/telemetry regression coverage. Repeat the
+owner's forced-MinTls live-delivery check after the new build. The 09:21
+diagnostics result and 09:23 Aria sample validate the earlier pass only.
+Further source pruning and event-write consolidation remain pending.
 
 This is the first fixed-profile distillation, not a claim that every remaining
 general-purpose function is required by a telemetry send. A further function-level

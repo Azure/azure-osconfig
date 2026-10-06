@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Platform-specific and custom entropy polling functions
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/entropy_poll.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/entropy_poll.c.
  */
 
 #if defined(__linux__) || defined(__midipix__)
@@ -39,8 +42,10 @@
 #include <intsafe.h>
 
 int mbedtls_platform_entropy_poll(void *data, unsigned char *output, size_t len,
-                                  size_t *olen)
+                                  size_t *olen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     ((void) data);
     *olen = 0;
 
@@ -55,14 +60,14 @@ int mbedtls_platform_entropy_poll(void *data, unsigned char *output, size_t len,
 
         if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, output, ulong_bytes,
                                             BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
-            return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
         }
 
         *olen += ulong_bytes;
         len -= ulong_bytes;
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 #else
 
@@ -146,8 +151,10 @@ int sysctl_arnd_wrapper(unsigned char *buf, size_t buflen)
 const char *mbedtls_platform_dev_random = MBEDTLS_PLATFORM_DEV_RANDOM;
 
 int mbedtls_platform_entropy_poll(void *data,
-                                  unsigned char *output, size_t len, size_t *olen)
+                                  unsigned char *output, size_t len, size_t *olen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     FILE *file;
     size_t read_len;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -157,9 +164,9 @@ int mbedtls_platform_entropy_poll(void *data,
     ret = getrandom_wrapper(output, len, 0);
     if (ret >= 0) {
         *olen = (size_t) ret;
-        return 0;
+        MINTLS_RETURN(0);
     } else if (errno != ENOSYS) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
     }
     /* Fall through if the system call isn't known. */
 #else
@@ -170,17 +177,17 @@ int mbedtls_platform_entropy_poll(void *data,
     ((void) file);
     ((void) read_len);
     if (sysctl_arnd_wrapper(output, len) == -1) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
     }
     *olen = len;
-    return 0;
+    MINTLS_RETURN(0);
 #else
 
     *olen = 0;
 
     file = fopen(mbedtls_platform_dev_random, "rb");
     if (file == NULL) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
     }
 
     /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
@@ -189,13 +196,13 @@ int mbedtls_platform_entropy_poll(void *data,
     read_len = fread(output, 1, len, file);
     if (read_len != len) {
         fclose(file);
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
     }
 
     fclose(file);
     *olen = len;
 
-    return 0;
+    MINTLS_RETURN(0);
 #endif /* HAVE_SYSCTL_ARND */
 }
 #endif /* _WIN32 && !EFIX64 && !EFI32 */

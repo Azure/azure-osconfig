@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Generic ASN.1 parsing
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/asn1parse.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/asn1parse.c.
  */
 
 #include "common.h"
@@ -25,10 +28,12 @@
  */
 int mbedtls_asn1_get_len(unsigned char **p,
                          const unsigned char *end,
-                         size_t *len)
+                         size_t *len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if ((end - *p) < 1) {
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
     if ((**p & 0x80) == 0) {
@@ -36,10 +41,10 @@ int mbedtls_asn1_get_len(unsigned char **p,
     } else {
         int n = (**p) & 0x7F;
         if (n == 0 || n > 4) {
-            return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
         }
         if ((end - *p) <= n) {
-            return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
         }
         *len = 0;
         (*p)++;
@@ -50,59 +55,65 @@ int mbedtls_asn1_get_len(unsigned char **p,
     }
 
     if (*len > (size_t) (end - *p)) {
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_asn1_get_tag(unsigned char **p,
                          const unsigned char *end,
-                         size_t *len, int tag)
+                         size_t *len, int tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if ((end - *p) < 1) {
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
     if (**p != tag) {
-        return MBEDTLS_ERR_ASN1_UNEXPECTED_TAG;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_UNEXPECTED_TAG);
     }
 
     (*p)++;
 
-    return mbedtls_asn1_get_len(p, end, len);
+    MINTLS_RETURN(mbedtls_asn1_get_len(p, end, len, diagnostics));
 }
 
 int mbedtls_asn1_get_bool(unsigned char **p,
                           const unsigned char *end,
-                          int *val)
+                          int *val, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
-    if ((ret = mbedtls_asn1_get_tag(p, end, &len, MBEDTLS_ASN1_BOOLEAN)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, &len, MBEDTLS_ASN1_BOOLEAN, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if (len != 1) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
 
     *val = (**p != 0) ? 1 : 0;
     (*p)++;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int asn1_get_tagged_int(unsigned char **p,
                                const unsigned char *end,
-                               int tag, int *val)
+                               int tag, int *val, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
-    if ((ret = mbedtls_asn1_get_tag(p, end, &len, tag)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, &len, tag, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /*
@@ -110,11 +121,11 @@ int asn1_get_tagged_int(unsigned char **p,
      * or 0A0100 for ENUMERATED tags
      */
     if (len == 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
     /* This is a cryptography library. Reject negative integers. */
     if ((**p & 0x80) != 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
 
     /* Skip leading zeros. */
@@ -126,10 +137,10 @@ int asn1_get_tagged_int(unsigned char **p,
     /* Reject integers that don't fit in an int. This code assumes that
      * the int type has no padding bit. */
     if (len > sizeof(int)) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
     if (len == sizeof(int) && (**p & 0x80) != 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
 
     *val = 0;
@@ -138,61 +149,69 @@ int asn1_get_tagged_int(unsigned char **p,
         (*p)++;
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_asn1_get_int(unsigned char **p,
                          const unsigned char *end,
-                         int *val)
+                         int *val, MinTlsDiagnostics* diagnostics)
 {
-    return asn1_get_tagged_int(p, end, MBEDTLS_ASN1_INTEGER, val);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(asn1_get_tagged_int(p, end, MBEDTLS_ASN1_INTEGER, val, diagnostics));
 }
 
 int mbedtls_asn1_get_enum(unsigned char **p,
                           const unsigned char *end,
-                          int *val)
+                          int *val, MinTlsDiagnostics* diagnostics)
 {
-    return asn1_get_tagged_int(p, end, MBEDTLS_ASN1_ENUMERATED, val);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(asn1_get_tagged_int(p, end, MBEDTLS_ASN1_ENUMERATED, val, diagnostics));
 }
 
 int mbedtls_asn1_get_mpi(unsigned char **p,
                          const unsigned char *end,
-                         mbedtls_mpi *X)
+                         mbedtls_mpi *X, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
-    if ((ret = mbedtls_asn1_get_tag(p, end, &len, MBEDTLS_ASN1_INTEGER)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, &len, MBEDTLS_ASN1_INTEGER, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    ret = mbedtls_mpi_read_binary(X, *p, len);
+    ret = mbedtls_mpi_read_binary(X, *p, len, diagnostics);
 
     *p += len;
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_asn1_get_bitstring(unsigned char **p, const unsigned char *end,
-                               mbedtls_asn1_bitstring *bs)
+                               mbedtls_asn1_bitstring *bs, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     /* Certificate type is a single byte bitstring */
-    if ((ret = mbedtls_asn1_get_tag(p, end, &bs->len, MBEDTLS_ASN1_BIT_STRING)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, &bs->len, MBEDTLS_ASN1_BIT_STRING, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /* Check length, subtract one for actual bit string length */
     if (bs->len < 1) {
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
     bs->len -= 1;
 
     /* Get number of unused bits, ensure unused bits <= 7 */
     bs->unused_bits = **p;
     if (bs->unused_bits > 7) {
-        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_LENGTH);
     }
     (*p)++;
 
@@ -201,10 +220,10 @@ int mbedtls_asn1_get_bitstring(unsigned char **p, const unsigned char *end,
     *p += bs->len;
 
     if (*p != end) {
-        return MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
@@ -217,38 +236,40 @@ int mbedtls_asn1_traverse_sequence_of(
     unsigned char tag_must_mask, unsigned char tag_must_val,
     unsigned char tag_may_mask, unsigned char tag_may_val,
     int (*cb)(void *ctx, int tag,
-              unsigned char *start, size_t len),
-    void *ctx)
+              unsigned char *start, size_t len, MinTlsDiagnostics* diagnostics),
+    void *ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret;
     size_t len;
 
     /* Get main sequence tag */
     if ((ret = mbedtls_asn1_get_tag(p, end, &len,
-                                    MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE)) != 0) {
-        return ret;
+                                    MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if (*p + len != end) {
-        return MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     while (*p < end) {
         unsigned char const tag = *(*p)++;
 
         if ((tag & tag_must_mask) != tag_must_val) {
-            return MBEDTLS_ERR_ASN1_UNEXPECTED_TAG;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_UNEXPECTED_TAG);
         }
 
-        if ((ret = mbedtls_asn1_get_len(p, end, &len)) != 0) {
-            return ret;
+        if ((ret = mbedtls_asn1_get_len(p, end, &len, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
 
         if ((tag & tag_may_mask) == tag_may_val) {
             if (cb != NULL) {
-                ret = cb(ctx, tag, *p, len);
+                ret = cb(ctx, tag, *p, len, diagnostics);
                 if (ret != 0) {
-                    return ret;
+                    MINTLS_RETURN(ret);
                 }
             }
         }
@@ -256,32 +277,34 @@ int mbedtls_asn1_traverse_sequence_of(
         *p += len;
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * Get a bit string without unused bits
  */
 int mbedtls_asn1_get_bitstring_null(unsigned char **p, const unsigned char *end,
-                                    size_t *len)
+                                    size_t *len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    if ((ret = mbedtls_asn1_get_tag(p, end, len, MBEDTLS_ASN1_BIT_STRING)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, len, MBEDTLS_ASN1_BIT_STRING, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if (*len == 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
     }
     --(*len);
 
     if (**p != 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
     }
     ++(*p);
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 void mbedtls_asn1_sequence_free(mbedtls_asn1_sequence *seq)
@@ -301,8 +324,10 @@ typedef struct {
 int asn1_get_sequence_of_cb(void *ctx,
                                    int tag,
                                    unsigned char *start,
-                                   size_t len)
+                                   size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     asn1_get_sequence_of_cb_ctx_t *cb_ctx =
         (asn1_get_sequence_of_cb_ctx_t *) ctx;
     mbedtls_asn1_sequence *cur =
@@ -313,7 +338,7 @@ int asn1_get_sequence_of_cb(void *ctx,
             mbedtls_calloc(1, sizeof(mbedtls_asn1_sequence));
 
         if (cur->next == NULL) {
-            return MBEDTLS_ERR_ASN1_ALLOC_FAILED;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_ALLOC_FAILED);
         }
 
         cur = cur->next;
@@ -324,7 +349,7 @@ int asn1_get_sequence_of_cb(void *ctx,
     cur->buf.tag = tag;
 
     cb_ctx->cur = cur;
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
@@ -333,36 +358,40 @@ int asn1_get_sequence_of_cb(void *ctx,
 int mbedtls_asn1_get_sequence_of(unsigned char **p,
                                  const unsigned char *end,
                                  mbedtls_asn1_sequence *cur,
-                                 int tag)
+                                 int tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     asn1_get_sequence_of_cb_ctx_t cb_ctx = { tag, cur };
     memset(cur, 0, sizeof(mbedtls_asn1_sequence));
-    return mbedtls_asn1_traverse_sequence_of(
+    MINTLS_RETURN(mbedtls_asn1_traverse_sequence_of(
         p, end, 0xFF, tag, 0, 0,
-        asn1_get_sequence_of_cb, &cb_ctx);
+        asn1_get_sequence_of_cb, &cb_ctx, diagnostics));
 }
 
 int mbedtls_asn1_get_alg(unsigned char **p,
                          const unsigned char *end,
-                         mbedtls_asn1_buf *alg, mbedtls_asn1_buf *params)
+                         mbedtls_asn1_buf *alg, mbedtls_asn1_buf *params, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
 
     if ((ret = mbedtls_asn1_get_tag(p, end, &len,
-                                    MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE)) != 0) {
-        return ret;
+                                    MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if ((end - *p) < 1) {
-        return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_OUT_OF_DATA);
     }
 
     alg->tag = **p;
     end = *p + len;
 
-    if ((ret = mbedtls_asn1_get_tag(p, end, &alg->len, MBEDTLS_ASN1_OID)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_tag(p, end, &alg->len, MBEDTLS_ASN1_OID, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     alg->p = *p;
@@ -370,44 +399,46 @@ int mbedtls_asn1_get_alg(unsigned char **p,
 
     if (*p == end) {
         mbedtls_platform_zeroize(params, sizeof(mbedtls_asn1_buf));
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     params->tag = **p;
     (*p)++;
 
-    if ((ret = mbedtls_asn1_get_len(p, end, &params->len)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_len(p, end, &params->len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     params->p = *p;
     *p += params->len;
 
     if (*p != end) {
-        return MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_asn1_get_alg_null(unsigned char **p,
                               const unsigned char *end,
-                              mbedtls_asn1_buf *alg)
+                              mbedtls_asn1_buf *alg, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_asn1_buf params;
 
     memset(&params, 0, sizeof(mbedtls_asn1_buf));
 
-    if ((ret = mbedtls_asn1_get_alg(p, end, alg, &params)) != 0) {
-        return ret;
+    if ((ret = mbedtls_asn1_get_alg(p, end, alg, &params, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if ((params.tag != MBEDTLS_ASN1_NULL && params.tag != 0) || params.len != 0) {
-        return MBEDTLS_ERR_ASN1_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ASN1_INVALID_DATA);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)

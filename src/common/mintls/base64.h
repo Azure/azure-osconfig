@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file base64.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/base64.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/base64.h.
  */
 #ifndef MBEDTLS_BASE64_H
 #define MBEDTLS_BASE64_H
@@ -46,7 +49,7 @@ extern "C" {
  *                 required buffer size in *olen
  */
 int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
-                          const unsigned char *src, size_t slen);
+                          const unsigned char *src, size_t slen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Decode a base64-formatted buffer
@@ -66,7 +69,7 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
  *                 the required buffer size in *olen
  */
 int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
-                          const unsigned char *src, size_t slen);
+                          const unsigned char *src, size_t slen, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

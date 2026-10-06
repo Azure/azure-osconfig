@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file ecdh.h
  *
@@ -16,8 +19,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/ecdh.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/ecdh.h.
  */
 
 #ifndef MBEDTLS_ECDH_H
@@ -164,7 +167,7 @@ int mbedtls_ecdh_can_do(mbedtls_ecp_group_id gid);
  */
 int mbedtls_ecdh_gen_public(mbedtls_ecp_group *grp, mbedtls_mpi *d, mbedtls_ecp_point *Q,
                             mbedtls_f_rng_t *f_rng,
-                            void *p_rng);
+                            void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function computes the shared secret.
@@ -200,7 +203,7 @@ int mbedtls_ecdh_gen_public(mbedtls_ecp_group *grp, mbedtls_mpi *d, mbedtls_ecp_
 int mbedtls_ecdh_compute_shared(mbedtls_ecp_group *grp, mbedtls_mpi *z,
                                 const mbedtls_ecp_point *Q, const mbedtls_mpi *d,
                                 mbedtls_f_rng_t *f_rng,
-                                void *p_rng);
+                                void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function initializes an ECDH context.
@@ -226,7 +229,7 @@ void mbedtls_ecdh_init(mbedtls_ecdh_context *ctx);
  * \return          \c 0 on success.
  */
 int mbedtls_ecdh_setup(mbedtls_ecdh_context *ctx,
-                       mbedtls_ecp_group_id grp_id);
+                       mbedtls_ecp_group_id grp_id, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function frees a context.
@@ -265,7 +268,7 @@ void mbedtls_ecdh_free(mbedtls_ecdh_context *ctx);
 int mbedtls_ecdh_make_params(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
                              mbedtls_f_rng_t *f_rng,
-                             void *p_rng);
+                             void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function parses the ECDHE parameters in a
@@ -293,7 +296,7 @@ int mbedtls_ecdh_make_params(mbedtls_ecdh_context *ctx, size_t *olen,
  */
 int mbedtls_ecdh_read_params(mbedtls_ecdh_context *ctx,
                              const unsigned char **buf,
-                             const unsigned char *end);
+                             const unsigned char *end, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function sets up an ECDH context from an EC key.
@@ -316,7 +319,7 @@ int mbedtls_ecdh_read_params(mbedtls_ecdh_context *ctx,
  */
 int mbedtls_ecdh_get_params(mbedtls_ecdh_context *ctx,
                             const mbedtls_ecp_keypair *key,
-                            mbedtls_ecdh_side side);
+                            mbedtls_ecdh_side side, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function generates a public key and exports it
@@ -347,7 +350,7 @@ int mbedtls_ecdh_get_params(mbedtls_ecdh_context *ctx,
 int mbedtls_ecdh_make_public(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
                              mbedtls_f_rng_t *f_rng,
-                             void *p_rng);
+                             void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       This function parses and processes the ECDHE payload of a
@@ -369,7 +372,7 @@ int mbedtls_ecdh_make_public(mbedtls_ecdh_context *ctx, size_t *olen,
  * \return      An \c MBEDTLS_ERR_ECP_XXX error code on failure.
  */
 int mbedtls_ecdh_read_public(mbedtls_ecdh_context *ctx,
-                             const unsigned char *buf, size_t blen);
+                             const unsigned char *buf, size_t blen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function derives and exports the shared secret.
@@ -404,7 +407,7 @@ int mbedtls_ecdh_read_public(mbedtls_ecdh_context *ctx,
 int mbedtls_ecdh_calc_secret(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
                              mbedtls_f_rng_t *f_rng,
-                             void *p_rng);
+                             void *p_rng, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

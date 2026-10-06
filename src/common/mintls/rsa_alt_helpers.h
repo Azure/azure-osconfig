@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file rsa_alt_helpers.h
  *
@@ -38,8 +41,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/rsa_alt_helpers.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/rsa_alt_helpers.h.
  */
 #ifndef MBEDTLS_RSA_ALT_HELPERS_H
 #define MBEDTLS_RSA_ALT_HELPERS_H
@@ -78,7 +81,7 @@ extern "C" {
  */
 int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N, mbedtls_mpi const *E,
                               mbedtls_mpi const *D,
-                              mbedtls_mpi *P, mbedtls_mpi *Q);
+                              mbedtls_mpi *P, mbedtls_mpi *Q, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Compute RSA private exponent from
@@ -107,7 +110,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N, mbedtls_mpi const *E,
 int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
                                         mbedtls_mpi const *Q,
                                         mbedtls_mpi const *E,
-                                        mbedtls_mpi *D);
+                                        mbedtls_mpi *D, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Generate RSA-CRT parameters
@@ -131,7 +134,7 @@ int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
  */
 int mbedtls_rsa_deduce_crt(const mbedtls_mpi *P, const mbedtls_mpi *Q,
                            const mbedtls_mpi *D, mbedtls_mpi *DP,
-                           mbedtls_mpi *DQ, mbedtls_mpi *QP);
+                           mbedtls_mpi *DQ, mbedtls_mpi *QP, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Check validity of core RSA parameters
@@ -166,8 +169,8 @@ int mbedtls_rsa_deduce_crt(const mbedtls_mpi *P, const mbedtls_mpi *Q,
 int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
                                 const mbedtls_mpi *Q, const mbedtls_mpi *D,
                                 const mbedtls_mpi *E,
-                                int (*f_rng)(void *, unsigned char *, size_t),
-                                void *p_rng);
+                                int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Check validity of RSA CRT parameters
@@ -200,7 +203,7 @@ int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
  */
 int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
                              const mbedtls_mpi *D,  const mbedtls_mpi *DP,
-                             const mbedtls_mpi *DQ, const mbedtls_mpi *QP);
+                             const mbedtls_mpi *DQ, const mbedtls_mpi *QP, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

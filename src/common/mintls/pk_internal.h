@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file pk_internal.h
  *
@@ -8,8 +11,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/pk_internal.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/pk_internal.h.
  */
 #ifndef MBEDTLS_PK_INTERNAL_H
 #define MBEDTLS_PK_INTERNAL_H
@@ -128,7 +131,7 @@ static inline int mbedtls_pk_is_rfc8410(const mbedtls_pk_context *pk)
  *              out: will have group (curve) information set
  * [in] grp_in: a supported group ID (not NONE)
  */
-int mbedtls_pk_ecc_set_group(mbedtls_pk_context *pk, mbedtls_ecp_group_id grp_id);
+int mbedtls_pk_ecc_set_group(mbedtls_pk_context *pk, mbedtls_ecp_group_id grp_id, MinTlsDiagnostics* diagnostics);
 
 /*
  * Set the private key material
@@ -137,7 +140,7 @@ int mbedtls_pk_ecc_set_group(mbedtls_pk_context *pk, mbedtls_ecp_group_id grp_id
  *              out: will have the private key set.
  * [in] key, key_len: the raw private key (no ASN.1 wrapping).
  */
-int mbedtls_pk_ecc_set_key(mbedtls_pk_context *pk, unsigned char *key, size_t key_len);
+int mbedtls_pk_ecc_set_key(mbedtls_pk_context *pk, unsigned char *key, size_t key_len, MinTlsDiagnostics* diagnostics);
 
 /*
  * Set the public key.
@@ -152,7 +155,7 @@ int mbedtls_pk_ecc_set_key(mbedtls_pk_context *pk, unsigned char *key, size_t ke
  *   but not supported;
  * - another error code otherwise.
  */
-int mbedtls_pk_ecc_set_pubkey(mbedtls_pk_context *pk, const unsigned char *pub, size_t pub_len);
+int mbedtls_pk_ecc_set_pubkey(mbedtls_pk_context *pk, const unsigned char *pub, size_t pub_len, MinTlsDiagnostics* diagnostics);
 
 /*
  * Derive a public key from its private counterpart.
@@ -175,7 +178,7 @@ int mbedtls_pk_ecc_set_pubkey(mbedtls_pk_context *pk, const unsigned char *pub, 
  */
 int mbedtls_pk_ecc_set_pubkey_from_prv(mbedtls_pk_context *pk,
                                        const unsigned char *prv, size_t prv_len,
-                                       int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+                                       int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /* Helper for (deterministic) ECDSA */
 #define MBEDTLS_PK_PSA_ALG_ECDSA_MAYBE_DET  PSA_ALG_ECDSA

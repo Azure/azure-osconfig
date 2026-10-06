@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  NIST SP800-38D compliant GCM implementation
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/gcm.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/gcm.c.
  */
 
 /*
@@ -85,16 +88,18 @@ void gcm_gen_table_rightshift(uint64_t dst[2], const uint64_t src[2])
  * is the high-order bit of HH corresponds to P^0 and the low-order bit of HL
  * corresponds to P^127.
  */
-int gcm_gen_table(mbedtls_gcm_context *ctx)
+int gcm_gen_table(mbedtls_gcm_context *ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret, i, j;
     uint64_t u64h[2] = { 0 };
     uint8_t *h = (uint8_t *) u64h;
 
     size_t olen = 0;
-    ret = mbedtls_cipher_update(&ctx->cipher_ctx, h, 16, h, &olen);
+    ret = mbedtls_cipher_update(&ctx->cipher_ctx, h, 16, h, &olen, diagnostics);
     if (ret != 0) {
-        return ret;
+        MINTLS_RETURN(ret);
     }
 
     gcm_set_acceleration(ctx);
@@ -106,12 +111,12 @@ int gcm_gen_table(mbedtls_gcm_context *ctx)
     switch (ctx->acceleration) {
 #if defined(MBEDTLS_AESNI_HAVE_CODE)
         case MBEDTLS_GCM_ACC_AESNI:
-            return 0;
+            MINTLS_RETURN(0);
 #endif
 
 #if defined(MBEDTLS_AESCE_HAVE_CODE)
         case MBEDTLS_GCM_ACC_AESCE:
-            return 0;
+            MINTLS_RETURN(0);
 #endif
 
         default:
@@ -141,18 +146,20 @@ int gcm_gen_table(mbedtls_gcm_context *ctx)
             }
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_gcm_setkey(mbedtls_gcm_context *ctx,
                        mbedtls_cipher_id_t cipher,
                        const unsigned char *key,
-                       unsigned int keybits)
+                       unsigned int keybits, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (keybits != 128 && keybits != 192 && keybits != 256) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     const mbedtls_cipher_info_t *cipher_info;
@@ -160,29 +167,29 @@ int mbedtls_gcm_setkey(mbedtls_gcm_context *ctx,
     cipher_info = mbedtls_cipher_info_from_values(cipher, keybits,
                                                   MBEDTLS_MODE_ECB);
     if (cipher_info == NULL) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     if (mbedtls_cipher_info_get_block_size(cipher_info) != 16) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     mbedtls_cipher_free(&ctx->cipher_ctx);
 
-    if ((ret = mbedtls_cipher_setup(&ctx->cipher_ctx, cipher_info)) != 0) {
-        return ret;
+    if ((ret = mbedtls_cipher_setup(&ctx->cipher_ctx, cipher_info, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if ((ret = mbedtls_cipher_setkey(&ctx->cipher_ctx, key, keybits,
-                                     MBEDTLS_ENCRYPT)) != 0) {
-        return ret;
+                                     MBEDTLS_ENCRYPT, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    if ((ret = gcm_gen_table(ctx)) != 0) {
-        return ret;
+    if ((ret = gcm_gen_table(ctx, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #if defined(MBEDTLS_GCM_LARGE_TABLE)
@@ -349,8 +356,10 @@ void gcm_mult(mbedtls_gcm_context *ctx, const unsigned char x[16],
 
 int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
                        int mode,
-                       const unsigned char *iv, size_t iv_len)
+                       const unsigned char *iv, size_t iv_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char work_buf[16];
     const unsigned char *p;
@@ -361,7 +370,7 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
     /* IV is limited to 2^64 bits, so 2^61 bytes */
     /* IV is not allowed to be zero length */
     if (iv_len == 0 || (uint64_t) iv_len >> 61 != 0) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     memset(ctx->y, 0x00, sizeof(ctx->y));
@@ -405,12 +414,12 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
         gcm_mult(ctx, ctx->y, ctx->y);
     }
 
-    ret = mbedtls_cipher_update(&ctx->cipher_ctx, ctx->y, 16, ctx->base_ectr, &olen);
+    ret = mbedtls_cipher_update(&ctx->cipher_ctx, ctx->y, 16, ctx->base_ectr, &olen, diagnostics);
     if (ret != 0) {
-        return ret;
+        MINTLS_RETURN(ret);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /**
@@ -431,8 +440,10 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
  *                                      the data ends now.
  */
 int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
-                          const unsigned char *add, size_t add_len)
+                          const unsigned char *add, size_t add_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     const unsigned char *p;
     size_t use_len, offset;
     uint64_t new_add_len;
@@ -441,12 +452,12 @@ int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
      * Also check for possible overflow */
 #if SIZE_MAX > 0xFFFFFFFFFFFFFFFFULL
     if (add_len > 0xFFFFFFFFFFFFFFFFULL) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 #endif
     new_add_len = ctx->add_len + (uint64_t) add_len;
     if (new_add_len < ctx->add_len || new_add_len >> 61 != 0) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     offset = ctx->add_len % 16;
@@ -484,7 +495,7 @@ int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
         mbedtls_xor(ctx->buf, ctx->buf, p, add_len);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /* Increment the counter. */
@@ -501,15 +512,17 @@ int gcm_mask(mbedtls_gcm_context *ctx,
                     unsigned char ectr[16],
                     size_t offset, size_t use_len,
                     const unsigned char *input,
-                    unsigned char *output)
+                    unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     size_t olen = 0;
-    ret = mbedtls_cipher_update(&ctx->cipher_ctx, ctx->y, 16, ectr, &olen);
+    ret = mbedtls_cipher_update(&ctx->cipher_ctx, ctx->y, 16, ectr, &olen, diagnostics);
     if (ret != 0) {
         mbedtls_platform_zeroize(ectr, 16);
-        return ret;
+        MINTLS_RETURN(ret);
     }
 
     if (ctx->mode == MBEDTLS_GCM_DECRYPT) {
@@ -520,14 +533,16 @@ int gcm_mask(mbedtls_gcm_context *ctx,
         mbedtls_xor(ctx->buf + offset, ctx->buf + offset, output, use_len);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
                        const unsigned char *input, size_t input_length,
                        unsigned char *output, size_t output_size,
-                       size_t *output_length)
+                       size_t *output_length, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const unsigned char *p = input;
     unsigned char *out_p = output;
@@ -535,7 +550,7 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
     unsigned char ectr[16] = { 0 };
 
     if (output_size < input_length) {
-        return MBEDTLS_ERR_GCM_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BUFFER_TOO_SMALL);
     }
     *output_length = input_length;
 
@@ -544,18 +559,18 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
      * Returning early also means that the last partial block of AD remains
      * untouched for mbedtls_gcm_finish */
     if (input_length == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     if (output > input && (size_t) (output - input) < input_length) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     /* Total length is restricted to 2^39 - 256 bits, ie 2^36 - 2^5 bytes
      * Also check for possible overflow */
     if (ctx->len + input_length < ctx->len ||
         (uint64_t) ctx->len + input_length > 0xFFFFFFFE0ull) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     if (ctx->len == 0 && ctx->add_len % 16 != 0) {
@@ -569,8 +584,8 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
             use_len = input_length;
         }
 
-        if ((ret = gcm_mask(ctx, ectr, offset, use_len, p, out_p)) != 0) {
-            return ret;
+        if ((ret = gcm_mask(ctx, ectr, offset, use_len, p, out_p, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
 
         if (offset + use_len == 16) {
@@ -587,8 +602,8 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
 
     while (input_length >= 16) {
         gcm_incr(ctx->y);
-        if ((ret = gcm_mask(ctx, ectr, 0, 16, p, out_p)) != 0) {
-            return ret;
+        if ((ret = gcm_mask(ctx, ectr, 0, 16, p, out_p, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
 
         gcm_mult(ctx, ctx->buf, ctx->buf);
@@ -600,20 +615,22 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
 
     if (input_length > 0) {
         gcm_incr(ctx->y);
-        if ((ret = gcm_mask(ctx, ectr, 0, input_length, p, out_p)) != 0) {
-            return ret;
+        if ((ret = gcm_mask(ctx, ectr, 0, input_length, p, out_p, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
     }
 
     mbedtls_platform_zeroize(ectr, sizeof(ectr));
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
                        unsigned char *output, size_t output_size,
                        size_t *output_length,
-                       unsigned char *tag, size_t tag_len)
+                       unsigned char *tag, size_t tag_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char work_buf[16];
     uint64_t orig_len;
     uint64_t orig_add_len;
@@ -635,7 +652,7 @@ int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
     }
 
     if (tag_len > 16 || tag_len < 4) {
-        return MBEDTLS_ERR_GCM_BAD_INPUT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_BAD_INPUT);
     }
 
     if (ctx->len % 16 != 0) {
@@ -659,7 +676,7 @@ int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
         mbedtls_xor(tag, tag, ctx->buf, tag_len);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_gcm_crypt_and_tag(mbedtls_gcm_context *ctx,
@@ -672,29 +689,31 @@ int mbedtls_gcm_crypt_and_tag(mbedtls_gcm_context *ctx,
                               const unsigned char *input,
                               unsigned char *output,
                               size_t tag_len,
-                              unsigned char *tag)
+                              unsigned char *tag, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t olen;
 
-    if ((ret = mbedtls_gcm_starts(ctx, mode, iv, iv_len)) != 0) {
-        return ret;
+    if ((ret = mbedtls_gcm_starts(ctx, mode, iv, iv_len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    if ((ret = mbedtls_gcm_update_ad(ctx, add, add_len)) != 0) {
-        return ret;
+    if ((ret = mbedtls_gcm_update_ad(ctx, add, add_len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     if ((ret = mbedtls_gcm_update(ctx, input, length,
-                                  output, length, &olen)) != 0) {
-        return ret;
+                                  output, length, &olen, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    if ((ret = mbedtls_gcm_finish(ctx, NULL, 0, &olen, tag, tag_len)) != 0) {
-        return ret;
+    if ((ret = mbedtls_gcm_finish(ctx, NULL, 0, &olen, tag, tag_len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
@@ -706,16 +725,18 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
                              const unsigned char *tag,
                              size_t tag_len,
                              const unsigned char *input,
-                             unsigned char *output)
+                             unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char check_tag[16];
     int diff;
 
     if ((ret = mbedtls_gcm_crypt_and_tag(ctx, MBEDTLS_GCM_DECRYPT, length,
                                          iv, iv_len, add, add_len,
-                                         input, output, tag_len, check_tag)) != 0) {
-        return ret;
+                                         input, output, tag_len, check_tag, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /* Check tag in "constant-time" */
@@ -723,10 +744,10 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
 
     if (diff != 0) {
         mbedtls_platform_zeroize(output, length);
-        return MBEDTLS_ERR_GCM_AUTH_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_GCM_AUTH_FAILED);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 void mbedtls_gcm_free(mbedtls_gcm_context *ctx)

@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Elliptic curves over GF(p): generic functions
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/ecp.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/ecp.c.
  */
 
 /*
@@ -339,37 +342,43 @@ void mbedtls_ecp_keypair_free(mbedtls_ecp_keypair *key)
 /*
  * Copy the contents of a point
  */
-int mbedtls_ecp_copy(mbedtls_ecp_point *P, const mbedtls_ecp_point *Q)
+int mbedtls_ecp_copy(mbedtls_ecp_point *P, const mbedtls_ecp_point *Q, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->X, &Q->X));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->Y, &Q->Y));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->Z, &Q->Z));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->X, &Q->X, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->Y, &Q->Y, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&P->Z, &Q->Z, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
  * Copy the contents of a group object
  */
-int mbedtls_ecp_group_copy(mbedtls_ecp_group *dst, const mbedtls_ecp_group *src)
+int mbedtls_ecp_group_copy(mbedtls_ecp_group *dst, const mbedtls_ecp_group *src, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_group_load(dst, src->id);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_group_load(dst, src->id, diagnostics));
 }
 
 /*
  * Set point to zero
  */
-int mbedtls_ecp_set_zero(mbedtls_ecp_point *pt)
+int mbedtls_ecp_set_zero(mbedtls_ecp_point *pt, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->X, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Y, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Z, 0));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->X, 1, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Y, 1, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Z, 0, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -384,30 +393,34 @@ int mbedtls_ecp_is_zero(mbedtls_ecp_point *pt)
  * Compare two points lazily
  */
 int mbedtls_ecp_point_cmp(const mbedtls_ecp_point *P,
-                          const mbedtls_ecp_point *Q)
+                          const mbedtls_ecp_point *Q, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (mbedtls_mpi_cmp_mpi(&P->X, &Q->X) == 0 &&
         mbedtls_mpi_cmp_mpi(&P->Y, &Q->Y) == 0 &&
         mbedtls_mpi_cmp_mpi(&P->Z, &Q->Z) == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
-    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
 }
 
 /*
  * Import a non-zero point from ASCII strings
  */
 int mbedtls_ecp_point_read_string(mbedtls_ecp_point *P, int radix,
-                                  const char *x, const char *y)
+                                  const char *x, const char *y, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_read_string(&P->X, radix, x));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_read_string(&P->Y, radix, y));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&P->Z, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_string(&P->X, radix, x, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_string(&P->Y, radix, y, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&P->Z, 1, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -416,13 +429,15 @@ cleanup:
 int mbedtls_ecp_point_write_binary(const mbedtls_ecp_group *grp,
                                    const mbedtls_ecp_point *P,
                                    int format, size_t *olen,
-                                   unsigned char *buf, size_t buflen)
+                                   unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
     size_t plen;
     if (format != MBEDTLS_ECP_PF_UNCOMPRESSED &&
         format != MBEDTLS_ECP_PF_COMPRESSED) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     plen = mbedtls_mpi_size(&grp->P);
@@ -434,47 +449,47 @@ int mbedtls_ecp_point_write_binary(const mbedtls_ecp_group *grp,
          */
         if (mbedtls_mpi_cmp_int(&P->Z, 0) == 0) {
             if (buflen < 1) {
-                return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL);
             }
 
             buf[0] = 0x00;
             *olen = 1;
 
-            return 0;
+            MINTLS_RETURN(0);
         }
 
         if (format == MBEDTLS_ECP_PF_UNCOMPRESSED) {
             *olen = 2 * plen + 1;
 
             if (buflen < *olen) {
-                return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL);
             }
 
             buf[0] = 0x04;
-            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->X, buf + 1, plen));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->Y, buf + 1 + plen, plen));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->X, buf + 1, plen, diagnostics));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->Y, buf + 1 + plen, plen, diagnostics));
         } else if (format == MBEDTLS_ECP_PF_COMPRESSED) {
             *olen = plen + 1;
 
             if (buflen < *olen) {
-                return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL);
             }
 
             buf[0] = 0x02 + mbedtls_mpi_get_bit(&P->Y, 0);
-            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->X, buf + 1, plen));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&P->X, buf + 1, plen, diagnostics));
         }
     }
 #endif
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
 int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
                                    const mbedtls_mpi *X,
                                    mbedtls_mpi *Y,
-                                   int parity_bit);
+                                   int parity_bit, MinTlsDiagnostics* diagnostics);
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
 /*
@@ -482,12 +497,14 @@ int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_point_read_binary(const mbedtls_ecp_group *grp,
                                   mbedtls_ecp_point *pt,
-                                  const unsigned char *buf, size_t ilen)
+                                  const unsigned char *buf, size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
     size_t plen;
     if (ilen < 1) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     plen = mbedtls_mpi_size(&grp->P);
@@ -496,40 +513,40 @@ int mbedtls_ecp_point_read_binary(const mbedtls_ecp_group *grp,
     if (mbedtls_ecp_get_type(grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
         if (buf[0] == 0x00) {
             if (ilen == 1) {
-                return mbedtls_ecp_set_zero(pt);
+                MINTLS_RETURN(mbedtls_ecp_set_zero(pt, diagnostics));
             } else {
-                return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
             }
         }
 
         if (ilen < 1 + plen) {
-            return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
         }
 
-        MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&pt->X, buf + 1, plen));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Z, 1));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&pt->X, buf + 1, plen, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&pt->Z, 1, diagnostics));
 
         if (buf[0] == 0x04) {
             /* format == MBEDTLS_ECP_PF_UNCOMPRESSED */
             if (ilen != 1 + plen * 2) {
-                return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
             }
-            return mbedtls_mpi_read_binary(&pt->Y, buf + 1 + plen, plen);
+            MINTLS_RETURN(mbedtls_mpi_read_binary(&pt->Y, buf + 1 + plen, plen, diagnostics));
         } else if (buf[0] == 0x02 || buf[0] == 0x03) {
             /* format == MBEDTLS_ECP_PF_COMPRESSED */
             if (ilen != 1 + plen) {
-                return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
             }
-            return mbedtls_ecp_sw_derive_y(grp, &pt->X, &pt->Y,
-                                           (buf[0] & 1));
+            MINTLS_RETURN(mbedtls_ecp_sw_derive_y(grp, &pt->X, &pt->Y,
+                                           (buf[0] & 1), diagnostics));
         } else {
-            return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
         }
     }
 #endif
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -540,20 +557,22 @@ cleanup:
  */
 int mbedtls_ecp_tls_read_point(const mbedtls_ecp_group *grp,
                                mbedtls_ecp_point *pt,
-                               const unsigned char **buf, size_t buf_len)
+                               const unsigned char **buf, size_t buf_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char data_len;
     const unsigned char *buf_start;
     /*
      * We must have at least two bytes (1 for length, at least one for data)
      */
     if (buf_len < 2) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     data_len = *(*buf)++;
     if (data_len < 1 || data_len > buf_len - 1) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
@@ -562,7 +581,7 @@ int mbedtls_ecp_tls_read_point(const mbedtls_ecp_group *grp,
     buf_start = *buf;
     *buf += data_len;
 
-    return mbedtls_ecp_point_read_binary(grp, pt, buf_start, data_len);
+    MINTLS_RETURN(mbedtls_ecp_point_read_binary(grp, pt, buf_start, data_len, diagnostics));
 }
 
 /*
@@ -573,24 +592,26 @@ int mbedtls_ecp_tls_read_point(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_tls_write_point(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *pt,
                                 int format, size_t *olen,
-                                unsigned char *buf, size_t blen)
+                                unsigned char *buf, size_t blen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     if (format != MBEDTLS_ECP_PF_UNCOMPRESSED &&
         format != MBEDTLS_ECP_PF_COMPRESSED) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
      * buffer length must be at least one, for our length byte
      */
     if (blen < 1) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     if ((ret = mbedtls_ecp_point_write_binary(grp, pt, format,
-                                              olen, buf + 1, blen - 1)) != 0) {
-        return ret;
+                                              olen, buf + 1, blen - 1, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /*
@@ -599,22 +620,24 @@ int mbedtls_ecp_tls_write_point(const mbedtls_ecp_group *grp, const mbedtls_ecp_
     buf[0] = (unsigned char) *olen;
     ++*olen;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * Set a group from an ECParameters record (RFC 4492)
  */
 int mbedtls_ecp_tls_read_group(mbedtls_ecp_group *grp,
-                               const unsigned char **buf, size_t len)
+                               const unsigned char **buf, size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_group_id grp_id;
-    if ((ret = mbedtls_ecp_tls_read_group_id(&grp_id, buf, len)) != 0) {
-        return ret;
+    if ((ret = mbedtls_ecp_tls_read_group_id(&grp_id, buf, len, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    return mbedtls_ecp_group_load(grp, grp_id);
+    MINTLS_RETURN(mbedtls_ecp_group_load(grp, grp_id, diagnostics));
 }
 
 /*
@@ -622,22 +645,24 @@ int mbedtls_ecp_tls_read_group(mbedtls_ecp_group *grp,
  * mbedtls_ecp_group_id.
  */
 int mbedtls_ecp_tls_read_group_id(mbedtls_ecp_group_id *grp,
-                                  const unsigned char **buf, size_t len)
+                                  const unsigned char **buf, size_t len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     uint16_t tls_id;
     const mbedtls_ecp_curve_info *curve_info;
     /*
      * We expect at least three bytes (see below)
      */
     if (len < 3) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
      * First byte is curve_type; only named_curve is handled
      */
     if (*(*buf)++ != MBEDTLS_ECP_TLS_NAMED_CURVE) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
@@ -647,23 +672,25 @@ int mbedtls_ecp_tls_read_group_id(mbedtls_ecp_group_id *grp,
     *buf += 2;
 
     if ((curve_info = mbedtls_ecp_curve_info_from_tls_id(tls_id)) == NULL) {
-        return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
     }
 
     *grp = curve_info->grp_id;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * Write the ECParameters record corresponding to a group (RFC 4492)
  */
 int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp, size_t *olen,
-                                unsigned char *buf, size_t blen)
+                                unsigned char *buf, size_t blen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     const mbedtls_ecp_curve_info *curve_info;
     if ((curve_info = mbedtls_ecp_curve_info_from_grp_id(grp->id)) == NULL) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
@@ -671,7 +698,7 @@ int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp, size_t *olen,
      */
     *olen = 3;
     if (blen < *olen) {
-        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL);
     }
 
     /*
@@ -684,7 +711,7 @@ int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp, size_t *olen,
      */
     MBEDTLS_PUT_UINT16_BE(curve_info->tls_id, buf, 0);
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
@@ -693,21 +720,23 @@ int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp, size_t *olen,
  *
  * This function is in the critial loop for mbedtls_ecp_mul, so pay attention to perf.
  */
-int ecp_modp(mbedtls_mpi *N, const mbedtls_ecp_group *grp)
+int ecp_modp(mbedtls_mpi *N, const mbedtls_ecp_group *grp, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (grp->modp == NULL) {
-        return mbedtls_mpi_mod_mpi(N, N, &grp->P);
+        MINTLS_RETURN(mbedtls_mpi_mod_mpi(N, N, &grp->P, diagnostics));
     }
 
     /* N->s < 0 is a much faster test, which fails only if N is 0 */
     if ((N->s < 0 && mbedtls_mpi_cmp_int(N, 0) != 0) ||
         mbedtls_mpi_bitlen(N) > 2 * grp->pbits) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
-    MBEDTLS_MPI_CHK(grp->modp(N));
+    MBEDTLS_MPI_CHK(grp->modp(N, diagnostics));
 
     /* The previous call left N in the range [0, 2P) with no more limbs than P
      * (see documentation of mbedtls_ecp_mod_pXXX_raw() in ecp_invasive.h),
@@ -716,7 +745,7 @@ int ecp_modp(mbedtls_mpi *N, const mbedtls_ecp_group *grp)
     (void) mbedtls_mpi_core_add_if(N->p, grp->P.p, grp->P.n, (unsigned) c);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -737,20 +766,22 @@ cleanup:
 #define MOD_MUL(N)                                                    \
     do                                                                  \
     {                                                                   \
-        MBEDTLS_MPI_CHK(ecp_modp(&(N), grp));                       \
+        MBEDTLS_MPI_CHK(ecp_modp(&(N), grp, diagnostics));                       \
         INC_MUL_COUNT                                                   \
     } while (0)
 
 int mbedtls_mpi_mul_mod(const mbedtls_ecp_group *grp,
                                       mbedtls_mpi *X,
                                       const mbedtls_mpi *A,
-                                      const mbedtls_mpi *B)
+                                      const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(X, A, B));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(X, A, B, diagnostics));
     MOD_MUL(*X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -760,20 +791,22 @@ cleanup:
 #define MOD_SUB(N)                                                          \
     do {                                                                      \
         while ((N)->s < 0 && mbedtls_mpi_cmp_int((N), 0) != 0)             \
-        MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi((N), (N), &grp->P));      \
+        MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi((N), (N), &grp->P, diagnostics));      \
     } while (0)
 
 MBEDTLS_MAYBE_UNUSED
 int mbedtls_mpi_sub_mod(const mbedtls_ecp_group *grp,
                                       mbedtls_mpi *X,
                                       const mbedtls_mpi *A,
-                                      const mbedtls_mpi *B)
+                                      const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(X, A, B));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(X, A, B, diagnostics));
     MOD_SUB(X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -783,61 +816,69 @@ cleanup:
  */
 #define MOD_ADD(N)                                                   \
     while (mbedtls_mpi_cmp_mpi((N), &grp->P) >= 0)                  \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_abs((N), (N), &grp->P))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_abs((N), (N), &grp->P, diagnostics))
 
 int mbedtls_mpi_add_mod(const mbedtls_ecp_group *grp,
                                       mbedtls_mpi *X,
                                       const mbedtls_mpi *A,
-                                      const mbedtls_mpi *B)
+                                      const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(X, A, B));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(X, A, B, diagnostics));
     MOD_ADD(X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 MBEDTLS_MAYBE_UNUSED
 int mbedtls_mpi_mul_int_mod(const mbedtls_ecp_group *grp,
                                           mbedtls_mpi *X,
                                           const mbedtls_mpi *A,
-                                          mbedtls_mpi_uint c)
+                                          mbedtls_mpi_uint c, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int(X, A, c));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int(X, A, c, diagnostics));
     MOD_ADD(X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 MBEDTLS_MAYBE_UNUSED
 int mbedtls_mpi_sub_int_mod(const mbedtls_ecp_group *grp,
                                           mbedtls_mpi *X,
                                           const mbedtls_mpi *A,
-                                          mbedtls_mpi_uint c)
+                                          mbedtls_mpi_uint c, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(X, A, c));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(X, A, c, diagnostics));
     MOD_SUB(X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #define MPI_ECP_SUB_INT(X, A, c)             \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int_mod(grp, X, A, c))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int_mod(grp, X, A, c, diagnostics))
 
 MBEDTLS_MAYBE_UNUSED
 int mbedtls_mpi_shift_l_mod(const mbedtls_ecp_group *grp,
                                           mbedtls_mpi *X,
-                                          size_t count)
+                                          size_t count, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(X, count));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(X, count, diagnostics));
     MOD_ADD(X);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -847,31 +888,31 @@ cleanup:
  */
 
 #define MPI_ECP_ADD(X, A, B)                                                  \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mod(grp, X, A, B))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mod(grp, X, A, B, diagnostics))
 
 #define MPI_ECP_SUB(X, A, B)                                                  \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mod(grp, X, A, B))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mod(grp, X, A, B, diagnostics))
 
 #define MPI_ECP_MUL(X, A, B)                                                  \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mod(grp, X, A, B))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mod(grp, X, A, B, diagnostics))
 
 #define MPI_ECP_SQR(X, A)                                                     \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mod(grp, X, A, A))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mod(grp, X, A, A, diagnostics))
 
 #define MPI_ECP_MUL_INT(X, A, c)                                              \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int_mod(grp, X, A, c))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int_mod(grp, X, A, c, diagnostics))
 
 #define MPI_ECP_INV(dst, src)                                                 \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, (dst), (src), &grp->P))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, (dst), (src), &grp->P, diagnostics))
 
 #define MPI_ECP_MOV(X, A)                                                     \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, A))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, A, diagnostics))
 
 #define MPI_ECP_SHIFT_L(X, count)                                             \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l_mod(grp, X, count))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l_mod(grp, X, count, diagnostics))
 
 #define MPI_ECP_LSET(X, c)                                                    \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, c))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, c, diagnostics))
 
 #define MPI_ECP_CMP_INT(X, c)                                                 \
     mbedtls_mpi_cmp_int(X, c)
@@ -881,7 +922,7 @@ cleanup:
 
 /* Needs f_rng, p_rng to be defined. */
 #define MPI_ECP_RAND(X)                                                       \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_random((X), 2, &grp->P, f_rng, p_rng))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_random((X), 2, &grp->P, f_rng, p_rng, diagnostics))
 
 /* Conditional negation
  * Needs grp and a temporary MPI tmp to be defined. */
@@ -889,9 +930,9 @@ cleanup:
     do                                                                     \
     {                                                                      \
         unsigned char nonzero = mbedtls_mpi_cmp_int((X), 0) != 0;        \
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&tmp, &grp->P, (X)));      \
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&tmp, &grp->P, (X), diagnostics));      \
         MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_assign((X), &tmp,          \
-                                                     nonzero & cond)); \
+                                                     nonzero & cond, diagnostics)); \
     } while (0)
 
 #define MPI_ECP_NEG(X) MPI_ECP_COND_NEG((X), 1)
@@ -900,10 +941,10 @@ cleanup:
     ((X)->p != NULL)
 
 #define MPI_ECP_COND_ASSIGN(X, Y, cond)       \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_assign((X), (Y), (cond)))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_assign((X), (Y), (cond), diagnostics))
 
 #define MPI_ECP_COND_SWAP(X, Y, cond)       \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_swap((X), (Y), (cond)))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_swap((X), (Y), (cond), diagnostics))
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
 
@@ -940,8 +981,10 @@ cleanup:
 int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
                                    const mbedtls_mpi *X,
                                    mbedtls_mpi *Y,
-                                   int parity_bit)
+                                   int parity_bit, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     /* w = y^2 = x^3 + ax + b
      * y = sqrt(w) = w^((p+1)/4) mod p   (for prime p where p = 3 mod 4)
      *
@@ -953,7 +996,7 @@ int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
     /* Check prerequisite p = 3 mod 4 */
     if (mbedtls_mpi_get_bit(&grp->P, 0) != 1 ||
         mbedtls_mpi_get_bit(&grp->P, 1) != 1) {
-        return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
     }
 
     int ret;
@@ -965,10 +1008,10 @@ int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
 
     /* w = y^2 */ /* Y contains y^2 intermediate result */
     /* exp = ((p+1)/4) */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_int(&exp, &grp->P, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_int(&exp, &grp->P, 1, diagnostics));
     MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&exp, 2));
     /* sqrt(w) = w^((p+1)/4) mod p   (for prime p where p = 3 mod 4) */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(Y, Y /*y^2*/, &exp, &grp->P, NULL));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(Y, Y /*y^2*/, &exp, &grp->P, NULL, diagnostics));
 
     /* check parity bit match or else invert Y */
     /* This quick inversion implementation is valid because Y != 0 for all
@@ -976,13 +1019,13 @@ int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
      * has an order that is a large prime, so each supported curve does not
      * have any point of order 2, and a point with Y == 0 would be of order 2 */
     if (mbedtls_mpi_get_bit(Y, 0) != parity_bit) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(Y, &grp->P, Y));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(Y, &grp->P, Y, diagnostics));
     }
 
 cleanup:
 
     mbedtls_mpi_free(&exp);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
@@ -999,20 +1042,22 @@ cleanup:
  * Normalize jacobian coordinates so that Z == 0 || Z == 1  (GECC 3.2.1)
  * Cost: 1N := 1I + 3M + 1S
  */
-int ecp_normalize_jac(const mbedtls_ecp_group *grp, mbedtls_ecp_point *pt)
+int ecp_normalize_jac(const mbedtls_ecp_group *grp, mbedtls_ecp_point *pt, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (MPI_ECP_CMP_INT(&pt->Z, 0) == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
 #if defined(MBEDTLS_ECP_NORMALIZE_JAC_ALT)
     if (mbedtls_internal_ecp_grp_capable(grp)) {
-        return mbedtls_internal_ecp_normalize_jac(grp, pt);
+        MINTLS_RETURN(mbedtls_internal_ecp_normalize_jac(grp, pt));
     }
 #endif /* MBEDTLS_ECP_NORMALIZE_JAC_ALT */
 
 #if defined(MBEDTLS_ECP_NO_FALLBACK) && defined(MBEDTLS_ECP_NORMALIZE_JAC_ALT)
-    return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 #else
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi T;
@@ -1030,7 +1075,7 @@ cleanup:
 
     mbedtls_mpi_free(&T);
 
-    return ret;
+    MINTLS_RETURN(ret);
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_NORMALIZE_JAC_ALT) */
 }
 
@@ -1046,27 +1091,29 @@ cleanup:
  * Cost: 1N(t) := 1I + (6t - 3)M + 1S
  */
 int ecp_normalize_jac_many(const mbedtls_ecp_group *grp,
-                                  mbedtls_ecp_point *T[], size_t T_size)
+                                  mbedtls_ecp_point *T[], size_t T_size, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (T_size < 2) {
-        return ecp_normalize_jac(grp, *T);
+        MINTLS_RETURN(ecp_normalize_jac(grp, *T, diagnostics));
     }
 
 #if defined(MBEDTLS_ECP_NORMALIZE_JAC_MANY_ALT)
     if (mbedtls_internal_ecp_grp_capable(grp)) {
-        return mbedtls_internal_ecp_normalize_jac_many(grp, T, T_size);
+        MINTLS_RETURN(mbedtls_internal_ecp_normalize_jac_many(grp, T, T_size));
     }
 #endif
 
 #if defined(MBEDTLS_ECP_NO_FALLBACK) && defined(MBEDTLS_ECP_NORMALIZE_JAC_MANY_ALT)
-    return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 #else
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t i;
     mbedtls_mpi *c, t;
 
     if ((c = mbedtls_calloc(T_size, sizeof(mbedtls_mpi))) == NULL) {
-        return MBEDTLS_ERR_ECP_ALLOC_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_ALLOC_FAILED);
     }
 
     mbedtls_mpi_init(&t);
@@ -1118,8 +1165,8 @@ int ecp_normalize_jac_many(const mbedtls_ecp_group *grp,
          * - shrinking other coordinates, but still keeping the same number of
          *   limbs as P, as otherwise it will too likely be regrown too fast.
          */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(&T[i]->X, grp->P.n));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(&T[i]->Y, grp->P.n));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(&T[i]->X, grp->P.n, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(&T[i]->Y, grp->P.n, diagnostics));
 
         MPI_ECP_LSET(&T[i]->Z, 1);
 
@@ -1134,7 +1181,7 @@ cleanup:
     mpi_free_many(c, T_size);
     mbedtls_free(c);
 
-    return ret;
+    MINTLS_RETURN(ret);
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_NORMALIZE_JAC_MANY_ALT) */
 }
 
@@ -1144,8 +1191,10 @@ cleanup:
  */
 int ecp_safe_invert_jac(const mbedtls_ecp_group *grp,
                                mbedtls_ecp_point *Q,
-                               unsigned char inv)
+                               unsigned char inv, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi tmp;
     mbedtls_mpi_init(&tmp);
@@ -1154,7 +1203,7 @@ int ecp_safe_invert_jac(const mbedtls_ecp_group *grp,
 
 cleanup:
     mbedtls_mpi_free(&tmp);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1173,17 +1222,19 @@ cleanup:
  */
 int ecp_double_jac(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                           const mbedtls_ecp_point *P,
-                          mbedtls_mpi tmp[4])
+                          mbedtls_mpi tmp[4], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 
 #if defined(MBEDTLS_ECP_DOUBLE_JAC_ALT)
     if (mbedtls_internal_ecp_grp_capable(grp)) {
-        return mbedtls_internal_ecp_double_jac(grp, R, P);
+        MINTLS_RETURN(mbedtls_internal_ecp_double_jac(grp, R, P));
     }
 #endif /* MBEDTLS_ECP_DOUBLE_JAC_ALT */
 
 #if defined(MBEDTLS_ECP_NO_FALLBACK) && defined(MBEDTLS_ECP_DOUBLE_JAC_ALT)
-    return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 #else
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
@@ -1241,7 +1292,7 @@ int ecp_double_jac(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
 
 cleanup:
 
-    return ret;
+    MINTLS_RETURN(ret);
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_DOUBLE_JAC_ALT) */
 }
 
@@ -1267,17 +1318,19 @@ cleanup:
  */
 int ecp_add_mixed(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                          const mbedtls_ecp_point *P, const mbedtls_ecp_point *Q,
-                         mbedtls_mpi tmp[4])
+                         mbedtls_mpi tmp[4], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 
 #if defined(MBEDTLS_ECP_ADD_MIXED_ALT)
     if (mbedtls_internal_ecp_grp_capable(grp)) {
-        return mbedtls_internal_ecp_add_mixed(grp, R, P, Q);
+        MINTLS_RETURN(mbedtls_internal_ecp_add_mixed(grp, R, P, Q));
     }
 #endif /* MBEDTLS_ECP_ADD_MIXED_ALT */
 
 #if defined(MBEDTLS_ECP_NO_FALLBACK) && defined(MBEDTLS_ECP_ADD_MIXED_ALT)
-    return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 #else
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
@@ -1289,25 +1342,25 @@ int ecp_add_mixed(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     mbedtls_mpi * const Z = &R->Z;
 
     if (!MPI_ECP_VALID(&Q->Z)) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /*
      * Trivial cases: P == 0 or Q == 0 (case 1)
      */
     if (MPI_ECP_CMP_INT(&P->Z, 0) == 0) {
-        return mbedtls_ecp_copy(R, Q);
+        MINTLS_RETURN(mbedtls_ecp_copy(R, Q, diagnostics));
     }
 
     if (MPI_ECP_CMP_INT(&Q->Z, 0) == 0) {
-        return mbedtls_ecp_copy(R, P);
+        MINTLS_RETURN(mbedtls_ecp_copy(R, P, diagnostics));
     }
 
     /*
      * Make sure Q coordinates are normalized
      */
     if (MPI_ECP_CMP_INT(&Q->Z, 1) != 0) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     MPI_ECP_SQR(&tmp[0], &P->Z);
@@ -1320,10 +1373,10 @@ int ecp_add_mixed(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     /* Special cases (2) and (3) */
     if (MPI_ECP_CMP_INT(&tmp[0], 0) == 0) {
         if (MPI_ECP_CMP_INT(&tmp[1], 0) == 0) {
-            ret = ecp_double_jac(grp, R, P, tmp);
+            ret = ecp_double_jac(grp, R, P, tmp, diagnostics);
             goto cleanup;
         } else {
-            ret = mbedtls_ecp_set_zero(R);
+            ret = mbedtls_ecp_set_zero(R, diagnostics);
             goto cleanup;
         }
     }
@@ -1349,7 +1402,7 @@ int ecp_add_mixed(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
 
 cleanup:
 
-    return ret;
+    MINTLS_RETURN(ret);
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_ADD_MIXED_ALT) */
 }
 
@@ -1361,16 +1414,18 @@ cleanup:
  * This countermeasure was first suggested in [2].
  */
 int ecp_randomize_jac(const mbedtls_ecp_group *grp, mbedtls_ecp_point *pt,
-                             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                             int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 #if defined(MBEDTLS_ECP_RANDOMIZE_JAC_ALT)
     if (mbedtls_internal_ecp_grp_capable(grp)) {
-        return mbedtls_internal_ecp_randomize_jac(grp, pt, f_rng, p_rng);
+        MINTLS_RETURN(mbedtls_internal_ecp_randomize_jac(grp, pt, f_rng, p_rng));
     }
 #endif /* MBEDTLS_ECP_RANDOMIZE_JAC_ALT */
 
 #if defined(MBEDTLS_ECP_NO_FALLBACK) && defined(MBEDTLS_ECP_RANDOMIZE_JAC_ALT)
-    return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 #else
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi l;
@@ -1397,9 +1452,9 @@ cleanup:
     mbedtls_mpi_free(&l);
 
     if (ret == MBEDTLS_ERR_MPI_NOT_ACCEPTABLE) {
-        ret = MBEDTLS_ERR_ECP_RANDOM_FAILED;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_RANDOM_FAILED);
     }
-    return ret;
+    MINTLS_RETURN(ret);
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_RANDOMIZE_JAC_ALT) */
 }
 
@@ -1531,8 +1586,10 @@ void ecp_comb_recode_core(unsigned char x[], size_t d,
 int ecp_precompute_comb(const mbedtls_ecp_group *grp,
                                mbedtls_ecp_point T[], const mbedtls_ecp_point *P,
                                unsigned char w, size_t d,
-                               mbedtls_ecp_restart_ctx *rs_ctx)
+                               mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char i;
     size_t j = 0;
@@ -1549,7 +1606,7 @@ int ecp_precompute_comb(const mbedtls_ecp_group *grp,
      * Set T[0] = P and
      * T[2^{l-1}] = 2^{dl} P for l = 1 .. w-1 (this is not the final value)
      */
-    MBEDTLS_MPI_CHK(mbedtls_ecp_copy(&T[0], P));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_copy(&T[0], P, diagnostics));
 
     j = 0;
 
@@ -1560,10 +1617,10 @@ int ecp_precompute_comb(const mbedtls_ecp_group *grp,
         cur = T + i;
 
         if (j % d == 0) {
-            MBEDTLS_MPI_CHK(mbedtls_ecp_copy(cur, T + (i >> 1)));
+            MBEDTLS_MPI_CHK(mbedtls_ecp_copy(cur, T + (i >> 1), diagnostics));
         }
 
-        MBEDTLS_MPI_CHK(ecp_double_jac(grp, cur, cur, tmp));
+        MBEDTLS_MPI_CHK(ecp_double_jac(grp, cur, cur, tmp, diagnostics));
     }
 
     /*
@@ -1580,7 +1637,7 @@ int ecp_precompute_comb(const mbedtls_ecp_group *grp,
 
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_INV + 6 * j - 2);
 
-    MBEDTLS_MPI_CHK(ecp_normalize_jac_many(grp, TT, j));
+    MBEDTLS_MPI_CHK(ecp_normalize_jac_many(grp, TT, j, diagnostics));
 
     /*
      * Compute the remaining ones using the minimal number of additions
@@ -1591,7 +1648,7 @@ int ecp_precompute_comb(const mbedtls_ecp_group *grp,
     for (i = 1; i < T_size; i <<= 1) {
         j = i;
         while (j--) {
-            MBEDTLS_MPI_CHK(ecp_add_mixed(grp, &T[i + j], &T[j], &T[i], tmp));
+            MBEDTLS_MPI_CHK(ecp_add_mixed(grp, &T[i + j], &T[j], &T[i], tmp, diagnostics));
         }
     }
 
@@ -1606,7 +1663,7 @@ int ecp_precompute_comb(const mbedtls_ecp_group *grp,
 
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_INV + 6 * j - 2);
 
-    MBEDTLS_MPI_CHK(ecp_normalize_jac_many(grp, TT, j));
+    MBEDTLS_MPI_CHK(ecp_normalize_jac_many(grp, TT, j, diagnostics));
 
     /* Free Z coordinate (=1 after normalization) to save RAM.
      * This makes T[i] invalid as mbedtls_ecp_points, but this is OK
@@ -1621,7 +1678,7 @@ cleanup:
 
     mpi_free_many(tmp, sizeof(tmp) / sizeof(mbedtls_mpi));
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1631,8 +1688,10 @@ cleanup:
  */
 int ecp_select_comb(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                            const mbedtls_ecp_point T[], unsigned char T_size,
-                           unsigned char i)
+                           unsigned char i, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char ii, j;
 
@@ -1646,12 +1705,12 @@ int ecp_select_comb(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     }
 
     /* Safely invert result if i is "negative" */
-    MBEDTLS_MPI_CHK(ecp_safe_invert_jac(grp, R, i >> 7));
+    MBEDTLS_MPI_CHK(ecp_safe_invert_jac(grp, R, i >> 7, diagnostics));
 
     MPI_ECP_LSET(&R->Z, 1);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1663,10 +1722,12 @@ cleanup:
 int ecp_mul_comb_core(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                              const mbedtls_ecp_point T[], unsigned char T_size,
                              const unsigned char x[], size_t d,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                              void *p_rng,
-                             mbedtls_ecp_restart_ctx *rs_ctx)
+                             mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point Txi;
     mbedtls_mpi tmp[4];
@@ -1680,9 +1741,9 @@ int ecp_mul_comb_core(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     {
         /* Start with a non-zero point and randomize its coordinates */
         i = d;
-        MBEDTLS_MPI_CHK(ecp_select_comb(grp, R, T, T_size, x[i]));
+        MBEDTLS_MPI_CHK(ecp_select_comb(grp, R, T, T_size, x[i], diagnostics));
         if (f_rng != 0) {
-            MBEDTLS_MPI_CHK(ecp_randomize_jac(grp, R, f_rng, p_rng));
+            MBEDTLS_MPI_CHK(ecp_randomize_jac(grp, R, f_rng, p_rng, diagnostics));
         }
     }
 
@@ -1690,9 +1751,9 @@ int ecp_mul_comb_core(const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
         MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_DBL + MBEDTLS_ECP_OPS_ADD);
         --i;
 
-        MBEDTLS_MPI_CHK(ecp_double_jac(grp, R, R, tmp));
-        MBEDTLS_MPI_CHK(ecp_select_comb(grp, &Txi, T, T_size, x[i]));
-        MBEDTLS_MPI_CHK(ecp_add_mixed(grp, R, R, &Txi, tmp));
+        MBEDTLS_MPI_CHK(ecp_double_jac(grp, R, R, tmp, diagnostics));
+        MBEDTLS_MPI_CHK(ecp_select_comb(grp, &Txi, T, T_size, x[i], diagnostics));
+        MBEDTLS_MPI_CHK(ecp_add_mixed(grp, R, R, &Txi, tmp, diagnostics));
     }
 
 cleanup:
@@ -1700,7 +1761,7 @@ cleanup:
     mbedtls_ecp_point_free(&Txi);
     mpi_free_many(tmp, sizeof(tmp) / sizeof(mbedtls_mpi));
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1720,8 +1781,10 @@ int ecp_comb_recode_scalar(const mbedtls_ecp_group *grp,
                                   unsigned char k[COMB_MAX_D + 1],
                                   size_t d,
                                   unsigned char w,
-                                  unsigned char *parity_trick)
+                                  unsigned char *parity_trick, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi M, mm;
 
@@ -1730,16 +1793,16 @@ int ecp_comb_recode_scalar(const mbedtls_ecp_group *grp,
 
     /* N is always odd (see above), just make extra sure */
     if (mbedtls_mpi_get_bit(&grp->N, 0) != 1) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /* do we need the parity trick? */
     *parity_trick = (mbedtls_mpi_get_bit(m, 0) == 0);
 
     /* execute parity fix in constant time */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&M, m));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&mm, &grp->N, m));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_assign(&M, &mm, *parity_trick));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&M, m, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&mm, &grp->N, m, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_safe_cond_assign(&M, &mm, *parity_trick, diagnostics));
 
     /* actual scalar recoding */
     ecp_comb_recode_core(k, d, w, &M);
@@ -1748,7 +1811,7 @@ cleanup:
     mbedtls_mpi_free(&mm);
     mbedtls_mpi_free(&M);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1765,25 +1828,27 @@ int ecp_mul_comb_after_precomp(const mbedtls_ecp_group *grp,
                                       unsigned char T_size,
                                       unsigned char w,
                                       size_t d,
-                                      int (*f_rng)(void *, unsigned char *, size_t),
+                                      int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                                       void *p_rng,
-                                      mbedtls_ecp_restart_ctx *rs_ctx)
+                                      mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char parity_trick;
     unsigned char k[COMB_MAX_D + 1];
     mbedtls_ecp_point *RR = R;
 
     MBEDTLS_MPI_CHK(ecp_comb_recode_scalar(grp, m, k, d, w,
-                                           &parity_trick));
+                                           &parity_trick, diagnostics));
     MBEDTLS_MPI_CHK(ecp_mul_comb_core(grp, RR, T, T_size, k, d,
-                                      f_rng, p_rng, rs_ctx));
-    MBEDTLS_MPI_CHK(ecp_safe_invert_jac(grp, RR, parity_trick));
+                                      f_rng, p_rng, rs_ctx, diagnostics));
+    MBEDTLS_MPI_CHK(ecp_safe_invert_jac(grp, RR, parity_trick, diagnostics));
 
-    MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, RR));
+    MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, RR, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1846,10 +1911,12 @@ unsigned char ecp_pick_window_size(const mbedtls_ecp_group *grp,
  */
 int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                         const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                        int (*f_rng)(void *, unsigned char *, size_t),
+                        int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                         void *p_rng,
-                        mbedtls_ecp_restart_ctx *rs_ctx)
+                        mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char w, p_eq_g, i;
     size_t d;
@@ -1881,7 +1948,7 @@ int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     {
         T = mbedtls_calloc(T_size, sizeof(mbedtls_ecp_point));
         if (T == NULL) {
-            ret = MBEDTLS_ERR_ECP_ALLOC_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_ALLOC_FAILED);
             goto cleanup;
         }
 
@@ -1894,7 +1961,7 @@ int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
 
     /* Compute table (or finish computing it) if not done already */
     if (!T_ok) {
-        MBEDTLS_MPI_CHK(ecp_precompute_comb(grp, T, P, w, d, rs_ctx));
+        MBEDTLS_MPI_CHK(ecp_precompute_comb(grp, T, P, w, d, rs_ctx, diagnostics));
 
         if (p_eq_g) {
             /* almost transfer ownership of T to the group, but keep a copy of
@@ -1907,7 +1974,7 @@ int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     /* Actual comb multiplication using precomputed points */
     MBEDTLS_MPI_CHK(ecp_mul_comb_after_precomp(grp, R, m,
                                                T, T_size, w, d,
-                                               f_rng, p_rng, rs_ctx));
+                                               f_rng, p_rng, rs_ctx, diagnostics));
 
 cleanup:
 
@@ -1934,7 +2001,7 @@ cleanup:
 
     ECP_RS_LEAVE(rsm);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
@@ -1947,9 +2014,11 @@ cleanup:
  */
 int ecp_mul_restartable_internal(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                                         const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                                        int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                                        mbedtls_ecp_restart_ctx *rs_ctx)
+                                        int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng,
+                                        mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
 
     (void) rs_ctx;
@@ -1961,20 +2030,20 @@ int ecp_mul_restartable_internal(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
         MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_CHK);
 
         /* Common sanity checks */
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_privkey(grp, m));
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_privkey(grp, m, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P, diagnostics));
     }
 
-    ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        MBEDTLS_MPI_CHK(ecp_mul_comb(grp, R, m, P, f_rng, p_rng, rs_ctx));
+        MBEDTLS_MPI_CHK(ecp_mul_comb(grp, R, m, P, f_rng, p_rng, rs_ctx, diagnostics));
     }
 #endif
 
 cleanup:
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1982,14 +2051,16 @@ cleanup:
  */
 int mbedtls_ecp_mul_restartable(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                                 const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                                mbedtls_ecp_restart_ctx *rs_ctx)
+                                int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng,
+                                mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (f_rng == NULL) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
-    return ecp_mul_restartable_internal(grp, R, m, P, f_rng, p_rng, rs_ctx);
+    MINTLS_RETURN(ecp_mul_restartable_internal(grp, R, m, P, f_rng, p_rng, rs_ctx, diagnostics));
 }
 
 /*
@@ -1997,9 +2068,11 @@ int mbedtls_ecp_mul_restartable(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
  */
 int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                     const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                    int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_mul_restartable(grp, R, m, P, f_rng, p_rng, NULL);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_mul_restartable(grp, R, m, P, f_rng, p_rng, NULL, diagnostics));
 }
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
@@ -2007,8 +2080,10 @@ int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
  * Check that an affine point is valid as a public key,
  * short weierstrass curves (SEC1 3.2.3.1)
  */
-int ecp_check_pubkey_sw(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *pt)
+int ecp_check_pubkey_sw(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *pt, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi YY, RHS;
 
@@ -2017,7 +2092,7 @@ int ecp_check_pubkey_sw(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p
         mbedtls_mpi_cmp_int(&pt->Y, 0) < 0 ||
         mbedtls_mpi_cmp_mpi(&pt->X, &grp->P) >= 0 ||
         mbedtls_mpi_cmp_mpi(&pt->Y, &grp->P) >= 0) {
-        return MBEDTLS_ERR_ECP_INVALID_KEY;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_INVALID_KEY);
     }
 
     mbedtls_mpi_init(&YY); mbedtls_mpi_init(&RHS);
@@ -2030,14 +2105,14 @@ int ecp_check_pubkey_sw(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p
     MBEDTLS_MPI_CHK(ecp_sw_rhs(grp, &RHS, &pt->X));
 
     if (MPI_ECP_CMP(&YY, &RHS) != 0) {
-        ret = MBEDTLS_ERR_ECP_INVALID_KEY;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_INVALID_KEY);
     }
 
 cleanup:
 
     mbedtls_mpi_free(&YY); mbedtls_mpi_free(&RHS);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
@@ -2050,31 +2125,33 @@ int mbedtls_ecp_mul_shortcuts(mbedtls_ecp_group *grp,
                                      mbedtls_ecp_point *R,
                                      const mbedtls_mpi *m,
                                      const mbedtls_ecp_point *P,
-                                     mbedtls_ecp_restart_ctx *rs_ctx)
+                                     mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi tmp;
     mbedtls_mpi_init(&tmp);
 
     if (mbedtls_mpi_cmp_int(m, 0) == 0) {
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P));
-        MBEDTLS_MPI_CHK(mbedtls_ecp_set_zero(R));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_set_zero(R, diagnostics));
     } else if (mbedtls_mpi_cmp_int(m, 1) == 0) {
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P));
-        MBEDTLS_MPI_CHK(mbedtls_ecp_copy(R, P));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_copy(R, P, diagnostics));
     } else if (mbedtls_mpi_cmp_int(m, -1) == 0) {
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P));
-        MBEDTLS_MPI_CHK(mbedtls_ecp_copy(R, P));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_pubkey(grp, P, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_copy(R, P, diagnostics));
         MPI_ECP_NEG(&R->Y);
     } else {
         MBEDTLS_MPI_CHK(ecp_mul_restartable_internal(grp, R, m, P,
-                                                     NULL, NULL, rs_ctx));
+                                                     NULL, NULL, rs_ctx, diagnostics));
     }
 
 cleanup:
     mbedtls_mpi_free(&tmp);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2085,15 +2162,17 @@ int mbedtls_ecp_muladd_restartable(
     mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     const mbedtls_mpi *m, const mbedtls_ecp_point *P,
     const mbedtls_mpi *n, const mbedtls_ecp_point *Q,
-    mbedtls_ecp_restart_ctx *rs_ctx)
+    mbedtls_ecp_restart_ctx *rs_ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point mP;
     mbedtls_ecp_point *pmP = &mP;
     mbedtls_ecp_point *pR = R;
     mbedtls_mpi tmp[4];
     if (mbedtls_ecp_get_type(grp) != MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
     }
 
     mbedtls_ecp_point_init(&mP);
@@ -2101,13 +2180,13 @@ int mbedtls_ecp_muladd_restartable(
 
     ECP_RS_ENTER(ma);
 
-    MBEDTLS_MPI_CHK(mbedtls_ecp_mul_shortcuts(grp, pmP, m, P, rs_ctx));
-    MBEDTLS_MPI_CHK(mbedtls_ecp_mul_shortcuts(grp, pR,  n, Q, rs_ctx));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul_shortcuts(grp, pmP, m, P, rs_ctx, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul_shortcuts(grp, pR,  n, Q, rs_ctx, diagnostics));
 
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_ADD);
-    MBEDTLS_MPI_CHK(ecp_add_mixed(grp, pR, pmP, pR, tmp));
+    MBEDTLS_MPI_CHK(ecp_add_mixed(grp, pR, pmP, pR, tmp, diagnostics));
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_INV);
-    MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, pR));
+    MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, pR, diagnostics));
 
 cleanup:
 
@@ -2117,7 +2196,7 @@ cleanup:
 
     ECP_RS_LEAVE(ma);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2126,9 +2205,11 @@ cleanup:
  */
 int mbedtls_ecp_muladd(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                        const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                       const mbedtls_mpi *n, const mbedtls_ecp_point *Q)
+                       const mbedtls_mpi *n, const mbedtls_ecp_point *Q, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_muladd_restartable(grp, R, m, P, n, Q, NULL);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_muladd_restartable(grp, R, m, P, n, Q, NULL, diagnostics));
 }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
@@ -2136,53 +2217,59 @@ int mbedtls_ecp_muladd(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
  * Check that a point is valid as a public key
  */
 int mbedtls_ecp_check_pubkey(const mbedtls_ecp_group *grp,
-                             const mbedtls_ecp_point *pt)
+                             const mbedtls_ecp_point *pt, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     /* Must use affine coordinates */
     if (mbedtls_mpi_cmp_int(&pt->Z, 1) != 0) {
-        return MBEDTLS_ERR_ECP_INVALID_KEY;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_INVALID_KEY);
     }
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        return ecp_check_pubkey_sw(grp, pt);
+        MINTLS_RETURN(ecp_check_pubkey_sw(grp, pt, diagnostics));
     }
 #endif
-    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
 }
 
 /*
  * Check that an mbedtls_mpi is valid as a private key
  */
 int mbedtls_ecp_check_privkey(const mbedtls_ecp_group *grp,
-                              const mbedtls_mpi *d)
+                              const mbedtls_mpi *d, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
         /* see SEC1 3.2 */
         if (mbedtls_mpi_cmp_int(d, 1) < 0 ||
             mbedtls_mpi_cmp_mpi(d, &grp->N) >= 0) {
-            return MBEDTLS_ERR_ECP_INVALID_KEY;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_INVALID_KEY);
         } else {
-            return 0;
+            MINTLS_RETURN(0);
         }
     }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
-    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
 }
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
 int mbedtls_ecp_gen_privkey_sw(
     const mbedtls_mpi *N, mbedtls_mpi *d,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+    int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    int ret = mbedtls_mpi_random(d, 1, N, f_rng, p_rng);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    int ret = mbedtls_mpi_random(d, 1, N, f_rng, p_rng, diagnostics);
     switch (ret) {
         case MBEDTLS_ERR_MPI_NOT_ACCEPTABLE:
-            return MBEDTLS_ERR_ECP_RANDOM_FAILED;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_RANDOM_FAILED);
         default:
-            return ret;
+            MINTLS_RETURN(ret);
     }
 }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
@@ -2192,17 +2279,19 @@ int mbedtls_ecp_gen_privkey_sw(
  */
 int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
                             mbedtls_mpi *d,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng)
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                            void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        return mbedtls_ecp_gen_privkey_sw(&grp->N, d, f_rng, p_rng);
+        MINTLS_RETURN(mbedtls_ecp_gen_privkey_sw(&grp->N, d, f_rng, p_rng, diagnostics));
     }
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
-    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
 }
 
 /*
@@ -2211,15 +2300,17 @@ int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
 int mbedtls_ecp_gen_keypair_base(mbedtls_ecp_group *grp,
                                  const mbedtls_ecp_point *G,
                                  mbedtls_mpi *d, mbedtls_ecp_point *Q,
-                                 int (*f_rng)(void *, unsigned char *, size_t),
-                                 void *p_rng)
+                                 int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                 void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    MBEDTLS_MPI_CHK(mbedtls_ecp_gen_privkey(grp, d, f_rng, p_rng));
-    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(grp, Q, d, G, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_gen_privkey(grp, d, f_rng, p_rng, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(grp, Q, d, G, f_rng, p_rng, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2227,42 +2318,48 @@ cleanup:
  */
 int mbedtls_ecp_gen_keypair(mbedtls_ecp_group *grp,
                             mbedtls_mpi *d, mbedtls_ecp_point *Q,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng)
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                            void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_gen_keypair_base(grp, &grp->G, d, Q, f_rng, p_rng);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_gen_keypair_base(grp, &grp->G, d, Q, f_rng, p_rng, diagnostics));
 }
 
 /*
  * Generate a keypair, prettier wrapper
  */
 int mbedtls_ecp_gen_key(mbedtls_ecp_group_id grp_id, mbedtls_ecp_keypair *key,
-                        int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                        int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id)) != 0) {
-        return ret;
+    if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    return mbedtls_ecp_gen_keypair(&key->grp, &key->d, &key->Q, f_rng, p_rng);
+    MINTLS_RETURN(mbedtls_ecp_gen_keypair(&key->grp, &key->d, &key->Q, f_rng, p_rng, diagnostics));
 }
 
 int mbedtls_ecp_set_public_key(mbedtls_ecp_group_id grp_id,
                                mbedtls_ecp_keypair *key,
-                               const mbedtls_ecp_point *Q)
+                               const mbedtls_ecp_point *Q, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (key->grp.id == MBEDTLS_ECP_DP_NONE) {
         /* Group not set yet */
-        if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id)) != 0) {
-            return ret;
+        if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id, diagnostics)) != 0) {
+            MINTLS_RETURN(ret);
         }
     } else if (key->grp.id != grp_id) {
         /* Group mismatch */
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
-    return mbedtls_ecp_copy(&key->Q, Q);
+    MINTLS_RETURN(mbedtls_ecp_copy(&key->Q, Q, diagnostics));
 }
 
 #define ECP_CURVE25519_KEY_SIZE 32
@@ -2271,24 +2368,26 @@ int mbedtls_ecp_set_public_key(mbedtls_ecp_group_id grp_id,
  * Read a private key.
  */
 int mbedtls_ecp_read_key(mbedtls_ecp_group_id grp_id, mbedtls_ecp_keypair *key,
-                         const unsigned char *buf, size_t buflen)
+                         const unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
 
-    if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id)) != 0) {
-        return ret;
+    if ((ret = mbedtls_ecp_group_load(&key->grp, grp_id, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    ret = MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&key->d, buf, buflen));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&key->d, buf, buflen, diagnostics));
     }
 #endif
 
     if (ret == 0) {
-        MBEDTLS_MPI_CHK(mbedtls_ecp_check_privkey(&key->grp, &key->d));
+        MBEDTLS_MPI_CHK(mbedtls_ecp_check_privkey(&key->grp, &key->d, diagnostics));
     }
 
 cleanup:
@@ -2297,7 +2396,7 @@ cleanup:
         mbedtls_mpi_free(&key->d);
     }
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2305,46 +2404,50 @@ cleanup:
  */
 #if !defined MBEDTLS_DEPRECATED_REMOVED
 int mbedtls_ecp_write_key(mbedtls_ecp_keypair *key,
-                          unsigned char *buf, size_t buflen)
+                          unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&key->d, buf, buflen));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&key->d, buf, buflen, diagnostics));
     }
 
 #endif
 cleanup:
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 #endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 int mbedtls_ecp_write_key_ext(const mbedtls_ecp_keypair *key,
-                              size_t *olen, unsigned char *buf, size_t buflen)
+                              size_t *olen, unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t len = (key->grp.nbits + 7) / 8;
     if (len > buflen) {
         /* For robustness, ensure *olen <= buflen even on error. */
         *olen = 0;
-        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL);
     }
     *olen = len;
 
     /* Private key not set */
     if (key->d.n == 0) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
     if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        return mbedtls_mpi_write_binary(&key->d, buf, len);
+        MINTLS_RETURN(mbedtls_mpi_write_binary(&key->d, buf, len, diagnostics));
     }
 #endif
 
     /* Private key set but no recognized curve type? This shouldn't happen. */
-    return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED);
 }
 
 /*
@@ -2352,10 +2455,12 @@ int mbedtls_ecp_write_key_ext(const mbedtls_ecp_keypair *key,
  */
 int mbedtls_ecp_write_public_key(const mbedtls_ecp_keypair *key,
                                  int format, size_t *olen,
-                                 unsigned char *buf, size_t buflen)
+                                 unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_point_write_binary(&key->grp, &key->Q,
-                                          format, olen, buf, buflen);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_point_write_binary(&key->grp, &key->Q,
+                                          format, olen, buf, buflen, diagnostics));
 }
 
 /*
@@ -2363,8 +2468,10 @@ int mbedtls_ecp_write_public_key(const mbedtls_ecp_keypair *key,
  */
 int mbedtls_ecp_check_pub_priv(
     const mbedtls_ecp_keypair *pub, const mbedtls_ecp_keypair *prv,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+    int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ecp_point Q;
     mbedtls_ecp_group grp;
@@ -2373,22 +2480,22 @@ int mbedtls_ecp_check_pub_priv(
         mbedtls_mpi_cmp_mpi(&pub->Q.X, &prv->Q.X) ||
         mbedtls_mpi_cmp_mpi(&pub->Q.Y, &prv->Q.Y) ||
         mbedtls_mpi_cmp_mpi(&pub->Q.Z, &prv->Q.Z)) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     mbedtls_ecp_point_init(&Q);
     mbedtls_ecp_group_init(&grp);
 
     /* mbedtls_ecp_mul() needs a non-const group... */
-    mbedtls_ecp_group_copy(&grp, &prv->grp);
+    MBEDTLS_MPI_CHK(mbedtls_ecp_group_copy(&grp, &prv->grp, diagnostics));
 
     /* Also checks d is valid */
-    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&grp, &Q, &prv->d, &prv->grp.G, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_ecp_mul(&grp, &Q, &prv->d, &prv->grp.G, f_rng, p_rng, diagnostics));
 
     if (mbedtls_mpi_cmp_mpi(&Q.X, &prv->Q.X) ||
         mbedtls_mpi_cmp_mpi(&Q.Y, &prv->Q.Y) ||
         mbedtls_mpi_cmp_mpi(&Q.Z, &prv->Q.Z)) {
-        ret = MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
         goto cleanup;
     }
 
@@ -2396,15 +2503,17 @@ cleanup:
     mbedtls_ecp_point_free(&Q);
     mbedtls_ecp_group_free(&grp);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_ecp_keypair_calc_public(mbedtls_ecp_keypair *key,
-                                    int (*f_rng)(void *, unsigned char *, size_t),
-                                    void *p_rng)
+                                    int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                    void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_mul(&key->grp, &key->Q, &key->d, &key->grp.G,
-                           f_rng, p_rng);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_mul(&key->grp, &key->Q, &key->d, &key->grp.G,
+                           f_rng, p_rng, diagnostics));
 }
 
 mbedtls_ecp_group_id mbedtls_ecp_keypair_get_group_id(
@@ -2417,22 +2526,23 @@ mbedtls_ecp_group_id mbedtls_ecp_keypair_get_group_id(
  * Export generic key-pair parameters.
  */
 int mbedtls_ecp_export(const mbedtls_ecp_keypair *key, mbedtls_ecp_group *grp,
-                       mbedtls_mpi *d, mbedtls_ecp_point *Q)
+                       mbedtls_mpi *d, mbedtls_ecp_point *Q, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    if (grp != NULL && (ret = mbedtls_ecp_group_copy(grp, &key->grp)) != 0) {
-        return ret;
+    if (grp != NULL && (ret = mbedtls_ecp_group_copy(grp, &key->grp, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    if (d != NULL && (ret = mbedtls_mpi_copy(d, &key->d)) != 0) {
-        return ret;
+    if (d != NULL && (ret = mbedtls_mpi_copy(d, &key->d, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    if (Q != NULL && (ret = mbedtls_ecp_copy(Q, &key->Q)) != 0) {
-        return ret;
+    if (Q != NULL && (ret = mbedtls_ecp_copy(Q, &key->Q, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
-

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file ssl_misc.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/ssl_misc.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/ssl_misc.h.
  */
 #ifndef MBEDTLS_SSL_MISC_H
 #define MBEDTLS_SSL_MISC_H
@@ -416,7 +419,7 @@ static inline int mbedtls_ssl_chk_buf_ptr(const uint8_t *cur,
     do {                                                                 \
         if (mbedtls_ssl_chk_buf_ptr((cur), (end), (need)) != 0) \
         {                                                                \
-            return MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL;                  \
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL);                  \
         }                                                                \
     } while (0)
 
@@ -442,7 +445,7 @@ static inline int mbedtls_ssl_chk_buf_ptr(const uint8_t *cur,
                                   ("missing input data in %s", __func__));  \
             MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR,   \
                                          MBEDTLS_ERR_SSL_DECODE_ERROR);       \
-            return MBEDTLS_ERR_SSL_DECODE_ERROR;                             \
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_SSL_DECODE_ERROR);                             \
         }                                                                       \
     } while (0)
 
@@ -453,7 +456,7 @@ extern "C" {
 typedef int  mbedtls_ssl_tls_prf_cb(const unsigned char *secret, size_t slen,
                                     const char *label,
                                     const unsigned char *random, size_t rlen,
-                                    unsigned char *dstbuf, size_t dlen);
+                                    unsigned char *dstbuf, size_t dlen, MinTlsDiagnostics* diagnostics);
 
 /* cipher.h exports the maximum IV, key and block length from
  * all ciphers enabled in the config, regardless of whether those
@@ -537,11 +540,11 @@ struct mbedtls_ssl_handshake_params {
     mbedtls_ssl_ciphersuite_t const *ciphersuite_info;
 
     MBEDTLS_CHECK_RETURN_CRITICAL
-    int (*update_checksum)(mbedtls_ssl_context *, const unsigned char *, size_t);
+    int (*update_checksum)(mbedtls_ssl_context *, const unsigned char *, size_t, MinTlsDiagnostics* diagnostics);
     MBEDTLS_CHECK_RETURN_CRITICAL
-    int (*calc_verify)(const mbedtls_ssl_context *, unsigned char *, size_t *);
+    int (*calc_verify)(const mbedtls_ssl_context *, unsigned char *, size_t *, MinTlsDiagnostics* diagnostics);
     MBEDTLS_CHECK_RETURN_CRITICAL
-    int (*calc_finished)(mbedtls_ssl_context *, unsigned char *, int);
+    int (*calc_finished)(mbedtls_ssl_context *, unsigned char *, int, MinTlsDiagnostics* diagnostics);
     mbedtls_ssl_tls_prf_cb *tls_prf;
 
     /*
@@ -816,7 +819,7 @@ int mbedtls_ssl_tls12_write_client_hello_exts(mbedtls_ssl_context *ssl,
                                               unsigned char *buf,
                                               const unsigned char *end,
                                               int uses_ec,
-                                              size_t *out_len);
+                                              size_t *out_len, MinTlsDiagnostics* diagnostics);
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_2) && \
     defined(MBEDTLS_KEY_EXCHANGE_WITH_CERT_ENABLED)
@@ -863,7 +866,7 @@ void mbedtls_ssl_set_outbound_transform(mbedtls_ssl_context *ssl,
                                         mbedtls_ssl_transform *transform);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_handshake_client_step(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_handshake_client_step(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_handshake_server_step(mbedtls_ssl_context *ssl);
 void mbedtls_ssl_handshake_wrapup(mbedtls_ssl_context *ssl);
@@ -883,20 +886,20 @@ static inline void mbedtls_ssl_handshake_increment_state(mbedtls_ssl_context *ss
 }
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_send_fatal_handshake_failure(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_send_fatal_handshake_failure(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_reset_checksum(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_reset_checksum(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_derive_keys(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_derive_keys(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_handle_message_type(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_handle_message_type(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_prepare_handshake_record(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_prepare_handshake_record(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_update_handshake_status(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_update_handshake_status(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Update record layer
@@ -976,9 +979,9 @@ int mbedtls_ssl_update_handshake_status(mbedtls_ssl_context *ssl);
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_read_record(mbedtls_ssl_context *ssl,
-                            unsigned update_hs_digest);
+                            unsigned update_hs_digest, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_fetch_input(mbedtls_ssl_context *ssl, size_t nb_want);
+int mbedtls_ssl_fetch_input(mbedtls_ssl_context *ssl, size_t nb_want, MinTlsDiagnostics* diagnostics);
 
 /*
  * Write handshake message header
@@ -990,10 +993,12 @@ int mbedtls_ssl_start_handshake_msg(mbedtls_ssl_context *ssl, unsigned char hs_t
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_write_handshake_msg_ext(mbedtls_ssl_context *ssl,
                                         int update_checksum,
-                                        int force_flush);
-static inline int mbedtls_ssl_write_handshake_msg(mbedtls_ssl_context *ssl)
+                                        int force_flush, MinTlsDiagnostics* diagnostics);
+static inline int mbedtls_ssl_write_handshake_msg(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ssl_write_handshake_msg_ext(ssl, 1 /* update checksum */, 1 /* force flush */);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ssl_write_handshake_msg_ext(ssl, 1 /* update checksum */, 1 /* force flush */, diagnostics));
 }
 
 /*
@@ -1001,27 +1006,27 @@ static inline int mbedtls_ssl_write_handshake_msg(mbedtls_ssl_context *ssl)
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_finish_handshake_msg(mbedtls_ssl_context *ssl,
-                                     size_t buf_len, size_t msg_len);
+                                     size_t buf_len, size_t msg_len, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_write_record(mbedtls_ssl_context *ssl, int force_flush);
+int mbedtls_ssl_write_record(mbedtls_ssl_context *ssl, int force_flush, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_flush_output(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_flush_output(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_parse_certificate(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_parse_certificate(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_write_certificate(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_write_certificate(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_parse_change_cipher_spec(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_parse_change_cipher_spec(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_write_change_cipher_spec(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_write_change_cipher_spec(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_parse_finished(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_parse_finished(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_write_finished(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_write_finished(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 void mbedtls_ssl_optimize_checksum(mbedtls_ssl_context *ssl,
                                    const mbedtls_ssl_ciphersuite_t *ciphersuite_info);
@@ -1033,12 +1038,12 @@ MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_add_hs_msg_to_checksum(mbedtls_ssl_context *ssl,
                                        unsigned hs_type,
                                        unsigned char const *msg,
-                                       size_t msg_len);
+                                       size_t msg_len, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_add_hs_hdr_to_checksum(mbedtls_ssl_context *ssl,
                                        unsigned hs_type,
-                                       size_t total_hs_len);
+                                       size_t total_hs_len, MinTlsDiagnostics* diagnostics);
 
 unsigned char mbedtls_ssl_sig_from_pk(mbedtls_pk_context *pk);
 unsigned char mbedtls_ssl_sig_from_pk_alg(mbedtls_pk_type_t type);
@@ -1048,12 +1053,12 @@ mbedtls_md_type_t mbedtls_ssl_md_alg_from_hash(unsigned char hash);
 unsigned char mbedtls_ssl_hash_from_md_alg(int md);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_set_calc_verify_md(mbedtls_ssl_context *ssl, int md);
+int mbedtls_ssl_set_calc_verify_md(mbedtls_ssl_context *ssl, int md, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_check_curve_tls_id(const mbedtls_ssl_context *ssl, uint16_t tls_id);
+int mbedtls_ssl_check_curve_tls_id(const mbedtls_ssl_context *ssl, uint16_t tls_id, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_check_curve(const mbedtls_ssl_context *ssl, mbedtls_ecp_group_id grp_id);
+int mbedtls_ssl_check_curve(const mbedtls_ssl_context *ssl, mbedtls_ecp_group_id grp_id, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief Return \c mbedtls_ecp_group_id for the specified TLS ID.
@@ -1129,7 +1134,7 @@ int mbedtls_ssl_verify_certificate(mbedtls_ssl_context *ssl,
                                    int authmode,
                                    mbedtls_x509_crt *chain,
                                    const mbedtls_ssl_ciphersuite_t *ciphersuite_info,
-                                   void *rs_ctx);
+                                   void *rs_ctx, MinTlsDiagnostics* diagnostics);
 
 /*
  * Check usage of a certificate wrt usage extensions:
@@ -1147,7 +1152,7 @@ int mbedtls_ssl_check_cert_usage(const mbedtls_x509_crt *cert,
                                  const mbedtls_ssl_ciphersuite_t *ciphersuite,
                                  int recv_endpoint,
                                  mbedtls_ssl_protocol_version tls_version,
-                                 uint32_t *flags);
+                                 uint32_t *flags, MinTlsDiagnostics* diagnostics);
 
 void mbedtls_ssl_write_version(unsigned char version[2], int transport,
                                mbedtls_ssl_protocol_version tls_version);
@@ -1178,14 +1183,14 @@ static inline size_t mbedtls_ssl_hs_hdr_len(const mbedtls_ssl_context *ssl)
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_session_copy(mbedtls_ssl_session *dst,
-                             const mbedtls_ssl_session *src);
+                             const mbedtls_ssl_session *src, MinTlsDiagnostics* diagnostics);
 
 /* The hash buffer must have at least MBEDTLS_MD_MAX_SIZE bytes of length. */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_get_key_exchange_md_tls1_2(mbedtls_ssl_context *ssl,
                                            unsigned char *hash, size_t *hashlen,
                                            unsigned char *data, size_t data_len,
-                                           mbedtls_md_type_t md_alg);
+                                           mbedtls_md_type_t md_alg, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }
@@ -1196,12 +1201,12 @@ MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_encrypt_buf(mbedtls_ssl_context *ssl,
                             mbedtls_ssl_transform *transform,
                             mbedtls_record *rec,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng);
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                            void *p_rng, MinTlsDiagnostics* diagnostics);
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_decrypt_buf(mbedtls_ssl_context const *ssl,
                             mbedtls_ssl_transform *transform,
-                            mbedtls_record *rec);
+                            mbedtls_record *rec, MinTlsDiagnostics* diagnostics);
 
 /* Length of the "epoch" field in the record header */
 static inline size_t mbedtls_ssl_ep_len(const mbedtls_ssl_context *ssl)
@@ -1221,7 +1226,7 @@ void mbedtls_ssl_update_out_pointers(mbedtls_ssl_context *ssl,
                                      mbedtls_ssl_transform *transform);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_session_reset_int(mbedtls_ssl_context *ssl, int partial);
+int mbedtls_ssl_session_reset_int(mbedtls_ssl_context *ssl, int partial, MinTlsDiagnostics* diagnostics);
 void mbedtls_ssl_session_reset_msg_layer(mbedtls_ssl_context *ssl,
                                          int partial);
 
@@ -1229,7 +1234,7 @@ void mbedtls_ssl_session_reset_msg_layer(mbedtls_ssl_context *ssl,
  * Send pending alert
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_handle_pending_alert(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_handle_pending_alert(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /*
  * Set pending fatal alert flag.
@@ -1272,14 +1277,14 @@ static inline int mbedtls_ssl_conf_is_tls12_enabled(const mbedtls_ssl_config *co
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_write_sig_alg_ext(mbedtls_ssl_context *ssl, unsigned char *buf,
-                                  const unsigned char *end, size_t *out_len);
+                                  const unsigned char *end, size_t *out_len, MinTlsDiagnostics* diagnostics);
 /*
  * Parse TLS Signature Algorithm extension
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_parse_sig_alg_ext(mbedtls_ssl_context *ssl,
                                   const unsigned char *buf,
-                                  const unsigned char *end);
+                                  const unsigned char *end, MinTlsDiagnostics* diagnostics);
 #endif /* MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED */
 
 /* Get handshake transcript */
@@ -1288,7 +1293,7 @@ int mbedtls_ssl_get_handshake_transcript(mbedtls_ssl_context *ssl,
                                          const mbedtls_md_type_t md,
                                          unsigned char *dst,
                                          size_t dst_len,
-                                         size_t *olen);
+                                         size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /*
  * Return supported groups.
@@ -1443,13 +1448,15 @@ static inline int mbedtls_ssl_sig_alg_is_offered(const mbedtls_ssl_context *ssl,
 }
 
 static inline int mbedtls_ssl_get_pk_type_and_md_alg_from_sig_alg(
-    uint16_t sig_alg, mbedtls_pk_type_t *pk_type, mbedtls_md_type_t *md_alg)
+    uint16_t sig_alg, mbedtls_pk_type_t *pk_type, mbedtls_md_type_t *md_alg, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     *pk_type = mbedtls_ssl_pk_alg_from_sig(sig_alg & 0xff);
     *md_alg = mbedtls_ssl_md_alg_from_hash((sig_alg >> 8) & 0xff);
 
     if (*pk_type != MBEDTLS_PK_NONE && *md_alg != MBEDTLS_MD_NONE) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     switch (sig_alg) {
@@ -1466,9 +1473,9 @@ static inline int mbedtls_ssl_get_pk_type_and_md_alg_from_sig_alg(
             *pk_type = MBEDTLS_PK_RSASSA_PSS;
             break;
         default:
-            return MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE);
     }
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 static inline int mbedtls_ssl_tls12_sig_alg_is_supported(
@@ -1592,18 +1599,18 @@ int mbedtls_ssl_validate_ciphersuite(
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_parse_server_name_ext(mbedtls_ssl_context *ssl,
                                       const unsigned char *buf,
-                                      const unsigned char *end);
+                                      const unsigned char *end, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_parse_alpn_ext(mbedtls_ssl_context *ssl,
                                const unsigned char *buf,
-                               const unsigned char *end);
+                               const unsigned char *end, MinTlsDiagnostics* diagnostics);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_write_alpn_ext(mbedtls_ssl_context *ssl,
                                unsigned char *buf,
                                unsigned char *end,
-                               size_t *out_len);
+                               size_t *out_len, MinTlsDiagnostics* diagnostics);
 
 /** Get the host name from the SSL context.
  *

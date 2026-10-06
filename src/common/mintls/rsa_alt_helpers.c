@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Helper functions for the RSA module
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/rsa_alt_helpers.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/rsa_alt_helpers.c.
  *
  */
 
@@ -51,8 +54,10 @@
  */
 int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
                               mbedtls_mpi const *E, mbedtls_mpi const *D,
-                              mbedtls_mpi *P, mbedtls_mpi *Q)
+                              mbedtls_mpi *P, mbedtls_mpi *Q, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
 
     uint16_t attempt;  /* Number of current attempt  */
@@ -75,7 +80,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
     const size_t num_primes = sizeof(primes) / sizeof(*primes);
 
     if (P == NULL || Q == NULL || P->p != NULL || Q->p != NULL) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
     }
 
     if (mbedtls_mpi_cmp_int(N, 0) <= 0 ||
@@ -83,7 +88,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
         mbedtls_mpi_cmp_mpi(D, N) >= 0 ||
         mbedtls_mpi_cmp_int(E, 1) <= 0 ||
         mbedtls_mpi_cmp_mpi(E, N) >= 0) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
     }
 
     /*
@@ -94,11 +99,11 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
     mbedtls_mpi_init(&T);
 
     /* T := DE - 1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, D,  E));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&T, &T, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, D,  E, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&T, &T, 1, diagnostics));
 
     if ((order = (uint16_t) mbedtls_mpi_lsb(&T)) == 0) {
-        ret = MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
         goto cleanup;
     }
 
@@ -116,10 +121,10 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
     }
 
     for (; attempt < num_primes; ++attempt) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&K, primes[attempt]));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&K, primes[attempt], diagnostics));
 
         /* Check if gcd(K,N) = 1 */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N, diagnostics));
         if (mbedtls_mpi_cmp_int(P, 1) != 0) {
             continue;
         }
@@ -128,7 +133,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
          * and check whether they have nontrivial GCD with N. */
         MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&K, &K, &T, N,
                                             Q /* temporarily use Q for storing Montgomery
-                                               * multiplication helper values */));
+                                               * multiplication helper values */, diagnostics));
 
         for (iter = 1; iter <= order; ++iter) {
             /* If we reach 1 prematurely, there's no point
@@ -137,8 +142,8 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
                 break;
             }
 
-            MBEDTLS_MPI_CHK(mbedtls_mpi_add_int(&K, &K, 1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_add_int(&K, &K, 1, diagnostics));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N, diagnostics));
 
             if (mbedtls_mpi_cmp_int(P, 1) ==  1 &&
                 mbedtls_mpi_cmp_mpi(P, N) == -1) {
@@ -147,13 +152,13 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
                  * Set Q := N / P.
                  */
 
-                MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(Q, NULL, N, P));
+                MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(Q, NULL, N, P, diagnostics));
                 goto cleanup;
             }
 
-            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, &K, &K));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, N));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1, diagnostics));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, &K, &K, diagnostics));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, N, diagnostics));
         }
 
         /*
@@ -168,13 +173,13 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
         }
     }
 
-    ret = MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+    ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
 
 cleanup:
 
     mbedtls_mpi_free(&K);
     mbedtls_mpi_free(&T);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -184,82 +189,86 @@ cleanup:
 int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
                                         mbedtls_mpi const *Q,
                                         mbedtls_mpi const *E,
-                                        mbedtls_mpi *D)
+                                        mbedtls_mpi *D, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
     mbedtls_mpi K, L;
 
     if (D == NULL) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
     }
 
     if (mbedtls_mpi_cmp_int(P, 1) <= 0 ||
         mbedtls_mpi_cmp_int(Q, 1) <= 0 ||
         mbedtls_mpi_cmp_int(E, 0) == 0) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
     }
 
     if (mbedtls_mpi_get_bit(E, 0) != 1) {
-        return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_NOT_ACCEPTABLE);
     }
 
     mbedtls_mpi_init(&K);
     mbedtls_mpi_init(&L);
 
     /* Temporarily put K := P-1 and L := Q-1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, Q, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, Q, 1, diagnostics));
 
     /* Temporarily put D := gcd(P-1, Q-1) */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(D, &K, &L));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(D, &K, &L, diagnostics));
 
     /* K := LCM(P-1, Q-1) */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, &K, &L));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(&K, NULL, &K, D));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, &K, &L, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(&K, NULL, &K, D, diagnostics));
 
     /* Compute modular inverse of E mod LCM(P-1, Q-1)
      * This is FIPS 186-4 §B.3.1 criterion 3(b).
      * This will return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if E is not coprime to
      * (P-1)(Q-1), also validating FIPS 186-4 §B.3.1 criterion 2(a). */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_even_in_range(D, E, &K));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_even_in_range(D, E, &K, diagnostics));
 
 cleanup:
 
     mbedtls_mpi_free(&K);
     mbedtls_mpi_free(&L);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_rsa_deduce_crt(const mbedtls_mpi *P, const mbedtls_mpi *Q,
                            const mbedtls_mpi *D, mbedtls_mpi *DP,
-                           mbedtls_mpi *DQ, mbedtls_mpi *QP)
+                           mbedtls_mpi *DQ, mbedtls_mpi *QP, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
     mbedtls_mpi K;
     mbedtls_mpi_init(&K);
 
     /* DP = D mod P-1 */
     if (DP != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(DP, D, &K));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(DP, D, &K, diagnostics));
     }
 
     /* DQ = D mod Q-1 */
     if (DQ != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, Q, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(DQ, D, &K));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, Q, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(DQ, D, &K, diagnostics));
     }
 
     /* QP = Q^{-1} mod P */
     if (QP != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_odd(QP, Q, P));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_odd(QP, Q, P, diagnostics));
     }
 
 cleanup:
     mbedtls_mpi_free(&K);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -268,9 +277,11 @@ cleanup:
 int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
                                 const mbedtls_mpi *Q, const mbedtls_mpi *D,
                                 const mbedtls_mpi *E,
-                                int (*f_rng)(void *, unsigned char *, size_t),
-                                void *p_rng)
+                                int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
     mbedtls_mpi K, L;
 
@@ -288,14 +299,14 @@ int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
      * well.
      */
     if (f_rng != NULL && P != NULL &&
-        (ret = mbedtls_mpi_is_prime_ext(P, 50, f_rng, p_rng)) != 0) {
-        ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+        (ret = mbedtls_mpi_is_prime_ext(P, 50, f_rng, p_rng, diagnostics)) != 0) {
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
         goto cleanup;
     }
 
     if (f_rng != NULL && Q != NULL &&
-        (ret = mbedtls_mpi_is_prime_ext(Q, 50, f_rng, p_rng)) != 0) {
-        ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+        (ret = mbedtls_mpi_is_prime_ext(Q, 50, f_rng, p_rng, diagnostics)) != 0) {
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
         goto cleanup;
     }
 #else
@@ -308,10 +319,10 @@ int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
      */
 
     if (P != NULL && Q != NULL && N != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, P, Q));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, P, Q, diagnostics));
         if (mbedtls_mpi_cmp_int(N, 1)  <= 0 ||
             mbedtls_mpi_cmp_mpi(&K, N) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -325,7 +336,7 @@ int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
             mbedtls_mpi_cmp_int(E, 1) <= 0 ||
             mbedtls_mpi_cmp_mpi(D, N) >= 0 ||
             mbedtls_mpi_cmp_mpi(E, N) >= 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -337,27 +348,27 @@ int mbedtls_rsa_validate_params(const mbedtls_mpi *N, const mbedtls_mpi *P,
     if (P != NULL && Q != NULL && D != NULL && E != NULL) {
         if (mbedtls_mpi_cmp_int(P, 1) <= 0 ||
             mbedtls_mpi_cmp_int(Q, 1) <= 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
 
         /* Compute DE-1 mod P-1 */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, D, E));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, P, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, &L));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, D, E, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, P, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, &L, diagnostics));
         if (mbedtls_mpi_cmp_int(&K, 0) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
 
         /* Compute DE-1 mod Q-1 */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, D, E));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, Q, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, &L));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, D, E, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&L, Q, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, &L, diagnostics));
         if (mbedtls_mpi_cmp_int(&K, 0) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -372,7 +383,7 @@ cleanup:
         ret += MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
     }
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -380,8 +391,10 @@ cleanup:
  */
 int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
                              const mbedtls_mpi *D,  const mbedtls_mpi *DP,
-                             const mbedtls_mpi *DQ, const mbedtls_mpi *QP)
+                             const mbedtls_mpi *DQ, const mbedtls_mpi *QP, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = 0;
 
     mbedtls_mpi K, L;
@@ -391,16 +404,16 @@ int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
     /* Check that DP - D == 0 mod P - 1 */
     if (DP != NULL) {
         if (P == NULL) {
-            ret = MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_BAD_INPUT_DATA);
             goto cleanup;
         }
 
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&L, DP, D));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&L, &L, &K));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, P, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&L, DP, D, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&L, &L, &K, diagnostics));
 
         if (mbedtls_mpi_cmp_int(&L, 0) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -408,16 +421,16 @@ int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
     /* Check that DQ - D == 0 mod Q - 1 */
     if (DQ != NULL) {
         if (Q == NULL) {
-            ret = MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_BAD_INPUT_DATA);
             goto cleanup;
         }
 
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, Q, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&L, DQ, D));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&L, &L, &K));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, Q, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&L, DQ, D, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&L, &L, &K, diagnostics));
 
         if (mbedtls_mpi_cmp_int(&L, 0) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -425,15 +438,15 @@ int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
     /* Check that QP * Q - 1 == 0 mod P */
     if (QP != NULL) {
         if (P == NULL || Q == NULL) {
-            ret = MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_BAD_INPUT_DATA);
             goto cleanup;
         }
 
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, QP, Q));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, P));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, QP, Q, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&K, &K, 1, diagnostics));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&K, &K, P, diagnostics));
         if (mbedtls_mpi_cmp_int(&K, 0) != 0) {
-            ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
             goto cleanup;
         }
     }
@@ -450,6 +463,6 @@ cleanup:
     mbedtls_mpi_free(&K);
     mbedtls_mpi_free(&L);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

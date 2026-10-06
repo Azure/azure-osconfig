@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file sha512.h
  * \brief This file contains SHA-384 and SHA-512 definitions and functions.
@@ -9,8 +12,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/sha512.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/sha512.h.
  */
 #ifndef MBEDTLS_SHA512_H
 #define MBEDTLS_SHA512_H
@@ -94,7 +97,7 @@ void mbedtls_sha512_clone(mbedtls_sha512_context *dst,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384);
+int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function feeds an input buffer into an ongoing
@@ -111,7 +114,7 @@ int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384);
  */
 int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
                           const unsigned char *input,
-                          size_t ilen);
+                          size_t ilen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function finishes the SHA-512 operation, and writes
@@ -127,7 +130,7 @@ int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
  * \return         A negative error code on failure.
  */
 int mbedtls_sha512_finish(mbedtls_sha512_context *ctx,
-                          unsigned char *output);
+                          unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function processes a single data block within
@@ -176,7 +179,7 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx,
 int mbedtls_sha512(const unsigned char *input,
                    size_t ilen,
                    unsigned char *output,
-                   int is384);
+                   int is384, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

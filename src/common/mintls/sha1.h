@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file sha1.h
  *
@@ -14,8 +17,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/sha1.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/sha1.h.
  */
 #ifndef MBEDTLS_SHA1_H
 #define MBEDTLS_SHA1_H
@@ -132,7 +135,7 @@ int mbedtls_sha1_starts(mbedtls_sha1_context *ctx);
  */
 int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
                         const unsigned char *input,
-                        size_t ilen);
+                        size_t ilen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function finishes the SHA-1 operation, and writes
@@ -151,7 +154,7 @@ int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
  * \return         A negative error code on failure.
  */
 int mbedtls_sha1_finish(mbedtls_sha1_context *ctx,
-                        unsigned char output[20]);
+                        unsigned char output[20], MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          SHA-1 process data block (internal use only).
@@ -196,7 +199,7 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx,
  */
 int mbedtls_sha1(const unsigned char *input,
                  size_t ilen,
-                 unsigned char output[20]);
+                 unsigned char output[20], MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

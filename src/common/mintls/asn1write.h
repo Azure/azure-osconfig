@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file asn1write.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/asn1write.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/asn1write.h.
  */
 #ifndef MBEDTLS_ASN1_WRITE_H
 #define MBEDTLS_ASN1_WRITE_H
@@ -21,7 +24,7 @@
     do                                                  \
     {                                                   \
         if ((ret = (f)) < 0)                         \
-        return ret;                              \
+        MINTLS_RETURN(ret);                              \
         else                                            \
         (g) += ret;                                 \
     } while (0)
@@ -52,7 +55,7 @@ extern "C" {
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start,
-                           size_t len);
+                           size_t len, MinTlsDiagnostics* diagnostics);
 /**
  * \brief           Write an ASN.1 tag in ASN.1 format.
  *
@@ -66,7 +69,7 @@ int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start,
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_tag(unsigned char **p, const unsigned char *start,
-                           unsigned char tag);
+                           unsigned char tag, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write raw buffer data.
@@ -82,7 +85,7 @@ int mbedtls_asn1_write_tag(unsigned char **p, const unsigned char *start,
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_raw_buffer(unsigned char **p, const unsigned char *start,
-                                  const unsigned char *buf, size_t size);
+                                  const unsigned char *buf, size_t size, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an arbitrary-precision number (#MBEDTLS_ASN1_INTEGER)
@@ -99,7 +102,7 @@ int mbedtls_asn1_write_raw_buffer(unsigned char **p, const unsigned char *start,
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start,
-                           const mbedtls_mpi *X);
+                           const mbedtls_mpi *X, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a NULL tag (#MBEDTLS_ASN1_NULL) with zero data
@@ -113,7 +116,7 @@ int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start,
  * \return          The number of bytes written to \p p on success.
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
-int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start);
+int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an OID tag (#MBEDTLS_ASN1_OID) and data
@@ -130,7 +133,7 @@ int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start);
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_oid(unsigned char **p, const unsigned char *start,
-                           const char *oid, size_t oid_len);
+                           const char *oid, size_t oid_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an AlgorithmIdentifier sequence in ASN.1 format.
@@ -150,7 +153,7 @@ int mbedtls_asn1_write_oid(unsigned char **p, const unsigned char *start,
 int mbedtls_asn1_write_algorithm_identifier(unsigned char **p,
                                             const unsigned char *start,
                                             const char *oid, size_t oid_len,
-                                            size_t par_len);
+                                            size_t par_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an AlgorithmIdentifier sequence in ASN.1 format.
@@ -171,7 +174,7 @@ int mbedtls_asn1_write_algorithm_identifier(unsigned char **p,
 int mbedtls_asn1_write_algorithm_identifier_ext(unsigned char **p,
                                                 const unsigned char *start,
                                                 const char *oid, size_t oid_len,
-                                                size_t par_len, int has_par);
+                                                size_t par_len, int has_par, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a boolean tag (#MBEDTLS_ASN1_BOOLEAN) and value
@@ -187,7 +190,7 @@ int mbedtls_asn1_write_algorithm_identifier_ext(unsigned char **p,
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
 int mbedtls_asn1_write_bool(unsigned char **p, const unsigned char *start,
-                            int boolean);
+                            int boolean, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an int tag (#MBEDTLS_ASN1_INTEGER) and value
@@ -203,7 +206,7 @@ int mbedtls_asn1_write_bool(unsigned char **p, const unsigned char *start,
  * \return          The number of bytes written to \p p on success.
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
-int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int val);
+int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an enum tag (#MBEDTLS_ASN1_ENUMERATED) and value
@@ -218,7 +221,7 @@ int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int va
  * \return          The number of bytes written to \p p on success.
  * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
  */
-int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int val);
+int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a string in ASN.1 format using a specific
@@ -239,7 +242,7 @@ int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int v
  */
 int mbedtls_asn1_write_tagged_string(unsigned char **p, const unsigned char *start,
                                      int tag, const char *text,
-                                     size_t text_len);
+                                     size_t text_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a string in ASN.1 format using the PrintableString
@@ -258,7 +261,7 @@ int mbedtls_asn1_write_tagged_string(unsigned char **p, const unsigned char *sta
  */
 int mbedtls_asn1_write_printable_string(unsigned char **p,
                                         const unsigned char *start,
-                                        const char *text, size_t text_len);
+                                        const char *text, size_t text_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a UTF8 string in ASN.1 format using the UTF8String
@@ -276,7 +279,7 @@ int mbedtls_asn1_write_printable_string(unsigned char **p,
  * \return          A negative error code on failure.
  */
 int mbedtls_asn1_write_utf8_string(unsigned char **p, const unsigned char *start,
-                                   const char *text, size_t text_len);
+                                   const char *text, size_t text_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a string in ASN.1 format using the IA5String
@@ -294,7 +297,7 @@ int mbedtls_asn1_write_utf8_string(unsigned char **p, const unsigned char *start
  * \return          A negative error code on failure.
  */
 int mbedtls_asn1_write_ia5_string(unsigned char **p, const unsigned char *start,
-                                  const char *text, size_t text_len);
+                                  const char *text, size_t text_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a bitstring tag (#MBEDTLS_ASN1_BIT_STRING) and
@@ -311,7 +314,7 @@ int mbedtls_asn1_write_ia5_string(unsigned char **p, const unsigned char *start,
  * \return          A negative error code on failure.
  */
 int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
-                                 const unsigned char *buf, size_t bits);
+                                 const unsigned char *buf, size_t bits, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function writes a named bitstring tag
@@ -333,7 +336,7 @@ int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
 int mbedtls_asn1_write_named_bitstring(unsigned char **p,
                                        const unsigned char *start,
                                        const unsigned char *buf,
-                                       size_t bits);
+                                       size_t bits, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write an octet string tag (#MBEDTLS_ASN1_OCTET_STRING)
@@ -350,7 +353,7 @@ int mbedtls_asn1_write_named_bitstring(unsigned char **p,
  * \return          A negative error code on failure.
  */
 int mbedtls_asn1_write_octet_string(unsigned char **p, const unsigned char *start,
-                                    const unsigned char *buf, size_t size);
+                                    const unsigned char *buf, size_t size, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Create or find a specific named_data entry for writing in a

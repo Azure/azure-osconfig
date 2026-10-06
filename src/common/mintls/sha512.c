@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  FIPS-180-2 compliant SHA-384/512 implementation
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/sha512.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/sha512.c.
  */
 /*
  *  The SHA-512 Secure Hash Standard was published by NIST in 2002.
@@ -245,10 +248,12 @@ void mbedtls_sha512_clone(mbedtls_sha512_context *dst,
 /*
  * SHA-512 context setup
  */
-int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384)
+int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (is384 != 0 && is384 != 1) {
-        return MBEDTLS_ERR_SHA512_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_SHA512_BAD_INPUT_DATA);
     }
 
     ctx->total[0] = 0;
@@ -276,7 +281,7 @@ int mbedtls_sha512_starts(mbedtls_sha512_context *ctx, int is384)
 
     ctx->is384 = is384;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #if !defined(MBEDTLS_SHA512_PROCESS_ALT)
@@ -741,14 +746,16 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx,
  */
 int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
                           const unsigned char *input,
-                          size_t ilen)
+                          size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     unsigned int left;
 
     if (ilen == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     left = (unsigned int) (ctx->total[0] & 0x7F);
@@ -764,7 +771,7 @@ int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, fill);
 
         if ((ret = mbedtls_internal_sha512_process(ctx, ctx->buffer)) != 0) {
-            return ret;
+            MINTLS_RETURN(ret);
         }
 
         input += fill;
@@ -776,7 +783,7 @@ int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
         size_t processed =
             mbedtls_internal_sha512_process_many(ctx, input, ilen);
         if (processed < SHA512_BLOCK_SIZE) {
-            return MBEDTLS_ERR_ERROR_GENERIC_ERROR;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ERROR_GENERIC_ERROR);
         }
 
         input += processed;
@@ -787,15 +794,17 @@ int mbedtls_sha512_update(mbedtls_sha512_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, ilen);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * SHA-512 final digest
  */
 int mbedtls_sha512_finish(mbedtls_sha512_context *ctx,
-                          unsigned char *output)
+                          unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned used;
     uint64_t high, low;
@@ -856,7 +865,7 @@ int mbedtls_sha512_finish(mbedtls_sha512_context *ctx,
 
 exit:
     mbedtls_sha512_free(ctx);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #endif /* !MBEDTLS_SHA512_ALT */
@@ -867,32 +876,34 @@ exit:
 int mbedtls_sha512(const unsigned char *input,
                    size_t ilen,
                    unsigned char *output,
-                   int is384)
+                   int is384, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha512_context ctx;
 
     if (is384 != 0 && is384 != 1) {
-        return MBEDTLS_ERR_SHA512_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_SHA512_BAD_INPUT_DATA);
     }
 
     mbedtls_sha512_init(&ctx);
 
-    if ((ret = mbedtls_sha512_starts(&ctx, is384)) != 0) {
+    if ((ret = mbedtls_sha512_starts(&ctx, is384, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha512_update(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_sha512_update(&ctx, input, ilen, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha512_finish(&ctx, output)) != 0) {
+    if ((ret = mbedtls_sha512_finish(&ctx, output, diagnostics)) != 0) {
         goto exit;
     }
 
 exit:
     mbedtls_sha512_free(&ctx);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

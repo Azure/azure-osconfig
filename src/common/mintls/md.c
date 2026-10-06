@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file md.c
  *
@@ -8,8 +11,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/md.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/md.c.
  */
 
 #include "common.h"
@@ -125,12 +128,14 @@ void mbedtls_md_free(mbedtls_md_context_t *ctx)
 }
 
 int mbedtls_md_clone(mbedtls_md_context_t *dst,
-                     const mbedtls_md_context_t *src)
+                     const mbedtls_md_context_t *src, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (dst == NULL || dst->md_info == NULL ||
         src == NULL || src->md_info == NULL ||
         dst->md_info != src->md_info) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     switch (src->md_info->type) {
@@ -147,28 +152,30 @@ int mbedtls_md_clone(mbedtls_md_context_t *dst,
             mbedtls_sha512_clone(dst->md_ctx, src->md_ctx);
             break;
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #define ALLOC(type)                                                   \
     do {                                                                \
         ctx->md_ctx = mbedtls_calloc(1, sizeof(mbedtls_##type##_context)); \
         if (ctx->md_ctx == NULL)                                       \
-        return MBEDTLS_ERR_MD_ALLOC_FAILED;                      \
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_ALLOC_FAILED);                      \
         mbedtls_##type##_init(ctx->md_ctx);                           \
     }                                                                   \
     while (0)
 
-int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac)
+int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
     if (md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     ctx->md_info = md_info;
@@ -189,99 +196,107 @@ int mbedtls_md_setup(mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info
             ALLOC(sha512);
             break;
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     if (hmac != 0) {
         ctx->hmac_ctx = mbedtls_calloc(2, md_info->block_size);
         if (ctx->hmac_ctx == NULL) {
             mbedtls_md_free(ctx);
-            return MBEDTLS_ERR_MD_ALLOC_FAILED;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_ALLOC_FAILED);
         }
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 #undef ALLOC
 
-int mbedtls_md_starts(mbedtls_md_context_t *ctx)
+int mbedtls_md_starts(mbedtls_md_context_t *ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (ctx == NULL || ctx->md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     switch (ctx->md_info->type) {
         case MBEDTLS_MD_SHA1:
-            return mbedtls_sha1_starts(ctx->md_ctx);
+            MINTLS_RETURN(mbedtls_sha1_starts(ctx->md_ctx));
         case MBEDTLS_MD_SHA256:
-            return mbedtls_sha256_starts(ctx->md_ctx, 0);
+            MINTLS_RETURN(mbedtls_sha256_starts(ctx->md_ctx, 0, diagnostics));
         case MBEDTLS_MD_SHA384:
-            return mbedtls_sha512_starts(ctx->md_ctx, 1);
+            MINTLS_RETURN(mbedtls_sha512_starts(ctx->md_ctx, 1, diagnostics));
         case MBEDTLS_MD_SHA512:
-            return mbedtls_sha512_starts(ctx->md_ctx, 0);
+            MINTLS_RETURN(mbedtls_sha512_starts(ctx->md_ctx, 0, diagnostics));
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 }
 
-int mbedtls_md_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen)
+int mbedtls_md_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (ctx == NULL || ctx->md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     switch (ctx->md_info->type) {
         case MBEDTLS_MD_SHA1:
-            return mbedtls_sha1_update(ctx->md_ctx, input, ilen);
+            MINTLS_RETURN(mbedtls_sha1_update(ctx->md_ctx, input, ilen, diagnostics));
         case MBEDTLS_MD_SHA256:
-            return mbedtls_sha256_update(ctx->md_ctx, input, ilen);
+            MINTLS_RETURN(mbedtls_sha256_update(ctx->md_ctx, input, ilen, diagnostics));
         case MBEDTLS_MD_SHA384:
-            return mbedtls_sha512_update(ctx->md_ctx, input, ilen);
+            MINTLS_RETURN(mbedtls_sha512_update(ctx->md_ctx, input, ilen, diagnostics));
         case MBEDTLS_MD_SHA512:
-            return mbedtls_sha512_update(ctx->md_ctx, input, ilen);
+            MINTLS_RETURN(mbedtls_sha512_update(ctx->md_ctx, input, ilen, diagnostics));
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 }
 
-int mbedtls_md_finish(mbedtls_md_context_t *ctx, unsigned char *output)
+int mbedtls_md_finish(mbedtls_md_context_t *ctx, unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (ctx == NULL || ctx->md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     switch (ctx->md_info->type) {
         case MBEDTLS_MD_SHA1:
-            return mbedtls_sha1_finish(ctx->md_ctx, output);
+            MINTLS_RETURN(mbedtls_sha1_finish(ctx->md_ctx, output, diagnostics));
         case MBEDTLS_MD_SHA256:
-            return mbedtls_sha256_finish(ctx->md_ctx, output);
+            MINTLS_RETURN(mbedtls_sha256_finish(ctx->md_ctx, output, diagnostics));
         case MBEDTLS_MD_SHA384:
-            return mbedtls_sha512_finish(ctx->md_ctx, output);
+            MINTLS_RETURN(mbedtls_sha512_finish(ctx->md_ctx, output, diagnostics));
         case MBEDTLS_MD_SHA512:
-            return mbedtls_sha512_finish(ctx->md_ctx, output);
+            MINTLS_RETURN(mbedtls_sha512_finish(ctx->md_ctx, output, diagnostics));
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 }
 
 int mbedtls_md(const mbedtls_md_info_t *md_info, const unsigned char *input, size_t ilen,
-               unsigned char *output)
+               unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     switch (md_info->type) {
         case MBEDTLS_MD_SHA1:
-            return mbedtls_sha1(input, ilen, output);
+            MINTLS_RETURN(mbedtls_sha1(input, ilen, output, diagnostics));
         case MBEDTLS_MD_SHA256:
-            return mbedtls_sha256(input, ilen, output, 0);
+            MINTLS_RETURN(mbedtls_sha256(input, ilen, output, 0, diagnostics));
         case MBEDTLS_MD_SHA384:
-            return mbedtls_sha512(input, ilen, output, 1);
+            MINTLS_RETURN(mbedtls_sha512(input, ilen, output, 1, diagnostics));
         case MBEDTLS_MD_SHA512:
-            return mbedtls_sha512(input, ilen, output, 0);
+            MINTLS_RETURN(mbedtls_sha512(input, ilen, output, 0, diagnostics));
         default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 }
 
@@ -383,24 +398,26 @@ const mbedtls_md_info_t *mbedtls_md_info_from_ctx(
     return ctx->MBEDTLS_PRIVATE(md_info);
 }
 
-int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen)
+int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char sum[MBEDTLS_MD_MAX_SIZE];
     unsigned char *ipad, *opad;
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     if (keylen > (size_t) ctx->md_info->block_size) {
-        if ((ret = mbedtls_md_starts(ctx)) != 0) {
+        if ((ret = mbedtls_md_starts(ctx, diagnostics)) != 0) {
             goto cleanup;
         }
-        if ((ret = mbedtls_md_update(ctx, key, keylen)) != 0) {
+        if ((ret = mbedtls_md_update(ctx, key, keylen, diagnostics)) != 0) {
             goto cleanup;
         }
-        if ((ret = mbedtls_md_finish(ctx, sum)) != 0) {
+        if ((ret = mbedtls_md_finish(ctx, sum, diagnostics)) != 0) {
             goto cleanup;
         }
 
@@ -417,106 +434,114 @@ int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key, 
     mbedtls_xor(ipad, ipad, key, keylen);
     mbedtls_xor(opad, opad, key, keylen);
 
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
+    if ((ret = mbedtls_md_starts(ctx, diagnostics)) != 0) {
         goto cleanup;
     }
     if ((ret = mbedtls_md_update(ctx, ipad,
-                                 ctx->md_info->block_size)) != 0) {
+                                 ctx->md_info->block_size, diagnostics)) != 0) {
         goto cleanup;
     }
 
 cleanup:
     mbedtls_platform_zeroize(sum, sizeof(sum));
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
-int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen)
+int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
-    return mbedtls_md_update(ctx, input, ilen);
+    MINTLS_RETURN(mbedtls_md_update(ctx, input, ilen, diagnostics));
 }
 
-int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output)
+int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char tmp[MBEDTLS_MD_MAX_SIZE];
     unsigned char *opad;
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
 
-    if ((ret = mbedtls_md_finish(ctx, tmp)) != 0) {
-        return ret;
+    if ((ret = mbedtls_md_finish(ctx, tmp, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
-        return ret;
+    if ((ret = mbedtls_md_starts(ctx, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
     if ((ret = mbedtls_md_update(ctx, opad,
-                                 ctx->md_info->block_size)) != 0) {
-        return ret;
+                                 ctx->md_info->block_size, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
     if ((ret = mbedtls_md_update(ctx, tmp,
-                                 ctx->md_info->size)) != 0) {
-        return ret;
+                                 ctx->md_info->size, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
-    return mbedtls_md_finish(ctx, output);
+    MINTLS_RETURN(mbedtls_md_finish(ctx, output, diagnostics));
 }
 
-int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx)
+int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char *ipad;
 
     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     ipad = (unsigned char *) ctx->hmac_ctx;
 
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
-        return ret;
+    if ((ret = mbedtls_md_starts(ctx, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
-    return mbedtls_md_update(ctx, ipad, ctx->md_info->block_size);
+    MINTLS_RETURN(mbedtls_md_update(ctx, ipad, ctx->md_info->block_size, diagnostics));
 }
 
 int mbedtls_md_hmac(const mbedtls_md_info_t *md_info,
                     const unsigned char *key, size_t keylen,
                     const unsigned char *input, size_t ilen,
-                    unsigned char *output)
+                    unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_md_context_t ctx;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MD_BAD_INPUT_DATA);
     }
 
     mbedtls_md_init(&ctx);
 
-    if ((ret = mbedtls_md_setup(&ctx, md_info, 1)) != 0) {
+    if ((ret = mbedtls_md_setup(&ctx, md_info, 1, diagnostics)) != 0) {
         goto cleanup;
     }
 
-    if ((ret = mbedtls_md_hmac_starts(&ctx, key, keylen)) != 0) {
+    if ((ret = mbedtls_md_hmac_starts(&ctx, key, keylen, diagnostics)) != 0) {
         goto cleanup;
     }
-    if ((ret = mbedtls_md_hmac_update(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_md_hmac_update(&ctx, input, ilen, diagnostics)) != 0) {
         goto cleanup;
     }
-    if ((ret = mbedtls_md_hmac_finish(&ctx, output)) != 0) {
+    if ((ret = mbedtls_md_hmac_finish(&ctx, output, diagnostics)) != 0) {
         goto cleanup;
     }
 
 cleanup:
     mbedtls_md_free(&ctx);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

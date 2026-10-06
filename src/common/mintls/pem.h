@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file pem.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/pem.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/pem.h.
  */
 #ifndef MBEDTLS_PEM_H
 #define MBEDTLS_PEM_H
@@ -94,7 +97,7 @@ void mbedtls_pem_init(mbedtls_pem_context *ctx);
 int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const char *footer,
                             const unsigned char *data,
                             const unsigned char *pwd,
-                            size_t pwdlen, size_t *use_len);
+                            size_t pwdlen, size_t *use_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Get the pointer to the decoded binary data in a PEM context.

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file cipher_wrap.c
  *
@@ -8,8 +11,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/cipher_wrap.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/cipher_wrap.c.
  */
 
 #include "common.h"
@@ -55,23 +58,29 @@ void gcm_ctx_free(void *ctx)
 #endif /* MBEDTLS_GCM_C */
 
 int aes_crypt_ecb_wrap(void *ctx, mbedtls_operation_t operation,
-                              const unsigned char *input, unsigned char *output)
+                              const unsigned char *input, unsigned char *output, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_aes_crypt_ecb((mbedtls_aes_context *) ctx, operation, input, output);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_aes_crypt_ecb((mbedtls_aes_context *) ctx, operation, input, output, diagnostics));
 }
 
 #if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 int aes_setkey_dec_wrap(void *ctx, const unsigned char *key,
-                               unsigned int key_bitlen)
+                               unsigned int key_bitlen, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_aes_setkey_dec((mbedtls_aes_context *) ctx, key, key_bitlen);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_aes_setkey_dec((mbedtls_aes_context *) ctx, key, key_bitlen, diagnostics));
 }
 #endif
 
 int aes_setkey_enc_wrap(void *ctx, const unsigned char *key,
-                               unsigned int key_bitlen)
+                               unsigned int key_bitlen, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_aes_setkey_enc((mbedtls_aes_context *) ctx, key, key_bitlen);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_aes_setkey_enc((mbedtls_aes_context *) ctx, key, key_bitlen, diagnostics));
 }
 
 void *aes_ctx_alloc(void)
@@ -140,10 +149,12 @@ static const mbedtls_cipher_info_t aes_256_ecb_info = {
 #endif
 
 int gcm_aes_setkey_wrap(void *ctx, const unsigned char *key,
-                               unsigned int key_bitlen)
+                               unsigned int key_bitlen, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_gcm_setkey((mbedtls_gcm_context *) ctx, MBEDTLS_CIPHER_ID_AES,
-                              key, key_bitlen);
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_gcm_setkey((mbedtls_gcm_context *) ctx, MBEDTLS_CIPHER_ID_AES,
+                              key, key_bitlen, diagnostics));
 }
 
 #if defined(MBEDTLS_CIPHER_HAVE_GCM_AES_VIA_LEGACY_OR_USE_PSA)

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file cipher_wrap.h
  *
@@ -9,8 +12,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/cipher_wrap.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/cipher_wrap.h.
  */
 #ifndef MBEDTLS_CIPHER_WRAP_H
 #define MBEDTLS_CIPHER_WRAP_H
@@ -44,16 +47,16 @@ struct mbedtls_cipher_base_t {
 
     /** Encrypt using ECB */
     int (*ecb_func)(void *ctx, mbedtls_operation_t mode,
-                    const unsigned char *input, unsigned char *output);
+                    const unsigned char *input, unsigned char *output, MinTlsDiagnostics* diagnostics);
 
     /** Set key for encryption purposes */
     int (*setkey_enc_func)(void *ctx, const unsigned char *key,
-                           unsigned int key_bitlen);
+                           unsigned int key_bitlen, MinTlsDiagnostics* diagnostics);
 
 #if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
     /** Set key for decryption purposes */
     int (*setkey_dec_func)(void *ctx, const unsigned char *key,
-                           unsigned int key_bitlen);
+                           unsigned int key_bitlen, MinTlsDiagnostics* diagnostics);
 #endif
 
     /** Allocate a new context */

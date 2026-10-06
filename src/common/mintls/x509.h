@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file x509.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/x509.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/x509.h.
  */
 #ifndef MBEDTLS_X509_H
 #define MBEDTLS_X509_H
@@ -321,7 +324,7 @@ mbedtls_x509_san_list;
  * \return         The length of the string written (not including the
  *                 terminated nul byte), or a negative error code.
  */
-int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn);
+int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief            Convert the certificate DN string \p name into
@@ -372,7 +375,7 @@ static inline mbedtls_x509_name *mbedtls_x509_dn_get_next(
  * \return         The length of the string written (not including the
  *                 terminated nul byte), or a negative error code.
  */
-int mbedtls_x509_serial_gets(char *buf, size_t size, const mbedtls_x509_buf *serial);
+int mbedtls_x509_serial_gets(char *buf, size_t size, const mbedtls_x509_buf *serial, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Compare pair of mbedtls_x509_time.
@@ -458,7 +461,7 @@ int mbedtls_x509_time_is_future(const mbedtls_x509_time *from);
  * \return         Another negative value for any other failure.
  */
 int mbedtls_x509_parse_subject_alt_name(const mbedtls_x509_buf *san_buf,
-                                        mbedtls_x509_subject_alternative_name *san);
+                                        mbedtls_x509_subject_alternative_name *san, MinTlsDiagnostics* diagnostics);
 /**
  * \brief          Unallocate all data related to subject alternative name
  *
@@ -486,7 +489,7 @@ size_t mbedtls_x509_crt_parse_cn_inet_pton(const char *cn, void *dst);
 #define MBEDTLS_X509_SAFE_SNPRINTF                          \
     do {                                                    \
         if (ret < 0 || (size_t) ret >= n)                  \
-        return MBEDTLS_ERR_X509_BUFFER_TOO_SMALL;    \
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_X509_BUFFER_TOO_SMALL);    \
                                                           \
         n -= (size_t) ret;                                  \
         p += (size_t) ret;                                  \

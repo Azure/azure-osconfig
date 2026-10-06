@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Core bignum functions
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/bignum_core.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/bignum_core.c.
  */
 
 #include "common.h"
@@ -205,12 +208,14 @@ void mbedtls_mpi_core_cond_swap(mbedtls_mpi_uint *X,
 int mbedtls_mpi_core_read_le(mbedtls_mpi_uint *X,
                              size_t X_limbs,
                              const unsigned char *input,
-                             size_t input_length)
+                             size_t input_length, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     const size_t limbs = CHARS_TO_LIMBS(input_length);
 
     if (X_limbs < limbs) {
-        return MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL);
     }
 
     if (X != NULL) {
@@ -222,24 +227,26 @@ int mbedtls_mpi_core_read_le(mbedtls_mpi_uint *X,
         }
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_mpi_core_read_be(mbedtls_mpi_uint *X,
                              size_t X_limbs,
                              const unsigned char *input,
-                             size_t input_length)
+                             size_t input_length, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     const size_t limbs = CHARS_TO_LIMBS(input_length);
 
     if (X_limbs < limbs) {
-        return MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL);
     }
 
     /* If X_limbs is 0, input_length must also be 0 (from previous test).
      * Nothing to do. */
     if (X_limbs == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     memset(X, 0, X_limbs * ciL);
@@ -253,14 +260,16 @@ int mbedtls_mpi_core_read_be(mbedtls_mpi_uint *X,
 
     mbedtls_mpi_core_bigendian_to_host(X, X_limbs);
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_mpi_core_write_le(const mbedtls_mpi_uint *A,
                               size_t A_limbs,
                               unsigned char *output,
-                              size_t output_length)
+                              size_t output_length, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t stored_bytes = A_limbs * ciL;
     size_t bytes_to_copy;
 
@@ -273,7 +282,7 @@ int mbedtls_mpi_core_write_le(const mbedtls_mpi_uint *A,
          * However A may fit if its leading bytes are zero. */
         for (size_t i = bytes_to_copy; i < stored_bytes; i++) {
             if (GET_BYTE(A, i) != 0) {
-                return MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL);
             }
         }
     }
@@ -287,14 +296,16 @@ int mbedtls_mpi_core_write_le(const mbedtls_mpi_uint *A,
         memset(output + stored_bytes, 0, output_length - stored_bytes);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int mbedtls_mpi_core_write_be(const mbedtls_mpi_uint *X,
                               size_t X_limbs,
                               unsigned char *output,
-                              size_t output_length)
+                              size_t output_length, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t stored_bytes;
     size_t bytes_to_copy;
     unsigned char *p;
@@ -317,7 +328,7 @@ int mbedtls_mpi_core_write_be(const mbedtls_mpi_uint *X,
         p = output;
         for (size_t i = bytes_to_copy; i < stored_bytes; i++) {
             if (GET_BYTE(X, i) != 0) {
-                return MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL);
             }
         }
     }
@@ -326,7 +337,7 @@ int mbedtls_mpi_core_write_be(const mbedtls_mpi_uint *X,
         p[bytes_to_copy - i - 1] = GET_BYTE(X, i);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 void mbedtls_mpi_core_shift_r(mbedtls_mpi_uint *X, size_t limbs,
@@ -582,17 +593,19 @@ void mbedtls_mpi_core_montmul(mbedtls_mpi_uint *X,
 }
 
 int mbedtls_mpi_core_get_mont_r2_unsafe(mbedtls_mpi *X,
-                                        const mbedtls_mpi *N)
+                                        const mbedtls_mpi *N, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(X, N->n * 2 * biL));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(X, X, N));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(X, N->n));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, 1, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(X, N->n * 2 * biL, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(X, X, N, diagnostics));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(X, N->n, diagnostics));
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 MBEDTLS_STATIC_TESTABLE
@@ -617,32 +630,36 @@ void mbedtls_mpi_core_ct_uint_table_lookup(mbedtls_mpi_uint *dest,
 int mbedtls_mpi_core_fill_random(
     mbedtls_mpi_uint *X, size_t X_limbs,
     size_t n_bytes,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+    int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const size_t limbs = CHARS_TO_LIMBS(n_bytes);
     const size_t overhead = (limbs * ciL) - n_bytes;
 
     if (X_limbs < limbs) {
-        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_MPI_BAD_INPUT_DATA);
     }
 
     memset(X, 0, overhead);
     memset((unsigned char *) X + limbs * ciL, 0, (X_limbs - limbs) * ciL);
-    MBEDTLS_MPI_CHK(f_rng(p_rng, (unsigned char *) X + overhead, n_bytes));
+    MBEDTLS_MPI_CHK(f_rng(p_rng, (unsigned char *) X + overhead, n_bytes, diagnostics));
     mbedtls_mpi_core_bigendian_to_host(X, limbs);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int mbedtls_mpi_core_random(mbedtls_mpi_uint *X,
                             mbedtls_mpi_uint min,
                             const mbedtls_mpi_uint *N,
                             size_t limbs,
-                            int (*f_rng)(void *, unsigned char *, size_t),
-                            void *p_rng)
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                            void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_ct_condition_t ge_lower = MBEDTLS_CT_TRUE, lt_upper = MBEDTLS_CT_FALSE;
     size_t n_bits = mbedtls_mpi_core_bitlen(N, limbs);
     size_t n_bytes = (n_bits + 7) / 8;
@@ -678,11 +695,11 @@ int mbedtls_mpi_core_random(mbedtls_mpi_uint *X,
     do {
         MBEDTLS_MPI_CHK(mbedtls_mpi_core_fill_random(X, limbs,
                                                      n_bytes,
-                                                     f_rng, p_rng));
+                                                     f_rng, p_rng, diagnostics));
         mbedtls_mpi_core_shift_r(X, limbs, 8 * n_bytes - n_bits);
 
         if (--count == 0) {
-            ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+            ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_MPI_NOT_ACCEPTABLE);
             goto cleanup;
         }
 
@@ -691,7 +708,7 @@ int mbedtls_mpi_core_random(mbedtls_mpi_uint *X,
     } while (mbedtls_ct_bool_and(ge_lower, lt_upper) == MBEDTLS_CT_FALSE);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 size_t exp_mod_get_window_size(size_t Ebits)

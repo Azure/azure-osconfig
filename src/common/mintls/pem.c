@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Privacy Enhanced Mail (PEM) decoding
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/pem.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/pem.c.
  */
 
 #include "common.h"
@@ -32,8 +35,10 @@ void mbedtls_pem_init(mbedtls_pem_context *ctx)
  * Read a 16-byte hex string and convert it to binary
  */
 int pem_get_iv(const unsigned char *s, unsigned char *iv,
-                      size_t iv_len)
+                      size_t iv_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t i, j, k;
 
     memset(iv, 0, iv_len);
@@ -48,7 +53,7 @@ int pem_get_iv(const unsigned char *s, unsigned char *iv,
         if (*s >= 'a' && *s <= 'f') {
             j = *s - 'W';
         } else {
-            return MBEDTLS_ERR_PEM_INVALID_ENC_IV;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_ENC_IV);
         }
 
         k = ((i & 1) != 0) ? j : j << 4;
@@ -56,13 +61,15 @@ int pem_get_iv(const unsigned char *s, unsigned char *iv,
         iv[i >> 1] = (unsigned char) (iv[i >> 1] | k);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int pem_pbkdf1(unsigned char *key, size_t keylen,
                       unsigned char *iv,
-                      const unsigned char *pwd, size_t pwdlen)
+                      const unsigned char *pwd, size_t pwdlen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_md_context_t md5_ctx;
     const mbedtls_md_info_t *md5_info;
     unsigned char md5sum[16];
@@ -73,23 +80,23 @@ int pem_pbkdf1(unsigned char *key, size_t keylen,
 
     /* Prepare the context. (setup() errors gracefully on NULL info.) */
     md5_info = mbedtls_md_info_from_type(MBEDTLS_MD_MD5);
-    if ((ret = mbedtls_md_setup(&md5_ctx, md5_info, 0)) != 0) {
+    if ((ret = mbedtls_md_setup(&md5_ctx, md5_info, 0, diagnostics)) != 0) {
         goto exit;
     }
 
     /*
      * key[ 0..15] = MD5(pwd || IV)
      */
-    if ((ret = mbedtls_md_starts(&md5_ctx)) != 0) {
+    if ((ret = mbedtls_md_starts(&md5_ctx, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_update(&md5_ctx, pwd, pwdlen)) != 0) {
+    if ((ret = mbedtls_md_update(&md5_ctx, pwd, pwdlen, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_update(&md5_ctx, iv,  8)) != 0) {
+    if ((ret = mbedtls_md_update(&md5_ctx, iv,  8, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_finish(&md5_ctx, md5sum)) != 0) {
+    if ((ret = mbedtls_md_finish(&md5_ctx, md5sum, diagnostics)) != 0) {
         goto exit;
     }
 
@@ -103,19 +110,19 @@ int pem_pbkdf1(unsigned char *key, size_t keylen,
     /*
      * key[16..23] = MD5(key[ 0..15] || pwd || IV])
      */
-    if ((ret = mbedtls_md_starts(&md5_ctx)) != 0) {
+    if ((ret = mbedtls_md_starts(&md5_ctx, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_update(&md5_ctx, md5sum, 16)) != 0) {
+    if ((ret = mbedtls_md_update(&md5_ctx, md5sum, 16, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_update(&md5_ctx, pwd, pwdlen)) != 0) {
+    if ((ret = mbedtls_md_update(&md5_ctx, pwd, pwdlen, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_update(&md5_ctx, iv, 8)) != 0) {
+    if ((ret = mbedtls_md_update(&md5_ctx, iv, 8, diagnostics)) != 0) {
         goto exit;
     }
-    if ((ret = mbedtls_md_finish(&md5_ctx, md5sum)) != 0) {
+    if ((ret = mbedtls_md_finish(&md5_ctx, md5sum, diagnostics)) != 0) {
         goto exit;
     }
 
@@ -130,7 +137,7 @@ exit:
     mbedtls_md_free(&md5_ctx);
     mbedtls_platform_zeroize(md5sum, 16);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -138,19 +145,21 @@ exit:
  */
 int pem_aes_decrypt(unsigned char aes_iv[16], unsigned int keylen,
                            unsigned char *buf, size_t buflen,
-                           const unsigned char *pwd, size_t pwdlen)
+                           const unsigned char *pwd, size_t pwdlen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_aes_context aes_ctx;
     unsigned char aes_key[32];
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     mbedtls_aes_init(&aes_ctx);
 
-    if ((ret = pem_pbkdf1(aes_key, keylen, aes_iv, pwd, pwdlen)) != 0) {
+    if ((ret = pem_pbkdf1(aes_key, keylen, aes_iv, pwd, pwdlen, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_aes_setkey_dec(&aes_ctx, aes_key, keylen * 8)) != 0) {
+    if ((ret = mbedtls_aes_setkey_dec(&aes_ctx, aes_key, keylen * 8, diagnostics)) != 0) {
         goto exit;
     }
     ret = mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, buflen,
@@ -160,39 +169,43 @@ exit:
     mbedtls_aes_free(&aes_ctx);
     mbedtls_platform_zeroize(aes_key, keylen);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
-int pem_check_pkcs_padding(unsigned char *input, size_t input_len, size_t *data_len)
+int pem_check_pkcs_padding(unsigned char *input, size_t input_len, size_t *data_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     /* input_len > 0 is not guaranteed by mbedtls_pem_read_buffer(). */
     if (input_len < 1) {
-        return MBEDTLS_ERR_PEM_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_DATA);
     }
     size_t pad_len = input[input_len - 1];
     size_t i;
 
     if (pad_len > input_len) {
-        return MBEDTLS_ERR_PEM_PASSWORD_MISMATCH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_PASSWORD_MISMATCH);
     }
 
     *data_len = input_len - pad_len;
 
     for (i = *data_len; i < input_len; i++) {
         if (input[i] != pad_len) {
-            return MBEDTLS_ERR_PEM_PASSWORD_MISMATCH;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_PASSWORD_MISMATCH);
         }
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #endif /* PEM_RFC1421 */
 
 int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const char *footer,
                             const unsigned char *data, const unsigned char *pwd,
-                            size_t pwdlen, size_t *use_len)
+                            size_t pwdlen, size_t *use_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret, enc;
     size_t len;
     unsigned char *buf;
@@ -206,19 +219,19 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
 #endif /* PEM_RFC1421 */
 
     if (ctx == NULL) {
-        return MBEDTLS_ERR_PEM_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_BAD_INPUT_DATA);
     }
 
     s1 = (unsigned char *) strstr((const char *) data, header);
 
     if (s1 == NULL) {
-        return MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT);
     }
 
     s2 = (unsigned char *) strstr((const char *) data, footer);
 
     if (s2 == NULL || s2 <= s1) {
-        return MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT);
     }
 
     s1 += strlen(header);
@@ -231,7 +244,7 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
     if (*s1 == '\n') {
         s1++;
     } else {
-        return MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT);
     }
 
     end = s2;
@@ -260,12 +273,12 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
         if (*s1 == '\n') {
             s1++;
         } else {
-            return MBEDTLS_ERR_PEM_INVALID_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_DATA);
         }
 
         if (s2 - s1 >= 14 && memcmp(s1, "DEK-Info: AES-", 14) == 0) {
             if (s2 - s1 < 22) {
-                return MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG);
             } else if (memcmp(s1, "DEK-Info: AES-128-CBC,", 22) == 0) {
                 enc_alg = MBEDTLS_CIPHER_AES_128_CBC;
             } else if (memcmp(s1, "DEK-Info: AES-192-CBC,", 22) == 0) {
@@ -273,19 +286,19 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
             } else if (memcmp(s1, "DEK-Info: AES-256-CBC,", 22) == 0) {
                 enc_alg = MBEDTLS_CIPHER_AES_256_CBC;
             } else {
-                return MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG);
             }
 
             s1 += 22;
-            if (s2 - s1 < 32 || pem_get_iv(s1, pem_iv, 16) != 0) {
-                return MBEDTLS_ERR_PEM_INVALID_ENC_IV;
+            if (s2 - s1 < 32 || pem_get_iv(s1, pem_iv, 16, diagnostics) != 0) {
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_ENC_IV);
             }
 
             s1 += 32;
         }
 
         if (enc_alg == MBEDTLS_CIPHER_NONE) {
-            return MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_UNKNOWN_ENC_ALG);
         }
 
         if (*s1 == '\r') {
@@ -294,78 +307,78 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
         if (*s1 == '\n') {
             s1++;
         } else {
-            return MBEDTLS_ERR_PEM_INVALID_DATA;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_DATA);
         }
 #else
-        return MBEDTLS_ERR_PEM_FEATURE_UNAVAILABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_FEATURE_UNAVAILABLE);
 #endif /* PEM_RFC1421 */
     }
 
     if (s1 >= s2) {
-        return MBEDTLS_ERR_PEM_INVALID_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_INVALID_DATA);
     }
 
-    ret = mbedtls_base64_decode(NULL, 0, &len, s1, (size_t) (s2 - s1));
+    ret = mbedtls_base64_decode(NULL, 0, &len, s1, (size_t) (s2 - s1), diagnostics);
 
     if (ret == MBEDTLS_ERR_BASE64_INVALID_CHARACTER) {
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_PEM_INVALID_DATA, ret);
+        MINTLS_RETURN(MBEDTLS_ERROR_ADD(MBEDTLS_ERR_PEM_INVALID_DATA, ret));
     }
 
     if (len == 0) {
-        return MBEDTLS_ERR_PEM_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_BAD_INPUT_DATA);
     }
 
     if ((buf = mbedtls_calloc(1, len)) == NULL) {
-        return MBEDTLS_ERR_PEM_ALLOC_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_ALLOC_FAILED);
     }
 
-    if ((ret = mbedtls_base64_decode(buf, len, &len, s1, (size_t) (s2 - s1))) != 0) {
+    if ((ret = mbedtls_base64_decode(buf, len, &len, s1, (size_t) (s2 - s1), diagnostics)) != 0) {
         mbedtls_zeroize_and_free(buf, len);
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_PEM_INVALID_DATA, ret);
+        MINTLS_RETURN(MBEDTLS_ERROR_ADD(MBEDTLS_ERR_PEM_INVALID_DATA, ret));
     }
 
     if (enc != 0) {
 #if defined(PEM_RFC1421)
         if (pwd == NULL) {
             mbedtls_zeroize_and_free(buf, len);
-            return MBEDTLS_ERR_PEM_PASSWORD_REQUIRED;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_PASSWORD_REQUIRED);
         }
 
         ret = 0;
 
         if (enc_alg == MBEDTLS_CIPHER_AES_128_CBC) {
-            ret = pem_aes_decrypt(pem_iv, 16, buf, len, pwd, pwdlen);
+            ret = pem_aes_decrypt(pem_iv, 16, buf, len, pwd, pwdlen, diagnostics);
         } else if (enc_alg == MBEDTLS_CIPHER_AES_192_CBC) {
-            ret = pem_aes_decrypt(pem_iv, 24, buf, len, pwd, pwdlen);
+            ret = pem_aes_decrypt(pem_iv, 24, buf, len, pwd, pwdlen, diagnostics);
         } else if (enc_alg == MBEDTLS_CIPHER_AES_256_CBC) {
-            ret = pem_aes_decrypt(pem_iv, 32, buf, len, pwd, pwdlen);
+            ret = pem_aes_decrypt(pem_iv, 32, buf, len, pwd, pwdlen, diagnostics);
         }
 
         if (ret != 0) {
             mbedtls_zeroize_and_free(buf, len);
-            return ret;
+            MINTLS_RETURN(ret);
         }
 
         /* Check PKCS padding and update data length based on padding info.
          * This can be used to detect invalid padding data and password
          * mismatches. */
         size_t unpadded_len;
-        ret = pem_check_pkcs_padding(buf, len, &unpadded_len);
+        ret = pem_check_pkcs_padding(buf, len, &unpadded_len, diagnostics);
         if (ret != 0) {
             mbedtls_zeroize_and_free(buf, len);
-            return ret;
+            MINTLS_RETURN(ret);
         }
         len = unpadded_len;
 #else
         mbedtls_zeroize_and_free(buf, len);
-        return MBEDTLS_ERR_PEM_FEATURE_UNAVAILABLE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PEM_FEATURE_UNAVAILABLE);
 #endif /* PEM_RFC1421 */
     }
 
     ctx->buf = buf;
     ctx->buflen = len;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 void mbedtls_pem_free(mbedtls_pem_context *ctx)

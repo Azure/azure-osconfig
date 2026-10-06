@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file cipher.h
  *
@@ -11,8 +14,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/cipher.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/cipher.h.
  */
 
 #ifndef MBEDTLS_CIPHER_H
@@ -325,7 +328,7 @@ typedef struct mbedtls_cipher_context_t {
      * rather than the internal type mbedtls_ct_condition_t. */
     int(*MBEDTLS_PRIVATE(get_padding))(unsigned char *input, size_t ilen,
                                        size_t *data_len,
-                                       size_t *invalid_padding);
+                                       size_t *invalid_padding, MinTlsDiagnostics* diagnostics);
 #endif
 
     /** Buffer for input that has not been processed yet. */
@@ -607,7 +610,7 @@ void mbedtls_cipher_free(mbedtls_cipher_context_t *ctx);
  *                      cipher-specific context fails.
  */
 int mbedtls_cipher_setup(mbedtls_cipher_context_t *ctx,
-                         const mbedtls_cipher_info_t *cipher_info);
+                         const mbedtls_cipher_info_t *cipher_info, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief        This function returns the block size of the given cipher
@@ -767,7 +770,7 @@ static inline mbedtls_operation_t mbedtls_cipher_get_operation(
 int mbedtls_cipher_setkey(mbedtls_cipher_context_t *ctx,
                           const unsigned char *key,
                           int key_bitlen,
-                          const mbedtls_operation_t operation);
+                          const mbedtls_operation_t operation, MinTlsDiagnostics* diagnostics);
 
 #if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
 /**
@@ -786,7 +789,7 @@ int mbedtls_cipher_setkey(mbedtls_cipher_context_t *ctx,
  *                      does not support padding.
  */
 int mbedtls_cipher_set_padding_mode(mbedtls_cipher_context_t *ctx,
-                                    mbedtls_cipher_padding_t mode);
+                                    mbedtls_cipher_padding_t mode, MinTlsDiagnostics* diagnostics);
 #endif /* MBEDTLS_CIPHER_MODE_WITH_PADDING */
 
 /**
@@ -815,7 +818,7 @@ int mbedtls_cipher_set_padding_mode(mbedtls_cipher_context_t *ctx,
  */
 int mbedtls_cipher_set_iv(mbedtls_cipher_context_t *ctx,
                           const unsigned char *iv,
-                          size_t iv_len);
+                          size_t iv_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief         This function resets the cipher state.
@@ -850,7 +853,7 @@ int mbedtls_cipher_set_iv(mbedtls_cipher_context_t *ctx,
  * \return        #MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA on
  *                parameter-verification failure.
  */
-int mbedtls_cipher_reset(mbedtls_cipher_context_t *ctx);
+int mbedtls_cipher_reset(mbedtls_cipher_context_t *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               This function adds additional data for AEAD ciphers.
@@ -865,7 +868,7 @@ int mbedtls_cipher_reset(mbedtls_cipher_context_t *ctx);
  * \return              A specific error code on failure.
  */
 int mbedtls_cipher_update_ad(mbedtls_cipher_context_t *ctx,
-                             const unsigned char *ad, size_t ad_len);
+                             const unsigned char *ad, size_t ad_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The generic cipher update function. It encrypts or
@@ -900,7 +903,7 @@ int mbedtls_cipher_update_ad(mbedtls_cipher_context_t *ctx,
 int mbedtls_cipher_update(mbedtls_cipher_context_t *ctx,
                           const unsigned char *input,
                           size_t ilen, unsigned char *output,
-                          size_t *olen);
+                          size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The generic cipher finalization function. If data still
@@ -944,7 +947,7 @@ int mbedtls_cipher_update(mbedtls_cipher_context_t *ctx,
  * \return              A cipher-specific error code on failure.
  */
 int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
-                          unsigned char *output, size_t *olen);
+                          unsigned char *output, size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The generic cipher finalization function. If data still
@@ -991,7 +994,7 @@ int mbedtls_cipher_finish(mbedtls_cipher_context_t *ctx,
  */
 int mbedtls_cipher_finish_padded(mbedtls_cipher_context_t *ctx,
                                  unsigned char *output, size_t *olen,
-                                 size_t *invalid_padding);
+                                 size_t *invalid_padding, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               This function writes a tag for AEAD ciphers.
@@ -1011,7 +1014,7 @@ int mbedtls_cipher_finish_padded(mbedtls_cipher_context_t *ctx,
  * \return              A specific error code on failure.
  */
 int mbedtls_cipher_write_tag(mbedtls_cipher_context_t *ctx,
-                             unsigned char *tag, size_t tag_len);
+                             unsigned char *tag, size_t tag_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               This function checks the tag for AEAD ciphers.
@@ -1028,7 +1031,7 @@ int mbedtls_cipher_write_tag(mbedtls_cipher_context_t *ctx,
  * \return              A specific error code on failure.
  */
 int mbedtls_cipher_check_tag(mbedtls_cipher_context_t *ctx,
-                             const unsigned char *tag, size_t tag_len);
+                             const unsigned char *tag, size_t tag_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The generic all-in-one encryption/decryption function,
@@ -1066,7 +1069,7 @@ int mbedtls_cipher_check_tag(mbedtls_cipher_context_t *ctx,
 int mbedtls_cipher_crypt(mbedtls_cipher_context_t *ctx,
                          const unsigned char *iv, size_t iv_len,
                          const unsigned char *input, size_t ilen,
-                         unsigned char *output, size_t *olen);
+                         unsigned char *output, size_t *olen, MinTlsDiagnostics* diagnostics);
 
 #if defined(MBEDTLS_CIPHER_MODE_AEAD) || defined(MBEDTLS_NIST_KW_C)
 /**
@@ -1118,7 +1121,7 @@ int mbedtls_cipher_auth_encrypt_ext(mbedtls_cipher_context_t *ctx,
                                     const unsigned char *ad, size_t ad_len,
                                     const unsigned char *input, size_t ilen,
                                     unsigned char *output, size_t output_len,
-                                    size_t *olen, size_t tag_len);
+                                    size_t *olen, size_t tag_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               The authenticated encryption (AEAD/NIST_KW) function.
@@ -1174,7 +1177,7 @@ int mbedtls_cipher_auth_decrypt_ext(mbedtls_cipher_context_t *ctx,
                                     const unsigned char *ad, size_t ad_len,
                                     const unsigned char *input, size_t ilen,
                                     unsigned char *output, size_t output_len,
-                                    size_t *olen, size_t tag_len);
+                                    size_t *olen, size_t tag_len, MinTlsDiagnostics* diagnostics);
 #endif /* MBEDTLS_CIPHER_MODE_AEAD || MBEDTLS_NIST_KW_C */
 #ifdef __cplusplus
 }

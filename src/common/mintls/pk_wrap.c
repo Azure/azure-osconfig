@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Public Key abstraction layer: wrapper functions
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/pk_wrap.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/pk_wrap.c.
  */
 
 #include "common.h"
@@ -43,26 +46,28 @@ size_t rsa_get_bitlen(mbedtls_pk_context *pk)
 
 int rsa_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                            const unsigned char *hash, size_t hash_len,
-                           const unsigned char *sig, size_t sig_len)
+                           const unsigned char *sig, size_t sig_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_rsa_context *rsa = (mbedtls_rsa_context *) pk->pk_ctx;
     size_t rsa_len = mbedtls_rsa_get_len(rsa);
 
 #if SIZE_MAX > UINT_MAX
     if (md_alg == MBEDTLS_MD_NONE && UINT_MAX < hash_len) {
-        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BAD_INPUT_DATA);
     }
 #endif
 
     if (sig_len < rsa_len) {
-        return MBEDTLS_ERR_RSA_VERIFY_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_RSA_VERIFY_FAILED);
     }
 
     if ((ret = mbedtls_rsa_pkcs1_verify(rsa, md_alg,
                                         (unsigned int) hash_len,
-                                        hash, sig)) != 0) {
-        return ret;
+                                        hash, sig, diagnostics)) != 0) {
+        MINTLS_RETURN(ret);
     }
 
     /* The buffer contains a valid signature followed by extra data.
@@ -71,74 +76,82 @@ int rsa_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
      * valid signature?" and not just "Does the buffer contain a valid
      * signature?". */
     if (sig_len > rsa_len) {
-        return MBEDTLS_ERR_PK_SIG_LEN_MISMATCH;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_SIG_LEN_MISMATCH);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 int rsa_sign_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                          const unsigned char *hash, size_t hash_len,
                          unsigned char *sig, size_t sig_size, size_t *sig_len,
-                         int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                         int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_rsa_context *rsa = (mbedtls_rsa_context *) pk->pk_ctx;
 
 #if SIZE_MAX > UINT_MAX
     if (md_alg == MBEDTLS_MD_NONE && UINT_MAX < hash_len) {
-        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BAD_INPUT_DATA);
     }
 #endif
 
     *sig_len = mbedtls_rsa_get_len(rsa);
     if (sig_size < *sig_len) {
-        return MBEDTLS_ERR_PK_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BUFFER_TOO_SMALL);
     }
 
-    return mbedtls_rsa_pkcs1_sign(rsa, f_rng, p_rng,
+    MINTLS_RETURN(mbedtls_rsa_pkcs1_sign(rsa, f_rng, p_rng,
                                   md_alg, (unsigned int) hash_len,
-                                  hash, sig);
+                                  hash, sig, diagnostics));
 }
 
 int rsa_decrypt_wrap(mbedtls_pk_context *pk,
                             const unsigned char *input, size_t ilen,
                             unsigned char *output, size_t *olen, size_t osize,
-                            int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_rsa_context *rsa = (mbedtls_rsa_context *) pk->pk_ctx;
 
     if (ilen != mbedtls_rsa_get_len(rsa)) {
-        return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_RSA_BAD_INPUT_DATA);
     }
 
-    return mbedtls_rsa_pkcs1_decrypt(rsa, f_rng, p_rng,
-                                     olen, input, output, osize);
+    MINTLS_RETURN(mbedtls_rsa_pkcs1_decrypt(rsa, f_rng, p_rng,
+                                     olen, input, output, osize, diagnostics));
 }
 
 int rsa_encrypt_wrap(mbedtls_pk_context *pk,
                             const unsigned char *input, size_t ilen,
                             unsigned char *output, size_t *olen, size_t osize,
-                            int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                            int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_rsa_context *rsa = (mbedtls_rsa_context *) pk->pk_ctx;
     *olen = mbedtls_rsa_get_len(rsa);
 
     if (*olen > osize) {
-        return MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE);
     }
 
-    return mbedtls_rsa_pkcs1_encrypt(rsa, f_rng, p_rng,
-                                     ilen, input, output);
+    MINTLS_RETURN(mbedtls_rsa_pkcs1_encrypt(rsa, f_rng, p_rng,
+                                     ilen, input, output, diagnostics));
 }
 
 int rsa_check_pair_wrap(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
-                               int (*f_rng)(void *, unsigned char *, size_t),
-                               void *p_rng)
+                               int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                               void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     (void) f_rng;
     (void) p_rng;
-    return mbedtls_rsa_check_pub_priv((const mbedtls_rsa_context *) pub->pk_ctx,
-                                      (const mbedtls_rsa_context *) prv->pk_ctx);
+    MINTLS_RETURN(mbedtls_rsa_check_pub_priv((const mbedtls_rsa_context *) pub->pk_ctx,
+                                      (const mbedtls_rsa_context *) prv->pk_ctx, diagnostics));
 }
 
 void *rsa_alloc_wrap(void)
@@ -206,39 +219,45 @@ size_t eckey_get_bitlen(mbedtls_pk_context *pk)
 
 int ecdsa_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                              const unsigned char *hash, size_t hash_len,
-                             const unsigned char *sig, size_t sig_len)
+                             const unsigned char *sig, size_t sig_len, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     ((void) md_alg);
 
     ret = mbedtls_ecdsa_read_signature((mbedtls_ecdsa_context *) pk->pk_ctx,
-                                       hash, hash_len, sig, sig_len);
+                                       hash, hash_len, sig, sig_len, diagnostics);
 
     if (ret == MBEDTLS_ERR_ECP_SIG_LEN_MISMATCH) {
-        return MBEDTLS_ERR_PK_SIG_LEN_MISMATCH;
+        MINTLS_RETURN_CAUSE(MBEDTLS_ERR_PK_SIG_LEN_MISMATCH);
     }
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 int ecdsa_sign_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                            const unsigned char *hash, size_t hash_len,
                            unsigned char *sig, size_t sig_size, size_t *sig_len,
-                           int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                           int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecdsa_write_signature((mbedtls_ecdsa_context *) pk->pk_ctx,
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecdsa_write_signature((mbedtls_ecdsa_context *) pk->pk_ctx,
                                          md_alg, hash, hash_len,
                                          sig, sig_size, sig_len,
-                                         f_rng, p_rng);
+                                         f_rng, p_rng, diagnostics));
 }
 
 int eckey_check_pair_wrap(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
-                                 int (*f_rng)(void *, unsigned char *, size_t),
-                                 void *p_rng)
+                                 int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                                 void *p_rng, MinTlsDiagnostics* diagnostics)
 {
-    return mbedtls_ecp_check_pub_priv((const mbedtls_ecp_keypair *) pub->pk_ctx,
+    MINTLS_BEGIN_DIAGNOSTIC();
+
+    MINTLS_RETURN(mbedtls_ecp_check_pub_priv((const mbedtls_ecp_keypair *) pub->pk_ctx,
                                       (const mbedtls_ecp_keypair *) prv->pk_ctx,
-                                      f_rng, p_rng);
+                                      f_rng, p_rng, diagnostics));
 }
 
 void *eckey_alloc_wrap(void)
@@ -345,62 +364,68 @@ size_t rsa_alt_get_bitlen(mbedtls_pk_context *pk)
 int rsa_alt_sign_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                              const unsigned char *hash, size_t hash_len,
                              unsigned char *sig, size_t sig_size, size_t *sig_len,
-                             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                             int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_rsa_alt_context *rsa_alt = pk->pk_ctx;
 
 #if SIZE_MAX > UINT_MAX
     if (UINT_MAX < hash_len) {
-        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BAD_INPUT_DATA);
     }
 #endif
 
     *sig_len = rsa_alt->key_len_func(rsa_alt->key);
     if (*sig_len > MBEDTLS_PK_SIGNATURE_MAX_SIZE) {
-        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BAD_INPUT_DATA);
     }
     if (*sig_len > sig_size) {
-        return MBEDTLS_ERR_PK_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_BUFFER_TOO_SMALL);
     }
 
-    return rsa_alt->sign_func(rsa_alt->key, f_rng, p_rng,
-                              md_alg, (unsigned int) hash_len, hash, sig);
+    MINTLS_RETURN(rsa_alt->sign_func(rsa_alt->key, f_rng, p_rng,
+                              md_alg, (unsigned int) hash_len, hash, sig, diagnostics));
 }
 
 int rsa_alt_decrypt_wrap(mbedtls_pk_context *pk,
                                 const unsigned char *input, size_t ilen,
                                 unsigned char *output, size_t *olen, size_t osize,
-                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                                int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics), void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_rsa_alt_context *rsa_alt = pk->pk_ctx;
 
     ((void) f_rng);
     ((void) p_rng);
 
     if (ilen != rsa_alt->key_len_func(rsa_alt->key)) {
-        return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_RSA_BAD_INPUT_DATA);
     }
 
-    return rsa_alt->decrypt_func(rsa_alt->key,
-                                 olen, input, output, osize);
+    MINTLS_RETURN(rsa_alt->decrypt_func(rsa_alt->key,
+                                 olen, input, output, osize, diagnostics));
 }
 
 int rsa_alt_check_pair(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
-                              int (*f_rng)(void *, unsigned char *, size_t),
-                              void *p_rng)
+                              int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                              void *p_rng, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     unsigned char hash[32];
     size_t sig_len = 0;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if (rsa_alt_get_bitlen(prv) != rsa_get_bitlen(pub)) {
-        return MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
     }
 
     size_t sig_size = (rsa_get_bitlen(pub) + 7) / 8;
     unsigned char *sig = mbedtls_calloc(1, sig_size);
     if (sig == NULL) {
-        return MBEDTLS_ERR_PK_ALLOC_FAILED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_PK_ALLOC_FAILED);
     }
 
     memset(hash, 0x2a, sizeof(hash));
@@ -408,18 +433,18 @@ int rsa_alt_check_pair(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
     if ((ret = rsa_alt_sign_wrap(prv, MBEDTLS_MD_NONE,
                                  hash, sizeof(hash),
                                  sig, sig_size, &sig_len,
-                                 f_rng, p_rng)) != 0) {
+                                 f_rng, p_rng, diagnostics)) != 0) {
         goto cleanup;
     }
 
     if (rsa_verify_wrap(pub, MBEDTLS_MD_NONE,
-                        hash, sizeof(hash), sig, sig_len) != 0) {
-        ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+                        hash, sizeof(hash), sig, sig_len, diagnostics) != 0) {
+        ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_RSA_KEY_CHECK_FAILED);
     }
 
 cleanup:
     mbedtls_zeroize_and_free(sig, sig_size);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 void *rsa_alt_alloc_wrap(void)
@@ -453,4 +478,3 @@ const mbedtls_pk_info_t mbedtls_rsa_alt_info = {
     .debug_func = NULL,
 };
 #endif /* MBEDTLS_PK_RSA_ALT_SUPPORT */
-

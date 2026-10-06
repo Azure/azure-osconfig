@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file asn1.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/asn1.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/asn1.h.
  */
 #ifndef MBEDTLS_ASN1_H
 #define MBEDTLS_ASN1_H
@@ -218,7 +221,7 @@ mbedtls_asn1_named_data;
  */
 int mbedtls_asn1_get_len(unsigned char **p,
                          const unsigned char *end,
-                         size_t *len);
+                         size_t *len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Get the tag and length of the element.
@@ -243,7 +246,7 @@ int mbedtls_asn1_get_len(unsigned char **p,
  */
 int mbedtls_asn1_get_tag(unsigned char **p,
                          const unsigned char *end,
-                         size_t *len, int tag);
+                         size_t *len, int tag, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve a boolean ASN.1 tag and its value.
@@ -262,7 +265,7 @@ int mbedtls_asn1_get_tag(unsigned char **p,
  */
 int mbedtls_asn1_get_bool(unsigned char **p,
                           const unsigned char *end,
-                          int *val);
+                          int *val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve an integer ASN.1 tag and its value.
@@ -283,7 +286,7 @@ int mbedtls_asn1_get_bool(unsigned char **p,
  */
 int mbedtls_asn1_get_int(unsigned char **p,
                          const unsigned char *end,
-                         int *val);
+                         int *val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve an enumerated ASN.1 tag and its value.
@@ -304,7 +307,7 @@ int mbedtls_asn1_get_int(unsigned char **p,
  */
 int mbedtls_asn1_get_enum(unsigned char **p,
                           const unsigned char *end,
-                          int *val);
+                          int *val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve a bitstring ASN.1 tag and its value.
@@ -324,7 +327,7 @@ int mbedtls_asn1_get_enum(unsigned char **p,
  *              a valid ASN.1 BIT STRING.
  */
 int mbedtls_asn1_get_bitstring(unsigned char **p, const unsigned char *end,
-                               mbedtls_asn1_bitstring *bs);
+                               mbedtls_asn1_bitstring *bs, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve a bitstring ASN.1 tag without unused bits and its
@@ -346,7 +349,7 @@ int mbedtls_asn1_get_bitstring(unsigned char **p, const unsigned char *end,
  */
 int mbedtls_asn1_get_bitstring_null(unsigned char **p,
                                     const unsigned char *end,
-                                    size_t *len);
+                                    size_t *len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Parses and splits an ASN.1 "SEQUENCE OF <tag>".
@@ -398,7 +401,7 @@ int mbedtls_asn1_get_bitstring_null(unsigned char **p,
 int mbedtls_asn1_get_sequence_of(unsigned char **p,
                                  const unsigned char *end,
                                  mbedtls_asn1_sequence *cur,
-                                 int tag);
+                                 int tag, MinTlsDiagnostics* diagnostics);
 /**
  * \brief          Free a heap-allocated linked list presentation of
  *                 an ASN.1 sequence, including the first element.
@@ -513,8 +516,8 @@ int mbedtls_asn1_traverse_sequence_of(
     unsigned char tag_must_mask, unsigned char tag_must_val,
     unsigned char tag_may_mask, unsigned char tag_may_val,
     int (*cb)(void *ctx, int tag,
-              unsigned char *start, size_t len),
-    void *ctx);
+              unsigned char *start, size_t len, MinTlsDiagnostics* diagnostics),
+    void *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve an integer ASN.1 tag and its value.
@@ -536,7 +539,7 @@ int mbedtls_asn1_traverse_sequence_of(
  */
 int mbedtls_asn1_get_mpi(unsigned char **p,
                          const unsigned char *end,
-                         mbedtls_mpi *X);
+                         mbedtls_mpi *X, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve an AlgorithmIdentifier ASN.1 sequence.
@@ -556,7 +559,7 @@ int mbedtls_asn1_get_mpi(unsigned char **p,
  */
 int mbedtls_asn1_get_alg(unsigned char **p,
                          const unsigned char *end,
-                         mbedtls_asn1_buf *alg, mbedtls_asn1_buf *params);
+                         mbedtls_asn1_buf *alg, mbedtls_asn1_buf *params, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Retrieve an AlgorithmIdentifier ASN.1 sequence with NULL or no
@@ -575,7 +578,7 @@ int mbedtls_asn1_get_alg(unsigned char **p,
  */
 int mbedtls_asn1_get_alg_null(unsigned char **p,
                               const unsigned char *end,
-                              mbedtls_asn1_buf *alg);
+                              mbedtls_asn1_buf *alg, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief       Find a specific named_data entry in a sequence or list based on

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file pk_wrap.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/pk_wrap.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/pk_wrap.h.
  */
 
 #ifndef MBEDTLS_PK_WRAP_H
@@ -34,31 +37,31 @@ struct mbedtls_pk_info_t {
     /** Verify signature */
     int (*verify_func)(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                        const unsigned char *hash, size_t hash_len,
-                       const unsigned char *sig, size_t sig_len);
+                       const unsigned char *sig, size_t sig_len, MinTlsDiagnostics* diagnostics);
 
     /** Make signature */
     int (*sign_func)(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                      const unsigned char *hash, size_t hash_len,
                      unsigned char *sig, size_t sig_size, size_t *sig_len,
-                     int (*f_rng)(void *, unsigned char *, size_t),
-                     void *p_rng);
+                     int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                     void *p_rng, MinTlsDiagnostics* diagnostics);
 
     /** Decrypt message */
     int (*decrypt_func)(mbedtls_pk_context *pk, const unsigned char *input, size_t ilen,
                         unsigned char *output, size_t *olen, size_t osize,
-                        int (*f_rng)(void *, unsigned char *, size_t),
-                        void *p_rng);
+                        int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                        void *p_rng, MinTlsDiagnostics* diagnostics);
 
     /** Encrypt message */
     int (*encrypt_func)(mbedtls_pk_context *pk, const unsigned char *input, size_t ilen,
                         unsigned char *output, size_t *olen, size_t osize,
-                        int (*f_rng)(void *, unsigned char *, size_t),
-                        void *p_rng);
+                        int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                        void *p_rng, MinTlsDiagnostics* diagnostics);
 
     /** Check public-private key pair */
     int (*check_pair_func)(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
-                           int (*f_rng)(void *, unsigned char *, size_t),
-                           void *p_rng);
+                           int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
+                           void *p_rng, MinTlsDiagnostics* diagnostics);
 
     /** Allocate a new context */
     void * (*ctx_alloc_func)(void);

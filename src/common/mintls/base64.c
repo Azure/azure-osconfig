@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  RFC 1521 base64 encoding/decoding
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/base64.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/base64.c.
  */
 
 #include "common.h"
@@ -55,29 +58,31 @@ signed char mbedtls_ct_base64_dec_value(unsigned char c)
  * Encode a buffer into base64 format
  */
 int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
-                          const unsigned char *src, size_t slen)
+                          const unsigned char *src, size_t slen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t i, n;
     int C1, C2, C3;
     unsigned char *p;
 
     if (slen == 0) {
         *olen = 0;
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     n = slen / 3 + (slen % 3 != 0);
 
     if (n > (SIZE_MAX - 1) / 4) {
         *olen = SIZE_MAX;
-        return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL);
     }
 
     n *= 4;
 
     if ((dlen < n + 1) || (NULL == dst)) {
         *olen = n + 1;
-        return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL);
     }
 
     n = (slen / 3) * 3;
@@ -115,15 +120,17 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
     *olen = (size_t) (p - dst);
     *p = 0;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * Decode a base64-formatted buffer
  */
 int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
-                          const unsigned char *src, size_t slen)
+                          const unsigned char *src, size_t slen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     size_t i; /* index in source */
     size_t n; /* number of digits or trailing = in source */
     uint32_t x; /* value accumulator */
@@ -157,23 +164,23 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
 
         /* Space inside a line is an error */
         if (spaces_present) {
-            return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
         }
 
         if (src[i] > 127) {
-            return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
         }
 
         if (src[i] == '=') {
             if (++equals > 2) {
-                return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
             }
         } else {
             if (equals != 0) {
-                return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
             }
             if (mbedtls_ct_base64_dec_value(src[i]) < 0) {
-                return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+                MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
             }
         }
         n++;
@@ -183,10 +190,10 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
      * 4*k, 4*k+2 or *4k+3. Also, the number n of digits plus the number of
      * equal signs at the end is always a multiple of 4. */
     if ((n - equals) % 4 == 1) {
-        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
     }
     if (n % 4 != 0) {
-        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_INVALID_CHARACTER);
     }
 
     /* We've determined that the input is valid, and that it contains
@@ -213,7 +220,7 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
      * 0 in this case.
      */
     if ((*olen != 0 && dst == NULL) || dlen < *olen) {
-        return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL);
     }
 
     for (x = 0, p = dst; i > 0; i--, src++) {
@@ -243,9 +250,9 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
     }
 
     if (*olen != (size_t) (p - dst)) {
-        return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 

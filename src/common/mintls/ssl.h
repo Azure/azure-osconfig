@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file ssl.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/ssl.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/ssl.h.
  */
 #ifndef MBEDTLS_SSL_H
 #define MBEDTLS_SSL_H
@@ -738,7 +741,7 @@ mbedtls_ssl_states;
  */
 typedef int mbedtls_ssl_send_t(void *ctx,
                                const unsigned char *buf,
-                               size_t len);
+                               size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Callback type: receive data from the network.
@@ -762,7 +765,7 @@ typedef int mbedtls_ssl_send_t(void *ctx,
  */
 typedef int mbedtls_ssl_recv_t(void *ctx,
                                unsigned char *buf,
-                               size_t len);
+                               size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Callback type: receive data from the network, with timeout
@@ -789,7 +792,7 @@ typedef int mbedtls_ssl_recv_t(void *ctx,
 typedef int mbedtls_ssl_recv_timeout_t(void *ctx,
                                        unsigned char *buf,
                                        size_t len,
-                                       uint32_t timeout);
+                                       uint32_t timeout, MinTlsDiagnostics* diagnostics);
 /**
  * \brief          Callback type: set a pair of timers/delays to watch
  *
@@ -1018,7 +1021,7 @@ struct mbedtls_ssl_config {
     void *MBEDTLS_PRIVATE(p_dbg);                    /*!< context for the debug function     */
 
     /** Callback for getting (pseudo-)random numbers                        */
-    int(*MBEDTLS_PRIVATE(f_rng))(void *, unsigned char *, size_t);
+    int(*MBEDTLS_PRIVATE(f_rng))(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics);
     void *MBEDTLS_PRIVATE(p_rng);                    /*!< context for the RNG function       */
 
     /** Callback to retrieve a session from the cache                       */
@@ -1028,11 +1031,11 @@ struct mbedtls_ssl_config {
     void *MBEDTLS_PRIVATE(p_cache);                  /*!< context for cache callbacks        */
 
     /** Callback for setting cert according to SNI extension                */
-    int(*MBEDTLS_PRIVATE(f_sni))(void *, mbedtls_ssl_context *, const unsigned char *, size_t);
+    int(*MBEDTLS_PRIVATE(f_sni))(void *, mbedtls_ssl_context *, const unsigned char *, size_t, MinTlsDiagnostics* diagnostics);
     void *MBEDTLS_PRIVATE(p_sni);                    /*!< context for SNI callback           */
 
     /** Callback to customize X.509 certificate chain verification          */
-    int(*MBEDTLS_PRIVATE(f_vrfy))(void *, mbedtls_x509_crt *, int, uint32_t *);
+    int(*MBEDTLS_PRIVATE(f_vrfy))(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics);
     void *MBEDTLS_PRIVATE(p_vrfy);                   /*!< context for X.509 verify calllback */
 
     const mbedtls_x509_crt_profile *MBEDTLS_PRIVATE(cert_profile); /*!< verification profile */
@@ -1118,7 +1121,7 @@ struct mbedtls_ssl_context {
     unsigned MBEDTLS_PRIVATE(badmac_seen_or_in_hsfraglen);
 
     /** Callback to customize X.509 certificate chain verification          */
-    int(*MBEDTLS_PRIVATE(f_vrfy))(void *, mbedtls_x509_crt *, int, uint32_t *);
+    int(*MBEDTLS_PRIVATE(f_vrfy))(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics);
     void *MBEDTLS_PRIVATE(p_vrfy);                   /*!< context for X.509 verify callback */
 
     mbedtls_ssl_send_t *MBEDTLS_PRIVATE(f_send); /*!< Callback for network send */
@@ -1340,7 +1343,7 @@ void mbedtls_ssl_init(mbedtls_ssl_context *ssl);
  *                 memory allocation failed
  */
 int mbedtls_ssl_setup(mbedtls_ssl_context *ssl,
-                      const mbedtls_ssl_config *conf);
+                      const mbedtls_ssl_config *conf, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Reset an already initialized SSL context for re-use
@@ -1351,7 +1354,7 @@ int mbedtls_ssl_setup(mbedtls_ssl_context *ssl,
  * \return         0 if successful, or MBEDTLS_ERR_SSL_ALLOC_FAILED or
                    MBEDTLS_ERR_SSL_HW_ACCEL_FAILED
  */
-int mbedtls_ssl_session_reset(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_session_reset(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Set the current endpoint type
@@ -1434,7 +1437,7 @@ void mbedtls_ssl_conf_authmode(mbedtls_ssl_config *conf, int authmode);
  * \param p_vrfy   The opaque context to be passed to the callback.
  */
 void mbedtls_ssl_conf_verify(mbedtls_ssl_config *conf,
-                             int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
+                             int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
                              void *p_vrfy);
 
 /**
@@ -1541,7 +1544,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  * \param p_vrfy   The opaque context to be passed to the callback.
  */
 void mbedtls_ssl_set_verify(mbedtls_ssl_context *ssl,
-                            int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
+                            int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *, MinTlsDiagnostics* diagnostics),
                             void *p_vrfy);
 
 /**
@@ -1608,7 +1611,7 @@ void mbedtls_ssl_conf_read_timeout(mbedtls_ssl_config *conf, uint32_t timeout);
  */
 int mbedtls_ssl_check_record(mbedtls_ssl_context const *ssl,
                              unsigned char *buf,
-                             size_t buflen);
+                             size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Set the timer callbacks (Mandatory for DTLS.)
@@ -1980,7 +1983,7 @@ void mbedtls_ssl_conf_dtls_badmac_limit(mbedtls_ssl_config *conf, unsigned limit
  * \sa             mbedtls_ssl_get_session()
  * \sa             mbedtls_ssl_session_load()
  */
-int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session *session);
+int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session *session, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Load serialized session data into a session structure.
@@ -2037,7 +2040,7 @@ int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session 
  */
 int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
                              const unsigned char *buf,
-                             size_t len);
+                             size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Save session structure as serialized data in a buffer.
@@ -2088,7 +2091,7 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
 int mbedtls_ssl_session_save(const mbedtls_ssl_session *session,
                              unsigned char *buf,
                              size_t buf_len,
-                             size_t *olen);
+                             size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               Set the list of allowed ciphersuites and the preference
@@ -2277,7 +2280,7 @@ void mbedtls_ssl_conf_ca_cb(mbedtls_ssl_config *conf,
  */
 int mbedtls_ssl_conf_own_cert(mbedtls_ssl_config *conf,
                               mbedtls_x509_crt *own_cert,
-                              mbedtls_pk_context *pk_key);
+                              mbedtls_pk_context *pk_key, MinTlsDiagnostics* diagnostics);
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 /**
@@ -2454,7 +2457,7 @@ void mbedtls_ssl_conf_sig_algs(mbedtls_ssl_config *conf,
  *                 when NULL). On allocation failure hostname is cleared.
  *                 On too long input failure, old hostname is unchanged.
  */
-int mbedtls_ssl_set_hostname(mbedtls_ssl_context *ssl, const char *hostname);
+int mbedtls_ssl_set_hostname(mbedtls_ssl_context *ssl, const char *hostname, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Get the hostname that checked against the received
@@ -2509,7 +2512,7 @@ const unsigned char *mbedtls_ssl_get_hs_sni(mbedtls_ssl_context *ssl,
  */
 int mbedtls_ssl_set_hs_own_cert(mbedtls_ssl_context *ssl,
                                 mbedtls_x509_crt *own_cert,
-                                mbedtls_pk_context *pk_key);
+                                mbedtls_pk_context *pk_key, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Set the data required to verify peer certificate for the
@@ -2578,7 +2581,7 @@ void mbedtls_ssl_set_hs_authmode(mbedtls_ssl_context *ssl,
  */
 void mbedtls_ssl_conf_sni(mbedtls_ssl_config *conf,
                           int (*f_sni)(void *, mbedtls_ssl_context *, const unsigned char *,
-                                       size_t),
+                                       size_t, MinTlsDiagnostics* diagnostics),
                           void *p_sni);
 
 /**
@@ -2593,7 +2596,7 @@ void mbedtls_ssl_conf_sni(mbedtls_ssl_config *conf,
  *
  * \return         0 on success, or MBEDTLS_ERR_SSL_BAD_INPUT_DATA.
  */
-int mbedtls_ssl_conf_alpn_protocols(mbedtls_ssl_config *conf, const char **protos);
+int mbedtls_ssl_conf_alpn_protocols(mbedtls_ssl_config *conf, const char **protos, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Get the name of the negotiated Application Layer Protocol.
@@ -2868,7 +2871,7 @@ const char *mbedtls_ssl_get_version(const mbedtls_ssl_context *ssl);
  *
  * \return         Current maximum record expansion in bytes
  */
-int mbedtls_ssl_get_record_expansion(const mbedtls_ssl_context *ssl);
+int mbedtls_ssl_get_record_expansion(const mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Return the current maximum outgoing record payload in bytes.
@@ -2977,7 +2980,7 @@ const mbedtls_x509_crt *mbedtls_ssl_get_peer_cert(const mbedtls_ssl_context *ssl
  * \sa             mbedtls_ssl_session_save()
  */
 int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
-                            mbedtls_ssl_session *session);
+                            mbedtls_ssl_session *session, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform the SSL handshake
@@ -3061,7 +3064,7 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                   in TLS 1.2 but not in TLS 1.3, but Mbed TLS rejects it
  *                   even in TLS 1.2.)
  */
-int mbedtls_ssl_handshake(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_handshake(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          After calling mbedtls_ssl_handshake() to start the SSL
@@ -3114,7 +3117,7 @@ static inline int mbedtls_ssl_is_handshake_over(mbedtls_ssl_context *ssl)
  *                 re-using it for a new connection; the current connection
  *                 must be closed.
  */
-int mbedtls_ssl_handshake_step(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_handshake_step(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Read at most 'len' application data bytes
@@ -3213,7 +3216,7 @@ int mbedtls_ssl_handshake_step(mbedtls_ssl_context *ssl);
  *                   \c mbedtls_ssl_check_pending to check for remaining records.
  *
  */
-int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
+int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Try to write exactly 'len' application data bytes
@@ -3288,7 +3291,7 @@ int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
  * \note           Attempting to write 0 bytes will result in an empty TLS
  *                 application record being sent.
  */
-int mbedtls_ssl_write(mbedtls_ssl_context *ssl, const unsigned char *buf, size_t len);
+int mbedtls_ssl_write(mbedtls_ssl_context *ssl, const unsigned char *buf, size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Send an alert message
@@ -3308,7 +3311,7 @@ int mbedtls_ssl_write(mbedtls_ssl_context *ssl, const unsigned char *buf, size_t
  */
 int mbedtls_ssl_send_alert_message(mbedtls_ssl_context *ssl,
                                    unsigned char level,
-                                   unsigned char message);
+                                   unsigned char message, MinTlsDiagnostics* diagnostics);
 /**
  * \brief          Notify the peer that the connection is being closed
  *
@@ -3322,7 +3325,7 @@ int mbedtls_ssl_send_alert_message(mbedtls_ssl_context *ssl,
  *                 call \c mbedtls_ssl_session_reset() on it before re-using it
  *                 for a new connection; the current connection must be closed.
  */
-int mbedtls_ssl_close_notify(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_close_notify(mbedtls_ssl_context *ssl, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Free referenced items in an SSL context and clear memory
@@ -3405,7 +3408,7 @@ int  mbedtls_ssl_tls_prf(const mbedtls_tls_prf_types prf,
                          const unsigned char *secret, size_t slen,
                          const char *label,
                          const unsigned char *random, size_t rlen,
-                         unsigned char *dstbuf, size_t dlen);
+                         unsigned char *dstbuf, size_t dlen, MinTlsDiagnostics* diagnostics);
 
 #if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
 /* Maximum value for key_len in mbedtls_ssl_export_keying material. Depending on the TLS
@@ -3440,7 +3443,7 @@ int mbedtls_ssl_export_keying_material(mbedtls_ssl_context *ssl,
                                        uint8_t *out, const size_t key_len,
                                        const char *label, const size_t label_len,
                                        const unsigned char *context, const size_t context_len,
-                                       const int use_context);
+                                       const int use_context, MinTlsDiagnostics* diagnostics);
 #endif
 #ifdef __cplusplus
 }

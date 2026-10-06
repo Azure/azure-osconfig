@@ -14,9 +14,13 @@ This is a fixed-profile reduction, not a claim that every remaining general-purp
 
 ## Diagnostics
 
-Every public `MinTls*` operation accepts the caller's borrowed `OsConfigLogHandle`. TLS failure diagnostics use the configuration's per-context callback, refreshed for each operation; no global log handle or separate core log is introduced. Initialization, socket I/O, certificate verification and internal TLS/crypto failure stages report numeric error information. Readiness continuations, successful operations and authenticated close-notify are not errors.
+Every public `MinTls*` operation accepts the caller's borrowed `OsConfigLogHandle`. A stack-owned `MinTlsDiagnostics` context carries that handle explicitly through retained status-returning helpers and the RNG, entropy, socket, cipher, public-key and TLS callbacks. These private interfaces require a valid diagnostic context; they do not retain it after the synchronous call. There is no global/thread-local log handle, separate core log, or allocation for diagnostics. The public MinTls API is unchanged.
 
-The general upstream debug stream stays disabled: key, MPI, certificate and payload dumps are never enabled, even at debug level. Core failure callbacks preserve errno and do not change TLS results. Ordinary C implementation functions are no longer `static`; existing header-only inline primitives retain their linkage to avoid duplicate definitions and changes to constant-time inlining.
+Each failure-capable call records only operation/file/line and numeric status. A successful enclosing call discards speculative parser and certificate-candidate failures; a failed outer call reports the originating diagnostic. Explicit error translations retain their cause, while a new direct failure replaces an earlier recovered probe. Positive byte counts remain success; positive partial-certificate counts and TLS alert codes follow their distinct failure contracts. Alert-send failures report separately without replacing the primary error. Readiness continuations and authenticated close-notify are not errors.
+
+The general upstream debug stream stays disabled: key, MPI, certificate and payload dumps are never enabled, even at debug level. Emitting a diagnostic preserves errno. Constant-time RSA unpadding remains uninstrumented internally; its caller diagnoses the returned failure after clearing its sensitive buffer. Ordinary C implementation functions are not `static`; existing header-only inline primitives retain their linkage.
+
+Failure propagation includes checking the Finished-message PRF result and the EC key-pair check's group-copy result rather than discarding them. Healthy-operation behavior and cryptographic calculations are unchanged; these two failure paths now return their actual errors. The expanded diagnostics and callback interfaces require fresh owner build/runtime coverage; earlier live-delivery evidence predates this pass.
 
 ## Trust, policy, and process contract
 
@@ -26,15 +30,9 @@ mintls is not FIPS validated and cannot interpret arbitrary OpenSSL policy. It r
 
 The API borrows a connected nonblocking socket and preserves absolute deadlines across retries. Chain, dates, and DNS/IP identity are mandatory; numeric IP identities require an IP SAN and are not sent as SNI. Only a TLS close-notify is EOF. Failure discards the TLS session without closing the caller's socket or replaying application data. The caller must arm its process watchdog: filesystem, entropy, and cryptographic operations cannot all be interrupted safely inside the C library. The telemetry worker keeps its existing 500 ms work allowance and 10-minute lifetime.
 
-## Test provider selection
-
-Production calls `TelemetryInitialize(false, log)` to prefer the OS provider with the normal fallback rules. Tests call `TelemetryInitialize(true, log)`; lower-level tests likewise pass `true` to worker, transport, or TLS creation. The `forceMinTls` argument is retained across worker restarts and transport reconnects. It bypasses OS-provider discovery, not trust or system-policy enforcement, and does not change cached OS-provider selection.
-
-Tests and the explicit live sender use the same TLS/transport libraries as production, without a forced-provider build macro or duplicate libraries. Test builds require the existing mintls inclusion option to remain enabled (the default); production builds can still exclude mintls. The 10,000-event loopback functional test is disabled in the normal pass and requires its exact GoogleTest filter together with `--gtest_also_run_disabled_tests`.
-
 ## License and provenance
 
-The retained derivative files keep their upstream copyright notices, identify their original Mbed TLS 3.6.7 paths, and mark OSConfig modifications. The complete upstream license is in [LICENSE](LICENSE). Upstream offers Apache-2.0 OR GPL-2.0-or-later; OSConfig uses the Apache-2.0 option. The OSConfig wrapper, logging bridge and integration remain MIT-licensed.
+Every C source and header begins with the unchanged two-line Microsoft copyright/MIT notice. Retained derivative files also keep their upstream copyright/license notices, identify their original Mbed TLS 3.6.7 paths, and prominently date OSConfig modifications. The complete upstream license is in [LICENSE](LICENSE). Upstream offers Apache-2.0 OR GPL-2.0-or-later; OSConfig uses the Apache-2.0 option and retains its redistribution obligations. The owned wrapper, diagnostics and integration are MIT-licensed.
 
 The source subset was imported from the official [Mbed TLS 3.6.7 release archive](https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.7/mbedtls-3.6.7.tar.bz2), with SHA-256 `a7e8bcbec0e6f761b4af24f25677626b35f762f68eef79c08677a363212d11f6`. This records provenance for maintenance; it does not introduce an upstream download or build dependency.
 

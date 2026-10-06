@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  FIPS-197 compliant AES implementation
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/aes.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/aes.c.
  */
 /*
  *  The AES block cipher was designed by Vincent Rijmen and Joan Daemen.
@@ -533,8 +536,10 @@ MBEDTLS_MAYBE_UNUSED static unsigned mbedtls_aes_rk_offset(uint32_t *buf)
  */
 #if !defined(MBEDTLS_AES_SETKEY_ENC_ALT)
 int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
-                           unsigned int keybits)
+                           unsigned int keybits, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     uint32_t *RK;
 
     switch (keybits) {
@@ -543,7 +548,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
         case 192: ctx->nr = 12; break;
         case 256: ctx->nr = 14; break;
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
-        default: return MBEDTLS_ERR_AES_INVALID_KEY_LENGTH;
+        default: MINTLS_RETURN_ERROR(MBEDTLS_ERR_AES_INVALID_KEY_LENGTH);
     }
 
 #if !defined(MBEDTLS_AES_ROM_TABLES)
@@ -558,13 +563,13 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
 
 #if defined(MBEDTLS_AESNI_HAVE_CODE)
     if (mbedtls_aesni_has_support(MBEDTLS_AESNI_AES)) {
-        return mbedtls_aesni_setkey_enc((unsigned char *) RK, key, keybits);
+        MINTLS_RETURN(mbedtls_aesni_setkey_enc((unsigned char *) RK, key, keybits));
     }
 #endif
 
 #if defined(MBEDTLS_AESCE_HAVE_CODE)
     if (MBEDTLS_AESCE_HAS_SUPPORT()) {
-        return mbedtls_aesce_setkey_enc((unsigned char *) RK, key, keybits);
+        MINTLS_RETURN(mbedtls_aesce_setkey_enc((unsigned char *) RK, key, keybits));
     }
 #endif
 
@@ -634,7 +639,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
 #endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 #endif /* !MBEDTLS_AES_USE_HARDWARE_ONLY */
 }
 #endif /* !MBEDTLS_AES_SETKEY_ENC_ALT */
@@ -644,8 +649,10 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
  */
 #if !defined(MBEDTLS_AES_SETKEY_DEC_ALT) && !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 int mbedtls_aes_setkey_dec(mbedtls_aes_context *ctx, const unsigned char *key,
-                           unsigned int keybits)
+                           unsigned int keybits, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
 #if !defined(MBEDTLS_AES_USE_HARDWARE_ONLY)
     uint32_t *SK;
 #endif
@@ -659,7 +666,7 @@ int mbedtls_aes_setkey_dec(mbedtls_aes_context *ctx, const unsigned char *key,
     RK = ctx->buf + ctx->rk_offset;
 
     /* Also checks keybits */
-    if ((ret = mbedtls_aes_setkey_enc(&cty, key, keybits)) != 0) {
+    if ((ret = mbedtls_aes_setkey_enc(&cty, key, keybits, diagnostics)) != 0) {
         goto exit;
     }
 
@@ -708,7 +715,7 @@ int mbedtls_aes_setkey_dec(mbedtls_aes_context *ctx, const unsigned char *key,
 exit:
     mbedtls_aes_free(&cty);
 
-    return ret;
+    MINTLS_RETURN(ret);
 }
 #endif /* !MBEDTLS_AES_SETKEY_DEC_ALT && !MBEDTLS_BLOCK_CIPHER_NO_DECRYPT */
 
@@ -908,10 +915,12 @@ MBEDTLS_MAYBE_UNUSED static void aes_maybe_realign(mbedtls_aes_context *ctx)
 int mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
                           int mode,
                           const unsigned char input[16],
-                          unsigned char output[16])
+                          unsigned char output[16], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT) {
-        return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_AES_BAD_INPUT_DATA);
     }
 
 #if defined(MAY_NEED_TO_ALIGN)
@@ -920,30 +929,30 @@ int mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
 
 #if defined(MBEDTLS_AESNI_HAVE_CODE)
     if (mbedtls_aesni_has_support(MBEDTLS_AESNI_AES)) {
-        return mbedtls_aesni_crypt_ecb(ctx, mode, input, output);
+        MINTLS_RETURN(mbedtls_aesni_crypt_ecb(ctx, mode, input, output));
     }
 #endif
 
 #if defined(MBEDTLS_AESCE_HAVE_CODE)
     if (MBEDTLS_AESCE_HAS_SUPPORT()) {
-        return mbedtls_aesce_crypt_ecb(ctx, mode, input, output);
+        MINTLS_RETURN(mbedtls_aesce_crypt_ecb(ctx, mode, input, output));
     }
 #endif
 
 #if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
     if (aes_padlock_ace > 0) {
-        return mbedtls_padlock_xcryptecb(ctx, mode, input, output);
+        MINTLS_RETURN(mbedtls_padlock_xcryptecb(ctx, mode, input, output));
     }
 #endif
 
 #if !defined(MBEDTLS_AES_USE_HARDWARE_ONLY)
 #if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
     if (mode == MBEDTLS_AES_DECRYPT) {
-        return mbedtls_internal_aes_decrypt(ctx, input, output);
+        MINTLS_RETURN(mbedtls_internal_aes_decrypt(ctx, input, output));
     } else
 #endif
     {
-        return mbedtls_internal_aes_encrypt(ctx, input, output);
+        MINTLS_RETURN(mbedtls_internal_aes_encrypt(ctx, input, output));
     }
 #endif /* !MBEDTLS_AES_USE_HARDWARE_ONLY */
 }

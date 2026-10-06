@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file ctr_drbg.h
  *
@@ -25,8 +28,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/ctr_drbg.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/ctr_drbg.h.
  */
 
 #ifndef MBEDTLS_CTR_DRBG_H
@@ -193,7 +196,7 @@ typedef struct mbedtls_ctr_drbg_context {
     /*
      * Callbacks (Entropy)
      */
-    int(*MBEDTLS_PRIVATE(f_entropy))(void *, unsigned char *, size_t);
+    int(*MBEDTLS_PRIVATE(f_entropy))(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics);
     /*!< The entropy callback function. */
 
     void *MBEDTLS_PRIVATE(p_entropy);            /*!< The context for the entropy function. */
@@ -306,10 +309,10 @@ void mbedtls_ctr_drbg_init(mbedtls_ctr_drbg_context *ctx);
  * \return              #MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED on failure.
  */
 int mbedtls_ctr_drbg_seed(mbedtls_ctr_drbg_context *ctx,
-                          int (*f_entropy)(void *, unsigned char *, size_t),
+                          int (*f_entropy)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                           void *p_entropy,
                           const unsigned char *custom,
-                          size_t len);
+                          size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               This function resets CTR_DRBG context to the state immediately
@@ -382,7 +385,7 @@ void mbedtls_ctr_drbg_set_entropy_len(mbedtls_ctr_drbg_context *ctx,
  *                      if the initial seeding has already taken place.
  */
 int mbedtls_ctr_drbg_set_nonce_len(mbedtls_ctr_drbg_context *ctx,
-                                   size_t len);
+                                   size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief               This function sets the reseed interval.
@@ -420,7 +423,7 @@ void mbedtls_ctr_drbg_set_reseed_interval(mbedtls_ctr_drbg_context *ctx,
  * \return              #MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED on failure.
  */
 int mbedtls_ctr_drbg_reseed(mbedtls_ctr_drbg_context *ctx,
-                            const unsigned char *additional, size_t len);
+                            const unsigned char *additional, size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief              This function updates the state of the CTR_DRBG context.
@@ -444,7 +447,7 @@ int mbedtls_ctr_drbg_reseed(mbedtls_ctr_drbg_context *ctx,
  */
 int mbedtls_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
                             const unsigned char *additional,
-                            size_t add_len);
+                            size_t add_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief   This function updates a CTR_DRBG instance with additional
@@ -479,7 +482,7 @@ int mbedtls_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
  */
 int mbedtls_ctr_drbg_random_with_add(void *p_rng,
                                      unsigned char *output, size_t output_len,
-                                     const unsigned char *additional, size_t add_len);
+                                     const unsigned char *additional, size_t add_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief   This function uses CTR_DRBG to generate random data.
@@ -498,7 +501,7 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
  *                      #MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG on failure.
  */
 int mbedtls_ctr_drbg_random(void *p_rng,
-                            unsigned char *output, size_t output_len);
+                            unsigned char *output, size_t output_len, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

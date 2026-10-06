@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  Elliptic curves over GF(p): curve-specific data and functions
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/ecp_curves.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/ecp_curves.c.
  */
 
 #include "common.h"
@@ -1767,15 +1770,15 @@ int ecp_group_load(mbedtls_ecp_group *grp,
 #endif /* ECP_LOAD_GROUP */
 
 /* Forward declarations */
-int ecp_mod_p256(mbedtls_mpi *);
+int ecp_mod_p256(mbedtls_mpi *, MinTlsDiagnostics* diagnostics);
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs);
-int ecp_mod_p384(mbedtls_mpi *);
+int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs, MinTlsDiagnostics* diagnostics);
+int ecp_mod_p384(mbedtls_mpi *, MinTlsDiagnostics* diagnostics);
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs);
-int ecp_mod_p521(mbedtls_mpi *);
+int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs, MinTlsDiagnostics* diagnostics);
+int ecp_mod_p521(mbedtls_mpi *, MinTlsDiagnostics* diagnostics);
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *N_p, size_t N_n);
+int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *N_p, size_t N_n, MinTlsDiagnostics* diagnostics);
 
 #define NIST_MODP(P)      grp->modp = ecp_mod_ ## P;
 
@@ -1806,8 +1809,10 @@ int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *N_p, size_t N_n);
 /*
  * Set a group using well-known domain parameters
  */
-int mbedtls_ecp_group_load(mbedtls_ecp_group *grp, mbedtls_ecp_group_id id)
+int mbedtls_ecp_group_load(mbedtls_ecp_group *grp, mbedtls_ecp_group_id id, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_ecp_group_free(grp);
 
     mbedtls_ecp_group_init(grp);
@@ -1818,19 +1823,19 @@ int mbedtls_ecp_group_load(mbedtls_ecp_group *grp, mbedtls_ecp_group_id id)
 
         case MBEDTLS_ECP_DP_SECP256R1:
             NIST_MODP(p256);
-            return LOAD_GROUP(secp256r1);
+            MINTLS_RETURN(LOAD_GROUP(secp256r1));
 
         case MBEDTLS_ECP_DP_SECP384R1:
             NIST_MODP(p384);
-            return LOAD_GROUP(secp384r1);
+            MINTLS_RETURN(LOAD_GROUP(secp384r1));
 
         case MBEDTLS_ECP_DP_SECP521R1:
             NIST_MODP(p521);
-            return LOAD_GROUP(secp521r1);
+            MINTLS_RETURN(LOAD_GROUP(secp521r1));
 
         default:
             grp->id = MBEDTLS_ECP_DP_NONE;
-            return MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+            MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE);
     }
 }
 
@@ -1969,20 +1974,22 @@ int8_t extract_carry(int64_t cur)
     c = extract_carry(cur);                             \
     STORE32; i++;                                       \
     if (c != 0)                                         \
-    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;              \
+    MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);              \
     while (i < MAX32) { STORE0; i++; }
 
 /*
  * Fast quasi-reduction modulo p256
  */
-int ecp_mod_p256(mbedtls_mpi *N)
+int ecp_mod_p256(mbedtls_mpi *N, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t expected_width = BITS_TO_LIMBS(256) * 2;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
-    ret = mbedtls_ecp_mod_p256_raw(N->p, expected_width);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width, diagnostics));
+    ret = mbedtls_ecp_mod_p256_raw(N->p, expected_width, diagnostics);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1992,10 +1999,12 @@ cleanup:
  * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.3.
  */
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (X_limbs != BITS_TO_LIMBS(256) * 2) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     INIT(256);
@@ -2072,20 +2081,22 @@ int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs)
 
     LAST;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * Fast quasi-reduction modulo p384
  */
-int ecp_mod_p384(mbedtls_mpi *N)
+int ecp_mod_p384(mbedtls_mpi *N, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t expected_width = BITS_TO_LIMBS(384) * 2;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
-    ret = mbedtls_ecp_mod_p384_raw(N->p, expected_width);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width, diagnostics));
+    ret = mbedtls_ecp_mod_p384_raw(N->p, expected_width, diagnostics);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2095,10 +2106,12 @@ cleanup:
  * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.4.
  */
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     if (X_limbs != BITS_TO_LIMBS(384) * 2) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     INIT(384);
@@ -2165,7 +2178,7 @@ int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs)
 
     LAST;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #undef LOAD32
@@ -2193,14 +2206,16 @@ int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs)
 /*
  * Fast quasi-reduction modulo p521
  */
-int ecp_mod_p521(mbedtls_mpi *N)
+int ecp_mod_p521(mbedtls_mpi *N, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t expected_width = BITS_TO_LIMBS(521) * 2;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
-    ret = mbedtls_ecp_mod_p521_raw(N->p, expected_width);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width, diagnostics));
+    ret = mbedtls_ecp_mod_p521_raw(N->p, expected_width, diagnostics);
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -2212,12 +2227,14 @@ cleanup:
  * then handle the carry as well as remaining bits in the top limb.
  */
 MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *X, size_t X_limbs, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     mbedtls_mpi_uint carry = 0;
 
     if (X_limbs != BITS_TO_LIMBS(521) * 2) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+        MINTLS_RETURN_ERROR(MBEDTLS_ERR_ECP_BAD_INPUT_DATA);
     }
 
     /* Step 1: Reduction to P521_WIDTH limbs */
@@ -2268,7 +2285,7 @@ int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *X, size_t X_limbs)
     /* Clear the reused part of X. */
     addend_arr[0] = 0;
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 #undef P521_WIDTH

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file gcm.h
  *
@@ -15,8 +18,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/gcm.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/gcm.h.
  */
 
 #ifndef MBEDTLS_GCM_H
@@ -105,7 +108,7 @@ void mbedtls_gcm_init(mbedtls_gcm_context *ctx);
 int mbedtls_gcm_setkey(mbedtls_gcm_context *ctx,
                        mbedtls_cipher_id_t cipher,
                        const unsigned char *key,
-                       unsigned int keybits);
+                       unsigned int keybits, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function performs GCM encryption or decryption of a buffer.
@@ -167,7 +170,7 @@ int mbedtls_gcm_crypt_and_tag(mbedtls_gcm_context *ctx,
                               const unsigned char *input,
                               unsigned char *output,
                               size_t tag_len,
-                              unsigned char *tag);
+                              unsigned char *tag, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function performs a GCM authenticated decryption of a
@@ -213,7 +216,7 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
                              const unsigned char *tag,
                              size_t tag_len,
                              const unsigned char *input,
-                             unsigned char *output);
+                             unsigned char *output, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function starts a GCM encryption or decryption
@@ -231,7 +234,7 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
 int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
                        int mode,
                        const unsigned char *iv,
-                       size_t iv_len);
+                       size_t iv_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function feeds an input buffer as associated data
@@ -255,7 +258,7 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
  */
 int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
                           const unsigned char *add,
-                          size_t add_len);
+                          size_t add_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function feeds an input buffer into an ongoing GCM
@@ -313,7 +316,7 @@ int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
 int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
                        const unsigned char *input, size_t input_length,
                        unsigned char *output, size_t output_size,
-                       size_t *output_length);
+                       size_t *output_length, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function finishes the GCM operation and generates
@@ -351,7 +354,7 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
 int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
                        unsigned char *output, size_t output_size,
                        size_t *output_length,
-                       unsigned char *tag, size_t tag_len);
+                       unsigned char *tag, size_t tag_len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           This function clears a GCM context and the underlying

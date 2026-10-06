@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file debug.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/debug.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/debug.h.
  */
 #ifndef MBEDTLS_DEBUG_H
 #define MBEDTLS_DEBUG_H
@@ -20,7 +23,7 @@
 #include "ecp.h"
 
 #define MBEDTLS_SSL_DEBUG_MSG(level, args)            do { } while (0)
-#define MBEDTLS_SSL_DEBUG_RET(level, text, ret) MinTlsLogResult(ssl, level, __FILE__, __LINE__, text, ret)
+#define MBEDTLS_SSL_DEBUG_RET(level, text, ret) MinTlsRecordDiagnostic(diagnostics, text, __FILE__, __LINE__, ret)
 #define MBEDTLS_SSL_DEBUG_BUF(level, text, buf, len)  do { } while (0)
 #define MBEDTLS_SSL_DEBUG_MPI(level, text, X)         do { } while (0)
 #define MBEDTLS_SSL_DEBUG_ECP(level, text, X)         do { } while (0)
@@ -85,17 +88,5 @@
 #define MBEDTLS_PRINTF_MS_TIME PRId64
 #endif
 #endif /* MBEDTLS_PRINTF_MS_TIME */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void MinTlsLogResult(const mbedtls_ssl_context* ssl, int level, const char* file,
-    int line, const char* operation, int result);
-void MinTlsLogCallback(void* context, int level, const char* file, int line, const char* message);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* MBEDTLS_DEBUG_H */

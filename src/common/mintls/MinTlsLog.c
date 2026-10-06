@@ -1,42 +1,111 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "common.h"
-#include "debug.h"
-#include <Logging.h>
+#include "MinTlsLog.h"
+#include "ssl.h"
 #include <errno.h>
-#include <stdio.h>
 
-void MinTlsLogResult(const mbedtls_ssl_context* ssl, int level, const char* file,
-    int line, const char* operation, int result)
+bool MinTlsIsDiagnosticFailure(int result)
+{
+    return (result < 0) && (MBEDTLS_ERR_SSL_WANT_READ != result) &&
+        (MBEDTLS_ERR_SSL_WANT_WRITE != result) && (MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY != result);
+}
+
+void MinTlsBeginDiagnostic(MinTlsDiagnostics* diagnostics, MinTlsDiagnosticFrame* frame)
+{
+    frame->parent = diagnostics->frame;
+    diagnostics->frame = frame;
+}
+
+void MinTlsEmitDiagnostic(MinTlsDiagnostics* diagnostics, const MinTlsDiagnostic* failure, int result)
 {
     int savedErrno = errno;
-    char message[256] = {0};
 
-    if ((result < 0) && (MBEDTLS_ERR_SSL_WANT_READ != result) &&
-        (MBEDTLS_ERR_SSL_WANT_WRITE != result) && (MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY != result) &&
-        (ssl) && (ssl->conf) && (ssl->conf->f_dbg))
-    {
-        snprintf(message, sizeof(message), "%s, core status: %d", operation, result);
-        ssl->conf->f_dbg(ssl->conf->p_dbg, level, file, line, message);
-    }
+    OsConfigLogError(diagnostics->log, "MinTls core: %s:%d: %s failed, core status: %d, originating status: %d", failure->file, failure->line, failure->operation, result, failure->result);
 
     errno = savedErrno;
 }
 
-void MinTlsLogCallback(void* context, int level, const char* file, int line, const char* message)
+int MinTlsEndDiagnostic(MinTlsDiagnostics* diagnostics, MinTlsDiagnosticFrame* frame,
+    const char* operation, const char* file, int line, int result, bool direct)
 {
-    OsConfigLogHandle log = context;
-    int savedErrno = errno;
+    MinTlsDiagnostic failure = frame->failure;
 
-    if (level <= 1)
+    diagnostics->frame = frame->parent;
+
+    if ((MinTlsIsDiagnosticFailure(result)) || ((frame->positiveIsFailure) && (result > 0)))
     {
-        OsConfigLogError(log, "MinTls core: %s:%d: %s", file, line, message);
-    }
-    else
-    {
-        OsConfigLogDebug(log, "MinTls core: %s:%d: %s", file, line, message);
+        if ((direct) || (frame->result != result) || (!failure.operation))
+        {
+            failure = (MinTlsDiagnostic){operation, file, line, result};
+        }
+
+        if (frame->parent)
+        {
+            frame->parent->failure = failure;
+            frame->parent->result = result;
+        }
+        else
+        {
+            MinTlsEmitDiagnostic(diagnostics, &failure, result);
+        }
     }
 
-    errno = savedErrno;
+    return result;
+}
+
+int MinTlsCombineDiagnostic(MinTlsDiagnostics* diagnostics, int high, int low)
+{
+    int result = high + low;
+
+    if ((diagnostics->frame) && (diagnostics->frame->result == low))
+    {
+        diagnostics->frame->result = result;
+    }
+
+    return result;
+}
+
+int MinTlsAssignDiagnostic(MinTlsDiagnostics* diagnostics, const char* operation,
+    const char* file, int line, int result)
+{
+    if (diagnostics->frame)
+    {
+        diagnostics->frame->failure = (MinTlsDiagnostic){operation, file, line, result};
+        diagnostics->frame->result = result;
+    }
+
+    return result;
+}
+
+int MinTlsMapDiagnostic(MinTlsDiagnostics* diagnostics, int result)
+{
+    if (diagnostics->frame)
+    {
+        diagnostics->frame->result = result;
+    }
+
+    return result;
+}
+
+void MinTlsRecordDiagnostic(MinTlsDiagnostics* diagnostics, const char* operation,
+    const char* file, int line, int result)
+{
+    MinTlsDiagnostic failure = {operation, file, line, result};
+
+    if (MinTlsIsDiagnosticFailure(result))
+    {
+        if (diagnostics->frame)
+        {
+            if ((diagnostics->frame->result != result) || (!diagnostics->frame->failure.operation))
+            {
+                diagnostics->frame->failure = failure;
+                diagnostics->frame->result = result;
+            }
+        }
+        else
+        {
+            MinTlsEmitDiagnostic(diagnostics, &failure, result);
+        }
+    }
 }

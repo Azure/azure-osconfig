@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file bignum.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/bignum.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/bignum.h.
  */
 #ifndef MBEDTLS_BIGNUM_H
 #define MBEDTLS_BIGNUM_H
@@ -259,7 +262,7 @@ void mbedtls_mpi_free(mbedtls_mpi *X);
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_grow(mbedtls_mpi *X, size_t nblimbs);
+int mbedtls_mpi_grow(mbedtls_mpi *X, size_t nblimbs, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          This function resizes an MPI downwards, keeping at least the
@@ -276,7 +279,7 @@ int mbedtls_mpi_grow(mbedtls_mpi *X, size_t nblimbs);
  *                 (this can only happen when resizing up).
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_shrink(mbedtls_mpi *X, size_t nblimbs);
+int mbedtls_mpi_shrink(mbedtls_mpi *X, size_t nblimbs, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Make a copy of an MPI.
@@ -291,7 +294,7 @@ int mbedtls_mpi_shrink(mbedtls_mpi *X, size_t nblimbs);
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_copy(mbedtls_mpi *X, const mbedtls_mpi *Y);
+int mbedtls_mpi_copy(mbedtls_mpi *X, const mbedtls_mpi *Y, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Swap the contents of two MPIs.
@@ -329,7 +332,7 @@ void mbedtls_mpi_swap(mbedtls_mpi *X, mbedtls_mpi *Y);
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_safe_cond_assign(mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned char assign);
+int mbedtls_mpi_safe_cond_assign(mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned char assign, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a safe conditional swap which doesn't
@@ -358,7 +361,7 @@ int mbedtls_mpi_safe_cond_assign(mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned 
  * \return         Another negative error code on other kinds of failure.
  *
  */
-int mbedtls_mpi_safe_cond_swap(mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char swap);
+int mbedtls_mpi_safe_cond_swap(mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char swap, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Store integer value in MPI.
@@ -370,7 +373,7 @@ int mbedtls_mpi_safe_cond_swap(mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char swa
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_lset(mbedtls_mpi *X, mbedtls_mpi_sint z);
+int mbedtls_mpi_lset(mbedtls_mpi *X, mbedtls_mpi_sint z, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Get a specific bit from an MPI.
@@ -399,7 +402,7 @@ int mbedtls_mpi_get_bit(const mbedtls_mpi *X, size_t pos);
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  */
-int mbedtls_mpi_set_bit(mbedtls_mpi *X, size_t pos, unsigned char val);
+int mbedtls_mpi_set_bit(mbedtls_mpi *X, size_t pos, unsigned char val, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Return the number of bits of value \c 0 before the
@@ -454,7 +457,7 @@ size_t mbedtls_mpi_size(const mbedtls_mpi *X);
  * \return         \c 0 if successful.
  * \return         A negative error code on failure.
  */
-int mbedtls_mpi_read_string(mbedtls_mpi *X, int radix, const char *s);
+int mbedtls_mpi_read_string(mbedtls_mpi *X, int radix, const char *s, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Export an MPI to an ASCII string.
@@ -479,7 +482,7 @@ int mbedtls_mpi_read_string(mbedtls_mpi *X, int radix, const char *s);
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_write_string(const mbedtls_mpi *X, int radix,
-                             char *buf, size_t buflen, size_t *olen);
+                             char *buf, size_t buflen, size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Import an MPI from unsigned big endian binary data.
@@ -494,7 +497,7 @@ int mbedtls_mpi_write_string(const mbedtls_mpi *X, int radix,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_read_binary(mbedtls_mpi *X, const unsigned char *buf,
-                            size_t buflen);
+                            size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Import X from unsigned binary data, little endian
@@ -509,7 +512,7 @@ int mbedtls_mpi_read_binary(mbedtls_mpi *X, const unsigned char *buf,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_read_binary_le(mbedtls_mpi *X,
-                               const unsigned char *buf, size_t buflen);
+                               const unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Export X into unsigned binary data, big endian.
@@ -527,7 +530,7 @@ int mbedtls_mpi_read_binary_le(mbedtls_mpi *X,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_write_binary(const mbedtls_mpi *X, unsigned char *buf,
-                             size_t buflen);
+                             size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Export X into unsigned binary data, little endian.
@@ -545,7 +548,7 @@ int mbedtls_mpi_write_binary(const mbedtls_mpi *X, unsigned char *buf,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_write_binary_le(const mbedtls_mpi *X,
-                                unsigned char *buf, size_t buflen);
+                                unsigned char *buf, size_t buflen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a left-shift on an MPI: X <<= count
@@ -559,7 +562,7 @@ int mbedtls_mpi_write_binary_le(const mbedtls_mpi *X,
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
  * \return         Another negative error code on different kinds of failure.
  */
-int mbedtls_mpi_shift_l(mbedtls_mpi *X, size_t count);
+int mbedtls_mpi_shift_l(mbedtls_mpi *X, size_t count, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a right-shift on an MPI: X >>= count
@@ -613,7 +616,7 @@ int mbedtls_mpi_cmp_mpi(const mbedtls_mpi *X, const mbedtls_mpi *Y);
  *                 the two input MPIs is not the same.
  */
 int mbedtls_mpi_lt_mpi_ct(const mbedtls_mpi *X, const mbedtls_mpi *Y,
-                          unsigned *ret);
+                          unsigned *ret, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Compare an MPI with an integer.
@@ -639,7 +642,7 @@ int mbedtls_mpi_cmp_int(const mbedtls_mpi *X, mbedtls_mpi_sint z);
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_add_abs(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform an unsigned subtraction of MPIs: X = |A| - |B|
@@ -654,7 +657,7 @@ int mbedtls_mpi_add_abs(mbedtls_mpi *X, const mbedtls_mpi *A,
  *
  */
 int mbedtls_mpi_sub_abs(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a signed addition of MPIs: X = A + B
@@ -668,7 +671,7 @@ int mbedtls_mpi_sub_abs(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_add_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a signed subtraction of MPIs: X = A - B
@@ -682,7 +685,7 @@ int mbedtls_mpi_add_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_sub_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a signed addition of an MPI and an integer: X = A + b
@@ -696,7 +699,7 @@ int mbedtls_mpi_sub_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_add_int(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        mbedtls_mpi_sint b);
+                        mbedtls_mpi_sint b, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a signed subtraction of an MPI and an integer:
@@ -711,7 +714,7 @@ int mbedtls_mpi_add_int(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_sub_int(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        mbedtls_mpi_sint b);
+                        mbedtls_mpi_sint b, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a multiplication of two MPIs: X = A * B
@@ -726,7 +729,7 @@ int mbedtls_mpi_sub_int(mbedtls_mpi *X, const mbedtls_mpi *A,
  *
  */
 int mbedtls_mpi_mul_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a multiplication of an MPI with an unsigned integer:
@@ -742,7 +745,7 @@ int mbedtls_mpi_mul_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
  *
  */
 int mbedtls_mpi_mul_int(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        mbedtls_mpi_uint b);
+                        mbedtls_mpi_uint b, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a division with remainder of two MPIs:
@@ -763,7 +766,7 @@ int mbedtls_mpi_mul_int(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_div_mpi(mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a division with remainder of an MPI by an integer:
@@ -784,7 +787,7 @@ int mbedtls_mpi_div_mpi(mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_div_int(mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
-                        mbedtls_mpi_sint b);
+                        mbedtls_mpi_sint b, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a modular reduction. R = A mod B
@@ -804,7 +807,7 @@ int mbedtls_mpi_div_int(mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
  *
  */
 int mbedtls_mpi_mod_mpi(mbedtls_mpi *R, const mbedtls_mpi *A,
-                        const mbedtls_mpi *B);
+                        const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a modular reduction with respect to an integer.
@@ -823,7 +826,7 @@ int mbedtls_mpi_mod_mpi(mbedtls_mpi *R, const mbedtls_mpi *A,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_mod_int(mbedtls_mpi_uint *r, const mbedtls_mpi *A,
-                        mbedtls_mpi_sint b);
+                        mbedtls_mpi_sint b, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Perform a modular exponentiation: X = A^E mod N
@@ -854,7 +857,7 @@ int mbedtls_mpi_mod_int(mbedtls_mpi_uint *r, const mbedtls_mpi *A,
  */
 int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
                         const mbedtls_mpi *E, const mbedtls_mpi *N,
-                        mbedtls_mpi *prec_RR);
+                        mbedtls_mpi *prec_RR, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Fill an MPI with a number of random bytes.
@@ -875,7 +878,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  */
 int mbedtls_mpi_fill_random(mbedtls_mpi *X, size_t size,
                             mbedtls_f_rng_t *f_rng,
-                            void *p_rng);
+                            void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /** Generate a random number uniformly in a range.
  *
@@ -913,7 +916,7 @@ int mbedtls_mpi_random(mbedtls_mpi *X,
                        mbedtls_mpi_sint min,
                        const mbedtls_mpi *N,
                        mbedtls_f_rng_t *f_rng,
-                       void *p_rng);
+                       void *p_rng, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Compute the greatest common divisor: G = gcd(A, B)
@@ -928,7 +931,7 @@ int mbedtls_mpi_random(mbedtls_mpi *X,
  * \return         Another negative error code on different kinds of failure.
  */
 int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
-                    const mbedtls_mpi *B);
+                    const mbedtls_mpi *B, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Compute the modular inverse: X = A^-1 mod N
@@ -949,7 +952,7 @@ int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
  *                 inverse with respect to \p N.
  */
 int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
-                        const mbedtls_mpi *N);
+                        const mbedtls_mpi *N, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief          Miller-Rabin primality test.
@@ -980,7 +983,7 @@ int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  */
 int mbedtls_mpi_is_prime_ext(const mbedtls_mpi *X, int rounds,
                              mbedtls_f_rng_t *f_rng,
-                             void *p_rng);
+                             void *p_rng, MinTlsDiagnostics* diagnostics);
 /**
  * \brief Flags for mbedtls_mpi_gen_prime()
  *
@@ -1013,7 +1016,7 @@ typedef enum {
  */
 int mbedtls_mpi_gen_prime(mbedtls_mpi *X, size_t nbits, int flags,
                           mbedtls_f_rng_t *f_rng,
-                          void *p_rng);
+                          void *p_rng, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

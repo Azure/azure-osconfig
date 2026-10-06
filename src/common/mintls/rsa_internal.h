@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file rsa_internal.h
  *
@@ -11,8 +14,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/rsa_internal.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/rsa_internal.h.
  */
 #ifndef MBEDTLS_RSA_INTERNAL_H
 #define MBEDTLS_RSA_INTERNAL_H
@@ -34,7 +37,7 @@
  * \return          MBEDTLS_ERR_RSA_KEY_CHECK_FAILED if validity checks on the
  *                  provided key fail.
  */
-int mbedtls_rsa_parse_key(mbedtls_rsa_context *rsa, const unsigned char *key, size_t keylen);
+int mbedtls_rsa_parse_key(mbedtls_rsa_context *rsa, const unsigned char *key, size_t keylen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Parse a PKCS#1 (ASN.1) encoded public RSA key.
@@ -50,7 +53,7 @@ int mbedtls_rsa_parse_key(mbedtls_rsa_context *rsa, const unsigned char *key, si
  * \return          MBEDTLS_ERR_RSA_KEY_CHECK_FAILED if validity checks on the
  *                  provided key fail.
  */
-int mbedtls_rsa_parse_pubkey(mbedtls_rsa_context *rsa, const unsigned char *key, size_t keylen);
+int mbedtls_rsa_parse_pubkey(mbedtls_rsa_context *rsa, const unsigned char *key, size_t keylen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Write a PKCS#1 (ASN.1) encoded private RSA key.
@@ -73,7 +76,7 @@ int mbedtls_rsa_parse_pubkey(mbedtls_rsa_context *rsa, const unsigned char *key,
  *                  end and moving toward its start.
  */
 int mbedtls_rsa_write_key(const mbedtls_rsa_context *rsa, unsigned char *start,
-                          unsigned char **p);
+                          unsigned char **p, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Parse a PKCS#1 (ASN.1) encoded public RSA key.
@@ -96,7 +99,7 @@ int mbedtls_rsa_write_key(const mbedtls_rsa_context *rsa, unsigned char *start,
  *                  end and moving toward its start.
  */
 int mbedtls_rsa_write_pubkey(const mbedtls_rsa_context *rsa, unsigned char *start,
-                             unsigned char **p);
+                             unsigned char **p, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief This function is analogue to \c mbedtls_rsa_rsassa_pss_sign().
@@ -112,12 +115,12 @@ int mbedtls_rsa_write_pubkey(const mbedtls_rsa_context *rsa, unsigned char *star
  *        of the functioning and parameters of this function.
  */
 int mbedtls_rsa_rsassa_pss_sign_no_mode_check(mbedtls_rsa_context *ctx,
-                                              int (*f_rng)(void *, unsigned char *, size_t),
+                                              int (*f_rng)(void *, unsigned char *, size_t, MinTlsDiagnostics* diagnostics),
                                               void *p_rng,
                                               mbedtls_md_type_t md_alg,
                                               unsigned int hashlen,
                                               const unsigned char *hash,
-                                              unsigned char *sig);
+                                              unsigned char *sig, MinTlsDiagnostics* diagnostics);
 
 /* This would normally be in rsa_invasive.h but it didn't exist before 3.6
  * became an LTS, and I'd rather not add files in LTS if it can be avoided. */

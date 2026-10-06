@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /*
  *  FIPS-180-1 compliant SHA-1 implementation
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/sha1.c.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/sha1.c.
  */
 /*
  *  The SHA-1 standard was published by NIST in 1993.
@@ -238,14 +241,16 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx,
  */
 int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
                         const unsigned char *input,
-                        size_t ilen)
+                        size_t ilen, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
 
     if (ilen == 0) {
-        return 0;
+        MINTLS_RETURN(0);
     }
 
     left = ctx->total[0] & 0x3F;
@@ -262,7 +267,7 @@ int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, fill);
 
         if ((ret = mbedtls_internal_sha1_process(ctx, ctx->buffer)) != 0) {
-            return ret;
+            MINTLS_RETURN(ret);
         }
 
         input += fill;
@@ -272,7 +277,7 @@ int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
 
     while (ilen >= 64) {
         if ((ret = mbedtls_internal_sha1_process(ctx, input)) != 0) {
-            return ret;
+            MINTLS_RETURN(ret);
         }
 
         input += 64;
@@ -283,15 +288,17 @@ int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
         memcpy((void *) (ctx->buffer + left), input, ilen);
     }
 
-    return 0;
+    MINTLS_RETURN(0);
 }
 
 /*
  * SHA-1 final digest
  */
 int mbedtls_sha1_finish(mbedtls_sha1_context *ctx,
-                        unsigned char output[20])
+                        unsigned char output[20], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
@@ -344,7 +351,7 @@ int mbedtls_sha1_finish(mbedtls_sha1_context *ctx,
 
 exit:
     mbedtls_sha1_free(ctx);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 #endif /* !MBEDTLS_SHA1_ALT */
@@ -354,8 +361,10 @@ exit:
  */
 int mbedtls_sha1(const unsigned char *input,
                  size_t ilen,
-                 unsigned char output[20])
+                 unsigned char output[20], MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha1_context ctx;
 
@@ -365,16 +374,16 @@ int mbedtls_sha1(const unsigned char *input,
         goto exit;
     }
 
-    if ((ret = mbedtls_sha1_update(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_sha1_update(&ctx, input, ilen, diagnostics)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha1_finish(&ctx, output)) != 0) {
+    if ((ret = mbedtls_sha1_finish(&ctx, output, diagnostics)) != 0) {
         goto exit;
     }
 
 exit:
     mbedtls_sha1_free(&ctx);
-    return ret;
+    MINTLS_RETURN(ret);
 }
 

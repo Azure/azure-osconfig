@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file entropy.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: include/mbedtls/entropy.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: include/mbedtls/entropy.h.
  */
 #ifndef MBEDTLS_ENTROPY_H
 #define MBEDTLS_ENTROPY_H
@@ -82,7 +85,7 @@ extern "C" {
  *                  MBEDTLS_ERR_ENTROPY_SOURCE_FAILED otherwise
  */
 typedef int (*mbedtls_entropy_f_source_ptr)(void *data, unsigned char *output, size_t len,
-                                            size_t *olen);
+                                            size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Entropy source state
@@ -113,14 +116,14 @@ mbedtls_entropy_context;
  * \brief           Platform-specific entropy poll callback
  */
 int mbedtls_platform_entropy_poll(void *data,
-                                  unsigned char *output, size_t len, size_t *olen);
+                                  unsigned char *output, size_t len, size_t *olen, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Initialize the context
  *
  * \param ctx       Entropy context to initialize
  */
-void mbedtls_entropy_init(mbedtls_entropy_context *ctx);
+void mbedtls_entropy_init(mbedtls_entropy_context *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Free the data in the context
@@ -148,7 +151,7 @@ void mbedtls_entropy_free(mbedtls_entropy_context *ctx);
  */
 int mbedtls_entropy_add_source(mbedtls_entropy_context *ctx,
                                mbedtls_entropy_f_source_ptr f_source, void *p_source,
-                               size_t threshold, int strong);
+                               size_t threshold, int strong, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Trigger an extra gather poll for the accumulator
@@ -158,7 +161,7 @@ int mbedtls_entropy_add_source(mbedtls_entropy_context *ctx,
  *
  * \return          0 if successful, or MBEDTLS_ERR_ENTROPY_SOURCE_FAILED
  */
-int mbedtls_entropy_gather(mbedtls_entropy_context *ctx);
+int mbedtls_entropy_gather(mbedtls_entropy_context *ctx, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Retrieve entropy from the accumulator
@@ -171,7 +174,7 @@ int mbedtls_entropy_gather(mbedtls_entropy_context *ctx);
  *
  * \return          0 if successful, or MBEDTLS_ERR_ENTROPY_SOURCE_FAILED
  */
-int mbedtls_entropy_func(void *data, unsigned char *output, size_t len);
+int mbedtls_entropy_func(void *data, unsigned char *output, size_t len, MinTlsDiagnostics* diagnostics);
 
 /**
  * \brief           Add data to the accumulator manually
@@ -184,7 +187,7 @@ int mbedtls_entropy_func(void *data, unsigned char *output, size_t len);
  * \return          0 if successful
  */
 int mbedtls_entropy_update_manual(mbedtls_entropy_context *ctx,
-                                  const unsigned char *data, size_t len);
+                                  const unsigned char *data, size_t len, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }

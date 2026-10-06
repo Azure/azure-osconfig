@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * \file entropy_poll.h
  *
@@ -7,8 +10,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
- * Modified by Microsoft for OSConfig: private MinTls profile and flat
- * source layout. Original Mbed TLS 3.6.7 file: library/entropy_poll.h.
+ * Modified by Microsoft for OSConfig on 2026-10-06: private MinTls profile, flat
+ * source layout and per-call failure diagnostics. Original Mbed TLS 3.6.7 file: library/entropy_poll.h.
  */
 #ifndef MBEDTLS_ENTROPY_POLL_H
 #define MBEDTLS_ENTROPY_POLL_H
@@ -33,7 +36,7 @@ extern "C" {
  * \brief           Platform-specific entropy poll callback
  */
 int mbedtls_platform_entropy_poll(void *data,
-                                  unsigned char *output, size_t len, size_t *olen);
+                                  unsigned char *output, size_t len, size_t *olen, MinTlsDiagnostics* diagnostics);
 
 #ifdef __cplusplus
 }
