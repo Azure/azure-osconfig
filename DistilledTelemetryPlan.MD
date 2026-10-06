@@ -125,8 +125,12 @@ OS-only TLS, or inventing cryptographic primitives from scratch.
 
 The earlier deferred start is superseded. The first dependency/profile reduction,
 flat layout and logging implementation are now in the worktree, uncommitted.
-They have not been compiled or run. Current work must preserve the owner's
-independent changes.
+The owner's October 6 build reached test execution. Three new diagnostics tests
+failed during shared setup because the fixture omitted the required RNG callback
+(`MBEDTLS_ERR_SSL_NO_RNG`, -29696). A test-only callback now satisfies setup and
+fails the test if randomness is actually requested; these are logging-only tests.
+The owner rerun is pending. Current work must preserve the owner's independent
+changes.
 The public MinTls functions already accept OsConfigLogHandle. The owner selected
 propagating logging through internal contexts/callbacks rather than adding a log
 argument to every retained core function.
@@ -182,7 +186,9 @@ approximately 52%. These are source bytes, not a measured executable reduction.
   behavior.
 - No compiler/CMake was available through this session's PATH. No tools were
   installed, no Linux build/tests/live sends ran, and no commit was created.
-  Owner build/regression validation is the next gate before deeper pruning.
+  These statements concern assistant execution. The owner's subsequent build/test
+  run and diagnostics-fixture correction are recorded above; a complete passing
+  result is still needed before deeper pruning.
 
 This is the first fixed-profile distillation, not a claim that every remaining
 general-purpose function is required by a telemetry send. A further function-level

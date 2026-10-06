@@ -19,6 +19,12 @@
 
 namespace
 {
+int UnexpectedDiagnosticsRandom(void*, unsigned char*, size_t)
+{
+    ADD_FAILURE() << "Logging-only fixture must not request random bytes";
+    return MBEDTLS_ERR_SSL_NO_RNG;
+}
+
 int64_t Deadline()
 {
     struct timespec now = {};
@@ -271,6 +277,7 @@ protected:
         ASSERT_NE(nullptr, GetLogFile(log));
         ASSERT_EQ(0, mbedtls_ssl_config_defaults(&configuration, MBEDTLS_SSL_IS_CLIENT,
             MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT));
+        mbedtls_ssl_conf_rng(&configuration, UnexpectedDiagnosticsRandom, nullptr);
         mbedtls_ssl_conf_dbg(&configuration, MinTlsLogCallback, log);
         ASSERT_EQ(0, mbedtls_ssl_setup(&session, &configuration));
     }
