@@ -1093,7 +1093,7 @@ int x509_crt_parse_der_core(mbedtls_x509_crt *crt,
     if ((ret = mbedtls_asn1_get_tag(&p, end, &len,
                                     MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE, diagnostics)) != 0) {
         mbedtls_x509_crt_free(crt);
-        MINTLS_RETURN_ERROR(MBEDTLS_ERR_X509_INVALID_FORMAT);
+        MINTLS_RETURN_CAUSE(MBEDTLS_ERR_X509_INVALID_FORMAT);
     }
 
     end = crt_end = p + len;

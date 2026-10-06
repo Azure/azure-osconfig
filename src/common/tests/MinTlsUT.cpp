@@ -524,11 +524,14 @@ TEST_F(MinTlsDiagnosticsTest, PemProbeDoesNotReplaceTheFirstCertificateFailure)
     std::string contents;
 
     mbedtls_x509_crt_init(&chain);
-    EXPECT_LT(mbedtls_x509_crt_parse(&chain, pem, sizeof(pem), diagnostics), 0);
+    EXPECT_EQ(MBEDTLS_ERR_X509_INVALID_FORMAT,
+        mbedtls_x509_crt_parse(&chain, pem, sizeof(pem), diagnostics));
     mbedtls_x509_crt_free(&chain);
     EXPECT_EQ(nullptr, diagnosticContext.frame);
     contents = Contents();
-    EXPECT_NE(std::string::npos, contents.find("mbedtls_asn1_get_tag failed"));
+    EXPECT_NE(std::string::npos, contents.find("mbedtls_asn1_get_tag failed")) << contents;
+    EXPECT_NE(std::string::npos,
+        contents.find("originating status: " + std::to_string(MBEDTLS_ERR_ASN1_UNEXPECTED_TAG))) << contents;
     EXPECT_EQ(std::string::npos, contents.find("mbedtls_pem_read_buffer failed"));
 }
 
