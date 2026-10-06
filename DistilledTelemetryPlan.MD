@@ -3,9 +3,10 @@
 Created: 2026-09-30
 Refreshed in full against the October 5, 2026 owner evidence;
 TLS distillation source update: October 6, 2026
-Deep diagnostics/interface update: October 6, 2026; owner rebuild pending
+Deep diagnostics/interface update: October 6, 2026; 10:30 -0700 build break corrected in source, owner rebuild pending
 
 Canonical document: `D:\GitHub\azure-osconfig\DistilledTelemetryPlan.MD`
+Local-only handoff: keep this file on disk, but do not stage or check it in.
 
 ## 1. Current state and evidence
 
@@ -17,11 +18,12 @@ standalone events in Aria later that afternoon. On October 6, the owner supplied
 a fresh standalone Aria sample after the first TLS distillation pass and a
 passing rerun of all three corrected diagnostics tests.
 The subsequent deep-diagnostics/interface changes described in section 3 have
-not yet received owner build/runtime results; the earlier evidence is not their
-validation.
+failed the owner's build in `ecp_sw_rhs`; the missing diagnostic context and both
+callers are now corrected in source. A successful rebuild and runtime results
+remain pending; the earlier evidence is not validation of this pass.
 
 This is not yet a release-readiness signoff. The latest complete post-edit
-regression summary, final 10,000-event counts, real packaged-policy-host results,
+regression summary, complete downstream 10,000-event visibility, real packaged-policy-host results,
 and full supported-platform results have not been supplied. Do not confuse these
 missing results with an implementation that has never built or sent events.
 
@@ -52,6 +54,25 @@ telemetry event writes, as recorded in section 14.
 
 ### Latest owner evidence
 
+- October 6, 10:30 -0700: owner reported undeclared `diagnostics` in
+  `ecp_sw_rhs`, through `MPI_ECP_SQR`. The interface pass had missed this helper
+  because its arithmetic calls occur through macros. Added its explicit context,
+  diagnostic scope and scoped return, and passed the existing caller context
+  from both Y-coordinate derivation and public-key checking. Extended the
+  three-NIST-curves regression to validate each generator point and confirm
+  diagnostic-frame restoration. The session source checker now follows
+  transitive macro context/frame requirements: it caught this omission before
+  the fix and reports no remaining such gaps afterward. Owner rebuild and
+  runtime confirmation are still pending.
+- October 6, 10:29 -0700: owner supplied the completed earlier No. 66
+  `--send-status-trace-10000` run: requested/attempted/accepted all 10,000;
+  rejected/unconfirmed/unsent all zero; status zero. The sender explicitly
+  reported `mintls only (OS OpenSSL discovery disabled)`. Its correlation ID
+  matches the 09:23 downstream sample below. This establishes collector
+  acknowledgment of all 10,000 events and sampled downstream receipt from the
+  same run, not downstream visibility of every event. This run predates the
+  deep-diagnostics pass. The owner had begun building and validating that newer
+  pass; the subsequent build break and correction are recorded above.
 - October 6, 09:23 -0700: owner supplied a fresh No. 66 Aria sample after
   distillation: `StatusTrace`, sequence/LineNumber 67, SDK `OSConfig-C/0.1`,
   ResultCode string `731001`, version `1.0.5.20261006-g6d550953`.
@@ -249,7 +270,8 @@ deadlines remain unchanged. Core callers and tests were updated together.
   `Modified by Microsoft for OSConfig on 2026-10-06` notice. The complete upstream
   LICENSE is unchanged. No governance exemption is asserted.
 - Source-only checks cover named-function/callback wiring, scoped returns,
-  error-return macros, exact leading notices and preservation of retained
+  error-return macros, transitive macro context/frame requirements, exact
+  leading notices and preservation of retained
   source tokens apart from diagnostic plumbing and the two reviewed
   failure-propagation fixes. These are not compilation or runtime evidence.
   No compiler/CMake is available on this session's PATH; the owner remains

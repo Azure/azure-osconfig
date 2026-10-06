@@ -954,8 +954,10 @@ cleanup:
  */
 int ecp_sw_rhs(const mbedtls_ecp_group *grp,
                       mbedtls_mpi *rhs,
-                      const mbedtls_mpi *X)
+                      const mbedtls_mpi *X, MinTlsDiagnostics* diagnostics)
 {
+    MINTLS_BEGIN_DIAGNOSTIC();
+
     int ret;
 
     /* Compute X^3 + A X + B as X (X^2 + A) + B */
@@ -972,7 +974,7 @@ int ecp_sw_rhs(const mbedtls_ecp_group *grp,
     MPI_ECP_ADD(rhs, rhs, &grp->B);
 
 cleanup:
-    return ret;
+    MINTLS_RETURN(ret);
 }
 
 /*
@@ -1004,7 +1006,7 @@ int mbedtls_ecp_sw_derive_y(const mbedtls_ecp_group *grp,
     mbedtls_mpi_init(&exp);
 
     /* use Y to store intermediate result, actually w above */
-    MBEDTLS_MPI_CHK(ecp_sw_rhs(grp, Y, X));
+    MBEDTLS_MPI_CHK(ecp_sw_rhs(grp, Y, X, diagnostics));
 
     /* w = y^2 */ /* Y contains y^2 intermediate result */
     /* exp = ((p+1)/4) */
@@ -2102,7 +2104,7 @@ int ecp_check_pubkey_sw(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p
      * RHS = X^3 + A X + B
      */
     MPI_ECP_SQR(&YY,  &pt->Y);
-    MBEDTLS_MPI_CHK(ecp_sw_rhs(grp, &RHS, &pt->X));
+    MBEDTLS_MPI_CHK(ecp_sw_rhs(grp, &RHS, &pt->X, diagnostics));
 
     if (MPI_ECP_CMP(&YY, &RHS) != 0) {
         ret = MinTlsAssignDiagnostic(diagnostics, __func__, __FILE__, __LINE__, MBEDTLS_ERR_ECP_INVALID_KEY);

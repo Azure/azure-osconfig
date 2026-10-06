@@ -275,6 +275,8 @@ TEST(MinTlsCore, RetainsTheThreeRequiredNistCurves)
     {
         mbedtls_ecp_group_init(&group);
         EXPECT_EQ(0, mbedtls_ecp_group_load(&group, id, diagnostics));
+        EXPECT_EQ(0, mbedtls_ecp_check_pubkey(&group, &group.G, diagnostics));
+        EXPECT_EQ(nullptr, diagnosticContext.frame);
         mbedtls_ecp_group_free(&group);
     }
 }
