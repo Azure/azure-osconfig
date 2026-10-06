@@ -4,6 +4,17 @@
 #ifndef MIN_TLS_CONFIG_H
 #define MIN_TLS_CONFIG_H
 
+// Source was distilled for this profile. Enabling removed backends requires
+// restoring and reviewing their implementation, not adding a compiler define.
+#if defined(MBEDTLS_CONFIG_FILE) || defined(MBEDTLS_USER_CONFIG_FILE) || \
+    defined(MBEDTLS_USE_PSA_CRYPTO) || defined(MBEDTLS_PSA_CRYPTO_C) || \
+    defined(MBEDTLS_PSA_CRYPTO_CLIENT) || defined(MBEDTLS_PSA_CRYPTO_CONFIG) || \
+    defined(MBEDTLS_SSL_PROTO_TLS1_3) || defined(MBEDTLS_SSL_PROTO_DTLS) || \
+    defined(MBEDTLS_SSL_SRV_C) || defined(MBEDTLS_THREADING_C) || \
+    defined(MBEDTLS_ECP_WITH_MPI_UINT) || defined(MBEDTLS_BLOCK_CIPHER_C)
+#error "MinTls requires its private TLS 1.2 client profile"
+#endif
+
 // TLS 1.2 client only, authenticated ECDHE and AES-GCM. Keep normal TLS record
 // sizes: the remote certificate chain is not under our control.
 #define MBEDTLS_HAVE_ASM

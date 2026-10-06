@@ -3,49 +3,45 @@
 
 add_library(mintls STATIC
     MinTls.c
-    core/library/aes.c
-    core/library/asn1parse.c
-    core/library/asn1write.c
-    core/library/base64.c
-    core/library/bignum.c
-    core/library/bignum_core.c
-    core/library/bignum_mod.c
-    core/library/bignum_mod_raw.c
-    core/library/block_cipher.c
-    core/library/cipher.c
-    core/library/cipher_wrap.c
-    core/library/constant_time.c
-    core/library/ctr_drbg.c
-    core/library/ecdh.c
-    core/library/ecdsa.c
-    core/library/ecp.c
-    core/library/ecp_curves.c
-    core/library/entropy.c
-    core/library/entropy_poll.c
-    core/library/gcm.c
-    core/library/md.c
-    core/library/oid.c
-    core/library/pem.c
-    core/library/pk.c
-    core/library/pk_ecc.c
-    core/library/pk_wrap.c
-    core/library/pkparse.c
-    core/library/platform_util.c
-    core/library/rsa.c
-    core/library/rsa_alt_helpers.c
-    core/library/sha1.c
-    core/library/sha256.c
-    core/library/sha512.c
-    core/library/x509.c
-    core/library/x509_crt.c
-    core/library/ssl_ciphersuites.c
-    core/library/ssl_client.c
-    core/library/ssl_msg.c
-    core/library/ssl_tls.c
-    core/library/ssl_tls12_client.c)
-target_include_directories(mintls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-    PRIVATE core/include core/library)
-target_compile_definitions(mintls PRIVATE MBEDTLS_CONFIG_FILE="MinTlsConfig.h")
+    MinTlsLog.c
+    aes.c
+    asn1parse.c
+    asn1write.c
+    base64.c
+    bignum.c
+    bignum_core.c
+    cipher.c
+    cipher_wrap.c
+    constant_time.c
+    ctr_drbg.c
+    ecdh.c
+    ecdsa.c
+    ecp.c
+    ecp_curves.c
+    entropy.c
+    entropy_poll.c
+    gcm.c
+    md.c
+    oid.c
+    pem.c
+    pk.c
+    pk_ecc.c
+    pk_wrap.c
+    pkparse.c
+    platform_util.c
+    rsa.c
+    rsa_alt_helpers.c
+    sha1.c
+    sha256.c
+    sha512.c
+    x509.c
+    x509_crt.c
+    ssl_ciphersuites.c
+    ssl_client.c
+    ssl_msg.c
+    ssl_tls.c
+    ssl_tls12_client.c)
+target_include_directories(mintls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(mintls PUBLIC logging)
 set_target_properties(mintls PROPERTIES C_VISIBILITY_PRESET hidden)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")

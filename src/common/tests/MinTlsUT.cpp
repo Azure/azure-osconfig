@@ -3,12 +3,18 @@
 
 #include <gtest/gtest.h>
 #include <MinTls.h>
-#include <mbedtls/gcm.h>
-#include <mbedtls/sha256.h>
-#include <mbedtls/x509_crt.h>
+#include <debug.h>
+#include <ecp.h>
+#include <gcm.h>
+#include <md.h>
+#include <sha256.h>
+#include <x509_crt.h>
 #include <cerrno>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
+#include <iterator>
+#include <string>
 #include <unistd.h>
 
 namespace
@@ -161,4 +167,175 @@ TEST(MinTlsCore, CertificateProfileRejectsWeakPeerSignaturesAndKeys)
     EXPECT_EQ(0U, mbedtls_x509_crt_profile_default.allowed_mds & MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA1));
     EXPECT_EQ(0U, mbedtls_x509_crt_profile_default.allowed_mds & MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_MD5));
     EXPECT_GE(mbedtls_x509_crt_profile_default.rsa_min_bitlen, 2048U);
+}
+
+TEST(MinTlsCore, RetainsOnlyTheConfiguredAuthenticatedCipherSuites)
+{
+    const int expected[] = {
+        MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+        MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+        MBEDTLS_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+        MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+    };
+    const int* suites = mbedtls_ssl_list_ciphersuites();
+    const mbedtls_ssl_ciphersuite_t* suite = nullptr;
+
+    ASSERT_NE(nullptr, suites);
+
+    for (size_t i = 0; i < ARRAY_SIZE(expected); ++i)
+    {
+        ASSERT_EQ(expected[i], suites[i]);
+        suite = mbedtls_ssl_ciphersuite_from_id(suites[i]);
+        ASSERT_NE(nullptr, suite);
+        EXPECT_EQ(MBEDTLS_SSL_VERSION_TLS1_2, suite->MBEDTLS_PRIVATE(min_tls_version));
+        EXPECT_EQ(MBEDTLS_SSL_VERSION_TLS1_2, suite->MBEDTLS_PRIVATE(max_tls_version));
+        EXPECT_EQ(0, suite->MBEDTLS_PRIVATE(flags));
+    }
+
+    EXPECT_EQ(0, suites[ARRAY_SIZE(expected)]);
+    EXPECT_EQ(nullptr, mbedtls_ssl_ciphersuite_from_id(MBEDTLS_TLS_RSA_WITH_AES_128_GCM_SHA256));
+    EXPECT_EQ(nullptr, mbedtls_ssl_ciphersuite_from_id(MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA));
+    EXPECT_EQ(nullptr, mbedtls_ssl_ciphersuite_from_id(MBEDTLS_TLS1_3_AES_128_GCM_SHA256));
+}
+
+TEST(MinTlsCore, RetainsTheThreeRequiredNistCurves)
+{
+    const mbedtls_ecp_group_id expected[] = {
+        MBEDTLS_ECP_DP_SECP256R1, MBEDTLS_ECP_DP_SECP384R1, MBEDTLS_ECP_DP_SECP521R1
+    };
+    const mbedtls_ecp_curve_info* curves = mbedtls_ecp_curve_list();
+    mbedtls_ecp_group group = {};
+    size_t count = 0;
+    bool matched = false;
+
+    ASSERT_NE(nullptr, curves);
+
+    for (; MBEDTLS_ECP_DP_NONE != curves[count].grp_id; ++count)
+    {
+        ASSERT_LT(count, ARRAY_SIZE(expected));
+        matched = false;
+
+        for (const auto id : expected)
+        {
+            matched = matched || (id == curves[count].grp_id);
+        }
+
+        EXPECT_TRUE(matched);
+    }
+
+    EXPECT_EQ(ARRAY_SIZE(expected), count);
+
+    for (const auto id : expected)
+    {
+        mbedtls_ecp_group_init(&group);
+        EXPECT_EQ(0, mbedtls_ecp_group_load(&group, id));
+        mbedtls_ecp_group_free(&group);
+    }
+}
+
+TEST(MinTlsCore, KeepsLegacyAnchorHashParsingWithoutAddingLegacyPeerAlgorithms)
+{
+    EXPECT_NE(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_SHA1));
+    EXPECT_NE(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_SHA256));
+    EXPECT_NE(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_SHA384));
+    EXPECT_NE(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_SHA512));
+    EXPECT_EQ(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_MD5));
+    EXPECT_EQ(nullptr, mbedtls_md_info_from_type(MBEDTLS_MD_RIPEMD160));
+    EXPECT_EQ(0U, mbedtls_x509_crt_profile_default.allowed_mds & MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA1));
+}
+
+class MinTlsDiagnosticsTest : public ::testing::Test
+{
+protected:
+    char path[64] = "/tmp/osconfig-mintls-diagnostics-XXXXXX";
+    OsConfigLogHandle log = nullptr;
+    mbedtls_ssl_context session = {};
+    mbedtls_ssl_config configuration = {};
+    bool created = false;
+    LoggingLevel previousLevel = LoggingLevelInformational;
+
+    void SetUp() override
+    {
+        int descriptor = -1;
+
+        previousLevel = GetLoggingLevel();
+        SetLoggingLevel(LoggingLevelDebug);
+        mbedtls_ssl_init(&session);
+        mbedtls_ssl_config_init(&configuration);
+        descriptor = mkstemp(path);
+        ASSERT_GE(descriptor, 0);
+        created = true;
+        ASSERT_EQ(0, close(descriptor));
+        log = OpenLog(path, nullptr);
+        ASSERT_NE(nullptr, log);
+        ASSERT_NE(nullptr, GetLogFile(log));
+        ASSERT_EQ(0, mbedtls_ssl_config_defaults(&configuration, MBEDTLS_SSL_IS_CLIENT,
+            MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT));
+        mbedtls_ssl_conf_dbg(&configuration, MinTlsLogCallback, log);
+        ASSERT_EQ(0, mbedtls_ssl_setup(&session, &configuration));
+    }
+
+    void TearDown() override
+    {
+        mbedtls_ssl_free(&session);
+        mbedtls_ssl_config_free(&configuration);
+        CloseLog(&log);
+        SetLoggingLevel(previousLevel);
+
+        if (created)
+        {
+            EXPECT_EQ(0, unlink(path));
+        }
+    }
+
+    std::string Contents()
+    {
+        std::ifstream stream(path);
+
+        return std::string(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>());
+    }
+};
+
+TEST_F(MinTlsDiagnosticsTest, RoutesCoreFailureToTheSuppliedLogAndPreservesErrno)
+{
+    mbedtls_ssl_context* ssl = &session;
+    std::string contents;
+
+    errno = EBUSY;
+    MBEDTLS_SSL_DEBUG_RET(1, "synthetic certificate verification", MBEDTLS_ERR_X509_CERT_VERIFY_FAILED);
+    EXPECT_EQ(EBUSY, errno);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("MinTls core:"));
+    EXPECT_NE(std::string::npos, contents.find("MinTlsUT.cpp"));
+    EXPECT_NE(std::string::npos, contents.find("synthetic certificate verification"));
+    EXPECT_NE(std::string::npos, contents.find("core status:"));
+}
+
+TEST_F(MinTlsDiagnosticsTest, DoesNotLogReadinessSuccessCloseNotifyOrSensitiveBuffers)
+{
+    mbedtls_ssl_context* ssl = &session;
+    int evaluated = 0;
+
+    MBEDTLS_SSL_DEBUG_RET(1, "success", 0);
+    MBEDTLS_SSL_DEBUG_RET(1, "read readiness", MBEDTLS_ERR_SSL_WANT_READ);
+    MBEDTLS_SSL_DEBUG_RET(1, "write readiness", MBEDTLS_ERR_SSL_WANT_WRITE);
+    MBEDTLS_SSL_DEBUG_RET(1, "authenticated close", MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY);
+    MBEDTLS_SSL_DEBUG_BUF(1, "secret", (++evaluated, nullptr), 1);
+    MBEDTLS_SSL_DEBUG_MPI(1, "key", (++evaluated, nullptr));
+    MBEDTLS_SSL_DEBUG_CRT(1, "certificate", (++evaluated, nullptr));
+    MBEDTLS_SSL_DEBUG_MSG(1, ("sensitive: %d", ++evaluated));
+    EXPECT_EQ(0, evaluated);
+    EXPECT_TRUE(Contents().empty());
+}
+
+TEST_F(MinTlsDiagnosticsTest, PublicFailureUsesTheCallerLog)
+{
+    MinTls* tls = nullptr;
+    std::string contents;
+
+    EXPECT_EQ(ETIMEDOUT, MinTlsCreate(&tls, nullptr, 0, log));
+    EXPECT_EQ(nullptr, tls);
+    contents = Contents();
+    EXPECT_NE(std::string::npos, contents.find("MinTls: initialization failed"));
+    EXPECT_NE(std::string::npos, contents.find("status:"));
 }

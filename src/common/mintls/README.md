@@ -2,7 +2,21 @@
 
 Private, in-tree TLS fallback, not a general TLS library. System OpenSSL remains the preferred telemetry provider. A certificate, handshake, initialization, or I/O failure on that provider never causes a retry through mintls.
 
-On Linux distributions or custom images that lack a supported system OpenSSL provider (OpenSSL 3 or 1.1), mintls provides the TLS client needed for HTTPS telemetry. It is a minimal, in-tree subset of Mbed TLS, statically linked into the telemetry executable, so no separate TLS library needs to be installed. It still requires a trusted CA bundle and remains subject to the security-policy restrictions below.
+On Linux distributions or custom images that lack a supported system OpenSSL provider (OpenSSL 3 or 1.1), mintls provides the TLS client needed for HTTPS telemetry. It is an OSConfig-maintained derivative of Mbed TLS, statically linked into the telemetry executable, so no separate TLS library needs to be installed. It still requires a trusted CA bundle and remains subject to the security-policy restrictions below.
+
+## Distilled implementation
+
+All implementation files and the upstream license are in this directory. There is no nested `core` tree or upstream build. `MinTlsConfig.h` fixes the TLS 1.2 client profile; this is not a configurable replacement for the general Mbed TLS API.
+
+Dependency tracing starts at `MinTls.c` and the core tests. The first distillation removes the unused modular-bignum/block-cipher modules, PSA integration, TLS 1.3-only data, and profile-disabled server, DTLS, alternative cipher/curve, filesystem, threading and self-test branches. Required compiler/architecture branches and cryptographic operations are retained. SHA-1 remains for legacy trust-anchor parsing, not permission to accept SHA-1 peer signatures. The internal `mbedtls_` names are retained to make provenance and security-fix comparison practical.
+
+This is a fixed-profile reduction, not a claim that every remaining general-purpose helper is reachable from a telemetry send. Further function-level pruning must account for callback tables, header inlines, certificate inputs and all supported targets; absence from one binary is insufficient evidence.
+
+## Diagnostics
+
+Every public `MinTls*` operation accepts the caller's borrowed `OsConfigLogHandle`. TLS failure diagnostics use the configuration's per-context callback, refreshed for each operation; no global log handle or separate core log is introduced. Initialization, socket I/O, certificate verification and internal TLS/crypto failure stages report numeric error information. Readiness continuations, successful operations and authenticated close-notify are not errors.
+
+The general upstream debug stream stays disabled: key, MPI, certificate and payload dumps are never enabled, even at debug level. Core failure callbacks preserve errno and do not change TLS results. Ordinary C implementation functions are no longer `static`; existing header-only inline primitives retain their linkage to avoid duplicate definitions and changes to constant-time inlining.
 
 ## Trust, policy, and process contract
 
@@ -20,7 +34,7 @@ Tests and the explicit live sender use the same TLS/transport libraries as produ
 
 ## License and provenance
 
-The imported Mbed TLS code in `core` retains its upstream copyright notices and the complete license text in [core/LICENSE](core/LICENSE). Upstream offers Apache-2.0 OR GPL-2.0-or-later; OSConfig uses the Apache-2.0 option. The OSConfig wrapper and integration remain MIT-licensed.
+The retained derivative files keep their upstream copyright notices, identify their original Mbed TLS 3.6.7 paths, and mark OSConfig modifications. The complete upstream license is in [LICENSE](LICENSE). Upstream offers Apache-2.0 OR GPL-2.0-or-later; OSConfig uses the Apache-2.0 option. The OSConfig wrapper, logging bridge and integration remain MIT-licensed.
 
 The source subset was imported from the official [Mbed TLS 3.6.7 release archive](https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.7/mbedtls-3.6.7.tar.bz2), with SHA-256 `a7e8bcbec0e6f761b4af24f25677626b35f762f68eef79c08677a363212d11f6`. This records provenance for maintenance; it does not introduce an upstream download or build dependency.
 

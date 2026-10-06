@@ -65,7 +65,7 @@ if(BUILD_TELEMETRY)
     install(TARGETS telemetryworker RUNTIME DESTINATION bin)
     install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
     if(OSCONFIG_TELEMETRY_MINTLS)
-        install(FILES ../mintls/core/LICENSE DESTINATION share/licenses/osconfig RENAME mintls-LICENSE)
+        install(FILES ../mintls/LICENSE DESTINATION share/licenses/osconfig RENAME mintls-LICENSE)
     endif()
 endif()
 

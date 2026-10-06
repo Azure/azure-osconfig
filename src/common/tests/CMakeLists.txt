@@ -47,9 +47,6 @@ target_link_libraries(commontests
     rt
 )
 
-target_include_directories(commontests PRIVATE ../mintls/core/include)
-target_compile_definitions(commontests PRIVATE MBEDTLS_CONFIG_FILE="MinTlsConfig.h")
-
 add_executable(telemetryresolverlookupworker
     ../telemetry/TelemetryResolverWorker.c
     ../telemetry/TelemetryResolverLookup.c

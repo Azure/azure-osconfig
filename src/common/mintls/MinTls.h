@@ -21,6 +21,9 @@ typedef struct MinTls MinTls;
 // crypto work with its process watchdog. No queues, DNS, TCP connect or threads.
 // caFile overrides trust discovery. Otherwise SSL_CERT_FILE or the first
 // recognized OS PEM bundle is used. No built-in roots or trust-on-first-use.
+// The log handle is borrowed through synchronous operations and their internal
+// callbacks; the library never opens or closes it. Core diagnostics exclude
+// payloads, key material and certificate contents.
 int MinTlsCreate(MinTls** tls, const char* caFile, int64_t deadline, OsConfigLogHandle log);
 
 // Borrows a connected nonblocking socket; never closes it. Requires a verified

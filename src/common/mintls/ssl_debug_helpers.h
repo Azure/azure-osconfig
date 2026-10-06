@@ -1,0 +1,23 @@
+/**
+ * \file ssl_debug_helpers.h
+ *
+ * \brief Automatically generated helper functions for debugging
+ */
+/*
+ *  Copyright The Mbed TLS Contributors
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ * Modified by Microsoft for OSConfig: private MinTls profile and flat
+ * source layout. Original Mbed TLS 3.6.7 file: library/ssl_debug_helpers.h.
+ */
+
+#ifndef MBEDTLS_SSL_DEBUG_HELPERS_H
+#define MBEDTLS_SSL_DEBUG_HELPERS_H
+
+#include "common.h"
+
+#define MBEDTLS_SSL_PRINT_EXTS(level, hs_msg_type, extension_mask)
+
+#define MBEDTLS_SSL_PRINT_EXT(level, hs_msg_type, extension_type, extra)
+
+#endif /* MBEDTLS_SSL_DEBUG_HELPERS_H */
