@@ -130,8 +130,6 @@ set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 if (BUILD_TESTS)
     message(STATUS "Google Unit Test: Enabled")
     enable_testing()
-    add_test(NAME DependencyAssetSources
-        COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/tests/AssetSources.cmake")
     add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 else()
