@@ -20,12 +20,8 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL 3.6.0 EXACT REQUIRED)
 find_package(ZLIB 1.3.1 EXACT REQUIRED)
 find_package(SQLite3 3.47.2 EXACT REQUIRED)
-find_package(CURL CONFIG REQUIRED
+find_package(CURL 8.16.0 EXACT CONFIG REQUIRED
     PATHS "${OSCONFIG_DEPENDENCY_PREFIX}/lib/cmake/CURL" NO_DEFAULT_PATH)
-# The checksum-pinned curl-8_16_0 Git archive retains the upstream -DEV suffix.
-if(NOT "${CURL_VERSION_STRING}" MATCHES "^8[.]16[.]0(-DEV)?$")
-    message(FATAL_ERROR "Expected pinned curl 8.16.0 or 8.16.0-DEV, found '${CURL_VERSION_STRING}'")
-endif()
 find_package(nlohmann_json 3.11.3 EXACT CONFIG REQUIRED
     PATHS "${OSCONFIG_DEPENDENCY_PREFIX}/share/cmake/nlohmann_json" NO_DEFAULT_PATH)
 
