@@ -524,8 +524,8 @@ int main(int argc, char** argv)
 
             if (0 != reply.error)
             {
-                OsConfigLogError(log, "OSConfigTelemetry: lookup failed with %d (%s), resolver: %d (%s), sequence: %u", 
-                    (int)reply.error, strerror(reply.error), (int)reply.lookupError, 
+                OsConfigLogError(log, "OSConfigTelemetry: lookup failed with %d (%s), resolver: %d (%s), sequence: %u",
+                    (int)reply.error, strerror(reply.error), (int)reply.lookupError,
                     (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error", (unsigned int)sequence);
             }
             else
