@@ -1306,7 +1306,7 @@ int mbedtls_ssl_get_handshake_transcript(mbedtls_ssl_context *ssl,
  * ssl->conf->group_list when mbedtls_ssl_conf_groups() has been more recently invoked.
  *
  */
-static inline const void *mbedtls_ssl_get_groups(const mbedtls_ssl_context *ssl)
+static inline const uint16_t *mbedtls_ssl_get_groups(const mbedtls_ssl_context *ssl)
 {
     #if defined(MBEDTLS_DEPRECATED_REMOVED) || !defined(MBEDTLS_ECP_C)
     return ssl->conf->group_list;
@@ -1409,7 +1409,7 @@ static inline int mbedtls_ssl_named_group_is_supported(uint16_t named_group)
  * been more recently invoked.
  *
  */
-static inline const void *mbedtls_ssl_get_sig_algs(
+static inline const uint16_t *mbedtls_ssl_get_sig_algs(
     const mbedtls_ssl_context *ssl)
 {
 #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED)
