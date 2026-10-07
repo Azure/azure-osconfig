@@ -251,6 +251,13 @@ Key GenerateKey(bool ecdsa)
     // Public controls shared by 1.0.2/1.1/3: EC_PARAMGEN_CURVE_NID and RSA_KEYGEN_BITS.
     Require(1 == EVP_PKEY_CTX_ctrl(context.get(), -1, -1, ecdsa ? 0x1001 : 0x1003,
         parameter, nullptr), "Key generation parameters failed");
+    if (ecdsa)
+    {
+        // EC_PARAM_ENC = OPENSSL_EC_NAMED_CURVE. Legacy explicit encoding can
+        // decode to a different EC_METHOD and fail comparison with the key.
+        Require(1 == EVP_PKEY_CTX_ctrl(context.get(), -1, -1, 0x1002, 1, nullptr),
+            "Setting named-curve encoding failed");
+    }
     EVP_PKEY* generated = nullptr;
     const int status = EVP_PKEY_keygen(context.get(), &generated);
     Key key(generated, EVP_PKEY_free);
@@ -370,7 +377,8 @@ void Certificates(SSL_CTX* context, const std::string& directory, const std::str
     Require(1 == SSL_CTX_use_certificate(context, server.get()), "Loading test certificate failed");
     Require(1 == SSL_CTX_use_PrivateKey(context, key.get()), "Loading test key failed");
     Require(1 == SSL_CTX_check_private_key(context), "Test key does not match certificate");
-    std::unique_ptr<FILE, decltype(&fclose)> output(fopen((directory + "/root.pem").c_str(), "w"), fclose);
+    const auto closeFile = [](FILE* file) { fclose(file); };
+    std::unique_ptr<FILE, decltype(closeFile)> output(fopen((directory + "/root.pem").c_str(), "w"), closeFile);
     Require(output != nullptr, "Opening test trust certificate failed");
     Require(1 == PEM_write_X509(output.get(), root ? root.get() : server.get()), "Writing trust certificate failed");
     Require(0 == fclose(output.release()), "Closing test trust certificate failed");

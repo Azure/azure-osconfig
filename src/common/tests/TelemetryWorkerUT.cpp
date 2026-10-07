@@ -382,9 +382,15 @@ TEST_F(TelemetryWorkerTest, ReportsMissingExecutableWithoutLosingTheInvocation)
     const std::string missing = std::string(TELEMETRY_WORKER_PATH) + ".nonexistent";
 
     ASSERT_EQ(0, Create(missing.c_str()));
-    EXPECT_EQ(ENOENT, TelemetryWorkerResolve(worker, "127.0.0.1", &result, NULL));
-    EXPECT_EQ(0U, result.count);
-    EXPECT_EQ(ENOENT, TelemetryWorkerResolve(worker, "127.0.0.1", &result, NULL));
+    // Older glibc can report exec failure by child exit 127, not spawn ENOENT.
+    // Closing IPC before READY is then reported as EPIPE, still a failed call.
+    for (int attempt = 0; attempt < 2; ++attempt)
+    {
+        SCOPED_TRACE(attempt);
+        const int status = TelemetryWorkerResolve(worker, "127.0.0.1", &result, NULL);
+        EXPECT_TRUE(status == ENOENT || status == EPIPE) << "status=" << status;
+        EXPECT_EQ(0U, result.count);
+    }
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, NULL));
 }
 
@@ -398,8 +404,14 @@ TEST_F(TelemetryWorkerTest, SendStartupFailureDoesNotConsumeCollectorSuppression
     property.type = TelemetryPropertyString;
     property.value.stringValue = "fixture";
     EXPECT_EQ(EINVAL, TelemetryWorkerSend(nullptr, "CrashDetected", &property, 1, nullptr));
-    EXPECT_EQ(ENOENT, TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr));
-    EXPECT_EQ(ENOENT, TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr));
+    // As with Resolve, exec failure may be synchronous ENOENT or EOF before
+    // READY (EPIPE). Neither may be mistaken for collector suppression.
+    for (int attempt = 0; attempt < 2; ++attempt)
+    {
+        SCOPED_TRACE(attempt);
+        const int status = TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr);
+        EXPECT_TRUE(status == ENOENT || status == EPIPE) << "status=" << status;
+    }
 }
 
 TEST_F(TelemetryWorkerTest, RejectsMismatchedStartupProtocol)

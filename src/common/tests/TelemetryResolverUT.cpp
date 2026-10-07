@@ -102,7 +102,10 @@ TEST_F(TelemetryResolverTest, RejectsInvalidArgumentsAndMissingExecutable)
     EXPECT_EQ(EINVAL, TelemetryResolveHost(TELEMETRY_RESOLVER_WORKER_PATH, "127.0.0.1", -1, &result, NULL));
     EXPECT_EQ(EINVAL, TelemetryResolveHost(TELEMETRY_RESOLVER_WORKER_PATH, "127.0.0.1", 5000, NULL, NULL));
     EXPECT_EQ(EINVAL, TelemetryResolveHost(TELEMETRY_RESOLVER_WORKER_PATH, oversized.c_str(), 5000, &result, NULL));
-    EXPECT_EQ(ENOENT, TelemetryResolveHost(missing.c_str(), "127.0.0.1", 5000, &result, NULL));
+    // POSIX also permits spawn success followed by child exit 127 on exec
+    // failure (older glibc). The resolver reports that abnormal exit as EIO.
+    const int status = TelemetryResolveHost(missing.c_str(), "127.0.0.1", 5000, &result, NULL);
+    EXPECT_TRUE(status == ENOENT || status == EIO) << "status=" << status;
     EXPECT_EQ(0U, result.count);
 }
 
