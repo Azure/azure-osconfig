@@ -24,8 +24,12 @@ struct ossl_init_settings_st;
 
 namespace
 {
-// The real adapter is compiled as C with only dlopen/dlsym substituted.
-// No installed OpenSSL version or external network is needed for these cases.
+// This test executable compiles its own copy of the real C adapter, replacing
+// only dlopen/dlsym through target-private build definitions. Production builds
+// use the system loader and never link these mocks.
+// The fake OpenSSL functions below record calls and inject results; they perform
+// no cryptography or certificate validation. These cases test adapter decisions,
+// not TLS interoperability. TelemetryTlsUT.cpp covers real OpenSSL with local peers.
 struct Provider
 {
     const char* name;
@@ -302,6 +306,7 @@ void ExpectHandshakeFailure(size_t index, int status)
 }
 }
 
+// Test-only loader: return a fixture record, not an actual shared-library handle.
 extern "C" void* TelemetryTestDlopen(const char* name, int) noexcept
 {
     opened.push_back(name);
@@ -317,6 +322,8 @@ extern "C" void* TelemetryTestDlopen(const char* name, int) noexcept
     return nullptr;
 }
 
+// Expose only the selected version's simulated API, with optional missing symbols
+// for failure cases. Returned addresses refer exclusively to test functions above.
 extern "C" void* TelemetryTestDlsym(void* library, const char* name) noexcept
 {
     current = static_cast<Provider*>(library);

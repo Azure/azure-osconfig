@@ -78,7 +78,9 @@ public:
 
         if (!directory.empty())
         {
-            for (const char* file : {"server-key.pem", "server.pem", "root-key.pem", "root.pem", "openssl.cnf", "expired.pem"})
+            for (const char* file : {"server-key.pem", "server.pem", "root-key.pem", "root.pem", "openssl.cnf",
+                "ca.cnf", "server.csr", "valid.pem", "01.pem", "02.pem", "index", "index.old",
+                "index.attr", "index.attr.old", "serial", "serial.old"})
             {
                 unlink((directory + "/" + file).c_str());
             }
@@ -136,8 +138,7 @@ public:
         posix_spawn_file_actions_t actions = {};
         int status = 0;
         char* arguments[] = {
-            const_cast<char*>(TELEMETRY_TLS_PYTHON),
-            const_cast<char*>(TELEMETRY_TLS_PEER_SCRIPT),
+            const_cast<char*>(TELEMETRY_TLS_PEER_PATH),
             const_cast<char*>(TELEMETRY_TLS_OPENSSL),
             NULL, const_cast<char*>(mode), NULL
         };
@@ -174,13 +175,13 @@ public:
             return status;
         }
 
-        arguments[3] = const_cast<char*>(directory.c_str());
+        arguments[2] = const_cast<char*>(directory.c_str());
 
         if ((0 == (status = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO))) &&
             (0 == (status = posix_spawn_file_actions_addclose(&actions, output[0]))) &&
             (0 == (status = posix_spawn_file_actions_addclose(&actions, output[1]))))
         {
-            status = posix_spawn(&child, TELEMETRY_TLS_PYTHON, &actions, NULL, arguments, environ);
+            status = posix_spawn(&child, TELEMETRY_TLS_PEER_PATH, &actions, NULL, arguments, environ);
         }
 
         posix_spawn_file_actions_destroy(&actions);
@@ -400,6 +401,7 @@ void Exchange(const char* identity, const char* mode = nullptr)
     EXPECT_EQ(nullptr, peer.tls);
     EXPECT_GE(fcntl(peer.descriptor, F_GETFL), 0);
     TelemetryTlsDestroy(&peer.tls, NULL);
+    EXPECT_EQ(0, peer.Wait());
 }
 
 void HandshakeFailure(const char* mode, const char* identity, int expected)
@@ -423,6 +425,11 @@ void HandshakeFailure(const char* mode, const char* identity, int expected)
 
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(peer.tls, "x", 1, Deadline(), NULL));
     EXPECT_GE(fcntl(peer.descriptor, F_GETFL), 0);
+
+    if (0 != strcmp(mode, "silent-handshake"))
+    {
+        EXPECT_EQ(0, peer.Wait());
+    }
 }
 
 void ReadFailure(const char* mode)

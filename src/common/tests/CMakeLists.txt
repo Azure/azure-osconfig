@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.2.0)
 
 include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
-find_package(Python3 3.4 REQUIRED COMPONENTS Interpreter)
+find_program(TELEMETRY_TLS_BASH_EXECUTABLE NAMES bash REQUIRED)
 find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 
 add_executable(commontests
@@ -90,6 +90,8 @@ target_compile_definitions(commontests PRIVATE
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
+# Compile a separate copy of the real adapter with test-only loader replacements.
+# PRIVATE definitions do not affect the production telemetrytls library or worker.
 add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/TelemetryTls.c)
 target_include_directories(telemetrytlsprovidertests PRIVATE ../telemetry)
 target_compile_definitions(telemetrytlsprovidertests PRIVATE
@@ -98,10 +100,14 @@ target_compile_definitions(telemetrytlsprovidertests PRIVATE
 target_link_libraries(telemetrytlsprovidertests PRIVATE GTest::gtest_main logging rt)
 gtest_discover_tests(telemetrytlsprovidertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
+add_executable(telemetrytlspeer TelemetryTlsPeer.cpp)
+target_link_libraries(telemetrytlspeer PRIVATE commonutils ${CMAKE_DL_LIBS})
+target_compile_definitions(telemetrytlspeer PRIVATE
+    TELEMETRY_TLS_BASH="${TELEMETRY_TLS_BASH_EXECUTABLE}")
+add_dependencies(commontests telemetrytlspeer)
 target_compile_definitions(commontests PRIVATE
-    TELEMETRY_TLS_PYTHON="${Python3_EXECUTABLE}"
     TELEMETRY_TLS_OPENSSL="${TELEMETRY_TLS_OPENSSL_EXECUTABLE}"
-    TELEMETRY_TLS_PEER_SCRIPT="${CMAKE_CURRENT_SOURCE_DIR}/TelemetryTlsPeer.py")
+    TELEMETRY_TLS_PEER_PATH="$<TARGET_FILE:telemetrytlspeer>")
 
 add_dependencies(commontests telemetryariatest)
 target_compile_definitions(commontests PRIVATE

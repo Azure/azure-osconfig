@@ -48,6 +48,14 @@ configuration, not simply the OpenSSL version.
 
 ## Coverage
 
+Loopback tests use a separate C++ peer loading system OpenSSL, with Bash and
+the `openssl` command for generating temporary certificates. The setup script is
+an embedded C++ string executed through `ExecuteCommand`; there is no Python
+fixture or CI package-installation step. The test peer loads the public server
+APIs dynamically so it does not introduce an OpenSSL development-header
+requirement on the existing CI images. The peer is not installed and listens
+only on the loopback interface. Production code is unchanged.
+
 `telemetrytlsprovidertests` exercises the real adapter with substituted loader
 entry points: provider ordering, legacy API differences, version/API rejection,
 configuration failures and refusal to downgrade after provider failures.
