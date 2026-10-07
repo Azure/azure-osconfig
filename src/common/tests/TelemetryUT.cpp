@@ -17,19 +17,17 @@ struct TelemetryWorker {};
 static TelemetryWorker workerInstance;
 static int creates, destroys, sends, createStatus, preparationStatus;
 static int lifetime, budget, operation;
-static bool workerForceMinTls = false;
 static std::string eventName, workerPath;
 static std::map<std::string, std::string> fields;
 
 extern "C" int TelemetryWorkerCreate(const char* path, int lifetimeMs, int budgetMs,
-    int operationMs, TelemetryWorker** worker, bool forceMinTls, OsConfigLogHandle)
+    int operationMs, TelemetryWorker** worker, OsConfigLogHandle)
 {
     ++creates;
     workerPath = path;
     lifetime = lifetimeMs;
     budget = budgetMs;
     operation = operationMs;
-    workerForceMinTls = forceMinTls;
 
     if (!createStatus)
     {
@@ -101,7 +99,6 @@ class TelemetryProducerTest : public ::testing::Test
     {
         TelemetryCleanup(nullptr);
         creates = destroys = sends = createStatus = preparationStatus = 0;
-        workerForceMinTls = false;
         fields.clear();
     }
 
@@ -117,7 +114,6 @@ TEST_F(TelemetryProducerTest, PreservesLegacyInitializeEmitCleanupCalls)
 
     initialize(nullptr);
     EXPECT_EQ(1, creates);
-    EXPECT_FALSE(workerForceMinTls);
     OSConfigTelemetryCrashDetected("previous crash");
     EXPECT_EQ("CrashDetected", eventName);
     EXPECT_EQ(1, sends);
@@ -127,16 +123,14 @@ TEST_F(TelemetryProducerTest, PreservesLegacyInitializeEmitCleanupCalls)
 
 TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)
 {
-    ASSERT_EQ(0, TelemetryInitializeInternal(true, nullptr));
-    EXPECT_TRUE(workerForceMinTls);
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     EXPECT_EQ(600000, lifetime);
     EXPECT_GT(budget, 0);
     EXPECT_LE(budget, 500);
     EXPECT_EQ(500, operation);
     EXPECT_EQ('/', workerPath[0]);
     EXPECT_NE(std::string::npos, workerPath.find("/OSConfigTelemetry"));
-    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(true, nullptr));
-    EXPECT_TRUE(workerForceMinTls);
+    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(nullptr));
     EXPECT_EQ(1, creates);
     TelemetryCleanup(nullptr);
     EXPECT_EQ(1, destroys);
@@ -146,7 +140,7 @@ TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)
 
 TEST_F(TelemetryProducerTest, PreservesAllFourNamedStringSchemasAndSpecialCharacters)
 {
-    ASSERT_EQ(0, TelemetryInitializeInternal(true, nullptr));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryBaselineRun("baseline\"\\\n", "Audit", 1.25);
     EXPECT_EQ("BaselineRun", eventName);
     EXPECT_EQ("baseline\"\\\n", fields["BaselineName"]);
@@ -167,7 +161,7 @@ TEST_F(TelemetryProducerTest, PreservesAllFourNamedStringSchemasAndSpecialCharac
 
 TEST_F(TelemetryProducerTest, NullOptionalValuesUseExplicitPlaceholder)
 {
-    ASSERT_EQ(0, TelemetryInitializeInternal(true, nullptr));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryBaselineRun(nullptr, nullptr, 0);
     EXPECT_EQ("N/A", fields["BaselineName"]);
     EXPECT_EQ("N/A", fields["Mode"]);
@@ -178,15 +172,14 @@ TEST_F(TelemetryProducerTest, NullOptionalValuesUseExplicitPlaceholder)
 TEST_F(TelemetryProducerTest, InitializationFailureDoesNotRetryOrSendUntilCleanup)
 {
     createStatus = ENOMEM;
-    EXPECT_EQ(ENOMEM, TelemetryInitializeInternal(true, nullptr));
-    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(true, nullptr));
+    EXPECT_EQ(ENOMEM, TelemetryInitializeInternal(nullptr));
+    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryCrashDetected("dropped");
     EXPECT_EQ(0, sends);
     EXPECT_EQ(1, creates);
     TelemetryCleanup(nullptr);
     createStatus = 0;
-    EXPECT_EQ(0, TelemetryInitializeInternal(true, nullptr));
-    EXPECT_TRUE(workerForceMinTls);
+    EXPECT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryCrashDetected("new invocation");
     EXPECT_EQ(1, sends);
 }
@@ -196,7 +189,7 @@ TEST_F(TelemetryProducerTest, CallsOutsideInvocationDoNotStartAWorker)
     OSConfigTelemetryCrashDetected("outside");
     EXPECT_EQ(0, creates);
     EXPECT_EQ(0, sends);
-    ASSERT_EQ(0, TelemetryInitializeInternal(true, nullptr));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     TelemetryCleanup(nullptr);
     OSConfigTelemetryCrashDetected("after cleanup");
     EXPECT_EQ(1, creates);
@@ -205,7 +198,7 @@ TEST_F(TelemetryProducerTest, CallsOutsideInvocationDoNotStartAWorker)
 
 TEST_F(TelemetryProducerTest, ExhaustedPreparationBudgetDoesNotBeginSend)
 {
-    ASSERT_EQ(0, TelemetryInitializeInternal(true, nullptr));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     preparationStatus = ETIMEDOUT;
     OSConfigTelemetryCrashDetected("dropped");
     EXPECT_EQ(0, sends);

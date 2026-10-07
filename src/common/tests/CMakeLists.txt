@@ -12,7 +12,6 @@ find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
-    MinTlsUT.cpp
     SshUtilsUT.cpp
     TelemetryEncoderUT.cpp
     TelemetryEventUT.cpp
@@ -31,7 +30,6 @@ target_link_libraries(commontests
     GTest::gmock_main
     pthread
     logging
-    mintls
     commonutils
     asb
     parsonlib
@@ -91,6 +89,14 @@ target_compile_definitions(commontests PRIVATE
     TELEMETRY_WORKER_FAULT_PATH="$<TARGET_FILE:telemetryworkerfault>")
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
+
+add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/TelemetryTls.c)
+target_include_directories(telemetrytlsprovidertests PRIVATE ../telemetry)
+target_compile_definitions(telemetrytlsprovidertests PRIVATE
+    dlopen=TelemetryTestDlopen
+    dlsym=TelemetryTestDlsym)
+target_link_libraries(telemetrytlsprovidertests PRIVATE GTest::gtest_main logging rt)
+gtest_discover_tests(telemetrytlsprovidertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 target_compile_definitions(commontests PRIVATE
     TELEMETRY_TLS_PYTHON="${Python3_EXECUTABLE}"

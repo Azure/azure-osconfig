@@ -61,7 +61,7 @@ char* GetCachedDistroName(void)
     return g_distroName;
 }
 
-int TelemetryInitializeInternal(bool forceMinTls, OsConfigLogHandle log)
+int TelemetryInitializeInternal(OsConfigLogHandle log)
 {
     int64_t start = 0;
     int64_t now = 0;
@@ -113,7 +113,7 @@ int TelemetryInitializeInternal(bool forceMinTls, OsConfigLogHandle log)
             else
             {
                 status = TelemetryWorkerCreate(path, TELEMETRY_LIFETIME_MS,
-                    TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, forceMinTls, log);
+                    TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, log);
             }
         }
 
@@ -131,7 +131,7 @@ int TelemetryInitializeInternal(bool forceMinTls, OsConfigLogHandle log)
 
 void TelemetryInitialize(const OsConfigLogHandle log)
 {
-    TelemetryInitializeInternal(false, log);
+    TelemetryInitializeInternal(log);
 }
 
 void TelemetryCleanup(OsConfigLogHandle log)

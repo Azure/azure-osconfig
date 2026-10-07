@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 
     if (0 == (status = TelemetryCreateEpoch(correlation, log)))
     {
-        status = TelemetryTransportCreate(&transport, true, log);
+        status = TelemetryTransportCreate(&transport, log);
     }
 
     if (status)
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 
     printf("LIVE StatusTrace test: requested=%d ResultCode=%s\n"
         "ResultString=%s\nCorrelationId=%s\n"
-        "TLS mode: mintls only (OS OpenSSL discovery disabled)\n"
+        "TLS mode: system OpenSSL (3, 1.1, then 1.0.2)\n"
         "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.\n",
         TEST_COUNT, TEST_RESULT, TEST_MARKER, correlation);
     fflush(stdout);

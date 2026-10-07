@@ -21,7 +21,9 @@ static const char* const g_openSslSymbols[] = {
     "SSL_new",
     "SSL_free",
     "SSL_set_fd",
-    "SSL_set1_host",
+    "SSL_get0_param",
+    "X509_VERIFY_PARAM_set1_host",
+    "X509_VERIFY_PARAM_set1_ip_asc",
     "SSL_ctrl",
     "SSL_connect",
     "SSL_get_error",
@@ -29,6 +31,21 @@ static const char* const g_openSslSymbols[] = {
     "SSL_read",
     "SSL_write",
     "SSL_shutdown",
+    NULL
+};
+
+static const char* const g_openSsl102Symbols[] = {
+    "SSLeay",
+    "SSL_library_init",
+    "OPENSSL_load_builtin_modules",
+    "CONF_modules_load_file",
+    "TLSv1_2_client_method",
+    "SSL_CTX_ctrl",
+    "SSL_CTX_set_alpn_protos",
+    "SSL_get0_param",
+    "X509_VERIFY_PARAM_set1_host",
+    "X509_VERIFY_PARAM_set_hostflags",
+    "X509_VERIFY_PARAM_set1_ip_asc",
     NULL
 };
 
@@ -195,9 +212,10 @@ int main(int argc, char** argv)
 
     failed |= InspectLibrary("libssl.so.3", g_openSslSymbols);
     failed |= InspectLibrary("libssl.so.1.1", g_openSslSymbols);
-    puts("\nLegacy OpenSSL inventory only; not an approved adapter:");
-    failed |= InspectLibrary("libssl.so.1.0.0", NULL);
-    failed |= InspectLibrary("libssl.so.10", NULL);
+    puts("\nLegacy OpenSSL candidates; runtime must be 1.0.2, not 1.0.1:");
+    failed |= InspectLibrary("libssl.so.1.0.2", g_openSsl102Symbols);
+    failed |= InspectLibrary("libssl.so.10", g_openSsl102Symbols);
+    failed |= InspectLibrary("libssl.so.1.0.0", g_openSsl102Symbols);
 
     puts("\nNSS/NSPR candidate libraries:");
     failed |= InspectLibrary("libnss3.so", g_nssSymbols);

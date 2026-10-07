@@ -305,7 +305,7 @@ public:
             return errno;
         }
 
-        return TelemetryTlsCreate(&tls, Deadline(), true, NULL);
+        return TelemetryTlsCreate(&tls, Deadline(), NULL);
     }
 };
 
@@ -347,20 +347,24 @@ void ReadExact(Peer& peer, const std::string& expected)
     EXPECT_EQ(expected, received);
 }
 
-void ExpectNoOsTls()
+void ExpectOsTls()
 {
     std::ifstream maps("/proc/self/maps");
     std::string mapping = {};
+    bool ssl = false;
+    bool crypto = false;
 
     ASSERT_TRUE(maps.is_open());
 
     while (std::getline(maps, mapping))
     {
-        EXPECT_EQ(std::string::npos, mapping.find("libssl.so"));
-        EXPECT_EQ(std::string::npos, mapping.find("libcrypto.so"));
+        ssl = ssl || (std::string::npos != mapping.find("libssl.so"));
+        crypto = crypto || (std::string::npos != mapping.find("libcrypto.so"));
     }
 
     EXPECT_TRUE(maps.eof());
+    EXPECT_TRUE(ssl);
+    EXPECT_TRUE(crypto);
 }
 
 void Exchange(const char* identity, const char* mode = nullptr)
@@ -375,9 +379,9 @@ void Exchange(const char* identity, const char* mode = nullptr)
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode ? mode : 0 == strcmp(identity, "127.0.0.1") ? "ip" : "exchange"));
     ASSERT_EQ(0, TelemetryTlsHandshake(peer.tls, peer.descriptor, identity, Deadline(), NULL));
-    ExpectNoOsTls();
+    ExpectOsTls();
     original = peer.tls;
-    EXPECT_EQ(EALREADY, TelemetryTlsCreate(&peer.tls, Deadline(), true, NULL));
+    EXPECT_EQ(EALREADY, TelemetryTlsCreate(&peer.tls, Deadline(), NULL));
     EXPECT_EQ(original, peer.tls);
     EXPECT_EQ(EALREADY, TelemetryTlsHandshake(peer.tls, peer.descriptor, identity, Deadline(), NULL));
 
@@ -478,8 +482,8 @@ void InvalidArguments()
     int flags = 0;
 
     IgnorePipe();
-    EXPECT_EQ(EINVAL, TelemetryTlsCreate(NULL, Deadline(), true, NULL));
-    EXPECT_EQ(ETIMEDOUT, TelemetryTlsCreate(&tls, 0, true, NULL));
+    EXPECT_EQ(EINVAL, TelemetryTlsCreate(NULL, Deadline(), NULL));
+    EXPECT_EQ(ETIMEDOUT, TelemetryTlsCreate(&tls, 0, NULL));
     EXPECT_EQ(nullptr, tls);
     EXPECT_EQ(EINVAL, TelemetryTlsHandshake(NULL, -1, NULL, Deadline(), NULL));
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(NULL, NULL, 1, Deadline(), NULL));
@@ -507,7 +511,7 @@ void PreservesSignalDisposition()
     action.sa_handler = SIG_DFL;
     sigemptyset(&action.sa_mask);
     ASSERT_EQ(0, sigaction(SIGPIPE, &action, NULL));
-    EXPECT_EQ(ENOTSUP, TelemetryTlsCreate(&tls, Deadline(), true, NULL));
+    EXPECT_EQ(ENOTSUP, TelemetryTlsCreate(&tls, Deadline(), NULL));
     EXPECT_EQ(nullptr, tls);
     ASSERT_EQ(0, sigaction(SIGPIPE, NULL, &after));
     EXPECT_EQ(SIG_DFL, after.sa_handler);
@@ -571,7 +575,7 @@ void TransportExchange(const char* mode)
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
-    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, true, NULL));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
     // The invocation keeps its selected route even if the environment changes.
     ASSERT_EQ(0, setenv("https_proxy", "unsupported://must-not-use.invalid", 1));
 
@@ -591,7 +595,7 @@ void TransportExchange(const char* mode)
         EXPECT_FALSE(TelemetryTransportSuppressed(transport.value));
     }
 
-    ExpectNoOsTls();
+    ExpectOsTls();
     TelemetryTransportDestroy(&transport.value, NULL);
     EXPECT_EQ(0, peer.Wait());
 }
@@ -605,7 +609,7 @@ void TransportFailure(const char* mode, int expected, bool slow = false)
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
-    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, true, NULL));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
     ASSERT_EQ(0, TelemetryMonotonicTime(&begin));
     EXPECT_EQ(expected, transport.Send(&response, slow ? 300 : 5000));
     ASSERT_EQ(0, TelemetryMonotonicTime(&end));
@@ -631,7 +635,7 @@ void TransportResponse(const char* mode, TelemetryAcceptance expected, bool supp
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
-    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, true, NULL));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
     ASSERT_EQ(0, transport.Send(&response));
     EXPECT_EQ(expected, response.acceptance);
     EXPECT_EQ(suppressed, TelemetryTransportSuppressed(transport.value));
@@ -659,14 +663,14 @@ void TransportArguments()
         ASSERT_EQ(0, unsetenv(name));
     }
 
-    EXPECT_EQ(EINVAL, TelemetryTransportCreate(NULL, true, NULL));
+    EXPECT_EQ(EINVAL, TelemetryTransportCreate(NULL, NULL));
     ASSERT_EQ(0, setenv("https_proxy", "https://proxy.invalid", 1));
-    EXPECT_EQ(ENOTSUP, TelemetryTransportCreate(&transport.value, true, NULL));
+    EXPECT_EQ(ENOTSUP, TelemetryTransportCreate(&transport.value, NULL));
     EXPECT_EQ(nullptr, transport.value);
     ASSERT_EQ(0, setenv("https_proxy", "http://127.0.0.1:9", 1));
-    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, true, NULL));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
     original = transport.value;
-    EXPECT_EQ(EALREADY, TelemetryTransportCreate(&transport.value, true, NULL));
+    EXPECT_EQ(EALREADY, TelemetryTransportCreate(&transport.value, NULL));
     EXPECT_EQ(original, transport.value);
     EXPECT_EQ(EINVAL, TelemetryTransportSend(NULL, "fixture-token", "test", 1, "x", 1, Deadline(), &response, NULL));
     EXPECT_EQ(EINVAL, TelemetryTransportSend(transport.value, NULL, "test", 1, "x", 1, Deadline(), &response, NULL));
@@ -825,7 +829,7 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
     EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 66 ***"));
-    EXPECT_NE(std::string::npos, text.find("TLS mode: mintls only (OS OpenSSL discovery disabled)"));
+    EXPECT_NE(std::string::npos, text.find("TLS mode: system OpenSSL (3, 1.1, then 1.0.2)"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));
     EXPECT_EQ(0, peer.Wait());
@@ -857,7 +861,7 @@ void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
     ASSERT_EQ(0, peer.Start(mode, false));
     ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
     ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 600000,
-        timeout ? 500 : 10000, timeout ? 500 : 5000, &worker.value, true, nullptr));
+        timeout ? 500 : 10000, timeout ? 500 : 5000, &worker.value, nullptr));
 
     for (i = 0; i < 5; ++i)
     {
@@ -902,7 +906,7 @@ void MalformedKill()
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start("aria-bad-kill", false));
-    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, true, nullptr));
+    ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, nullptr));
     EXPECT_EQ(EPROTO, transport.Send(&response));
     EXPECT_TRUE(TelemetryTransportSuppressed(transport.value));
     EXPECT_EQ(ECANCELED, transport.Send(&response));
@@ -920,7 +924,7 @@ void WorkerRejectsBeforeNetwork()
     IgnorePipe();
     ASSERT_EQ(0, setenv("https_proxy", "http://127.0.0.1:9", 1));
     ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "", 1));
-    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, true, nullptr));
+    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, nullptr));
 
     for (i = 0; i < 5; ++i)
     {
@@ -932,7 +936,7 @@ void WorkerRejectsBeforeNetwork()
     EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr));
     TelemetryWorkerDestroy(&worker.value, nullptr);
     ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
-    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, true, nullptr));
+    ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, nullptr));
     // Valid token, invalid named schema: must fail before contacting the route.
     EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 1, nullptr));
     EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "Unknown", properties, 5, nullptr));
@@ -997,6 +1001,11 @@ TEST(TelemetryTlsDeathTest, RejectsWrongDnsIdentity)
     TLS_CASE(HandshakeFailure("wrong-name", "localhost", EACCES));
 }
 
+TEST(TelemetryTlsDeathTest, RejectsPartialWildcardIdentity)
+{
+    TLS_CASE(HandshakeFailure("partial-wildcard", "local.example.test", EACCES));
+}
+
 TEST(TelemetryTlsDeathTest, RejectsWrongIpIdentity)
 {
     TLS_CASE(HandshakeFailure("wrong-ip", "127.0.0.2", EACCES));
@@ -1020,6 +1029,11 @@ TEST(TelemetryTlsDeathTest, RejectsNumericDnsSanForIpIdentity)
 TEST(TelemetryTlsDeathTest, RejectsTls10)
 {
     TLS_CASE(HandshakeFailure("tls10", "localhost", 0));
+}
+
+TEST(TelemetryTlsDeathTest, RejectsTls11)
+{
+    TLS_CASE(HandshakeFailure("tls11", "localhost", 0));
 }
 
 TEST(TelemetryTlsDeathTest, TimesOutSilentHandshake)

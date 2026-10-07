@@ -223,7 +223,7 @@ static int ParseDeadline(const char* text, int64_t* deadline, OsConfigLogHandle 
     return status;
 }
 
-static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* lifetime, bool* forceMinTls, OsConfigLogHandle log)
+static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* lifetime, OsConfigLogHandle log)
 {
     int64_t startup = 0;
     int status = 0;
@@ -233,13 +233,11 @@ static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* l
     FILE* logFile = NULL;
     int logDescriptor = -1;
 
-    if (((4 != argc) && (5 != argc)) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)) || ((5 == argc) && (0 != strcmp(argv[4], "--force-mintls"))))
+    if ((4 != argc) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)))
     {
         OsConfigLogError(log, "InitializeTelemetry called with invalid arguments");
         return EINVAL;
     }
-
-    *forceMinTls = 5 == argc;
 
     if (0 != (status = ParseDeadline(argv[2], lifetime, log)))
     {
@@ -324,7 +322,7 @@ static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* l
     return status;
 }
 
-static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline, bool forceMinTls, OsConfigLogHandle log)
+static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned char* payload, size_t size, uint32_t sequence, int64_t deadline, OsConfigLogHandle log)
 {
     const char* token = getenv("OsConfigTelemetryApiKey");
     char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {0};
@@ -375,7 +373,7 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
 
     if ((!status) && (!*transport))
     {
-        if (0 != (status = TelemetryTransportCreate(transport, forceMinTls, log)))
+        if (0 != (status = TelemetryTransportCreate(transport, log)))
         {
             OsConfigLogError(log, "SendEvent: TelemetryTransportCreate failed with %d (%s)", status, strerror(status));
         }
@@ -411,13 +409,12 @@ int main(int argc, char** argv)
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
     TelemetryResolverReply reply = {0};
     TelemetryWorkerSendReply sent = {0};
-    bool forceMinTls = false;
 
     log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
     OsConfigLogInfo(log, "OSConfigTelemetry starting (PID: %ld, PPID: %ld)", (long)getpid(), (long)getppid());
 
-    if (0 != (status = InitializeTelemetry(argc, argv, &timer, &lifetime, &forceMinTls, log)))
+    if (0 != (status = InitializeTelemetry(argc, argv, &timer, &lifetime, log)))
     {
         OsConfigLogError(log, "OSConfigTelemetry: InitializeTelemetry failed with %d (%s)", status, strerror(status));
         SendReply(TELEMETRY_WORKER_READY, 0, status, NULL, 0, log);
@@ -502,7 +499,7 @@ int main(int argc, char** argv)
             if (TELEMETRY_WORKER_SEND == request.operation)
             {
                 sent = (TelemetryWorkerSendReply){0};
-                sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, forceMinTls, log);
+                sent.status = SendEvent(&transport, epoch, payload, request.size, sequence, request.deadline, log);
                 sent.suppressed = TelemetryTransportSuppressed(transport) ? 1 : 0;
 
                 if (sent.status)

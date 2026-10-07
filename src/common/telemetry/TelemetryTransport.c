@@ -22,7 +22,6 @@ struct TelemetryTransport
     TelemetryHttpProxy proxy;
     bool proxied;
     bool suppressed;
-    bool forceMinTls;
     int descriptor;
     TelemetryTls* tls;
 };
@@ -345,7 +344,7 @@ static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHa
     }
 }
 
-int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, OsConfigLogHandle log)
+int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle log)
 {
     int status = EINVAL;
     TelemetryTransport* created = NULL;
@@ -363,7 +362,6 @@ int TelemetryTransportCreate(TelemetryTransport** transport, bool forceMinTls, O
         if (!status)
         {
             created->descriptor = -1;
-            created->forceMinTls = forceMinTls;
 
             if ((0 == (status = TelemetryProxyDiscover(&selection, log))) && (TelemetryProxyConfigured == selection.kind))
             {
@@ -464,7 +462,7 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
 
         stage = "TLS";
 
-        if (0 == (status = TelemetryTlsCreate(&transport->tls, deadline, transport->forceMinTls, log)))
+        if (0 == (status = TelemetryTlsCreate(&transport->tls, deadline, log)))
         {
             status = TelemetryTlsHandshake(transport->tls, transport->descriptor,
                 TELEMETRY_ARIA_HOST, deadline, log);

@@ -24,6 +24,11 @@ Build environments have many dependencies required, the easiest way to get start
 
 Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
 
+Telemetry requires a system OpenSSL 3, 1.1 or 1.0.2 shared-library runtime and a provisioned CA trust store.
+It does not bundle a TLS implementation. OpenSSL 1.0.1-only systems (including stock Ubuntu 14.04)
+and images without a supported runtime cannot send telemetry until one is installed.
+See the [telemetry runtime contract](src/common/telemetry/README.md) for provider selection and limitations.
+
 **Common build dependencies across distributions:**
 - cmake (>= 3.21)
 - build-essential (gcc >= 4.4.7, g++, make)

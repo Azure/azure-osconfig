@@ -50,7 +50,7 @@ def expired_certificate(openssl, directory, subject, san):
                 "database=" + os.path.join(authority, "index") + "\n"
                 "serial=" + os.path.join(authority, "serial") + "\n"
                 "new_certs_dir=" + authority + "\n"
-                "default_md=sha256\ndefault_days=1\npolicy=policy\n"
+                "default_md=sha256\ndefault_days=1\npolicy=policy\nunique_subject=no\n"
                 "[policy]\ncommonName=supplied\n"
                 "[server]\nbasicConstraints=critical,CA:FALSE\n"
                 "keyUsage=critical,digitalSignature,keyEncipherment\n"
@@ -61,19 +61,23 @@ def expired_certificate(openssl, directory, subject, san):
              "-subj", "/CN=" + subject, "-config", os.path.join(directory, "openssl.cnf"),
              "-out", request],
             stdout=subprocess.DEVNULL, timeout=10)
-        # Explicit dates work across OpenSSL versions that reject negative -days.
+        sign = [openssl, "ca", "-batch", "-notext", "-config", config,
+                "-cert", root, "-keyfile", os.path.join(directory, "root-key.pem"),
+                "-in", request, "-extensions", "server"]
+        valid = os.path.join(authority, "valid.pem")
+        verify = [openssl, "verify", "-CAfile", root, "-purpose", "sslserver",
+                  "-verify_hostname", subject]
+        # Validate the same CSR/issuer/extensions without requiring -no_check_time
+        # (absent from OpenSSL 1.0.2), then issue its expired counterpart.
+        subprocess.check_call(sign + ["-out", valid],
+                              stdout=subprocess.DEVNULL, timeout=10)
+        subprocess.check_call(verify + [valid],
+                              stdout=subprocess.DEVNULL, timeout=10)
         subprocess.check_call(
-            [openssl, "ca", "-batch", "-notext", "-config", config,
-             "-cert", root, "-keyfile", os.path.join(directory, "root-key.pem"),
-             "-in", request, "-out", server, "-extensions", "server",
-             "-startdate", "20000101000000Z", "-enddate", "20000102000000Z"],
+            sign + ["-out", server, "-startdate", "20000101000000Z",
+                    "-enddate", "20000102000000Z"],
             stdout=subprocess.DEVNULL, timeout=10)
 
-    verify = [openssl, "verify", "-CAfile", root, "-purpose", "sslserver",
-              "-verify_hostname", subject]
-    # The fixture must fail for expiry, not an unrelated chain or identity error.
-    subprocess.check_call(verify + ["-no_check_time", server],
-                          stdout=subprocess.DEVNULL, timeout=10)
     try:
         subprocess.check_output(verify + [server], stderr=subprocess.STDOUT, timeout=10)
     except subprocess.CalledProcessError as error:
@@ -253,7 +257,11 @@ def main():
         name = "wrong.example"
     if mode == "numeric-dns":
         name = "127.0.0.1"
+    elif mode == "partial-wildcard":
+        name = "local.example.test"
     san = "DNS:" + name
+    if mode == "partial-wildcard":
+        san = "DNS:loc*.example.test"
     if mode != "numeric-dns":
         san += ",IP:127.0.0.1"
     with open(os.path.join(directory, "openssl.cnf"), "w") as config:
@@ -278,12 +286,14 @@ def main():
     protocol = getattr(ssl, "PROTOCOL_TLS_SERVER", ssl.PROTOCOL_TLSv1_2)
     if mode == "tls10":
         protocol = ssl.PROTOCOL_TLSv1
+    elif mode == "tls11":
+        protocol = ssl.PROTOCOL_TLSv1_1
     context = ssl.SSLContext(protocol)
     alpn = hasattr(context, "set_alpn_protocols")
     if alpn:
         context.set_alpn_protocols(["h2", "http/1.1"])
-    if mode == "tls10":
-        context.set_ciphers("DEFAULT:@SECLEVEL=0")
+    if mode in ("tls10", "tls11"):
+        context.set_ciphers("DEFAULT:@SECLEVEL=0" if ssl.OPENSSL_VERSION_INFO >= (1, 1, 0) else "DEFAULT")
     context.load_cert_chain(
         os.path.join(directory, "server.pem"),
         os.path.join(directory, "server-key.pem"),
@@ -313,7 +323,8 @@ def main():
             try:
                 secured = context.wrap_socket(connection, server_side=True)
             except ssl.SSLError:
-                if mode in ("wrong-name", "wrong-ip", "untrusted", "tls10", "expired", "numeric-dns"):
+                if mode in ("wrong-name", "wrong-ip", "untrusted", "tls10", "tls11",
+                            "expired", "numeric-dns", "partial-wildcard"):
                     return
                 raise
             with secured:

@@ -5,9 +5,6 @@
 
 #include "TelemetryTls.h"
 #include "TelemetryDeadline.h"
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-#include <MinTls.h>
-#endif
 
 #include <arpa/inet.h>
 #include <dlfcn.h>
@@ -35,6 +32,7 @@ enum
     TlsSyscallError = 5,
     TlsClosed = 6,
     TlsSetServerName = 55,
+    TlsSetOptions = 32,
     TlsSetMinimumVersion = 123,
     TlsGetMinimumVersion = 130,
     TlsVersion12 = 0x0303,
@@ -42,12 +40,19 @@ enum
     TlsNoPartialWildcards = 4,
     TlsLoadConfiguration = 0x40,
     TlsIgnoreUnexpectedEof = 0x80,
-    TlsNoCompression = 0x20000
+    TlsNoCompression = 0x20000,
+    TlsConfigIgnoreMissingFile = 0x10,
+    TlsConfigDefaultSection = 0x20
 };
 
 typedef struct TlsApi
 {
     int (*OPENSSL_init_ssl)(uint64_t, const InitSettings*);
+    int (*SSL_library_init)(void);
+    void (*SSL_load_error_strings)(void);
+    void (*OPENSSL_load_builtin_modules)(void);
+    void (*ENGINE_load_builtin_engines)(void);
+    int (*CONF_modules_load_file)(const char*, const char*, unsigned long);
     unsigned long (*OpenSSL_version_num)(void);
     const SslMethod* (*TLS_client_method)(void);
     SslContext* (*SSL_CTX_new)(const SslMethod*);
@@ -62,7 +67,7 @@ typedef struct TlsApi
     Ssl* (*SSL_new)(SslContext*);
     void (*SSL_free)(Ssl*);
     int (*SSL_set_fd)(Ssl*, int);
-    int (*SSL_set1_host)(Ssl*, const char*);
+    int (*X509_VERIFY_PARAM_set1_host)(VerifyParameters*, const char*, size_t);
     VerifyParameters* (*SSL_get0_param)(Ssl*);
     unsigned int (*X509_VERIFY_PARAM_get_hostflags)(const VerifyParameters*);
     void (*X509_VERIFY_PARAM_set_hostflags)(VerifyParameters*, unsigned int);
@@ -82,9 +87,6 @@ typedef struct TlsApi
 
 struct TelemetryTls
 {
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-    MinTls* fallback;
-#endif
     SslContext* context;
     Ssl* connection;
     int descriptor;
@@ -94,14 +96,16 @@ struct TelemetryTls
 // Private to the exec'd worker. Never unload provider code underneath its
 // registered runtime callbacks; the owned worker's exit reclaims these maps.
 static TlsApi g_api;
-static void* g_libraries[2];
+static void* g_libraries[5];
 static bool g_attempted = false;
 static int g_providerStatus = ENOTSUP;
 
-static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
+static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion,
+    unsigned long maximumVersion, OsConfigLogHandle log)
 {
     void* symbol = NULL;
     void* peer = NULL;
+    unsigned long version = 0;
 
 #define LOAD_TLS_NAMED(member, name) do \
 { \
@@ -117,9 +121,36 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
     memcpy(&api->member, &symbol, sizeof(symbol)); \
 } while (0)
 #define LOAD_TLS_SYMBOL(member) LOAD_TLS_NAMED(member, #member)
-    LOAD_TLS_SYMBOL(OPENSSL_init_ssl);
-    LOAD_TLS_SYMBOL(OpenSSL_version_num);
-    LOAD_TLS_SYMBOL(TLS_client_method);
+    LOAD_TLS_NAMED(OpenSSL_version_num, minimumVersion < 0x10100000UL ? "SSLeay" : "OpenSSL_version_num");
+    version = api->OpenSSL_version_num();
+
+    if ((version < minimumVersion) || (version >= maximumVersion))
+    {
+        OsConfigLogInfo(log, "TelemetryTls: Unsupported provider version 0x%lx", version);
+        return ENOTSUP;
+    }
+
+    if (version < 0x10100000UL)
+    {
+        LOAD_TLS_SYMBOL(SSL_library_init);
+        LOAD_TLS_SYMBOL(SSL_load_error_strings);
+        LOAD_TLS_SYMBOL(OPENSSL_load_builtin_modules);
+        LOAD_TLS_SYMBOL(CONF_modules_load_file);
+        LOAD_TLS_NAMED(TLS_client_method, "TLSv1_2_client_method");
+        symbol = dlsym(library, "ENGINE_load_builtin_engines");
+        memcpy(&api->ENGINE_load_builtin_engines, &symbol, sizeof(symbol));
+
+        if (NULL == symbol)
+        {
+            OsConfigLogInfo(log, "TelemetryTls: Legacy provider has no built-in engine loader");
+        }
+    }
+    else
+    {
+        LOAD_TLS_SYMBOL(OPENSSL_init_ssl);
+        LOAD_TLS_SYMBOL(TLS_client_method);
+        LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_get_hostflags);
+    }
     LOAD_TLS_SYMBOL(SSL_CTX_new);
     LOAD_TLS_SYMBOL(SSL_CTX_free);
     LOAD_TLS_SYMBOL(SSL_CTX_ctrl);
@@ -129,9 +160,8 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
     LOAD_TLS_SYMBOL(SSL_new);
     LOAD_TLS_SYMBOL(SSL_free);
     LOAD_TLS_SYMBOL(SSL_set_fd);
-    LOAD_TLS_SYMBOL(SSL_set1_host);
+    LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_host);
     LOAD_TLS_SYMBOL(SSL_get0_param);
-    LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_get_hostflags);
     LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set_hostflags);
     LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_ip_asc);
     LOAD_TLS_SYMBOL(SSL_ctrl);
@@ -146,12 +176,12 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
     LOAD_TLS_SYMBOL(ERR_get_error);
 
     // The options ABI changed from unsigned long to uint64_t in OpenSSL 3.
-    if (api->OpenSSL_version_num() >= 0x30000000UL)
+    if (version >= 0x30000000UL)
     {
         LOAD_TLS_NAMED(SetOptions3, "SSL_CTX_set_options");
         LOAD_TLS_NAMED(ClearOptions3, "SSL_CTX_clear_options");
     }
-    else
+    else if (version >= 0x10100000UL)
     {
         LOAD_TLS_NAMED(SetOptions11, "SSL_CTX_set_options");
     }
@@ -179,11 +209,23 @@ static int LoadApi(void* library, TlsApi* api, OsConfigLogHandle log)
 
 static int LoadProvider(OsConfigLogHandle log)
 {
-    static const char* names[] = {"libssl.so.3", "libssl.so.1.1"};
+    static const struct
+    {
+        const char* name;
+        unsigned long minimum;
+        unsigned long maximum;
+    } providers[] = {
+        {"libssl.so.3", 0x30000000UL, 0x40000000UL},
+        {"libssl.so.1.1", 0x10100000UL, 0x10200000UL},
+        {"libssl.so.1.0.2", 0x10002000UL, 0x10003000UL},
+        {"libssl.so.10", 0x10002000UL, 0x10003000UL},
+        {"libssl.so.1.0.0", 0x10002000UL, 0x10003000UL}
+    };
     size_t i = 0;
     TlsApi api = {0};
     unsigned long version = 0;
-    bool supported = false;
+    const char* configuration = NULL;
+    unsigned long configurationFlags = TlsConfigDefaultSection;
 
     if (g_attempted)
     {
@@ -192,42 +234,65 @@ static int LoadProvider(OsConfigLogHandle log)
 
     g_attempted = true;
 
-    for (i = 0; i < ARRAY_SIZE(names); ++i)
+    for (i = 0; i < ARRAY_SIZE(providers); ++i)
     {
         api = (TlsApi){0};
-        g_libraries[i] = dlopen(names[i], RTLD_NOW | RTLD_LOCAL);
+        g_libraries[i] = dlopen(providers[i].name, RTLD_NOW | RTLD_LOCAL);
 
         if (NULL == g_libraries[i])
         {
-            OsConfigLogInfo(log, "TelemetryTls: OS provider %s unavailable", names[i]);
+            OsConfigLogInfo(log, "TelemetryTls: OS provider %s unavailable", providers[i].name);
             continue;
         }
 
-        if (0 != LoadApi(g_libraries[i], &api, log))
+        if (0 != LoadApi(g_libraries[i], &api, providers[i].minimum, providers[i].maximum, log))
         {
+            OsConfigLogInfo(log, "TelemetryTls: OS provider %s has no supported API/ABI", providers[i].name);
             continue;
         }
 
         version = api.OpenSSL_version_num();
-        supported = (0 == i) ?
-            ((version >= 0x30000000UL) && (version < 0x40000000UL)) :
-            ((version >= 0x10100000UL) && (version < 0x10200000UL));
+        g_api = api;
 
-        if (!supported)
+        if (NULL != g_api.OPENSSL_init_ssl)
         {
-            OsConfigLogInfo(log, "TelemetryTls: Unsupported provider ABI in %s", names[i]);
-            continue;
+            g_providerStatus = (1 == g_api.OPENSSL_init_ssl(TlsLoadConfiguration, NULL)) ? 0 : EIO;
+        }
+        else
+        {
+            g_api.SSL_load_error_strings();
+            g_providerStatus = (1 == g_api.SSL_library_init()) ? 0 : EIO;
+
+            if (0 == g_providerStatus)
+            {
+                g_api.OPENSSL_load_builtin_modules();
+
+                if (NULL != g_api.ENGINE_load_builtin_engines)
+                {
+                    g_api.ENGINE_load_builtin_engines();
+                }
+
+                // Unlike OPENSSL_config(), this API exposes configuration failures.
+                configuration = getenv("OPENSSL_CONF");
+
+                if (NULL == configuration)
+                {
+                    configurationFlags |= TlsConfigIgnoreMissingFile;
+                }
+
+                g_api.ERR_clear_error();
+                g_providerStatus = (0 < g_api.CONF_modules_load_file(
+                    configuration, NULL, configurationFlags)) ? 0 : EIO;
+            }
         }
 
-        g_api = api;
-        // Respect the OS OpenSSL configuration, including provider/security policy.
-        g_providerStatus = (1 == g_api.OPENSSL_init_ssl(TlsLoadConfiguration, NULL)) ? 0 : EIO;
         OsConfigLogInfo(log, "TelemetryTls: Selected %s (version=0x%lx, status=%d)",
-            names[i], version, g_providerStatus);
+            providers[i].name, version, g_providerStatus);
 
         return g_providerStatus;
     }
 
+    OsConfigLogError(log, "TelemetryTls: No usable system OpenSSL 3, 1.1 or 1.0.2 runtime; telemetry cannot be sent");
     return g_providerStatus;
 }
 
@@ -323,7 +388,7 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
     return status;
 }
 
-int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, OsConfigLogHandle log)
+int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle log)
 {
     int remaining = 0;
     int status = 0;
@@ -342,37 +407,12 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
     else if ((0 == (status = WorkerSignals())) &&
         (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining))))
     {
-        status = forceMinTls ? ENOTSUP : LoadProvider(log);
-
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-        if (ENOTSUP == status)
-        {
-            created = calloc(1, sizeof(*created));
-
-            if (!created)
-            {
-                return Failure(NULL, "fallback allocation", ENOMEM, log);
-            }
-
-            created->descriptor = -1;
-
-            if (0 != (status = MinTlsCreate(&created->fallback, NULL, deadline, log)))
-            {
-                TelemetryTlsDestroy(&created, log);
-                return Failure(NULL, "fallback initialization", status, log);
-            }
-
-            *tls = created;
-            OsConfigLogInfo(log, "TelemetryTls: Selected in-tree mintls (forced=%d)", (int)forceMinTls);
-
-            return 0;
-        }
-#endif
+        status = LoadProvider(log);
 
         // Provider initialization/configuration failures never trigger fallback.
         if (status)
         {
-            return Failure(NULL, forceMinTls ? "mintls unavailable" : "OS provider initialization", status, log);
+            return Failure(NULL, "OS provider initialization", status, log);
         }
 
         g_api.ERR_clear_error();
@@ -393,12 +433,16 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
             }
             else
             {
-                minimum = g_api.SSL_CTX_ctrl(created->context, TlsGetMinimumVersion, 0, NULL);
-
-                if ((minimum < TlsVersion12) &&
-                    (1 != g_api.SSL_CTX_ctrl(created->context, TlsSetMinimumVersion, TlsVersion12, NULL)))
+                // Legacy uses TLSv1_2_client_method; newer providers retain higher OS minimums.
+                if (NULL != g_api.OPENSSL_init_ssl)
                 {
-                    status = EIO;
+                    minimum = g_api.SSL_CTX_ctrl(created->context, TlsGetMinimumVersion, 0, NULL);
+
+                    if ((minimum < TlsVersion12) &&
+                        (1 != g_api.SSL_CTX_ctrl(created->context, TlsSetMinimumVersion, TlsVersion12, NULL)))
+                    {
+                        status = EIO;
+                    }
                 }
 
                 g_api.SSL_CTX_set_verify(created->context, TlsVerifyPeer, NULL);
@@ -416,7 +460,14 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, bool forceMinTls, O
                         status = EIO;
                     }
                 }
-                else if (!(g_api.SetOptions11(created->context, TlsNoCompression) & TlsNoCompression))
+                else if (NULL != g_api.SetOptions11)
+                {
+                    if (!(g_api.SetOptions11(created->context, TlsNoCompression) & TlsNoCompression))
+                    {
+                        status = EIO;
+                    }
+                }
+                else if (!(g_api.SSL_CTX_ctrl(created->context, TlsSetOptions, TlsNoCompression, NULL) & TlsNoCompression))
                 {
                     status = EIO;
                 }
@@ -465,18 +516,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
     bool verified = false;
     const unsigned char* protocol = NULL;
     unsigned int protocolSize = 0;
-
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-    if ((tls) && (tls->fallback))
-    {
-        if (0 != (status = WorkerSignals()))
-        {
-            return Failure(NULL, "worker signals", status, log);
-        }
-
-        return MinTlsHandshake(tls->fallback, descriptor, peer, deadline, log);
-    }
-#endif
+    unsigned int hostFlags = TlsNoPartialWildcards;
 
     if ((NULL == tls) || (NULL == peer) || ('\0' == *peer) ||
         (strnlen(peer, 254) > 253) || (descriptor < 0))
@@ -544,8 +584,12 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
         return Failure(tls, "socket setup", EIO, log);
     }
 
-    g_api.X509_VERIFY_PARAM_set_hostflags(parameters,
-        g_api.X509_VERIFY_PARAM_get_hostflags(parameters) | TlsNoPartialWildcards);
+    if (NULL != g_api.X509_VERIFY_PARAM_get_hostflags)
+    {
+        hostFlags |= g_api.X509_VERIFY_PARAM_get_hostflags(parameters);
+    }
+
+    g_api.X509_VERIFY_PARAM_set_hostflags(parameters, hostFlags);
 
     if (ip)
     {
@@ -554,7 +598,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
             status = EINVAL;
         }
     }
-    else if ((1 != g_api.SSL_set1_host(tls->connection, peer)) ||
+    else if ((1 != g_api.X509_VERIFY_PARAM_set1_host(parameters, peer, 0)) ||
         (1 != g_api.SSL_ctrl(tls->connection, TlsSetServerName, 0, (void*)peer)))
     {
         status = EIO;
@@ -631,13 +675,6 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
     int remaining = 0;
     int status = 0;
 
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-    if ((tls) && (tls->fallback))
-    {
-        return MinTlsWrite(tls->fallback, bytes, size, deadline, log);
-    }
-#endif
-
     if ((NULL == tls) || (!tls->connected) || ((NULL == bytes) && (size)) || (size > INT_MAX))
     {
         return Failure(NULL, "write arguments", EINVAL, log);
@@ -685,13 +722,6 @@ int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* si
     int done = 0;
     int systemError = 0;
     int sslError = 0;
-
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-    if ((tls) && (tls->fallback))
-    {
-        return MinTlsRead(tls->fallback, bytes, capacity, size, endOfStream, deadline, log);
-    }
-#endif
 
     if (NULL != size)
     {
@@ -756,9 +786,6 @@ void TelemetryTlsDestroy(TelemetryTls** tls, OsConfigLogHandle log)
         return;
     }
 
-#ifdef OSCONFIG_TELEMETRY_MINTLS
-    MinTlsDestroy(&(*tls)->fallback, log);
-#endif
     Disconnect(*tls);
 
     if (NULL != (*tls)->context)

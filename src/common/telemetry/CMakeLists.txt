@@ -20,19 +20,10 @@ add_library(telemetryproxy STATIC TelemetryProxy.c)
 target_include_directories(telemetryproxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetryproxy PUBLIC logging)
 
-option(OSCONFIG_TELEMETRY_MINTLS "Include in-tree TLS fallback in the owned executable" ON)
-if(BUILD_TESTS AND NOT OSCONFIG_TELEMETRY_MINTLS)
-    message(FATAL_ERROR "Telemetry tests pass forceMinTls=true and require OSCONFIG_TELEMETRY_MINTLS=ON")
-endif()
-
 # TLS providers are used only by the owned executable, never by the policy SO.
 add_library(telemetrytls STATIC TelemetryTls.c)
 target_include_directories(telemetrytls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetrytls PUBLIC logging PRIVATE ${CMAKE_DL_LIBS} rt)
-if(OSCONFIG_TELEMETRY_MINTLS)
-    target_link_libraries(telemetrytls PRIVATE mintls)
-    target_compile_definitions(telemetrytls PRIVATE OSCONFIG_TELEMETRY_MINTLS=1)
-endif()
 
 add_library(telemetryresolver STATIC TelemetryResolver.c)
 target_include_directories(telemetryresolver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -64,9 +55,6 @@ if(BUILD_TELEMETRY)
     add_custom_target(telemetry-worker-package ALL DEPENDS telemetryworker)
     install(TARGETS telemetryworker RUNTIME DESTINATION bin)
     install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
-    if(OSCONFIG_TELEMETRY_MINTLS)
-        install(FILES ../mintls/LICENSE DESTINATION share/licenses/osconfig RENAME mintls-LICENSE)
-    endif()
 endif()
 
 # Offline resolver/probe utilities; the production worker owns its own DNS.

@@ -36,7 +36,7 @@ int main(void)
         return 4;
     }
 
-    if (0 == (status = TelemetryInitializeInternal(true, log)))
+    if (0 == (status = TelemetryInitializeInternal(log)))
     {
         OSConfigTelemetryCrashDetected("worker-fixture crash\"\\\n");
         OSConfigTelemetryBaselineRun("worker-fixture", "Audit", 1.25);
