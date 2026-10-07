@@ -404,6 +404,23 @@ TEST_F(TelemetryProxyTest, RejectsMalformedProxyAuthorityAndCredentials)
     }
 }
 
+TEST_F(TelemetryProxyTest, RejectsMissingHostAfterSchemeOrCredentials)
+{
+    TelemetryHttpProxy proxy = {};
+
+    for (const char* url : {"/", "http:///", "user@", "user@/",
+        "http://user@", "http://user@/", "[", "http://[", "user@[",
+        "http://user@[", "http://[]", "http://user@[]"})
+    {
+        SCOPED_TRACE(url);
+        memset(&proxy, 0x5a, sizeof(proxy));
+        EXPECT_EQ(EINVAL, TelemetryProxyParseHttp(url, &proxy, NULL));
+        EXPECT_EQ(0, proxy.port);
+        EXPECT_STREQ("", proxy.host);
+        EXPECT_STREQ("", proxy.authorization);
+    }
+}
+
 TEST_F(TelemetryProxyTest, BoundsDecodedCredentialsAndUrl)
 {
     TelemetryHttpProxy proxy = {};

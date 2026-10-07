@@ -371,8 +371,13 @@ static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
         url = at + 1;
     }
 
+    if (url >= end)
+    {
+        return EINVAL;
+    }
+
     hostEnd = end;
-    ipv6 = (url < end) && ('[' == *url);
+    ipv6 = '[' == *url;
 
     if (ipv6)
     {
