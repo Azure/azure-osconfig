@@ -7,8 +7,6 @@ cmake_minimum_required(VERSION 3.2.0)
 
 include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
-find_program(TELEMETRY_TLS_BASH_EXECUTABLE NAMES bash REQUIRED)
-find_program(TELEMETRY_TLS_OPENSSL_EXECUTABLE NAMES openssl REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
@@ -101,12 +99,9 @@ target_link_libraries(telemetrytlsprovidertests PRIVATE GTest::gtest_main loggin
 gtest_discover_tests(telemetrytlsprovidertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(telemetrytlspeer TelemetryTlsPeer.cpp)
-target_link_libraries(telemetrytlspeer PRIVATE commonutils ${CMAKE_DL_LIBS})
-target_compile_definitions(telemetrytlspeer PRIVATE
-    TELEMETRY_TLS_BASH="${TELEMETRY_TLS_BASH_EXECUTABLE}")
+target_link_libraries(telemetrytlspeer PRIVATE ${CMAKE_DL_LIBS})
 add_dependencies(commontests telemetrytlspeer)
 target_compile_definitions(commontests PRIVATE
-    TELEMETRY_TLS_OPENSSL="${TELEMETRY_TLS_OPENSSL_EXECUTABLE}"
     TELEMETRY_TLS_PEER_PATH="$<TARGET_FILE:telemetrytlspeer>")
 
 add_dependencies(commontests telemetryariatest)

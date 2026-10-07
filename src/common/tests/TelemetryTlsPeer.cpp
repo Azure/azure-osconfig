@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <CommonUtils.h>
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cerrno>
@@ -10,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
+#include <ctime>
 #include <dlfcn.h>
 #include <initializer_list>
 #include <map>
@@ -27,6 +27,21 @@ typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;
 typedef struct ssl_method_st SSL_METHOD;
 typedef struct ossl_init_settings_st InitSettings;
+typedef struct evp_pkey_st EVP_PKEY;
+typedef struct evp_pkey_ctx_st EVP_PKEY_CTX;
+typedef struct engine_st ENGINE;
+typedef struct evp_md_st EVP_MD;
+typedef struct x509_st X509;
+typedef struct X509_name_st X509_NAME;
+typedef struct asn1_string_st ASN1_INTEGER;
+typedef struct asn1_string_st ASN1_TIME;
+typedef struct X509_extension_st X509_EXTENSION;
+typedef struct lhash_st_CONF_VALUE ConfValues;
+typedef struct v3_ext_ctx X509V3_CTX;
+typedef struct x509_store_st X509_STORE;
+typedef struct x509_store_ctx_st X509_STORE_CTX;
+typedef struct X509_VERIFY_PARAM_st X509_VERIFY_PARAM;
+typedef struct stack_st_X509 X509Stack;
 
 // These are real server APIs, not mocks. Dynamic loading keeps the test peer
 // independent of development headers absent from some pinned CI images.
@@ -44,104 +59,55 @@ void (*SSL_get0_alpn_selected)(const SSL*, const unsigned char**, unsigned int*)
 void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX*, int (*)(SSL*, const unsigned char**,
     unsigned char*, const unsigned char*, unsigned int, void*), void*);
 int (*SSL_CTX_set_cipher_list)(SSL_CTX*, const char*);
-int (*SSL_CTX_use_certificate_chain_file)(SSL_CTX*, const char*);
-int (*SSL_CTX_use_PrivateKey_file)(SSL_CTX*, const char*, int);
+int (*SSL_CTX_use_certificate)(SSL_CTX*, X509*);
+int (*SSL_CTX_use_PrivateKey)(SSL_CTX*, EVP_PKEY*);
 int (*SSL_CTX_check_private_key)(const SSL_CTX*);
 long (*SSL_CTX_ctrl)(SSL_CTX*, int, long, void*);
 void (*SSL_CTX_set_security_level)(SSL_CTX*, int);
 void (*ERR_print_errors_fp)(FILE*);
+void (*ERR_clear_error)(void);
+
+EVP_PKEY_CTX* (*EVP_PKEY_CTX_new_id)(int, ENGINE*);
+void (*EVP_PKEY_CTX_free)(EVP_PKEY_CTX*);
+int (*EVP_PKEY_keygen_init)(EVP_PKEY_CTX*);
+int (*EVP_PKEY_CTX_ctrl)(EVP_PKEY_CTX*, int, int, int, int, void*);
+int (*EVP_PKEY_keygen)(EVP_PKEY_CTX*, EVP_PKEY**);
+void (*EVP_PKEY_free)(EVP_PKEY*);
+const EVP_MD* (*EVP_sha256)(void);
+int (*OBJ_txt2nid)(const char*);
+X509* (*X509_new)(void);
+void (*X509_free)(X509*);
+int (*X509_set_version)(X509*, long);
+ASN1_INTEGER* (*X509_get_serialNumber)(X509*);
+int (*ASN1_INTEGER_set)(ASN1_INTEGER*, long);
+ASN1_TIME* (*ASN1_TIME_new)(void);
+void (*ASN1_TIME_free)(ASN1_TIME*);
+ASN1_TIME* (*ASN1_TIME_set)(ASN1_TIME*, time_t);
+int (*SetNotBefore)(X509*, const ASN1_TIME*);
+int (*SetNotAfter)(X509*, const ASN1_TIME*);
+X509_NAME* (*X509_get_subject_name)(const X509*);
+int (*X509_NAME_add_entry_by_txt)(X509_NAME*, const char*, int, const unsigned char*, int, int, int);
+int (*X509_set_issuer_name)(X509*, X509_NAME*);
+int (*X509_set_pubkey)(X509*, EVP_PKEY*);
+X509_EXTENSION* (*X509V3_EXT_conf_nid)(ConfValues*, X509V3_CTX*, int, char*);
+int (*X509_add_ext)(X509*, X509_EXTENSION*, int);
+void (*X509_EXTENSION_free)(X509_EXTENSION*);
+int (*X509_sign)(X509*, EVP_PKEY*, const EVP_MD*);
+int (*PEM_write_X509)(FILE*, X509*);
+X509_STORE* (*X509_STORE_new)(void);
+void (*X509_STORE_free)(X509_STORE*);
+int (*X509_STORE_add_cert)(X509_STORE*, X509*);
+X509_STORE_CTX* (*X509_STORE_CTX_new)(void);
+void (*X509_STORE_CTX_free)(X509_STORE_CTX*);
+int (*X509_STORE_CTX_init)(X509_STORE_CTX*, X509_STORE*, X509*, X509Stack*);
+int (*X509_STORE_CTX_set_purpose)(X509_STORE_CTX*, int);
+X509_VERIFY_PARAM* (*X509_STORE_CTX_get0_param)(X509_STORE_CTX*);
+int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM*, const char*, size_t);
+int (*X509_verify_cert)(X509_STORE_CTX*);
+int (*X509_STORE_CTX_get_error)(const X509_STORE_CTX*);
+int (*X509_STORE_CTX_get_error_depth)(const X509_STORE_CTX*);
 
 const std::string collector = "mobile.events.data.microsoft.com";
-
-// Test-only certificate setup. Arguments are shell-quoted by the caller; the
-// parent owns the private temporary directory and removes every generated file.
-const char certificateScript[] = R"BASH(
-set -euo pipefail
-umask 077
-openssl=$1
-cd -- "$2"
-mode=$3
-name=localhost
-case "$mode" in
-    aria-*) name=mobile.events.data.microsoft.com ;;
-esac
-case "$mode" in
-    wrong-name|aria-wrong-name) name=wrong.example ;;
-    numeric-dns) name=127.0.0.1 ;;
-    partial-wildcard) name=local.example.test ;;
-esac
-san="DNS:$name"
-if [ "$mode" = partial-wildcard ]; then san='DNS:loc*.example.test'; fi
-if [ "$mode" != numeric-dns ]; then san="$san,IP:127.0.0.1"; fi
-cat > openssl.cnf <<EOF
-[req]
-distinguished_name=dn
-x509_extensions=extensions
-[dn]
-[extensions]
-basicConstraints=critical,CA:TRUE
-keyUsage=critical,digitalSignature,keyEncipherment,keyCertSign
-extendedKeyUsage=serverAuth
-subjectAltName=$san
-EOF
-certificate() {
-    local file=$1 subject=$2
-    local key=(-newkey rsa:2048)
-    if [ "$file" = server ] && [ "$mode" = ecdsa ]; then
-        key=(-newkey ec -pkeyopt ec_paramgen_curve:P-256)
-    fi
-    "$openssl" req -new -x509 "${key[@]}" -nodes -days 1 -sha256 \
-        -subj "/CN=$subject" -config openssl.cnf \
-        -keyout "$file-key.pem" -out "$file.pem"
-}
-certificate server "$name"
-if [ "$mode" = expired ]; then
-    certificate root 'Expiry Test Root'
-    : > index
-    printf '01\n' > serial
-    cat > ca.cnf <<EOF
-[ca]
-default_ca=issuer
-[issuer]
-database=index
-serial=serial
-new_certs_dir=.
-default_md=sha256
-default_days=1
-policy=policy
-unique_subject=no
-[policy]
-commonName=supplied
-[server]
-basicConstraints=critical,CA:FALSE
-keyUsage=critical,digitalSignature,keyEncipherment
-extendedKeyUsage=serverAuth
-subjectAltName=$san
-EOF
-    "$openssl" req -new -key server-key.pem -subj "/CN=$name" \
-        -config openssl.cnf -out server.csr
-    sign=(ca -batch -notext -config ca.cnf -cert root.pem -keyfile root-key.pem
-          -in server.csr -extensions server)
-    verify=(verify -CAfile root.pem -purpose sslserver -verify_hostname "$name")
-    # First verify the same CSR, issuer and extensions without expiry.
-    "$openssl" "${sign[@]}" -out valid.pem
-    "$openssl" "${verify[@]}" valid.pem
-    "$openssl" "${sign[@]}" -out server.pem \
-        -startdate 20000101000000Z -enddate 20000102000000Z
-    if result=$("$openssl" "${verify[@]}" server.pem 2>&1); then
-        echo 'Expired fixture unexpectedly verified' >&2
-        exit 1
-    fi
-    if [[ ! "$result" =~ error\ 10\ at\ 0\ depth\ lookup: ]]; then
-        printf 'Unexpected certificate verification failure: %s\n' "$result" >&2
-        exit 1
-    fi
-elif [ "$mode" = untrusted ]; then
-    certificate root 'Other Test Root'
-else
-    cp -- server.pem root.pem
-fi
-)BASH";
 
 void Require(bool condition, const char* message)
 {
@@ -168,7 +134,7 @@ const SSL_METHOD* LoadOpenSsl(const std::string& mode)
     const char* names[] = {"libssl.so.3", "libssl.so.1.1", "libssl.so.1.0.2", "libssl.so.10", "libssl.so.1.0.0"};
     void* library = nullptr;
     unsigned long version = 0;
-    for (size_t i = 0; i < ARRAY_SIZE(names); ++i)
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
     {
         library = dlopen(names[i], RTLD_NOW | RTLD_LOCAL);
         if (!library)
@@ -199,12 +165,53 @@ const SSL_METHOD* LoadOpenSsl(const std::string& mode)
     LOAD_SERVER_API(SSL_get0_alpn_selected);
     LOAD_SERVER_API(SSL_CTX_set_alpn_select_cb);
     LOAD_SERVER_API(SSL_CTX_set_cipher_list);
-    LOAD_SERVER_API(SSL_CTX_use_certificate_chain_file);
-    LOAD_SERVER_API(SSL_CTX_use_PrivateKey_file);
+    LOAD_SERVER_API(SSL_CTX_use_certificate);
+    LOAD_SERVER_API(SSL_CTX_use_PrivateKey);
     LOAD_SERVER_API(SSL_CTX_check_private_key);
     LOAD_SERVER_API(SSL_CTX_ctrl);
     LOAD_SERVER_API(ERR_print_errors_fp);
+    LOAD_SERVER_API(ERR_clear_error);
+    LOAD_SERVER_API(EVP_PKEY_CTX_new_id);
+    LOAD_SERVER_API(EVP_PKEY_CTX_free);
+    LOAD_SERVER_API(EVP_PKEY_keygen_init);
+    LOAD_SERVER_API(EVP_PKEY_CTX_ctrl);
+    LOAD_SERVER_API(EVP_PKEY_keygen);
+    LOAD_SERVER_API(EVP_PKEY_free);
+    LOAD_SERVER_API(EVP_sha256);
+    LOAD_SERVER_API(OBJ_txt2nid);
+    LOAD_SERVER_API(X509_new);
+    LOAD_SERVER_API(X509_free);
+    LOAD_SERVER_API(X509_set_version);
+    LOAD_SERVER_API(X509_get_serialNumber);
+    LOAD_SERVER_API(ASN1_INTEGER_set);
+    LOAD_SERVER_API(ASN1_TIME_new);
+    LOAD_SERVER_API(ASN1_TIME_free);
+    LOAD_SERVER_API(ASN1_TIME_set);
+    LOAD_SERVER_API(X509_get_subject_name);
+    LOAD_SERVER_API(X509_NAME_add_entry_by_txt);
+    LOAD_SERVER_API(X509_set_issuer_name);
+    LOAD_SERVER_API(X509_set_pubkey);
+    LOAD_SERVER_API(X509V3_EXT_conf_nid);
+    LOAD_SERVER_API(X509_add_ext);
+    LOAD_SERVER_API(X509_EXTENSION_free);
+    LOAD_SERVER_API(X509_sign);
+    LOAD_SERVER_API(PEM_write_X509);
+    LOAD_SERVER_API(X509_STORE_new);
+    LOAD_SERVER_API(X509_STORE_free);
+    LOAD_SERVER_API(X509_STORE_add_cert);
+    LOAD_SERVER_API(X509_STORE_CTX_new);
+    LOAD_SERVER_API(X509_STORE_CTX_free);
+    LOAD_SERVER_API(X509_STORE_CTX_init);
+    LOAD_SERVER_API(X509_STORE_CTX_set_purpose);
+    LOAD_SERVER_API(X509_STORE_CTX_get0_param);
+    LOAD_SERVER_API(X509_VERIFY_PARAM_set1_host);
+    LOAD_SERVER_API(X509_verify_cert);
+    LOAD_SERVER_API(X509_STORE_CTX_get_error);
+    LOAD_SERVER_API(X509_STORE_CTX_get_error_depth);
 #undef LOAD_SERVER_API
+    // The legacy setters became set1 APIs when X509 became opaque in 1.1.
+    Load(library, SetNotBefore, version < 0x10100000UL ? "X509_set_notBefore" : "X509_set1_notBefore");
+    Load(library, SetNotAfter, version < 0x10100000UL ? "X509_set_notAfter" : "X509_set1_notAfter");
     const SSL_METHOD* (*method)(void) = nullptr;
     if (version < 0x10100000UL)
     {
@@ -229,29 +236,144 @@ const SSL_METHOD* LoadOpenSsl(const std::string& mode)
     return method();
 }
 
-std::string Quote(const std::string& value)
+using Key = std::unique_ptr<EVP_PKEY, decltype(EVP_PKEY_free)>;
+using Certificate = std::unique_ptr<X509, decltype(X509_free)>;
+
+Key GenerateKey(bool ecdsa)
 {
-    std::string result = "'";
-    for (char c : value)
-    {
-        result += c == '\'' ? "'\\''" : std::string(1, c);
-    }
-    return result + "'";
+    const int algorithm = OBJ_txt2nid(ecdsa ? "id-ecPublicKey" : "rsaEncryption");
+    const int parameter = ecdsa ? OBJ_txt2nid("prime256v1") : 2048;
+    Require(algorithm != 0 && parameter != 0, "Unknown test key algorithm/curve");
+    std::unique_ptr<EVP_PKEY_CTX, decltype(EVP_PKEY_CTX_free)> context(
+        EVP_PKEY_CTX_new_id(algorithm, nullptr), EVP_PKEY_CTX_free);
+    Require(context != nullptr, "Key generation context allocation failed");
+    Require(1 == EVP_PKEY_keygen_init(context.get()), "Key generation initialization failed");
+    // Public controls shared by 1.0.2/1.1/3: EC_PARAMGEN_CURVE_NID and RSA_KEYGEN_BITS.
+    Require(1 == EVP_PKEY_CTX_ctrl(context.get(), -1, -1, ecdsa ? 0x1001 : 0x1003,
+        parameter, nullptr), "Key generation parameters failed");
+    EVP_PKEY* generated = nullptr;
+    const int status = EVP_PKEY_keygen(context.get(), &generated);
+    Key key(generated, EVP_PKEY_free);
+    Require(status == 1 && key != nullptr, "Test key generation failed");
+    return key;
 }
 
-void Certificates(const char* openssl, const char* directory, const char* mode)
+void Validity(X509* certificate, bool expired)
 {
-    const std::string command = Quote(TELEMETRY_TLS_BASH) + " -c " + Quote(certificateScript) +
-        " fixture " + Quote(openssl) + " " + Quote(directory) + " " + Quote(mode);
-    char* output = nullptr;
-    const int status = ExecuteCommand(nullptr, command.c_str(), false, false, 16384, 20,
-        &output, nullptr, nullptr);
-    if (status)
+    const time_t now = time(nullptr);
+    Require(now != static_cast<time_t>(-1), "Certificate clock lookup failed");
+    std::unique_ptr<ASN1_TIME, decltype(ASN1_TIME_free)> value(ASN1_TIME_new(), ASN1_TIME_free);
+    Require(value != nullptr, "Certificate time allocation failed");
+    Require(ASN1_TIME_set(value.get(), now - (expired ? 172800 : 3600)) != nullptr &&
+        1 == SetNotBefore(certificate, value.get()), "Setting certificate start time failed");
+    Require(ASN1_TIME_set(value.get(), now + (expired ? -86400 : 86400)) != nullptr &&
+        1 == SetNotAfter(certificate, value.get()), "Setting certificate expiration failed");
+}
+
+void Extension(X509* certificate, const char* name, const std::string& value)
+{
+    const int nid = OBJ_txt2nid(name);
+    Require(nid != 0, "Unknown certificate extension");
+    std::string text = value;
+    std::unique_ptr<X509_EXTENSION, decltype(X509_EXTENSION_free)> extension(
+        X509V3_EXT_conf_nid(nullptr, nullptr, nid, &text[0]), X509_EXTENSION_free);
+    Require(extension != nullptr, "Certificate extension creation failed");
+    Require(1 == X509_add_ext(certificate, extension.get(), -1), "Adding certificate extension failed");
+}
+
+Certificate GenerateCertificate(EVP_PKEY* key, const std::string& name, const std::string& san,
+    X509* issuer = nullptr, EVP_PKEY* issuerKey = nullptr)
+{
+    Certificate certificate(X509_new(), X509_free);
+    Require(certificate != nullptr, "Certificate allocation failed");
+    Require(1 == X509_set_version(certificate.get(), 2), "Setting X509v3 version failed");
+    ASN1_INTEGER* serial = X509_get_serialNumber(certificate.get());
+    Require(serial != nullptr && 1 == ASN1_INTEGER_set(serial, issuer ? 2 : 1), "Setting serial failed");
+    Validity(certificate.get(), false);
+    X509_NAME* subject = X509_get_subject_name(certificate.get());
+    // V_ASN1_UTF8STRING; all fixture common names are plain ASCII.
+    Require(subject != nullptr && 1 == X509_NAME_add_entry_by_txt(subject, "CN", 12,
+        reinterpret_cast<const unsigned char*>(name.c_str()), -1, -1, 0), "Setting common name failed");
+    Require(1 == X509_set_issuer_name(certificate.get(), issuer ? X509_get_subject_name(issuer) : subject),
+        "Setting issuer failed");
+    Require(1 == X509_set_pubkey(certificate.get(), key), "Setting public key failed");
+    Extension(certificate.get(), "basicConstraints", issuer ? "critical,CA:FALSE" : "critical,CA:TRUE");
+    Extension(certificate.get(), "keyUsage", issuer ? "critical,digitalSignature,keyEncipherment" :
+        "critical,digitalSignature,keyEncipherment,keyCertSign");
+    Extension(certificate.get(), "extendedKeyUsage", "serverAuth");
+    Extension(certificate.get(), "subjectAltName", san);
+    Require(X509_sign(certificate.get(), issuerKey ? issuerKey : key, EVP_sha256()) > 0,
+        "Signing certificate failed");
+    return certificate;
+}
+
+void VerifyExpiryFixture(X509* certificate, X509* root, const std::string& name, bool expired)
+{
+    std::unique_ptr<X509_STORE, decltype(X509_STORE_free)> store(X509_STORE_new(), X509_STORE_free);
+    Require(store != nullptr, "Certificate store allocation failed");
+    Require(1 == X509_STORE_add_cert(store.get(), root), "Adding test trust anchor failed");
+    std::unique_ptr<X509_STORE_CTX, decltype(X509_STORE_CTX_free)> context(
+        X509_STORE_CTX_new(), X509_STORE_CTX_free);
+    Require(context != nullptr, "Certificate verification context allocation failed");
+    Require(1 == X509_STORE_CTX_init(context.get(), store.get(), certificate, nullptr),
+        "Certificate verification initialization failed");
+    // X509_PURPOSE_SSL_SERVER; verify identity as well as chain, purpose and dates.
+    Require(1 == X509_STORE_CTX_set_purpose(context.get(), 2), "Setting verification purpose failed");
+    X509_VERIFY_PARAM* parameters = X509_STORE_CTX_get0_param(context.get());
+    Require(parameters != nullptr && 1 == X509_VERIFY_PARAM_set1_host(parameters, name.c_str(), name.size()),
+        "Setting verification hostname failed");
+    const int status = X509_verify_cert(context.get());
+    const int error = X509_STORE_CTX_get_error(context.get());
+    const int depth = X509_STORE_CTX_get_error_depth(context.get());
+    if (expired ? status != 0 || error != 10 || depth != 0 : status != 1)
     {
-        fprintf(stderr, "TLS peer certificate setup failed (%d): %s\n", status, output ? output : "");
+        fprintf(stderr, "TLS fixture verification: expired=%d status=%d error=%d depth=%d\n",
+            expired, status, error, depth);
+        throw std::runtime_error("Certificate fixture sanity check failed");
     }
-    free(output);
-    Require(0 == status, "Certificate setup failed");
+    // Expected X509_V_ERR_CERT_HAS_EXPIRED is not a later handshake diagnostic.
+    ERR_clear_error();
+}
+
+// Real keys and signatures, not mocks. Only the public trust certificate is
+// written to the parent's private directory; private keys remain in memory.
+void Certificates(SSL_CTX* context, const std::string& directory, const std::string& mode)
+{
+    std::string name = mode.compare(0, 5, "aria-") == 0 ? collector : "localhost";
+    if (mode == "wrong-name" || mode == "aria-wrong-name") { name = "wrong.example"; }
+    if (mode == "numeric-dns") { name = "127.0.0.1"; }
+    if (mode == "partial-wildcard") { name = "local.example.test"; }
+    std::string san = "DNS:" + (mode == "partial-wildcard" ? std::string("loc*.example.test") : name);
+    if (mode != "numeric-dns") { san += ",IP:127.0.0.1"; }
+
+    Key key = GenerateKey(mode == "ecdsa");
+    Key rootKey(nullptr, EVP_PKEY_free);
+    Certificate root(nullptr, X509_free);
+    if (mode == "expired" || mode == "untrusted")
+    {
+        rootKey = GenerateKey(false);
+        root = GenerateCertificate(rootKey.get(),
+            mode == "expired" ? "Expiry Test Root" : "Other Test Root", san);
+    }
+    Certificate server = GenerateCertificate(key.get(), name, san,
+        mode == "expired" ? root.get() : nullptr, mode == "expired" ? rootKey.get() : nullptr);
+    if (mode == "expired")
+    {
+        // The same key, issuer, identity and extensions must first verify when
+        // valid, then fail solely for leaf expiration after changing the dates.
+        VerifyExpiryFixture(server.get(), root.get(), name, false);
+        Validity(server.get(), true);
+        Require(X509_sign(server.get(), rootKey.get(), EVP_sha256()) > 0, "Signing expired certificate failed");
+        VerifyExpiryFixture(server.get(), root.get(), name, true);
+    }
+
+    Require(1 == SSL_CTX_use_certificate(context, server.get()), "Loading test certificate failed");
+    Require(1 == SSL_CTX_use_PrivateKey(context, key.get()), "Loading test key failed");
+    Require(1 == SSL_CTX_check_private_key(context), "Test key does not match certificate");
+    std::unique_ptr<FILE, decltype(&fclose)> output(fopen((directory + "/root.pem").c_str(), "w"), fclose);
+    Require(output != nullptr, "Opening test trust certificate failed");
+    Require(1 == PEM_write_X509(output.get(), root ? root.get() : server.get()), "Writing trust certificate failed");
+    Require(0 == fclose(output.release()), "Closing test trust certificate failed");
 }
 
 class Socket
@@ -675,14 +797,11 @@ int main(int argc, char** argv)
 {
     try
     {
-        Require(argc == 4, "Usage: telemetrytlspeer <openssl> <temporary-directory> <mode>");
-        const std::string mode = argv[3];
+        Require(argc == 3, "Usage: telemetrytlspeer <temporary-directory> <mode>");
+        const std::string mode = argv[2];
         Require(SIG_ERR != signal(SIGPIPE, SIG_IGN), "Cannot ignore SIGPIPE");
         Require(SIG_ERR != signal(SIGALRM, SIG_DFL), "Cannot restore SIGALRM");
         alarm(mode == "aria-live" ? 1200 : 40);
-        // stdout is exclusively the port handshake with the parent test.
-        SetConsoleLoggingEnabled(false);
-        Certificates(argv[1], argv[2], argv[3]);
         const SSL_METHOD* method = LoadOpenSsl(mode);
         Context context(SSL_CTX_new(method), SSL_CTX_free);
         Require(nullptr != context, "SSL_CTX_new failed");
@@ -704,12 +823,7 @@ int main(int argc, char** argv)
         }
         Require(1 == SSL_CTX_set_cipher_list(context.get(), "DEFAULT"), "Cipher setup failed");
         SSL_CTX_set_alpn_select_cb(context.get(), SelectAlpn, nullptr);
-        const std::string directory = argv[2];
-        Require(1 == SSL_CTX_use_certificate_chain_file(context.get(), (directory + "/server.pem").c_str()),
-            "Loading test certificate failed");
-        Require(1 == SSL_CTX_use_PrivateKey_file(context.get(), (directory + "/server-key.pem").c_str(),
-            1), "Loading test key failed");
-        Require(1 == SSL_CTX_check_private_key(context.get()), "Test key does not match certificate");
+        Certificates(context.get(), argv[1], mode);
         Socket listener(socket(AF_INET, SOCK_STREAM, 0));
         sockaddr_in address = {};
         address.sin_family = AF_INET;

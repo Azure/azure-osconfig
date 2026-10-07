@@ -48,13 +48,15 @@ configuration, not simply the OpenSSL version.
 
 ## Coverage
 
-Loopback tests use a separate C++ peer loading system OpenSSL, with Bash and
-the `openssl` command for generating temporary certificates. The setup script is
-an embedded C++ string executed through `ExecuteCommand`; there is no Python
-fixture or CI package-installation step. The test peer loads the public server
-APIs dynamically so it does not introduce an OpenSSL development-header
-requirement on the existing CI images. The peer is not installed and listens
-only on the loopback interface. Production code is unchanged.
+Loopback tests use a separate C++ peer loading real system OpenSSL server and
+certificate-generation APIs dynamically. No Python, Bash, `openssl` command,
+development headers or CI package-installation step is required by this fixture.
+Fresh RSA/ECDSA keys and certificates are generated in memory; only the public
+trust certificate is written to the test's private temporary directory. The
+expiry fixture verifies a valid leaf first, then changes its dates and requires
+the exact leaf-expiration error, preserving the positive and negative controls.
+The peer is not installed and listens only on the loopback interface. Production
+code is unchanged.
 
 `telemetrytlsprovidertests` exercises the real adapter with substituted loader
 entry points: provider ordering, legacy API differences, version/API rejection,

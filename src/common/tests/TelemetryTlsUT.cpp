@@ -78,13 +78,7 @@ public:
 
         if (!directory.empty())
         {
-            for (const char* file : {"server-key.pem", "server.pem", "root-key.pem", "root.pem", "openssl.cnf",
-                "ca.cnf", "server.csr", "valid.pem", "01.pem", "02.pem", "index", "index.old",
-                "index.attr", "index.attr.old", "serial", "serial.old"})
-            {
-                unlink((directory + "/" + file).c_str());
-            }
-
+            unlink((directory + "/root.pem").c_str());
             rmdir(directory.c_str());
         }
     }
@@ -139,7 +133,6 @@ public:
         int status = 0;
         char* arguments[] = {
             const_cast<char*>(TELEMETRY_TLS_PEER_PATH),
-            const_cast<char*>(TELEMETRY_TLS_OPENSSL),
             NULL, const_cast<char*>(mode), NULL
         };
         char port[8] = {};
@@ -175,7 +168,7 @@ public:
             return status;
         }
 
-        arguments[2] = const_cast<char*>(directory.c_str());
+        arguments[1] = const_cast<char*>(directory.c_str());
 
         if ((0 == (status = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO))) &&
             (0 == (status = posix_spawn_file_actions_addclose(&actions, output[0]))) &&
