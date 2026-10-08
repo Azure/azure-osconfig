@@ -15,11 +15,49 @@ add_executable(commontests
     TelemetryEventUT.cpp
     TelemetryHttpUT.cpp
     TelemetryProxyUT.cpp
+    TelemetryTlsProviderUT.cpp
     TelemetryTlsUT.cpp
     TelemetryResolverUT.cpp
+    TelemetryUT.cpp
     TelemetryWorkerUT.cpp
     Helper.c
+    ../telemetry/Telemetry.c
+    ../telemetry/Tls.c
 )
+
+# Isolate mocked implementations by source file; other tests link the real telemetry library.
+set_property(SOURCE TelemetryTlsProviderUT.cpp ../telemetry/Tls.c
+    APPEND PROPERTY COMPILE_DEFINITIONS
+        TelemetryTls=TelemetryTestTls
+        TelemetryTlsCreate=TelemetryTestTlsCreate
+        TelemetryTlsHandshake=TelemetryTestTlsHandshake
+        TelemetryTlsWrite=TelemetryTestTlsWrite
+        TelemetryTlsRead=TelemetryTestTlsRead
+        TelemetryTlsDestroy=TelemetryTestTlsDestroy
+        dlopen=TelemetryTestDlopen
+        dlsym=TelemetryTestDlsym)
+
+set_property(SOURCE TelemetryUT.cpp ../telemetry/Telemetry.c
+    APPEND PROPERTY COMPILE_DEFINITIONS
+        TelemetryInitialize=TelemetryTestInitialize
+        TelemetryInitializeInternal=TelemetryTestInitializeInternal
+        TelemetryCleanup=TelemetryTestCleanup
+        GetModuleDirectory=TelemetryTestGetModuleDirectory
+        GetCachedDistroName=TelemetryTestGetCachedDistroName
+        OSConfigTimeStampSave=TelemetryTestTimeStampSave
+        OSConfigGetElapsedTime=TelemetryTestGetElapsedTime
+        OSConfigTelemetryStatusTraceInternal=TelemetryTestStatusTraceInternal
+        OSConfigTelemetryBaselineRun=TelemetryTestBaselineRun
+        OSConfigTelemetryRuleComplete=TelemetryTestRuleComplete
+        OSConfigTelemetryCrashDetected=TelemetryTestCrashDetected
+        TelemetryWorker=TelemetryTestWorker
+        TelemetryWorkerCreate=TelemetryTestWorkerCreate
+        TelemetryWorkerResolve=TelemetryTestWorkerResolve
+        TelemetryWorkerSendEvent=TelemetryTestWorkerSendEvent
+        TelemetryWorkerAccountPreparation=TelemetryTestWorkerAccountPreparation
+        TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
+        SetFileAccess=TelemetryTestSetFileAccess
+        GetOsPrettyName=TelemetryTestGetOsPrettyName)
 
 target_link_libraries(commontests
     GTest::gtest
@@ -80,16 +118,6 @@ target_compile_definitions(commontests PRIVATE
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
-# Compile a separate copy of the real adapter with test-only loader replacements.
-# PRIVATE definitions do not affect the production telemetry library or worker.
-add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/Tls.c)
-target_include_directories(telemetrytlsprovidertests PRIVATE ../telemetry)
-target_compile_definitions(telemetrytlsprovidertests PRIVATE
-    dlopen=TelemetryTestDlopen
-    dlsym=TelemetryTestDlsym)
-target_link_libraries(telemetrytlsprovidertests PRIVATE GTest::gtest_main logging rt)
-gtest_discover_tests(telemetrytlsprovidertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
-
 add_executable(telemetrytlspeer TelemetryTlsPeer.cpp)
 target_link_libraries(telemetrytlspeer PRIVATE ${CMAKE_DL_LIBS})
 add_dependencies(commontests telemetrytlspeer)
@@ -99,18 +127,6 @@ target_compile_definitions(commontests PRIVATE
 add_dependencies(commontests telemetryariatest)
 target_compile_definitions(commontests PRIVATE
     TELEMETRY_ARIA_TEST_PATH="$<TARGET_FILE:telemetryariatest>")
-
-add_executable(telemetryproducertests TelemetryUT.cpp ../telemetry/Telemetry.c)
-target_compile_definitions(telemetryproducertests PRIVATE
-    TelemetryWorkerCreate=TelemetryTestWorkerCreate
-    TelemetryWorkerSendEvent=TelemetryTestWorkerSendEvent
-    TelemetryWorkerAccountPreparation=TelemetryTestWorkerAccountPreparation
-    TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
-    SetFileAccess=TelemetryTestSetFileAccess
-    GetOsPrettyName=TelemetryTestGetOsPrettyName)
-target_link_libraries(telemetryproducertests PRIVATE
-    GTest::gtest_main commonutils telemetry ${CMAKE_DL_LIBS})
-gtest_discover_tests(telemetryproducertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(telemetryproducerprobe TelemetryProducerProbe.c)
 set_target_properties(telemetryproducerprobe PROPERTIES

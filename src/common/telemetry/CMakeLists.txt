@@ -32,11 +32,9 @@ add_custom_target(telemetry-worker-package ALL DEPENDS telemetryworker)
 install(TARGETS telemetryworker RUNTIME DESTINATION bin)
 install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
 
-# Offline resolver/probe utilities; the production worker owns its own DNS.
+# Offline resolver fixture; the production worker owns its own DNS.
 add_executable(telemetryresolverworker EXCLUDE_FROM_ALL ResolverWorker.c ResolverLookup.c)
 target_link_libraries(telemetryresolverworker PRIVATE rt)
-add_executable(telemetrytlsprobe EXCLUDE_FROM_ALL TlsProbe.c)
-target_link_libraries(telemetrytlsprobe PRIVATE ${CMAKE_DL_LIBS})
 
 # Explicit live invocation only; not installed or registered with ctest.
 add_executable(telemetryariatest EXCLUDE_FROM_ALL AriaTest.c)

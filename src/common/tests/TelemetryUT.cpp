@@ -11,8 +11,9 @@
 #include <map>
 #include <string>
 
-// This executable compiles the real producer with worker/platform entry points
-// substituted at compile time. No network, chmod, or machine-file writes.
+// This suite uses a separately named copy of the real producer with mocked
+// worker/platform calls. Other commontests suites retain the real functions.
+// No network, chmod, or machine-file writes.
 struct TelemetryWorker {};
 static TelemetryWorker workerInstance;
 static int creates, destroys, sends, createStatus, preparationStatus;

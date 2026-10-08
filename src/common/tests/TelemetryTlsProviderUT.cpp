@@ -24,9 +24,9 @@ struct ossl_init_settings_st;
 
 namespace
 {
-// This test executable compiles its own copy of the real C adapter, replacing
-// only dlopen/dlsym through target-private build definitions. Production builds
-// use the system loader and never link these mocks.
+// This suite uses a separately named copy of the real C adapter with mocked
+// dlopen/dlsym. Source-local definitions leave other commontests suites and
+// production builds using the real adapter and system loader.
 // The fake OpenSSL functions below record calls and inject results; they perform
 // no cryptography or certificate validation. These cases test adapter decisions,
 // not TLS interoperability. TelemetryTlsUT.cpp covers real OpenSSL with local peers.

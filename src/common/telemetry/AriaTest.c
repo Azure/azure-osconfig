@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/*
- * How to run this
- *
- * From ~/azure-osconfig/build on Linux:
- *
- * sudo --preserve-env=OsConfigTelemetryApiKey cmake --build . --target telemetryariatest
- * sudo --preserve-env=https_proxy,HTTPS_PROXY,all_proxy,ALL_PROXY,no_proxy,NO_PROXY ./common/telemetry/telemetryariatest --send-status-trace-10000
- *
- * Sends 10,000 synthetic StatusTrace events to Aria using the compiled ingestion key.
- * Save the printed correlation ID and final counts to verify the run in Aria.
- * This exercises the encoder/transport directly, not WorkerMain.c or worker IPC.
- */
+// How to run this
+//
+// From ~/azure-osconfig/build on Linux:
+//
+// sudo --preserve-env=OsConfigTelemetryApiKey cmake --build . --target telemetryariatest
+// sudo --preserve-env=https_proxy,HTTPS_PROXY,all_proxy,ALL_PROXY,no_proxy,NO_PROXY ./common/telemetry/telemetryariatest --send-status-trace-10000
+//
+// Sends 10,000 synthetic StatusTrace events to Aria using the compiled ingestion key.
+// Save the printed correlation ID and final counts to verify the run in Aria.
+// This exercises the encoder/transport directly, not WorkerMain.c or worker IPC.
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -72,14 +70,14 @@ static int InitializeTimer(timer_t* timer)
     return status;
 }
 
-static int Encode(const char* iKey, const char* correlation, unsigned int sequence, unsigned char* bytes, size_t* size, int64_t* milliseconds, OsConfigLogHandle log)
+static int Encode(const char* iKey, const char* correlation, unsigned int sequence, unsigned char* bytes, size_t* size, int64_t* milliseconds)
 {
     struct timespec now = {0, 0};
     struct tm utc = {0};
     char timestamp[40] = {0};
     char line[16] = {0};
-    const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "FileName", "LineNumber", "ScenarioName", "FunctionName",
-        "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
+    const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "FileName", "LineNumber","ScenarioName",
+        "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
     TelemetryProperty properties[ARRAY_SIZE(names)] = {0};
     size_t i = 0;
     TelemetryEvent event = {0};
@@ -88,26 +86,26 @@ static int Encode(const char* iKey, const char* correlation, unsigned int sequen
     if (0 != clock_gettime(CLOCK_REALTIME, &now))
     {
         status = errno;
-        OsConfigLogError(log, "Encode: clock_gettime(CLOCK_REALTIME) failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(NULL, "Encode: clock_gettime(CLOCK_REALTIME) failed with %d (%s)", status, strerror(status));
         return EIO;
     }
 
     if (NULL == gmtime_r(&now.tv_sec, &utc))
     {
         status = errno;
-        OsConfigLogError(log, "Encode: gmtime_r failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(NULL, "Encode: gmtime_r failed with %d (%s)", status, strerror(status));
         return EIO;
     }
 
     if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > UINT64_C(253402300799)))
     {
-        OsConfigLogError(log, "Encode: UTC timestamp range check failed with %d (%s)", EOVERFLOW, strerror(EOVERFLOW));
+        OsConfigLogError(NULL, "Encode: UTC timestamp range check failed with %d (%s)", EOVERFLOW, strerror(EOVERFLOW));
         return EOVERFLOW;
     }
 
     if (0 == strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S+0000", &utc))
     {
-        OsConfigLogError(log, "Encode: strftime failed with %d (%s)", EOVERFLOW, strerror(EOVERFLOW));
+        OsConfigLogError(NULL, "Encode: strftime failed with %d (%s)", EOVERFLOW, strerror(EOVERFLOW));
         return EOVERFLOW;
     }
 
@@ -133,7 +131,7 @@ static int Encode(const char* iKey, const char* correlation, unsigned int sequen
     event.properties = properties;
     event.propertyCount = ARRAY_SIZE(properties);
 
-    return TelemetryEncodeEvent(&event, bytes, TELEMETRY_MAX_EVENT_SIZE, size, log);
+    return TelemetryEncodeEvent(&event, bytes, TELEMETRY_MAX_EVENT_SIZE, size);
 }
 
 int main(int argc, char** argv)
@@ -141,7 +139,6 @@ int main(int argc, char** argv)
     timer_t timer = 0;
     int status = 0;
     int64_t started = 0;
-    OsConfigLogHandle log = NULL;
     TelemetryTransport* transport = NULL;
     unsigned int attempted = 0;
     unsigned int accepted = 0;
@@ -163,7 +160,8 @@ int main(int argc, char** argv)
 
     if ((2 != argc) || (0 != strcmp(argv[1], "--send-status-trace-10000")))
     {
-        fprintf(stderr, "Explicit live test only: %s --send-status-trace-10000\n"
+        fprintf(stderr, 
+            "Explicit live test only: %s --send-status-trace-10000\n"
             "Sends 10000 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
             "OsConfigTelemetryApiKey in the runtime environment overrides that key.\n"
             "Honors inherited HTTPS proxy settings. Never scheduled by ctest.\n", argv[0]);
@@ -194,17 +192,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    SetConsoleLoggingEnabled(false);
-    log = OpenLog("/var/log/osconfig_telemetry.log", "/var/log/osconfig_telemetry.bak");
-
-    if ((NULL == log) || (NULL == GetLogFile(log)))
-    {
-        fprintf(stderr, "Cannot open /var/log/osconfig_telemetry.log; no events sent.\n");
-        CloseLog(&log);
-
-        return 1;
-    }
-
     token = getenv("OsConfigTelemetryApiKey");
 
     if (NULL == token)
@@ -216,13 +203,13 @@ int main(int argc, char** argv)
     {
         operation = "ingestion key validation";
         status = EINVAL;
-        OsConfigLogError(log, "main: ingestion key validation failed with %d (%s); missing key", status, strerror(status));
-        fprintf(stderr, "Configure the build with OsConfigTelemetryApiKey or supply a nonempty runtime override; no events sent.\n");
+        OsConfigLogError(NULL, "main: ingestion key validation failed with %d (%s); missing key", status, strerror(status));
+        OsConfigLogError(NULL, "Configure the build with OsConfigTelemetryApiKey or supply a nonempty runtime override; no events sent.");
         goto cleanup;
     }
 
     operation = "TelemetryHttpBuildRequest";
-    if (0 != (status = TelemetryHttpBuildRequest(token, TEST_CLIENT, 0, 1, headers, sizeof(headers), &headerSize, log)))
+    if (0 != (status = TelemetryHttpBuildRequest(token, TEST_CLIENT, 0, 1, headers, sizeof(headers), &headerSize, NULL)))
     {
         goto cleanup;
     }
@@ -233,7 +220,7 @@ int main(int argc, char** argv)
     {
         operation = "ingestion key tenant prefix validation";
         status = EINVAL;
-        OsConfigLogError(log, "main: ingestion key tenant prefix validation failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(NULL, "main: ingestion key tenant prefix validation failed with %d (%s)", status, strerror(status));
         goto cleanup;
     }
 
@@ -241,10 +228,10 @@ int main(int argc, char** argv)
     memcpy(iKey + 2, token, tenantLength);
 
     operation = "TelemetryCreateEpoch";
-    if (0 == (status = TelemetryCreateEpoch(correlation, log)))
+    if (0 == (status = TelemetryCreateEpoch(correlation, NULL)))
     {
         operation = "TelemetryTransportCreate";
-        status = TelemetryTransportCreate(&transport, log);
+        status = TelemetryTransportCreate(&transport, NULL);
     }
 
     if (0 != status)
@@ -252,12 +239,12 @@ int main(int argc, char** argv)
         goto cleanup;
     }
 
-    printf("LIVE StatusTrace test: requested=%d ResultCode=%s\n"
+    OsConfigLogInfo(NULL, 
+        "LIVE StatusTrace test: requested=%d ResultCode=%s\n"
         "ResultString=%s\nCorrelationId=%s\n"
         "TLS mode: system OpenSSL (3, 1.1, then 1.0.2)\n"
-        "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.\n",
+        "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.",
         TEST_COUNT, TEST_RESULT, TEST_MARKER, correlation);
-    fflush(stdout);
 
     for (i = 0; i < TEST_COUNT; ++i)
     {
@@ -288,7 +275,7 @@ int main(int argc, char** argv)
         size = 0;
         operation = "Encode";
 
-        if (0 != (status = Encode(iKey, correlation, i + 1, bytes, &size, &uploadTime, log)))
+        if (0 != (status = Encode(iKey, correlation, i + 1, bytes, &size, &uploadTime, NULL)))
         {
             break;
         }
@@ -296,7 +283,7 @@ int main(int argc, char** argv)
         ++attempted;
         operation = "TelemetryTransportSend";
 
-        if ((0 == (status = TelemetryTransportSend(transport, token, TEST_CLIENT, uploadTime, bytes, size, deadline, &response, log))) && (TelemetryAccepted == response.acceptance))
+        if ((0 == (status = TelemetryTransportSend(transport, token, TEST_CLIENT, uploadTime, bytes, size, deadline, &response, NULL))) && (TelemetryAccepted == response.acceptance))
         {
             ++accepted;
         }
@@ -311,7 +298,7 @@ int main(int argc, char** argv)
 
         if ((0 != status) || (TelemetryAccepted != response.acceptance) || TelemetryTransportSuppressed(transport))
         {
-            fprintf(stderr, "main: event %u delivery failed with %d (%s); HTTP status %u, acceptance %d, controls %zu\n",
+            OsConfigLogError(NULL, "main: event %u delivery failed with %d (%s); HTTP status %u, acceptance %d, controls %zu",
                 i + 1, (0 != status) ? status : ECANCELED, strerror((0 != status) ? status : ECANCELED),
                 response.status, (int)response.acceptance, response.controlCount);
 
@@ -321,7 +308,6 @@ int main(int argc, char** argv)
                 status = ECANCELED;
             }
 
-            fprintf(stderr, "Stopped without replay. Inspect the log and collector controls before another pass.\n");
             break;
         }
     }
@@ -329,21 +315,14 @@ int main(int argc, char** argv)
 cleanup:
     if (0 != status)
     {
-        OsConfigLogError(log, "main: %s failed with %d (%s)", operation, status, strerror(status));
+        OsConfigLogError(NULL, "main: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
-    TelemetryTransportDestroy(&transport, log);
+    TelemetryTransportDestroy(&transport, NULL);
+
     // Keep the self-timer armed through log/runtime cleanup; process exit reclaims it.
-    printf("requested=%d attempted=%u accepted=%u rejected=%u unconfirmed=%u unsent=%u status=%d\n"
-        "CorrelationId=%s\n",
+    OsConfigLogInfo(NULL, "requested=%d attempted=%u accepted=%u rejected=%u unconfirmed=%u unsent=%u status=%d\nCorrelationId=%s", 
         TEST_COUNT, attempted, accepted, rejected, unconfirmed, TEST_COUNT - attempted, status, correlation);
-
-    if (0 != status)
-    {
-        fprintf(stderr, "See /var/log/osconfig_telemetry.log; do not print the ingestion token.\n");
-    }
-
-    CloseLog(&log);
 
     return ((0 == status) && (TEST_COUNT == accepted)) ? 0 : 1;
 }
