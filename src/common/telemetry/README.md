@@ -2,6 +2,8 @@
 
 The focused C client implements OSConfig event encoding and delivery without the general-purpose 1DS C++ SDK. DNS, TLS and network operations stay in the owned `OSConfigTelemetry` worker, not the policy host. Public producer calls and event schemas are unchanged.
 
+Reusable code is built into one static library, `telemetry`. Source files remain separate archive members, so linking the producer does not pull in the worker-only TLS and transport implementations. Worker and test entry points remain separate executables; test-specific source overrides do not modify the production library.
+
 Telemetry is always built. The worker is installed with OSConfig and included in both audit and remediation policy packages; there is no telemetry-off build variant. This does not bypass runtime requirements: sending still requires an initialized invocation, an ingestion key, and a supported TLS runtime. Telemetry failures remain isolated from the audited or remediated operation's result. The live Aria test remains explicit-only.
 
 ## Failure-only logging

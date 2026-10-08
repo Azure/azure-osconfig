@@ -32,14 +32,6 @@ target_link_libraries(commontests
     asb
     parsonlib
     telemetry
-    telemetryencoder
-    telemetryevent
-    telemetryhttp
-    telemetryproxy
-    telemetrytls
-    telemetrytransport
-    telemetryresolver
-    telemetryworkerclient
     rt
 )
 
@@ -70,7 +62,7 @@ target_include_directories(telemetryworkerlookup PRIVATE ../telemetry "${CMAKE_C
 target_compile_definitions(telemetryworkerlookup PRIVATE
     getaddrinfo=TelemetryTestGetAddrInfo
     freeaddrinfo=TelemetryTestFreeAddrInfo)
-target_link_libraries(telemetryworkerlookup PRIVATE telemetrytransport telemetryevent commonutils rt)
+target_link_libraries(telemetryworkerlookup PRIVATE telemetry commonutils rt)
 
 add_executable(telemetryworkerfault TelemetryWorkerFault.c)
 target_include_directories(telemetryworkerfault PRIVATE ../telemetry)
@@ -89,7 +81,7 @@ target_compile_definitions(commontests PRIVATE
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 # Compile a separate copy of the real adapter with test-only loader replacements.
-# PRIVATE definitions do not affect the production telemetrytls library or worker.
+# PRIVATE definitions do not affect the production telemetry library or worker.
 add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/Tls.c)
 target_include_directories(telemetrytlsprovidertests PRIVATE ../telemetry)
 target_compile_definitions(telemetrytlsprovidertests PRIVATE
@@ -117,7 +109,7 @@ target_compile_definitions(telemetryproducertests PRIVATE
     SetFileAccess=TelemetryTestSetFileAccess
     GetOsPrettyName=TelemetryTestGetOsPrettyName)
 target_link_libraries(telemetryproducertests PRIVATE
-    GTest::gtest_main commonutils telemetryevent ${CMAKE_DL_LIBS})
+    GTest::gtest_main commonutils telemetry ${CMAKE_DL_LIBS})
 gtest_discover_tests(telemetryproducertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(telemetryproducerprobe TelemetryProducerProbe.c)
