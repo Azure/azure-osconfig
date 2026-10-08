@@ -131,7 +131,7 @@ static int Encode(const char* iKey, const char* correlation, unsigned int sequen
     event.properties = properties;
     event.propertyCount = ARRAY_SIZE(properties);
 
-    return TelemetryEncodeEvent(&event, bytes, TELEMETRY_MAX_EVENT_SIZE, size);
+    return TelemetryEncodeEvent(&event, bytes, TELEMETRY_MAX_EVENT_SIZE, size, NULL);
 }
 
 int main(int argc, char** argv)
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
         size = 0;
         operation = "Encode";
 
-        if (0 != (status = Encode(iKey, correlation, i + 1, bytes, &size, &uploadTime, NULL)))
+        if (0 != (status = Encode(iKey, correlation, i + 1, bytes, &size, &uploadTime)))
         {
             break;
         }
