@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 #include <Telemetry.h>
-#include <TelemetryWorker.h>
-#include <TelemetryEvent.h>
+#include <Worker.h>
+#include <Event.h>
 #include <CommonUtils.h>
 #include <cerrno>
 #include <cstdlib>
@@ -49,7 +49,7 @@ extern "C" int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandl
     return 0;
 }
 
-extern "C" int TelemetryWorkerSend(TelemetryWorker*, const char* name,
+extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
     const TelemetryProperty* properties, size_t count, OsConfigLogHandle)
 {
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
@@ -130,8 +130,11 @@ TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)
     EXPECT_EQ(500, operation);
     EXPECT_EQ('/', workerPath[0]);
     EXPECT_NE(std::string::npos, workerPath.find("/OSConfigTelemetry"));
-    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(nullptr));
+    EXPECT_EQ(0, TelemetryInitializeInternal(nullptr));
     EXPECT_EQ(1, creates);
+    EXPECT_EQ(0, destroys);
+    OSConfigTelemetryCrashDetected("existing invocation");
+    EXPECT_EQ(1, sends);
     TelemetryCleanup(nullptr);
     EXPECT_EQ(1, destroys);
     TelemetryCleanup(nullptr);
@@ -173,7 +176,7 @@ TEST_F(TelemetryProducerTest, InitializationFailureDoesNotRetryOrSendUntilCleanu
 {
     createStatus = ENOMEM;
     EXPECT_EQ(ENOMEM, TelemetryInitializeInternal(nullptr));
-    EXPECT_EQ(EALREADY, TelemetryInitializeInternal(nullptr));
+    EXPECT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryCrashDetected("dropped");
     EXPECT_EQ(0, sends);
     EXPECT_EQ(1, creates);

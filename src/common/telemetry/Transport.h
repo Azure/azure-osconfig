@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_TRANSPORT_H
-#define TELEMETRY_TRANSPORT_H
+#ifndef TRANSPORT_H
+#define TRANSPORT_H
 
-#include "TelemetryHttp.h"
+#include "Http.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -25,9 +25,8 @@ int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle l
 // Zero means a complete parsed response: inspect acceptance separately.
 // Retry/kill headers or HTTP429/503 conservatively latch suppression for this
 // context; subsequent calls fail ECANCELED. Cross-process suppression is pending.
-int TelemetryTransportSend(TelemetryTransport* transport, const char* token,
-    const char* clientVersion, int64_t uploadTimeMilliseconds, const void* event,
-    size_t eventSize, int64_t deadline, TelemetryHttpResponse* response, OsConfigLogHandle log);
+int TelemetryTransportSend(TelemetryTransport* transport, const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds,
+    const void* event, size_t eventSize, int64_t deadline, TelemetryHttpResponse* response, OsConfigLogHandle log);
 bool TelemetryTransportSuppressed(const TelemetryTransport* transport);
 void TelemetryTransportDestroy(TelemetryTransport** transport, OsConfigLogHandle log);
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "TelemetryEncoder.h"
+#include "Encoder.h"
 
 #include <errno.h>
 #include <float.h>
@@ -10,8 +10,7 @@
 #include <string.h>
 
 _Static_assert(8 == CHAR_BIT, "Telemetry encoding requires eight-bit bytes");
-_Static_assert((sizeof(double) == sizeof(uint64_t)) && (53 == DBL_MANT_DIG) && (1024 == DBL_MAX_EXP),
-    "Telemetry encoding requires IEEE-754 binary64 doubles");
+_Static_assert((sizeof(double) == sizeof(uint64_t)) && (53 == DBL_MANT_DIG) && (1024 == DBL_MAX_EXP), "Telemetry encoding requires IEEE-754 binary64 doubles");
 
 enum TelemetryBondType
 {
@@ -51,8 +50,7 @@ typedef struct TelemetryValidatedEvent
     TelemetryValidatedProperty properties[TELEMETRY_MAX_PROPERTY_COUNT];
 } TelemetryValidatedEvent;
 
-static int ValidateString(const char* value, size_t minimumLength, size_t maximumLength,
-    size_t* length, const char* field, OsConfigLogHandle log)
+static int ValidateString(const char* value, size_t minimumLength, size_t maximumLength, size_t* length, const char* field, OsConfigLogHandle log)
 {
     size_t i = 0;
     unsigned int remaining = 0;
@@ -69,7 +67,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
             return 0;
         }
 
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Missing %s", field);
+        OsConfigLogError(log, "ValidateString: required %s validation failed with %d (%s)", field, EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -79,7 +77,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
 
         if (i == maximumLength)
         {
-            OsConfigLogInfo(log, "TelemetryEncodeEvent: %s exceeds %zu bytes", field, maximumLength);
+            OsConfigLogError(log, "ValidateString: %s length check failed with %d (%s); limit is %zu bytes", field, EMSGSIZE, strerror(EMSGSIZE), maximumLength);
             return EMSGSIZE;
         }
 
@@ -93,8 +91,7 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
             codePoint = (codePoint << 6) | (byte & 0x3F);
             --remaining;
 
-            if ((0 == remaining) && ((codePoint < minimumCodePoint) || (codePoint > 0x10FFFF) ||
-                ((codePoint >= 0xD800) && (codePoint <= 0xDFFF))))
+            if ((0 == remaining) && ((codePoint < minimumCodePoint) || (codePoint > 0x10FFFF) || ((codePoint >= 0xD800) && (codePoint <= 0xDFFF))))
             {
                 break;
             }
@@ -129,13 +126,13 @@ static int ValidateString(const char* value, size_t minimumLength, size_t maximu
 
     if (('\0' != value[i]) || (0 != remaining))
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid UTF-8 in %s", field);
+        OsConfigLogError(log, "ValidateString: %s UTF-8 validation failed with %d (%s)", field, EILSEQ, strerror(EILSEQ));
         return EILSEQ;
     }
 
     if (i < minimumLength)
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: %s is shorter than %zu bytes", field, minimumLength);
+        OsConfigLogError(log, "ValidateString: %s length check failed with %d (%s); minimum is %zu bytes", field, EINVAL, strerror(EINVAL), minimumLength);
         return EINVAL;
     }
 
@@ -150,8 +147,7 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
     int status = 0;
     char byte = '\0';
 
-    if (0 != (status = ValidateString(name, property ? 1 : 4, TELEMETRY_MAX_NAME_LENGTH,
-        length, property ? "property name" : "event name", log)))
+    if (0 != (status = ValidateString(name, property ? 1 : 4, TELEMETRY_MAX_NAME_LENGTH, length, property ? "property name" : "event name", log)))
     {
         return status;
     }
@@ -160,17 +156,16 @@ static int ValidateName(const char* name, bool property, size_t* length, OsConfi
     {
         byte = name[i];
 
-        if (!(((byte >= 'a') && (byte <= 'z')) || ((byte >= 'A') && (byte <= 'Z')) ||
-            ((byte >= '0') && (byte <= '9')) || ('_' == byte) || ('.' == byte)))
+        if (!(((byte >= 'a') && (byte <= 'z')) || ((byte >= 'A') && (byte <= 'Z')) || ((byte >= '0') && (byte <= '9')) || ('_' == byte) || ('.' == byte)))
         {
-            OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid character in %s name", property ? "property" : "event");
+            OsConfigLogError(log, "ValidateName: %s name character validation failed with %d (%s)", property ? "property" : "event", EINVAL, strerror(EINVAL));
             return EINVAL;
         }
     }
 
-    if ((property) && (('.' == name[0]) || ('.' == name[*length - 1])))
+    if (property && (('.' == name[0]) || ('.' == name[*length - 1])))
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Property name starts or ends with a dot");
+        OsConfigLogError(log, "ValidateName: property name boundary validation failed with %d (%s); leading or trailing dot", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -185,16 +180,15 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
     const TelemetryProperty* property = NULL;
     TelemetryValidatedProperty entry = {0};
 
-    if ((event->time <= 0) || (event->flags < 0) || (event->sequence < 0) ||
-        ((0 != event->propertyCount) && (NULL == event->properties)))
+    if ((event->time <= 0) || (event->flags < 0) || (event->sequence < 0) || ((0 != event->propertyCount) && (NULL == event->properties)))
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid event time, flags, sequence, or property array");
+        OsConfigLogError(log, "ValidateEvent: time/flags/sequence/property array validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
     if (event->propertyCount > TELEMETRY_MAX_PROPERTY_COUNT)
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Property count exceeds %d", TELEMETRY_MAX_PROPERTY_COUNT);
+        OsConfigLogError(log, "ValidateEvent: property count check failed with %d (%s); limit is %d", EMSGSIZE, strerror(EMSGSIZE), TELEMETRY_MAX_PROPERTY_COUNT);
         return EMSGSIZE;
     }
 
@@ -212,21 +206,18 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
 
     if (('o' != event->iKey[0]) || (':' != event->iKey[1]))
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: iKey must use the Common Schema o: prefix");
+        OsConfigLogError(log, "ValidateEvent: iKey prefix validation failed with %d (%s); expected Common Schema o: prefix", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
-    if (0 == (status = ValidateString(event->deviceId, 0, TELEMETRY_MAX_EVENT_SIZE,
-        &validated->deviceIdLength, "device ID", log)))
+    if (0 == (status = ValidateString(event->deviceId, 0, TELEMETRY_MAX_EVENT_SIZE, &validated->deviceIdLength, "device ID", log)))
     {
-        status = ValidateString(event->sdkVersion, 0, TELEMETRY_MAX_EVENT_SIZE,
-            &validated->sdkVersionLength, "SDK version", log);
+        status = ValidateString(event->sdkVersion, 0, TELEMETRY_MAX_EVENT_SIZE, &validated->sdkVersionLength, "SDK version", log);
     }
 
     if (0 == status)
     {
-        status = ValidateString(event->sdkEpoch, 0, TELEMETRY_MAX_EVENT_SIZE,
-            &validated->sdkEpochLength, "SDK epoch", log);
+        status = ValidateString(event->sdkEpoch, 0, TELEMETRY_MAX_EVENT_SIZE, &validated->sdkEpochLength, "SDK epoch", log);
     }
 
     if (0 != status)
@@ -251,18 +242,17 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
             case TelemetryPropertyString:
                 if (NULL == property->value.stringValue)
                 {
-                    OsConfigLogInfo(log, "TelemetryEncodeEvent: Missing string value at property %zu", i);
+                    OsConfigLogError(log, "ValidateEvent: string value validation failed with %d (%s); property index %zu", EINVAL, strerror(EINVAL), i);
                     return EINVAL;
                 }
 
-                status = ValidateString(property->value.stringValue, 0, TELEMETRY_MAX_EVENT_SIZE,
-                    &entry.stringLength, "property string", log);
+                status = ValidateString(property->value.stringValue, 0, TELEMETRY_MAX_EVENT_SIZE, &entry.stringLength, "property string", log);
                 break;
 
             case TelemetryPropertyDouble:
-                if (!isfinite(property->value.doubleValue))
+                if (0 == isfinite(property->value.doubleValue))
                 {
-                    OsConfigLogInfo(log, "TelemetryEncodeEvent: Non-finite double at property %zu", i);
+                    OsConfigLogError(log, "ValidateEvent: isfinite failed with %d (%s); property index %zu", EINVAL, strerror(EINVAL), i);
                     return EINVAL;
                 }
 
@@ -273,7 +263,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
                 break;
 
             default:
-                OsConfigLogInfo(log, "TelemetryEncodeEvent: Unsupported type at property %zu", i);
+                OsConfigLogError(log, "ValidateEvent: property type validation failed with %d (%s); property index %zu", EINVAL, strerror(EINVAL), i);
                 return EINVAL;
         }
 
@@ -289,7 +279,7 @@ static int ValidateEvent(const TelemetryEvent* event, TelemetryValidatedEvent* v
 
         if ((j > 0) && (0 == strcmp(validated->properties[j - 1].property->name, property->name)))
         {
-            OsConfigLogInfo(log, "TelemetryEncodeEvent: Duplicate property name at property %zu", i);
+            OsConfigLogError(log, "ValidateEvent: property name uniqueness check failed with %d (%s); property index %zu", EINVAL, strerror(EINVAL), i);
             return EINVAL;
         }
 
@@ -306,7 +296,7 @@ static void WriteBytes(TelemetryWriter* writer, const void* bytes, size_t size)
         return;
     }
 
-    if (size > writer->capacity - writer->size)
+    if (size > (writer->capacity - writer->size))
     {
         writer->failed = true;
         return;
@@ -499,8 +489,7 @@ static void WriteEvent(TelemetryWriter* writer, const TelemetryValidatedEvent* v
     WriteByte(writer, TelemetryBondStop);
 }
 
-int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
-    size_t capacity, size_t* encodedSize, OsConfigLogHandle log)
+int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer, size_t capacity, size_t* encodedSize, OsConfigLogHandle log)
 {
     TelemetryValidatedEvent validated = {0};
     TelemetryWriter writer = {0};
@@ -513,7 +502,7 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
 
     if ((NULL == event) || (NULL == buffer) || (NULL == encodedSize))
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Invalid event, buffer, or size output");
+        OsConfigLogError(log, "TelemetryEncodeEvent: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -528,8 +517,8 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
 
     if (writer.failed)
     {
-        OsConfigLogInfo(log, "TelemetryEncodeEvent: Event exceeds buffer capacity or the %d-byte event limit",
-            TELEMETRY_MAX_EVENT_SIZE);
+        OsConfigLogError(log, "TelemetryEncodeEvent: WriteEvent size check failed with %d (%s); capacity is %zu, event limit is %d",
+            EMSGSIZE, strerror(EMSGSIZE), capacity, TELEMETRY_MAX_EVENT_SIZE);
         return EMSGSIZE;
     }
 
@@ -538,7 +527,6 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer,
     WriteEvent(&writer, &validated);
 
     *encodedSize = writer.size;
-    OsConfigLogDebug(log, "TelemetryEncodeEvent: Encoded %zu properties into %zu bytes", event->propertyCount, writer.size);
 
     return 0;
 }

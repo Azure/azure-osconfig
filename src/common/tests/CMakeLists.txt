@@ -44,8 +44,8 @@ target_link_libraries(commontests
 )
 
 add_executable(telemetryresolverlookupworker
-    ../telemetry/TelemetryResolverWorker.c
-    ../telemetry/TelemetryResolverLookup.c
+    ../telemetry/ResolverWorker.c
+    ../telemetry/ResolverLookup.c
     TelemetryResolverLookupStub.c)
 target_include_directories(telemetryresolverlookupworker PRIVATE ../telemetry)
 target_compile_definitions(telemetryresolverlookupworker PRIVATE
@@ -63,8 +63,8 @@ target_compile_definitions(commontests PRIVATE
     TELEMETRY_RESOLVER_FAULT_WORKER_PATH="$<TARGET_FILE:telemetryresolverfaultworker>")
 
 add_executable(telemetryworkerlookup
-    ../telemetry/TelemetryWorkerMain.c
-    ../telemetry/TelemetryResolverLookup.c
+    ../telemetry/WorkerMain.c
+    ../telemetry/ResolverLookup.c
     TelemetryResolverLookupStub.c)
 target_include_directories(telemetryworkerlookup PRIVATE ../telemetry "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
 target_compile_definitions(telemetryworkerlookup PRIVATE
@@ -90,7 +90,7 @@ gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 # Compile a separate copy of the real adapter with test-only loader replacements.
 # PRIVATE definitions do not affect the production telemetrytls library or worker.
-add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/TelemetryTls.c)
+add_executable(telemetrytlsprovidertests TelemetryTlsProviderUT.cpp ../telemetry/Tls.c)
 target_include_directories(telemetrytlsprovidertests PRIVATE ../telemetry)
 target_compile_definitions(telemetrytlsprovidertests PRIVATE
     dlopen=TelemetryTestDlopen
@@ -110,9 +110,8 @@ target_compile_definitions(commontests PRIVATE
 
 add_executable(telemetryproducertests TelemetryUT.cpp ../telemetry/Telemetry.c)
 target_compile_definitions(telemetryproducertests PRIVATE
-    BUILD_TELEMETRY=1
     TelemetryWorkerCreate=TelemetryTestWorkerCreate
-    TelemetryWorkerSend=TelemetryTestWorkerSend
+    TelemetryWorkerSendEvent=TelemetryTestWorkerSendEvent
     TelemetryWorkerAccountPreparation=TelemetryTestWorkerAccountPreparation
     TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
     SetFileAccess=TelemetryTestSetFileAccess
@@ -121,13 +120,11 @@ target_link_libraries(telemetryproducertests PRIVATE
     GTest::gtest_main commonutils telemetryevent ${CMAKE_DL_LIBS})
 gtest_discover_tests(telemetryproducertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
-if(BUILD_TELEMETRY)
-    add_executable(telemetryproducerprobe TelemetryProducerProbe.c)
-    set_target_properties(telemetryproducerprobe PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
-    target_link_libraries(telemetryproducerprobe PRIVATE telemetry)
-    add_dependencies(telemetryproducerprobe telemetryworker)
-    add_dependencies(commontests telemetryproducerprobe)
-    target_compile_definitions(commontests PRIVATE
-        TELEMETRY_PRODUCER_PROBE_PATH="$<TARGET_FILE:telemetryproducerprobe>")
-endif()
+add_executable(telemetryproducerprobe TelemetryProducerProbe.c)
+set_target_properties(telemetryproducerprobe PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
+target_link_libraries(telemetryproducerprobe PRIVATE telemetry)
+add_dependencies(telemetryproducerprobe telemetryworker)
+add_dependencies(commontests telemetryproducerprobe)
+target_compile_definitions(commontests PRIVATE
+    TELEMETRY_PRODUCER_PROBE_PATH="$<TARGET_FILE:telemetryproducerprobe>")

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryEvent.h>
+#include <Event.h>
 #include <cerrno>
 #include <cstring>
 #include <string>

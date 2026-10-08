@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_RESOLVER_PROTOCOL_H
-#define TELEMETRY_RESOLVER_PROTOCOL_H
+#ifndef RESOLVER_PROTOCOL_H
+#define RESOLVER_PROTOCOL_H
 
 #include <stdint.h>
 
@@ -42,4 +42,4 @@ int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, struct Tel
 }
 #endif
 
-#endif // TELEMETRY_RESOLVER_PROTOCOL_H
+#endif // RESOLVER_PROTOCOL_H

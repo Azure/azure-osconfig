@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_DEADLINE_H
-#define TELEMETRY_DEADLINE_H
+#ifndef DEADLINE_H
+#define DEADLINE_H
 
 #include <errno.h>
 #include <limits.h>
@@ -18,13 +18,13 @@ static inline int TelemetryMonotonicTime(int64_t* value)
     {
         status = (0 != errno) ? errno : EIO;
     }
-    else if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > (uint64_t)(INT64_MAX / 1000000000 - 1)))
+    else if ((now.tv_sec < 0) || ((uint64_t)now.tv_sec > (uint64_t)((INT64_MAX / 1000000000) - 1)))
     {
         status = EOVERFLOW;
     }
     else
     {
-        *value = (int64_t)now.tv_sec * INT64_C(1000000000) + now.tv_nsec;
+        *value = ((int64_t)now.tv_sec * INT64_C(1000000000)) + now.tv_nsec;
     }
 
     return status;
@@ -44,7 +44,7 @@ static inline int TelemetryDeadlineRemaining(int64_t deadline, int* milliseconds
         }
         else
         {
-            remaining = (deadline - now) / 1000000 + (0 != (deadline - now) % 1000000);
+            remaining = ((deadline - now) / 1000000) + (0 != ((deadline - now) % 1000000));
             *milliseconds = (remaining > INT_MAX) ? INT_MAX : (int)remaining;
         }
     }
@@ -58,7 +58,7 @@ static inline int TelemetryArmDeadline(timer_t timer, int64_t deadline)
     int remaining = 0;
     int status = 0;
 
-    if ((deadline <= 0) || ((int64_t)(time_t)(deadline / 1000000000) != deadline / 1000000000))
+    if ((deadline <= 0) || ((int64_t)(time_t)(deadline / 1000000000) != (deadline / 1000000000)))
     {
         return EINVAL;
     }
@@ -67,10 +67,10 @@ static inline int TelemetryArmDeadline(timer_t timer, int64_t deadline)
     {
         expiration.it_value.tv_sec = (time_t)(deadline / 1000000000);
         expiration.it_value.tv_nsec = (long)(deadline % 1000000000);
-        status = timer_settime(timer, TIMER_ABSTIME, &expiration, NULL) ? (errno ? errno : EIO) : 0;
+        status = (0 != timer_settime(timer, TIMER_ABSTIME, &expiration, NULL)) ? ((0 != errno) ? errno : EIO) : 0;
     }
 
     return status;
 }
 
-#endif // TELEMETRY_DEADLINE_H
+#endif // DEADLINE_H

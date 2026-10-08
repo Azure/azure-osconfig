@@ -3,8 +3,8 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <TelemetryWorkerProtocol.h>
-#include <TelemetryResolverProtocol.h>
+#include <WorkerProtocol.h>
+#include <ResolverProtocol.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <stdbool.h>

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryResolver.h>
+#include <Resolver.h>
 
 #include <arpa/inet.h>
 #include <cerrno>

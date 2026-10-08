@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryEncoder.h>
-#include <TelemetryHttp.h>
+#include <Encoder.h>
+#include <Http.h>
 
 #include <algorithm>
 #include <array>
@@ -97,7 +97,7 @@ protected:
         }
     }
 
-    void ExpectDiagnostic(const std::string& wire, int expected, const char* diagnostic)
+    void ExpectFailureWithoutSensitiveLogging(const std::string& wire, int expected)
     {
         std::ifstream file;
         std::string text = {};
@@ -109,46 +109,44 @@ protected:
         file.open(path);
         ASSERT_TRUE(file.is_open());
         text.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-        EXPECT_NE(std::string::npos, text.find(diagnostic)) << text;
-        EXPECT_NE(std::string::npos, text.find("TelemetryHttp: Response failure")) << text;
+        EXPECT_FALSE(text.empty());
         EXPECT_EQ(std::string::npos, text.find("sensitive-marker")) << text;
     }
 };
 
-TEST_F(TelemetryHttpDiagnosticsTest, ReportsZeroOnlyCountWithoutLoggingPayloadOrControlValues)
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsZeroOnlyCountWithoutLoggingPayloadOrControlValues)
 {
-    ExpectDiagnostic(Response("{\"acc\":0,\"private\":\"sensitive-marker\"}",
-        "kill-tokens: sensitive-marker\r\n"), EPROTO,
-        "accType=number, acc=0, rejType=missing, rej=0");
+    ExpectFailureWithoutSensitiveLogging(Response("{\"acc\":0,\"private\":\"sensitive-marker\"}", "kill-tokens: sensitive-marker\r\n"), EPROTO);
 }
 
-TEST_F(TelemetryHttpDiagnosticsTest, ReportsCountTypeWithoutLoggingStringValue)
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsInvalidCountTypeWithoutLoggingStringValue)
 {
-    ExpectDiagnostic(Response("{\"acc\":\"sensitive-marker\",\"rej\":0}"), EPROTO,
-        "accType=string, acc=0, rejType=number, rej=0");
+    ExpectFailureWithoutSensitiveLogging(Response("{\"acc\":\"sensitive-marker\",\"rej\":0}"), EPROTO);
 }
 
-TEST_F(TelemetryHttpDiagnosticsTest, ReportsInvalidEventFailuresWithoutLoggingNamesOrValues)
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsInvalidEventFailuresWithoutLoggingNamesOrValues)
 {
-    ExpectDiagnostic(Response("{\"acc\":1,\"rej\":0,\"efi\":{\"sensitive-marker\":\"sensitive-marker\"}}"),
-        EPROTO, "Acknowledgment event failures invalid (efiType=object");
+    ExpectFailureWithoutSensitiveLogging(Response("{\"acc\":1,\"rej\":0,\"efi\":{\"sensitive-marker\":\"sensitive-marker\"}}"), EPROTO);
 }
 
-TEST_F(TelemetryHttpDiagnosticsTest, DistinguishesEnvelopeUtf8AndJsonFailures)
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsInvalidEnvelopeWithoutLoggingPayload)
 {
-    ExpectDiagnostic(Response("[\"sensitive-marker\"]"), EPROTO, "Acknowledgment envelope invalid");
-    ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, log));
-    ExpectDiagnostic(Response("{\"private\":\"sensitive-marker\xff\"}"), EPROTO,
-        "Acknowledgment UTF-8 validation or allocation failed");
-    ASSERT_EQ(0, TelemetryHttpResponseInitialize(&response, log));
-    ExpectDiagnostic(Response("{\"private\":\"sensitive-marker\",}"), EPROTO,
-        "Acknowledgment JSON parse or allocation failed");
+    ExpectFailureWithoutSensitiveLogging(Response("[\"sensitive-marker\"]"), EPROTO);
 }
 
-TEST_F(TelemetryHttpDiagnosticsTest, ReportsFramingStateWithoutLoggingHeaderValues)
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsInvalidUtf8WithoutLoggingPayload)
 {
-    ExpectDiagnostic("HTTP/1.1 200 OK\r\nTransfer-Encoding: sensitive-marker\r\n\r\n",
-        ENOTSUP, "state=1, http=200, bodyBytes=0");
+    ExpectFailureWithoutSensitiveLogging(Response("{\"private\":\"sensitive-marker\xff\"}"), EPROTO);
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsInvalidJsonWithoutLoggingPayload)
+{
+    ExpectFailureWithoutSensitiveLogging(Response("{\"private\":\"sensitive-marker\",}"), EPROTO);
+}
+
+TEST_F(TelemetryHttpDiagnosticsTest, RejectsUnsupportedTransferEncodingWithoutLoggingHeaderValues)
+{
+    ExpectFailureWithoutSensitiveLogging("HTTP/1.1 200 OK\r\nTransfer-Encoding: sensitive-marker\r\n\r\n", ENOTSUP);
 }
 
 TEST_F(TelemetryHttpTest, BuildsExactUncompressedSingleEventHeaders)

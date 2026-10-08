@@ -3,16 +3,17 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "TelemetryWorker.h"
-#include "TelemetryWorkerProtocol.h"
-#include "TelemetryResolverProtocol.h"
-#include "TelemetryDeadline.h"
-#include "TelemetryEvent.h"
+#include "Worker.h"
+#include "WorkerProtocol.h"
+#include "ResolverProtocol.h"
+#include "Deadline.h"
+#include "Event.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <netdb.h>
 #include <poll.h>
 #include <signal.h>
 #include <spawn.h>
@@ -58,7 +59,7 @@ static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* d
 
     limit = (worker->budget < worker->operationLimit) ? worker->budget : worker->operationLimit;
 
-    if (limit > worker->lifetimeDeadline - *start)
+    if (limit > (worker->lifetimeDeadline - *start))
     {
         limit = worker->lifetimeDeadline - *start;
     }
@@ -77,7 +78,7 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
     if (0 != (status = TelemetryMonotonicTime(&now)))
     {
         worker->budget = 0;
-        OsConfigLogInfo(log, "TelemetryWorker: Cannot account for elapsed time (status=%d)", status);
+        OsConfigLogError(log, "ChargeBudget: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
         return status;
     }
 
@@ -86,11 +87,11 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
     if (elapsed < 0)
     {
         worker->budget = 0;
-        OsConfigLogError(log, "TelemetryWorker: Invalid elapsed-time interval");
+        OsConfigLogError(log, "ChargeBudget: elapsed-time validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
-    worker->budget = (elapsed >= worker->budget) ? 0 : worker->budget - elapsed;
+    worker->budget = (elapsed >= worker->budget) ? 0 : (worker->budget - elapsed);
 
     return 0;
 }
@@ -109,7 +110,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         if (0 != close(worker->descriptor))
         {
             status = errno;
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot close IPC (status=%d)", status);
+            OsConfigLogError(log, "ReleaseChild: close failed with %d (%s)", status, strerror(status));
         }
 
         worker->descriptor = -1;
@@ -129,10 +130,10 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         {
             worker->child = -1;
 
-            if ((!WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
+            if ((0 == WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
             {
-                OsConfigLogInfo(log, "TelemetryWorker: Child ended abnormally (wait status=%d)", childStatus);
-                return status ? status : EIO;
+                OsConfigLogError(log, "ReleaseChild: child exit validation failed with %d (%s); wait status %d", EIO, strerror(EIO), childStatus);
+                return (0 != status) ? status : EIO;
             }
 
             return status;
@@ -141,7 +142,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         if ((waited < 0) && (EINTR != errno))
         {
             error = errno;
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot observe owned child (status=%d)", error);
+            OsConfigLogError(log, "ReleaseChild: waitpid(WNOHANG) failed with %d (%s)", error, strerror(error));
 
             if (ECHILD == error)
             {
@@ -149,7 +150,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
                 worker->child = -1;
             }
 
-            return status ? status : error;
+            return (0 != status) ? status : error;
         }
 
         if (gracefulDeadline <= 0)
@@ -163,7 +164,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         {
             if (ETIMEDOUT != timingStatus)
             {
-                OsConfigLogInfo(log, "TelemetryWorker: Cannot time child cleanup (status=%d)", timingStatus);
+                OsConfigLogError(log, "ReleaseChild: TelemetryDeadlineRemaining failed with %d (%s)", timingStatus, strerror(timingStatus));
 
                 if (0 == status)
                 {
@@ -177,7 +178,7 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
         if ((poll(NULL, 0, (remaining > 10) ? 10 : remaining) < 0) && (EINTR != errno))
         {
             status = errno;
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot wait for child exit (status=%d)", status);
+            OsConfigLogError(log, "ReleaseChild: poll failed with %d (%s)", status, strerror(status));
             break;
         }
     }
@@ -185,8 +186,8 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
     if ((0 != kill(worker->child, SIGKILL)) && (ESRCH != errno))
     {
         error = errno;
-        OsConfigLogInfo(log, "TelemetryWorker: Cannot terminate owned child (status=%d)", error);
-        return status ? status : error;
+        OsConfigLogError(log, "ReleaseChild: kill(SIGKILL) failed with %d (%s)", error, strerror(error));
+        return (0 != status) ? status : error;
     }
 
     waited = 0;
@@ -199,23 +200,26 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
     if (waited < 0)
     {
         error = errno;
-        OsConfigLogInfo(log, "TelemetryWorker: Cannot reap owned child (status=%d)", error);
+        OsConfigLogError(log, "ReleaseChild: waitpid failed with %d (%s)", error, strerror(error));
 
         if (ECHILD == error)
         {
             worker->child = -1;
         }
 
-        return status ? status : error;
+        return (0 != status) ? status : error;
     }
 
     worker->child = -1;
-    OsConfigLogInfo(log, "TelemetryWorker: Terminated and reaped child");
+    if ((0 == status) && (gracefulDeadline > 0))
+    {
+        OsConfigLogError(log, "ReleaseChild: graceful shutdown deadline check failed with %d (%s)", ETIMEDOUT, strerror(ETIMEDOUT));
+    }
 
-    return status ? status : ((gracefulDeadline > 0) ? ETIMEDOUT : 0);
+    return (0 != status) ? status : ((gracefulDeadline > 0) ? ETIMEDOUT : 0);
 }
 
-static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int64_t deadline)
+static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int64_t deadline, OsConfigLogHandle log)
 {
     unsigned char* bytes = buffer;
     size_t offset = 0;
@@ -228,12 +232,11 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
     {
         if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
+            OsConfigLogError(log, "Transfer: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
             return status;
         }
 
-        count = writing ?
-            send(descriptor, bytes + offset, size - offset, MSG_NOSIGNAL) :
-            recv(descriptor, bytes + offset, size - offset, 0);
+        count = writing ? send(descriptor, bytes + offset, size - offset, MSG_NOSIGNAL) : recv(descriptor, bytes + offset, size - offset, 0);
 
         if (count > 0)
         {
@@ -244,7 +247,10 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
         if (0 == count)
         {
             status = TelemetryDeadlineRemaining(deadline, &remaining);
-            return status ? status : ((0 == offset) ? EPIPE : EPROTO);
+            status = (0 != status) ? status : ((0 == offset) ? EPIPE : EPROTO);
+            OsConfigLogError(log, "Transfer: %s completion check failed with %d (%s); transferred %zu of %zu bytes",
+                writing ? "send" : "recv", status, strerror(status), offset, size);
+            return status;
         }
 
         if (EINTR == errno)
@@ -254,22 +260,25 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
 
         if ((EAGAIN != errno) && (EWOULDBLOCK != errno))
         {
-            return errno;
+            status = errno;
+            OsConfigLogError(log, "Transfer: %s failed with %d (%s)", writing ? "send" : "recv", status, strerror(status));
+            return status;
         }
 
         item = (struct pollfd){descriptor, (short)(writing ? POLLOUT : POLLIN), 0};
 
         if ((poll(&item, 1, remaining) < 0) && (EINTR != errno))
         {
-            return errno;
+            status = errno;
+            OsConfigLogError(log, "Transfer: poll failed with %d (%s)", status, strerror(status));
+            return status;
         }
     }
 
     return 0;
 }
 
-static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t sequence,
-    void* body, size_t size, int64_t deadline)
+static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t sequence, void* body, size_t size, int64_t deadline, OsConfigLogHandle log)
 {
     TelemetryWorkerFrame reply = {0};
     int status = 0;
@@ -277,7 +286,7 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
     ssize_t count = 0;
     int remaining = 0;
 
-    if (0 != (status = Transfer(worker->descriptor, &reply, sizeof(reply), false, deadline)))
+    if (0 != (status = Transfer(worker->descriptor, &reply, sizeof(reply), false, deadline, log)))
     {
         return status;
     }
@@ -286,15 +295,17 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
         (reply.operation != operation) || (reply.sequence != sequence) || (0 != reply.deadline) ||
         (reply.status < 0) || (reply.size != ((0 != reply.status) ? 0 : size)))
     {
+        OsConfigLogError(log, "ReceiveReply: reply header validation failed with %d (%s)", EPROTO, strerror(EPROTO));
         return EPROTO;
     }
 
     if (0 != reply.status)
     {
+        OsConfigLogError(log, "ReceiveReply: worker operation %u failed with %d (%s)", operation, reply.status, strerror(reply.status));
         return reply.status;
     }
 
-    if (0 != (status = Transfer(worker->descriptor, body, size, false, deadline)))
+    if (0 != (status = Transfer(worker->descriptor, body, size, false, deadline, log)))
     {
         return status;
     }
@@ -303,23 +314,33 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
 
     if (count > 0)
     {
+        OsConfigLogError(log, "ReceiveReply: reply boundary validation failed with %d (%s)", EPROTO, strerror(EPROTO));
         return EPROTO;
     }
 
     if (0 == count)
     {
+        OsConfigLogError(log, "ReceiveReply: recv(MSG_PEEK) failed with %d (%s); worker disconnected", EPIPE, strerror(EPIPE));
         return EPIPE;
     }
 
     if ((EAGAIN != errno) && (EWOULDBLOCK != errno) && (EINTR != errno))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "ReceiveReply: recv(MSG_PEEK) failed with %d (%s)", status, strerror(status));
+        return status;
     }
 
-    return TelemetryDeadlineRemaining(deadline, &remaining);
+    status = TelemetryDeadlineRemaining(deadline, &remaining);
+    if (0 != status)
+    {
+        OsConfigLogError(log, "ReceiveReply: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
 }
 
-static int PrepareDescriptor(int* descriptor)
+static int PrepareDescriptor(int* descriptor, OsConfigLogHandle log)
 {
     int replacement = 0;
     int status = 0;
@@ -330,16 +351,28 @@ static int PrepareDescriptor(int* descriptor)
 
         if (replacement < 0)
         {
-            return errno;
+            status = errno;
+            OsConfigLogError(log, "PrepareDescriptor: fcntl(F_DUPFD_CLOEXEC) failed with %d (%s)", status, strerror(status));
+            return status;
         }
 
         status = (0 == close(*descriptor)) ? 0 : errno;
+        if (0 != status)
+        {
+            OsConfigLogError(log, "PrepareDescriptor: close failed with %d (%s)", status, strerror(status));
+        }
         *descriptor = replacement;
 
         return status;
     }
 
-    return (0 == fcntl(*descriptor, F_SETFD, FD_CLOEXEC)) ? 0 : errno;
+    status = (0 == fcntl(*descriptor, F_SETFD, FD_CLOEXEC)) ? 0 : errno;
+    if (0 != status)
+    {
+        OsConfigLogError(log, "PrepareDescriptor: fcntl(F_SETFD) failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
 }
 
 static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHandle log)
@@ -361,19 +394,29 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     pid_t child = -1;
     size_t i = 0;
     int error = 0;
+    const char* operation = "PrepareDescriptor";
 
     if (worker->child > 0)
     {
-        return (worker->descriptor >= 0) ? 0 : EBUSY;
+        status = (worker->descriptor >= 0) ? 0 : EBUSY;
+        if (0 != status)
+        {
+            OsConfigLogError(log, "StartChild: child IPC state validation failed with %d (%s)", status, strerror(status));
+        }
+
+        return status;
     }
 
     if (0 != sigaction(SIGCHLD, NULL, &action))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "StartChild: sigaction(SIGCHLD) failed with %d (%s)", status, strerror(status));
+        return status;
     }
 
     if ((SIG_DFL != action.sa_handler) || (0 != (action.sa_flags & SA_NOCLDWAIT)))
     {
+        OsConfigLogError(log, "StartChild: SIGCHLD ownership validation failed with %d (%s)", ENOTSUP, strerror(ENOTSUP));
         return ENOTSUP;
     }
 
@@ -382,16 +425,18 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
 
     if (0 != socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, descriptors))
     {
-        return errno;
+        status = errno;
+        OsConfigLogError(log, "StartChild: socketpair failed with %d (%s)", status, strerror(status));
+        return status;
     }
 
-    if ((0 != (status = PrepareDescriptor(&descriptors[0]))) ||
-        (0 != (status = PrepareDescriptor(&descriptors[1]))))
+    if ((0 != (status = PrepareDescriptor(&descriptors[0], log))) || (0 != (status = PrepareDescriptor(&descriptors[1], log))))
     {
         goto cleanup;
     }
 
     flags = fcntl(descriptors[0], F_GETFL);
+    operation = (flags < 0) ? "fcntl(F_GETFL)" : "fcntl(F_SETFL)";
 
     if ((flags < 0) || (0 != fcntl(descriptors[0], F_SETFL, flags | O_NONBLOCK)))
     {
@@ -399,6 +444,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
         goto cleanup;
     }
 
+    operation = "posix_spawn_file_actions_init";
     if (0 != (status = posix_spawn_file_actions_init(&actions)))
     {
         goto cleanup;
@@ -406,12 +452,28 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
 
     haveActions = true;
 
-    if ((0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDIN_FILENO))) ||
-        (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[0]))) ||
-        (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[1]))) ||
-        (0 != (status = posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, "/dev/null", O_WRONLY, 0))) ||
-        (0 != (status = posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0))) ||
-        (0 != (status = posix_spawnattr_init(&attributes))))
+    operation = "posix_spawn_file_actions_adddup2";
+    if (0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDIN_FILENO)))
+    {
+        goto cleanup;
+    }
+
+    operation = "posix_spawn_file_actions_addclose";
+    if ((0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[0]))) ||
+        (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[1]))))
+    {
+        goto cleanup;
+    }
+
+    operation = "posix_spawn_file_actions_addopen";
+    if ((0 != (status = posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, "/dev/null", O_WRONLY, 0))) ||
+        (0 != (status = posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0))))
+    {
+        goto cleanup;
+    }
+
+    operation = "posix_spawnattr_init";
+    if (0 != (status = posix_spawnattr_init(&attributes)))
     {
         goto cleanup;
     }
@@ -422,14 +484,31 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     sigaddset(&defaults, SIGPIPE);
     sigemptyset(&mask);
 
-    if ((0 != (status = posix_spawnattr_setsigdefault(&attributes, &defaults))) ||
-        (0 != (status = posix_spawnattr_setsigmask(&attributes, &mask))) ||
-        (0 != (status = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK))) ||
-        (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining))))
+    operation = "posix_spawnattr_setsigdefault";
+    if (0 != (status = posix_spawnattr_setsigdefault(&attributes, &defaults)))
     {
         goto cleanup;
     }
 
+    operation = "posix_spawnattr_setsigmask";
+    if (0 != (status = posix_spawnattr_setsigmask(&attributes, &mask)))
+    {
+        goto cleanup;
+    }
+
+    operation = "posix_spawnattr_setflags";
+    if (0 != (status = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK)))
+    {
+        goto cleanup;
+    }
+
+    operation = "TelemetryDeadlineRemaining";
+    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    {
+        goto cleanup;
+    }
+
+    operation = "posix_spawn";
     if (0 == (status = posix_spawn(&child, worker->path, &actions, &attributes, arguments, environ)))
     {
         worker->child = child;
@@ -439,11 +518,16 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     }
 
 cleanup:
+    if (0 != status)
+    {
+        OsConfigLogError(log, "StartChild: %s failed with %d (%s)", operation, status, strerror(status));
+    }
+
     if (haveActions)
     {
         if (0 != (error = posix_spawn_file_actions_destroy(&actions)))
         {
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot release spawn actions (status=%d)", error);
+            OsConfigLogError(log, "StartChild: posix_spawn_file_actions_destroy failed with %d (%s)", error, strerror(error));
 
             if (0 == status)
             {
@@ -456,7 +540,7 @@ cleanup:
     {
         if (0 != (error = posix_spawnattr_destroy(&attributes)))
         {
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot release spawn attributes (status=%d)", error);
+            OsConfigLogError(log, "StartChild: posix_spawnattr_destroy failed with %d (%s)", error, strerror(error));
 
             if (0 == status)
             {
@@ -470,7 +554,7 @@ cleanup:
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
             error = errno;
-            OsConfigLogInfo(log, "TelemetryWorker: Cannot close spawn IPC (status=%d)", error);
+            OsConfigLogError(log, "StartChild: close failed with %d (%s)", error, strerror(error));
 
             if (0 == status)
             {
@@ -479,16 +563,15 @@ cleanup:
         }
     }
 
-    return status ? status : ReceiveReply(worker, TELEMETRY_WORKER_READY, 0, NULL, 0, deadline);
+    return (0 != status) ? status : ReceiveReply(worker, TELEMETRY_WORKER_READY, 0, NULL, 0, deadline, log);
 }
 
-int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
-    int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker,
-    OsConfigLogHandle log)
+int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker, OsConfigLogHandle log)
 {
     int status = 0;
     int64_t now = 0;
     TelemetryWorker* created = NULL;
+    const char* operation = "argument validation";
 
     if ((NULL == worker) || (NULL == workerPath) || ('/' != workerPath[0]) ||
         (strnlen(workerPath, PATH_MAX) >= PATH_MAX) || (lifetimeMilliseconds <= 0) ||
@@ -498,29 +581,38 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
     }
     else if (NULL != *worker)
     {
+        operation = "invocation state validation";
         status = EALREADY;
     }
-    else if (0 == (status = TelemetryMonotonicTime(&now)))
+    else if (0 != (status = TelemetryMonotonicTime(&now)))
     {
-        if (now > INT64_MAX - (int64_t)lifetimeMilliseconds * 1000000)
+        operation = "TelemetryMonotonicTime";
+    }
+    else
+    {
+        if (now > (INT64_MAX - ((int64_t)lifetimeMilliseconds * 1000000)))
         {
+            operation = "lifetime range check";
             status = EOVERFLOW;
         }
         else if (NULL == (created = calloc(1, sizeof(*created))))
         {
+            operation = "calloc";
             status = ENOMEM;
         }
         else if (NULL == (created->path = strdup(workerPath)))
         {
+            operation = "strdup";
             status = ENOMEM;
         }
         else
         {
             created->descriptor = -1;
             created->child = -1;
-            created->lifetimeDeadline = now + (int64_t)lifetimeMilliseconds * 1000000;
+            created->lifetimeDeadline = now + ((int64_t)lifetimeMilliseconds * 1000000);
             created->budget = (int64_t)budgetMilliseconds * 1000000;
             created->operationLimit = (int64_t)operationMilliseconds * 1000000;
+            operation = "ChargeBudget";
             status = ChargeBudget(created, now, log);
         }
     }
@@ -533,7 +625,7 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
             free(created);
         }
 
-        OsConfigLogInfo(log, "TelemetryWorkerCreate: Failed (status=%d)", status);
+        OsConfigLogError(log, "TelemetryWorkerCreate: %s failed with %d (%s)", operation, status, strerror(status));
         return status;
     }
 
@@ -542,8 +634,7 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds,
     return 0;
 }
 
-int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
-    TelemetryResolvedHost* result, OsConfigLogHandle log)
+int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host, TelemetryResolvedHost* result, OsConfigLogHandle log)
 {
     TelemetryResolverReply reply = {0};
     TelemetryResolvedHost resolved = {0};
@@ -553,27 +644,33 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     int status = 0;
     int remaining = 0;
     int error = 0;
+    const char* operation = "OperationDeadline";
 
     if (NULL != result)
     {
         memset(result, 0, sizeof(*result));
     }
 
-    if ((NULL == worker) || (NULL == result) || (NULL == host) || ('\0' == host[0]) ||
-        (strnlen(host, TELEMETRY_RESOLVER_HOST_LIMIT + 1) > TELEMETRY_RESOLVER_HOST_LIMIT))
+    if ((NULL == worker) || (NULL == result) || (NULL == host) || ('\0' == host[0]) || (strnlen(host, TELEMETRY_RESOLVER_HOST_LIMIT + 1) > TELEMETRY_RESOLVER_HOST_LIMIT))
     {
-        OsConfigLogInfo(log, "TelemetryWorkerResolve: Invalid arguments");
+        OsConfigLogError(log, "TelemetryWorkerResolve: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
-    if ((0 != (status = OperationDeadline(worker, &start, &deadline))) ||
-        (0 != (status = StartChild(worker, deadline, log))))
+    if (0 != (status = OperationDeadline(worker, &start, &deadline)))
+    {
+        goto failed;
+    }
+
+    operation = "StartChild";
+    if (0 != (status = StartChild(worker, deadline, log)))
     {
         goto failed;
     }
 
     if (UINT32_MAX == worker->sequence)
     {
+        operation = "sequence range check";
         status = EOVERFLOW;
         goto failed;
     }
@@ -585,13 +682,20 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
     request.sequence = ++worker->sequence;
     request.deadline = deadline;
 
-    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline))) ||
-        (0 != (status = Transfer(worker->descriptor, (void*)host, request.size, true, deadline))) ||
-        (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline))))
+    operation = "Transfer";
+    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline, log))) ||
+        (0 != (status = Transfer(worker->descriptor, (void*)host, request.size, true, deadline, log))))
     {
         goto failed;
     }
 
+    operation = "ReceiveReply";
+    if (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline, log)))
+    {
+        goto failed;
+    }
+
+    operation = "TelemetryDecodeResolverReply";
     if (EPROTO == (status = TelemetryDecodeResolverReply(&reply, &resolved)))
     {
         goto failed;
@@ -599,6 +703,7 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host,
 
     if (0 == status)
     {
+        operation = "TelemetryDeadlineRemaining";
         if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
             goto failed;
@@ -618,6 +723,7 @@ finished:
 
         if ((0 == status) && (0 != error))
         {
+            operation = "ChargeBudget";
             status = error;
             ReleaseChild(worker, 0, log);
         }
@@ -625,7 +731,8 @@ finished:
 
     if (0 != status)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerResolve: Failed (status=%d, lookup=%d)", status, reply.lookupError);
+        OsConfigLogError(log, "TelemetryWorkerResolve: %s failed with %d (%s); getaddrinfo returned %d (%s)",
+            operation, status, strerror(status), reply.lookupError, (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error");
     }
     else
     {
@@ -639,23 +746,22 @@ int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, 
 {
     int status = 0;
 
-    if ((!worker) || (started <= 0))
+    if ((NULL == worker) || (started <= 0))
     {
-        OsConfigLogError(log, "TelemetryWorker: Invalid preparation accounting");
+        OsConfigLogError(log, "TelemetryWorkerAccountPreparation: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
     if ((0 == (status = ChargeBudget(worker, started, log))) && (worker->budget <= 0))
     {
         status = ETIMEDOUT;
-        OsConfigLogInfo(log, "TelemetryWorker: Preparation exhausted invocation budget");
+        OsConfigLogError(log, "TelemetryWorkerAccountPreparation: remaining budget check failed with %d (%s)", status, strerror(status));
     }
 
     return status;
 }
 
-int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
-    const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
+int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
 {
     int64_t start = 0;
     int64_t deadline = 0;
@@ -666,16 +772,17 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
     TelemetryWorkerFrame request = {0};
     bool sendStarted = false;
     int error = 0;
+    const char* operation = "OperationDeadline";
 
-    if (!worker)
+    if (NULL == worker)
     {
-        OsConfigLogError(log, "TelemetryWorkerSend: Missing invocation");
+        OsConfigLogError(log, "TelemetryWorkerSendEvent: invocation pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
     if (worker->suppressed)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerSend: Invocation suppressed; event dropped");
+        OsConfigLogError(log, "TelemetryWorkerSendEvent: invocation suppression check failed with %d (%s)", ECANCELED, strerror(ECANCELED));
         return ECANCELED;
     }
 
@@ -684,11 +791,13 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
         goto finished;
     }
 
+    operation = "TelemetryPackEvent";
     if (0 != (status = TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, log)))
     {
         goto finished;
     }
 
+    operation = "StartChild";
     if (0 != (status = StartChild(worker, deadline, log)))
     {
         goto failed;
@@ -696,6 +805,7 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
 
     if (UINT32_MAX == worker->sequence)
     {
+        operation = "sequence range check";
         status = EOVERFLOW;
         goto failed;
     }
@@ -708,20 +818,28 @@ int TelemetryWorkerSend(TelemetryWorker* worker, const char* name,
     request.deadline = deadline;
     sendStarted = true;
 
-    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline))) ||
-        (0 != (status = Transfer(worker->descriptor, payload, size, true, deadline))) ||
-        (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline))))
+    operation = "Transfer";
+    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline, log))) ||
+        (0 != (status = Transfer(worker->descriptor, payload, size, true, deadline, log))))
+    {
+        goto failed;
+    }
+
+    operation = "ReceiveReply";
+    if (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline, log)))
     {
         goto failed;
     }
 
     if ((reply.status < 0) || (reply.suppressed > 1))
     {
+        operation = "reply validation";
         status = EPROTO;
         goto failed;
     }
 
     worker->suppressed = 0 != reply.suppressed;
+    operation = "SendEvent(worker)";
     status = reply.status;
     goto finished;
 
@@ -740,17 +858,18 @@ finished:
     {
         error = ChargeBudget(worker, start, log);
 
-        if ((!status) && (error))
+        if ((0 == status) && (0 != error))
         {
+            operation = "ChargeBudget";
             status = error;
             worker->suppressed = true;
             ReleaseChild(worker, 0, log);
         }
     }
 
-    if (status)
+    if (0 != status)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerSend: Event not delivered (status=%d)", status);
+        OsConfigLogError(log, "TelemetryWorkerSendEvent: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
     return status;
@@ -765,7 +884,7 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 
     if (NULL == worker)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerDestroy: Invalid context pointer");
+        OsConfigLogError(log, "TelemetryWorkerDestroy: context pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -779,7 +898,7 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 
     if ((0 != timingStatus) && (ETIMEDOUT != timingStatus))
     {
-        OsConfigLogInfo(log, "TelemetryWorkerDestroy: Cannot time cleanup (status=%d)", timingStatus);
+        OsConfigLogError(log, "TelemetryWorkerDestroy: OperationDeadline failed with %d (%s)", timingStatus, strerror(timingStatus));
 
         if (0 == status)
         {

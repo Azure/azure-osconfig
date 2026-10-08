@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryEncoder.h>
+#include <Encoder.h>
 
 #include <array>
 #include <cerrno>

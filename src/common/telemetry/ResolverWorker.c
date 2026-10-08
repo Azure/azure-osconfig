@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "TelemetryResolverProtocol.h"
+#include "ResolverProtocol.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -84,12 +84,11 @@ int main(int argc, char** argv)
 
     if (((long)expiration.it_value.tv_sec != seconds) || (0 != clock_gettime(CLOCK_MONOTONIC, &now)))
     {
-        reply.error = errno ? errno : EINVAL;
+        reply.error = (0 != errno) ? errno : EINVAL;
         SendReplyAndExit(&reply);
     }
 
-    if ((now.tv_sec > expiration.it_value.tv_sec) ||
-        ((now.tv_sec == expiration.it_value.tv_sec) && (now.tv_nsec >= nanoseconds)))
+    if ((now.tv_sec > expiration.it_value.tv_sec) || ((now.tv_sec == expiration.it_value.tv_sec) && (now.tv_nsec >= nanoseconds)))
     {
         reply.error = ETIMEDOUT;
         SendReplyAndExit(&reply);
@@ -101,8 +100,7 @@ int main(int argc, char** argv)
     sigemptyset(&timerSignal);
     sigaddset(&timerSignal, SIGALRM);
 
-    if ((0 != sigaction(SIGALRM, &action, NULL)) ||
-        (0 != sigprocmask(SIG_UNBLOCK, &timerSignal, NULL)))
+    if ((0 != sigaction(SIGALRM, &action, NULL)) || (0 != sigprocmask(SIG_UNBLOCK, &timerSignal, NULL)))
     {
         reply.error = errno;
         SendReplyAndExit(&reply);
@@ -111,8 +109,7 @@ int main(int argc, char** argv)
     notification.sigev_notify = SIGEV_SIGNAL;
     notification.sigev_signo = SIGALRM;
 
-    if ((0 != timer_create(CLOCK_MONOTONIC, &notification, &timer)) ||
-        (0 != timer_settime(timer, TIMER_ABSTIME, &expiration, NULL)))
+    if ((0 != timer_create(CLOCK_MONOTONIC, &notification, &timer)) || (0 != timer_settime(timer, TIMER_ABSTIME, &expiration, NULL)))
     {
         reply.error = errno;
         SendReplyAndExit(&reply);

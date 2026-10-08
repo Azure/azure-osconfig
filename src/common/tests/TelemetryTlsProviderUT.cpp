@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryTls.h>
-#include <TelemetryDeadline.h>
+#include <Tls.h>
+#include <Deadline.h>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -469,7 +469,24 @@ TEST(TelemetryTlsProviderDeathTest, SkipsIncompleteApiBeforeInitialization)
         Prepare(0);
         missingProvider = 0;
         missingSymbol = "X509_VERIFY_PARAM_set1_host";
+        SetConsoleLoggingEnabled(true);
+        SetLoggingLevel(LoggingLevelDebug);
+        ::testing::internal::CaptureStdout();
         CreateAndCheck(1);
+        EXPECT_TRUE(::testing::internal::GetCapturedStdout().empty());
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, SkipsIncompatibleVersionBeforeInitialization)
+{
+    PROVIDER_CASE({
+        Prepare(0);
+        providers[0].version = 0x40000000UL;
+        SetConsoleLoggingEnabled(true);
+        SetLoggingLevel(LoggingLevelDebug);
+        ::testing::internal::CaptureStdout();
+        CreateAndCheck(1);
+        EXPECT_TRUE(::testing::internal::GetCapturedStdout().empty());
     });
 }
 

@@ -11,88 +11,22 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 
-static const char* const g_openSslSymbols[] = {
-    "TLS_client_method",
-    "SSL_CTX_new",
-    "SSL_CTX_free",
-    "SSL_CTX_set_verify",
-    "SSL_CTX_set_default_verify_paths",
-    "SSL_CTX_ctrl",
-    "SSL_new",
-    "SSL_free",
-    "SSL_set_fd",
-    "SSL_get0_param",
-    "X509_VERIFY_PARAM_set1_host",
-    "X509_VERIFY_PARAM_set1_ip_asc",
-    "SSL_ctrl",
-    "SSL_connect",
-    "SSL_get_error",
-    "SSL_get_verify_result",
-    "SSL_read",
-    "SSL_write",
-    "SSL_shutdown",
-    NULL
-};
+static const char* const g_openSslSymbols[] = {"TLS_client_method", "SSL_CTX_new", "SSL_CTX_free", "SSL_CTX_set_verify", "SSL_CTX_set_default_verify_paths",
+    "SSL_CTX_ctrl", "SSL_new", "SSL_free", "SSL_set_fd", "SSL_get0_param", "X509_VERIFY_PARAM_set1_host", "X509_VERIFY_PARAM_set1_ip_asc",
+    "SSL_ctrl", "SSL_connect", "SSL_get_error", "SSL_get_verify_result", "SSL_read", "SSL_write", "SSL_shutdown", NULL};
 
-static const char* const g_openSsl102Symbols[] = {
-    "SSLeay",
-    "SSL_library_init",
-    "OPENSSL_load_builtin_modules",
-    "CONF_modules_load_file",
-    "TLSv1_2_client_method",
-    "SSL_CTX_ctrl",
-    "SSL_CTX_set_alpn_protos",
-    "SSL_get0_param",
-    "X509_VERIFY_PARAM_set1_host",
-    "X509_VERIFY_PARAM_set_hostflags",
-    "X509_VERIFY_PARAM_set1_ip_asc",
-    NULL
-};
+static const char* const g_openSsl102Symbols[] = {"SSLeay", "SSL_library_init", "OPENSSL_load_builtin_modules", "CONF_modules_load_file", "TLSv1_2_client_method",
+    "SSL_CTX_ctrl", "SSL_CTX_set_alpn_protos", "SSL_get0_param", "X509_VERIFY_PARAM_set1_host", "X509_VERIFY_PARAM_set_hostflags", "X509_VERIFY_PARAM_set1_ip_asc", NULL};
 
-static const char* const g_nssSymbols[] = {
-    "NSS_GetVersion",
-    "NSS_InitContext",
-    "NSS_ShutdownContext",
-    "CERT_GetDefaultCertDB",
-    "CERT_VerifyCertName",
-    "SECMOD_LoadUserModule",
-    "SECMOD_UnloadUserModule",
-    "SECMOD_DestroyModule",
-    NULL
-};
+static const char* const g_nssSymbols[] = {"NSS_GetVersion", "NSS_InitContext", "NSS_ShutdownContext", "CERT_GetDefaultCertDB", "CERT_VerifyCertName",
+    "SECMOD_LoadUserModule", "SECMOD_UnloadUserModule", "SECMOD_DestroyModule", NULL};
 
-static const char* const g_nssSslSymbols[] = {
-    "SSL_ImportFD",
-    "SSL_OptionSet",
-    "SSL_VersionRangeGetSupported",
-    "SSL_VersionRangeSet",
-    "SSL_CipherPolicyGet",
-    "SSL_CipherPrefGet",
-    "SSL_CipherPrefSet",
-    "SSL_SetURL",
-    "SSL_AuthCertificate",
-    "SSL_AuthCertificateHook",
-    "SSL_ResetHandshake",
-    "SSL_ForceHandshake",
-    NULL
-};
+static const char* const g_nssSslSymbols[] = {"SSL_ImportFD", "SSL_OptionSet", "SSL_VersionRangeGetSupported", "SSL_VersionRangeSet", "SSL_CipherPolicyGet",
+    "SSL_CipherPrefGet", "SSL_CipherPrefSet", "SSL_SetURL", "SSL_AuthCertificate", "SSL_AuthCertificateHook", "SSL_ResetHandshake", "SSL_ForceHandshake", NULL};
 
-static const char* const g_nsprSymbols[] = {
-    "PR_OpenTCPSocket",
-    "PR_Connect",
-    "PR_SetSocketOption",
-    "PR_Poll",
-    "PR_Read",
-    "PR_Write",
-    "PR_Close",
-    "PR_GetError",
-    NULL
-};
+static const char* const g_nsprSymbols[] = {"PR_OpenTCPSocket", "PR_Connect", "PR_SetSocketOption", "PR_Poll", "PR_Read", "PR_Write", "PR_Close", "PR_GetError", NULL};
 
-static const char* const g_trustModuleSymbols[] = {
-    "C_GetFunctionList",
-    NULL
-};
+static const char* const g_trustModuleSymbols[] = {"C_GetFunctionList", NULL};
 
 static int InspectLibrary(const char* name, const char* const* symbols)
 {
@@ -108,8 +42,7 @@ static int InspectLibrary(const char* name, const char* const* symbols)
     if (NULL == library)
     {
         error = dlerror();
-        printf("Library %s: UNAVAILABLE (%s)\n", name,
-            (NULL != error) ? error : "loader supplied no diagnostic");
+        printf("Library %s: UNAVAILABLE (%s)\n", name, (NULL != error) ? error : "loader supplied no diagnostic");
         return 0;
     }
 
@@ -127,21 +60,18 @@ static int InspectLibrary(const char* name, const char* const* symbols)
 
             if ((NULL != error) || (NULL == address))
             {
-                printf("  Symbol %s: MISSING (%s)\n", symbols[count],
-                    (NULL != error) ? error : "null symbol address");
+                printf("  Symbol %s: MISSING (%s)\n", symbols[count], (NULL != error) ? error : "null symbol address");
                 ++missing;
             }
         }
 
-        printf("  Sampled API surface: %zu/%zu symbols found; not a TLS readiness result\n",
-            count - missing, count);
+        printf("  Sampled API surface: %zu/%zu symbols found; not a TLS readiness result\n", count - missing, count);
     }
 
     if (0 != dlclose(library))
     {
         error = dlerror();
-        fprintf(stderr, "Cannot close %s: %s\n", name,
-            (NULL != error) ? error : "loader supplied no diagnostic");
+        fprintf(stderr, "Cannot close %s: %s\n", name, (NULL != error) ? error : "loader supplied no diagnostic");
         return 1;
     }
 
@@ -155,9 +85,8 @@ static int InspectTrustPath(const char* path)
 
     if (0 == stat(path, &metadata))
     {
-        printf("Trust path %s: PRESENT (%s; contents and trust not inspected)\n",
-            path, S_ISREG(metadata.st_mode) ? "file" :
-                (S_ISDIR(metadata.st_mode) ? "directory" : "other"));
+        printf("Trust path %s: PRESENT (%s; contents and trust not inspected)\n", path,
+            (0 != S_ISREG(metadata.st_mode)) ? "file" : ((0 != S_ISDIR(metadata.st_mode)) ? "directory" : "other"));
         return 0;
     }
 
@@ -176,23 +105,15 @@ static int InspectTrustPath(const char* path)
 
 int main(int argc, char** argv)
 {
-    static const char* const trustPaths[] = {
-        "/etc/ssl/certs",
-        "/etc/ssl/certs/ca-certificates.crt",
-        "/etc/ssl/ca-bundle.pem",
-        "/etc/pki/tls/certs/ca-bundle.crt",
-        "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",
-        "/var/lib/ca-certificates/ca-bundle.pem",
-        "/etc/pki/nssdb"
-    };
+    static const char* const trustPaths[] = {"/etc/ssl/certs", "/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/ca-bundle.pem", "/etc/pki/tls/certs/ca-bundle.crt",
+        "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem", "/var/lib/ca-certificates/ca-bundle.pem", "/etc/pki/nssdb"};
     struct utsname platform = {0};
     size_t i = 0;
     int failed = 0;
 
     if (1 != argc)
     {
-        fprintf(stderr, "Usage: %s (no arguments; offline TLS inventory only)\n",
-            (argc > 0) ? argv[0] : "telemetrytlsprobe");
+        fprintf(stderr, "Usage: %s (no arguments; offline TLS inventory only)\n", (argc > 0) ? argv[0] : "telemetrytlsprobe");
         return EXIT_FAILURE;
     }
 
@@ -229,7 +150,7 @@ int main(int argc, char** argv)
 
     puts("\nCommon trust locations; not an exhaustive list or runtime search order:");
 
-    for (i = 0; i < sizeof(trustPaths) / sizeof(trustPaths[0]); ++i)
+    for (i = 0; i < (sizeof(trustPaths) / sizeof(trustPaths[0])); ++i)
     {
         failed |= InspectTrustPath(trustPaths[i]);
     }
@@ -237,11 +158,11 @@ int main(int argc, char** argv)
     puts("\nMissing libraries, symbols, and paths are inventory findings, not probe errors.");
     puts("Exit 0 means inventory completed, NOT that telemetry TLS is supported.");
 
-    if ((0 != fflush(stdout)) || (ferror(stdout)))
+    if ((0 != fflush(stdout)) || (0 != ferror(stdout)))
     {
         fprintf(stderr, "Cannot write complete TLS inventory output\n");
         failed = 1;
     }
 
-    return failed ? EXIT_FAILURE : EXIT_SUCCESS;
+    return (0 != failed) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

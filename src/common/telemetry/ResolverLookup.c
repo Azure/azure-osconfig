@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "TelemetryResolverProtocol.h"
+#include "ResolverProtocol.h"
 
 #include <errno.h>
 #include <netdb.h>
@@ -27,7 +27,7 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
 
     if (0 != (reply->lookupError = getaddrinfo(host, NULL, &hints, &addresses)))
     {
-        reply->error = (EAI_SYSTEM == reply->lookupError) ? (errno ? errno : EIO) : EHOSTUNREACH;
+        reply->error = (EAI_SYSTEM == reply->lookupError) ? ((0 != errno) ? errno : EIO) : EHOSTUNREACH;
     }
     else
     {
@@ -36,16 +36,14 @@ void TelemetryLookupHost(const char* host, TelemetryResolverReply* reply)
         {
             address = &reply->addresses[reply->count];
 
-            if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) &&
-                (next->ai_addrlen >= sizeof(struct sockaddr_in)))
+            if ((AF_INET == next->ai_family) && (NULL != next->ai_addr) && (next->ai_addrlen >= sizeof(struct sockaddr_in)))
             {
                 ipv4 = (const struct sockaddr_in*)next->ai_addr;
                 address->family = AF_INET;
                 memcpy(address->bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
                 ++reply->count;
             }
-            else if ((AF_INET6 == next->ai_family) && (NULL != next->ai_addr) &&
-                (next->ai_addrlen >= sizeof(struct sockaddr_in6)))
+            else if ((AF_INET6 == next->ai_family) && (NULL != next->ai_addr) && (next->ai_addrlen >= sizeof(struct sockaddr_in6)))
             {
                 ipv6 = (const struct sockaddr_in6*)next->ai_addr;
                 address->family = AF_INET6;

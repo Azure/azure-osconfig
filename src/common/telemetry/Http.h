@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_HTTP_H
-#define TELEMETRY_HTTP_H
+#ifndef HTTP_H
+#define HTTP_H
 
 #include <Logging.h>
 #include <stdbool.h>
@@ -81,9 +81,8 @@ typedef struct TelemetryHttpResponse
 // Formats only the headers for one uncompressed encoded event. The caller
 // writes these bytes followed by exactly eventSize binary bytes. On failure,
 // *headerSize is zero and the header buffer is unchanged. No token is logged.
-int TelemetryHttpBuildRequest(const char* token, const char* clientVersion,
-    int64_t uploadTimeMilliseconds, size_t eventSize, char* headers,
-    size_t capacity, size_t* headerSize, OsConfigLogHandle log);
+int TelemetryHttpBuildRequest(const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds, size_t eventSize,
+    char* headers, size_t capacity, size_t* headerSize, OsConfigLogHandle log);
 
 int TelemetryHttpResponseInitialize(TelemetryHttpResponse* response, OsConfigLogHandle log);
 
@@ -92,11 +91,10 @@ int TelemetryHttpResponseInitialize(TelemetryHttpResponse* response, OsConfigLog
 // endOfStream means a valid transport EOF, not an unauthenticated TLS truncation.
 // Preserved control headers must be handled by the invocation owner before its
 // next send; the parser neither ignores them nor implements suppression policy.
-int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes,
-    size_t size, bool endOfStream, OsConfigLogHandle log);
+int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes, size_t size, bool endOfStream, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TELEMETRY_HTTP_H
+#endif // HTTP_H

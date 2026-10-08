@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_TLS_H
-#define TELEMETRY_TLS_H
+#ifndef TLS_H
+#define TLS_H
 
 #include <Logging.h>
 #include <stdbool.h>
@@ -29,18 +29,15 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
 // discover routing, connect TCP, own/close the descriptor, or bypass a proxy.
 // Verifies the OS trust chain and expected DNS/IP identity. Failure clears the
 // TLS connection; a later, distinct operation may attach another socket.
-int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer,
-    int64_t deadline, OsConfigLogHandle log);
+int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, int64_t deadline, OsConfigLogHandle log);
 
 // Writes the complete buffer, continuing identical TLS writes on WANT_READ/
 // WANT_WRITE, never replaying a request. Any I/O failure discards the connection.
-int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size,
-    int64_t deadline, OsConfigLogHandle log);
+int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size, int64_t deadline, OsConfigLogHandle log);
 
 // A successful read returns bytes or authenticated close_notify, never both.
 // An abrupt socket EOF is an error, not a valid close-delimited HTTP boundary.
-int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* size,
-    bool* endOfStream, int64_t deadline, OsConfigLogHandle log);
+int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* size, bool* endOfStream, int64_t deadline, OsConfigLogHandle log);
 
 // Frees connection/context objects without network I/O or closing the borrowed
 // descriptor. No shutdown replay or blocking wait for a peer close_notify.
@@ -50,4 +47,4 @@ void TelemetryTlsDestroy(TelemetryTls** tls, OsConfigLogHandle log);
 }
 #endif
 
-#endif // TELEMETRY_TLS_H
+#endif // TLS_H

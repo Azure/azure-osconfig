@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_WORKER_PROTOCOL_H
-#define TELEMETRY_WORKER_PROTOCOL_H
+#ifndef WORKER_PROTOCOL_H
+#define WORKER_PROTOCOL_H
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@ typedef struct TelemetryWorkerSendReply
     uint32_t suppressed;
 } TelemetryWorkerSendReply;
 
-#endif // TELEMETRY_WORKER_PROTOCOL_H
+#endif // WORKER_PROTOCOL_H

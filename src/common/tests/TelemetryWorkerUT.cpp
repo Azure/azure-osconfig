@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryWorker.h>
-#include <TelemetryWorkerProtocol.h>
+#include <Worker.h>
+#include <WorkerProtocol.h>
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -403,13 +403,13 @@ TEST_F(TelemetryWorkerTest, SendStartupFailureDoesNotConsumeCollectorSuppression
     property.name = "CrashInfo";
     property.type = TelemetryPropertyString;
     property.value.stringValue = "fixture";
-    EXPECT_EQ(EINVAL, TelemetryWorkerSend(nullptr, "CrashDetected", &property, 1, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerSendEvent(nullptr, "CrashDetected", &property, 1, nullptr));
     // As with Resolve, exec failure may be synchronous ENOENT or EOF before
     // READY (EPIPE). Neither may be mistaken for collector suppression.
     for (int attempt = 0; attempt < 2; ++attempt)
     {
         SCOPED_TRACE(attempt);
-        const int status = TelemetryWorkerSend(worker, "CrashDetected", &property, 1, nullptr);
+        const int status = TelemetryWorkerSendEvent(worker, "CrashDetected", &property, 1, nullptr);
         EXPECT_TRUE(status == ENOENT || status == EPIPE) << "status=" << status;
     }
 }

@@ -12,7 +12,7 @@ static const char* g_shadow = "shadow";
 static const char* g_passwdFile = "/etc/passwd";
 static const char* g_redacted = "***";
 
-static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
+static const char* g_noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", ""};
 
 void ResetUserEntry(SimplifiedUser* target)
 {

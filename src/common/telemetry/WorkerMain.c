@@ -3,11 +3,11 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "TelemetryWorkerProtocol.h"
-#include "TelemetryResolverProtocol.h"
-#include "TelemetryDeadline.h"
-#include "TelemetryEvent.h"
-#include "TelemetryTransport.h"
+#include "WorkerProtocol.h"
+#include "ResolverProtocol.h"
+#include "Deadline.h"
+#include "Event.h"
+#include "Transport.h"
 #include "Keys.h"
 #include <CommonUtils.h>
 #include <Logging.h>
@@ -36,7 +36,7 @@ static int Transfer(void* buffer, size_t size, bool writing, OsConfigLogHandle l
 
     if ((NULL == buffer) && (0 != size))
     {
-        OsConfigLogError(log, "Transfer called with invalid arguments");
+        OsConfigLogError(log, "Transfer: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -44,9 +44,7 @@ static int Transfer(void* buffer, size_t size, bool writing, OsConfigLogHandle l
 
     while (offset < size)
     {
-        count = writing ?
-            send(STDIN_FILENO, bytes + offset, size - offset, MSG_NOSIGNAL) :
-            recv(STDIN_FILENO, bytes + offset, size - offset, 0);
+        count = writing ? send(STDIN_FILENO, bytes + offset, size - offset, MSG_NOSIGNAL) : recv(STDIN_FILENO, bytes + offset, size - offset, 0);
 
         if (count > 0)
         {
@@ -64,13 +62,9 @@ static int Transfer(void* buffer, size_t size, bool writing, OsConfigLogHandle l
         }
     }
 
-    if (ENODATA == error)
+    if ((0 != error) && (ENODATA != error))
     {
-        OsConfigLogInfo(log, "Transfer: connection closed while %s (transferred: %zu, requested: %zu)", writing ? "writing" : "reading", offset, size);
-    }
-    else if (0 != error)
-    {
-        OsConfigLogError(log, "Transfer: %s failed with %d (%s) (transferred: %zu, requested: %zu)", writing ? "write" : "read", error, strerror(error), offset, size);
+        OsConfigLogError(log, "Transfer: %s failed with %d (%s); transferred %zu of %zu bytes", writing ? "send" : "recv", error, strerror(error), offset, size);
     }
 
     return error;
@@ -95,7 +89,7 @@ static int SendReply(uint32_t operation, uint32_t sequence, int status, void* bo
 
     if (0 != error)
     {
-        OsConfigLogError(log, "SendReply failed with %d (%s)", error, strerror(error));
+        OsConfigLogError(log, "SendReply: Transfer failed with %d (%s)", error, strerror(error));
     }
 
     return error;
@@ -162,12 +156,11 @@ static int CloseInheritedDescriptors(int logDescriptor, OsConfigLogHandle log)
         if ((0 != errno) || ('\0' != *end) || (descriptor > INT_MAX))
         {
             status = EPROTO;
-            OsConfigLogError(log, "CloseInheritedDescriptors: invalid descriptor entry");
+            OsConfigLogError(log, "CloseInheritedDescriptors: descriptor entry validation failed with %d (%s)", status, strerror(status));
             break;
         }
 
-        if ((descriptor > STDERR_FILENO) && (descriptor != ownDescriptor) && (descriptor != logDescriptor) &&
-            (0 != close((int)descriptor)))
+        if ((descriptor > STDERR_FILENO) && (descriptor != ownDescriptor) && (descriptor != logDescriptor) && (0 != close((int)descriptor)))
         {
             status = errno;
             OsConfigLogError(log, "CloseInheritedDescriptors: close(%ld) failed with %d (%s)", descriptor, status, strerror(status));
@@ -197,7 +190,7 @@ static int ParseDeadline(const char* text, int64_t* deadline, OsConfigLogHandle 
 
     if ((text[0] < '0') || (text[0] > '9'))
     {
-        OsConfigLogError(log, "ParseDeadline called with invalid arguments");
+        OsConfigLogError(log, "ParseDeadline: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -206,8 +199,8 @@ static int ParseDeadline(const char* text, int64_t* deadline, OsConfigLogHandle 
 
     if ((0 != errno) || ('\0' != *end) || (value <= 0))
     {
-        status = errno;
-        OsConfigLogError(log, "ParseDeadline: expected a positive decimal deadline in range (conversion errno: %d)", status);
+        status = (0 != errno) ? errno : EINVAL;
+        OsConfigLogError(log, "ParseDeadline: strtoll/positive deadline validation failed with %d (%s)", status, strerror(status));
         return EINVAL;
     }
 
@@ -215,9 +208,9 @@ static int ParseDeadline(const char* text, int64_t* deadline, OsConfigLogHandle 
 
     status = ((long long)*deadline == value) ? 0 : EOVERFLOW;
 
-    if (status)
+    if (0 != status)
     {
-        OsConfigLogError(log, "ParseDeadline failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "ParseDeadline: int64_t range check failed with %d (%s)", status, strerror(status));
     }
 
     return status;
@@ -235,25 +228,25 @@ static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* l
 
     if ((4 != argc) || (0 != strcmp(argv[1], TELEMETRY_WORKER_ARGUMENT)))
     {
-        OsConfigLogError(log, "InitializeTelemetry called with invalid arguments");
+        OsConfigLogError(log, "InitializeTelemetry: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
     if (0 != (status = ParseDeadline(argv[2], lifetime, log)))
     {
-        OsConfigLogError(log, "InitializeTelemetry: cannot parse lifetime deadline, status: %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "InitializeTelemetry: ParseDeadline(lifetime) failed with %d (%s)", status, strerror(status));
         return status;
     }
 
     if (0 != (status = ParseDeadline(argv[3], &startup, log)))
     {
-        OsConfigLogError(log, "InitializeTelemetry: cannot parse startup deadline, status: %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "InitializeTelemetry: ParseDeadline(startup) failed with %d (%s)", status, strerror(status));
         return status;
     }
 
     if (startup > *lifetime)
     {
-        OsConfigLogError(log, "InitializeTelemetry: startup deadline exceeds lifetime deadline");
+        OsConfigLogError(log, "InitializeTelemetry: startup/lifetime deadline ordering check failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -298,7 +291,7 @@ static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* l
 
     if (0 != (status = TelemetryArmDeadline(*timer, startup)))
     {
-        OsConfigLogError(log, "InitializeTelemetry: arming startup deadline failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "InitializeTelemetry: TelemetryArmDeadline(startup) failed with %d (%s)", status, strerror(status));
         return status;
     }
 
@@ -335,7 +328,7 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
     TelemetryHttpResponse response = {0};
     int status = 0;
 
-    if (!token)
+    if (NULL == token)
     {
         token = API_KEY;
     }
@@ -346,14 +339,14 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
 
         if ((0 == tenantLength) || ('-' != token[tenantLength]))
         {
-            OsConfigLogError(log, "SendEvent: Ingestion key lacks tenant prefix");
             status = EINVAL;
+            OsConfigLogError(log, "SendEvent: ingestion key tenant prefix validation failed with %d (%s)", status, strerror(status));
         }
         else
         {
             memcpy(iKey + 2, token, tenantLength);
 
-            if (!epoch[0])
+            if ('\0' == epoch[0])
             {
                 if (0 != (status = TelemetryCreateEpoch(epoch, log)))
                 {
@@ -363,7 +356,7 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
         }
     }
 
-    if (!status)
+    if (0 == status)
     {
         if (0 != (status = TelemetryEncodePayload(payload, size, iKey, epoch, sequence, bytes, &encodedSize, &uploadTime, log)))
         {
@@ -371,7 +364,7 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
         }
     }
 
-    if ((!status) && (!*transport))
+    if ((0 == status) && (NULL == *transport))
     {
         if (0 != (status = TelemetryTransportCreate(transport, log)))
         {
@@ -387,10 +380,11 @@ static int SendEvent(TelemetryTransport** transport, char* epoch, const unsigned
         }
     }
 
-    if ((!status) && (TelemetryAccepted != response.acceptance))
+    if ((0 == status) && (TelemetryAccepted != response.acceptance))
     {
-        status = TelemetryRejected == response.acceptance ? ECANCELED : EPROTO;
-        OsConfigLogInfo(log, "SendEvent: event not accepted (http: %u, acceptance: %d)", response.status, (int)response.acceptance);
+        status = (TelemetryRejected == response.acceptance) ? ECANCELED : EPROTO;
+        OsConfigLogError(log, "SendEvent: collector acceptance check failed with %d (%s); HTTP status %u, acceptance %d",
+            status, strerror(status), response.status, (int)response.acceptance);
     }
 
     return status;
@@ -412,21 +406,17 @@ int main(int argc, char** argv)
 
     log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    OsConfigLogInfo(log, "OSConfigTelemetry starting (PID: %ld, PPID: %ld)", (long)getpid(), (long)getppid());
-
     if (0 != (status = InitializeTelemetry(argc, argv, &timer, &lifetime, log)))
     {
-        OsConfigLogError(log, "OSConfigTelemetry: InitializeTelemetry failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "main: InitializeTelemetry failed with %d (%s)", status, strerror(status));
         SendReply(TELEMETRY_WORKER_READY, 0, status, NULL, 0, log);
     }
     else if (0 != (status = SendReply(TELEMETRY_WORKER_READY, 0, 0, NULL, 0, log)))
     {
-        OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+        OsConfigLogError(log, "main: SendReply failed with %d (%s)", status, strerror(status));
     }
     else
     {
-        OsConfigLogInfo(log, "OSConfigTelemetry: ready");
-
         for (;;)
         {
             request = (TelemetryWorkerFrame){0};
@@ -434,7 +424,7 @@ int main(int argc, char** argv)
 
             if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
             {
-                OsConfigLogError(log, "OSConfigTelemetry: TelemetryArmDeadline failed with %d (%s)", status, strerror(status));
+                OsConfigLogError(log, "main: TelemetryArmDeadline(lifetime) failed with %d (%s)", status, strerror(status));
                 break;
             }
 
@@ -442,12 +432,11 @@ int main(int argc, char** argv)
             {
                 if (ENODATA == status)
                 {
-                    OsConfigLogInfo(log, "OSConfigTelemetry: Transfer failed with ENODATA, parent disconnected");
                     status = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "OSConfigTelemetry: Transfer failed with %d (%s)", status, strerror(status));
+                    OsConfigLogError(log, "main: Transfer(request header) failed with %d (%s)", status, strerror(status));
                 }
 
                 break;
@@ -457,16 +446,17 @@ int main(int argc, char** argv)
                 (TELEMETRY_WORKER_VERSION != request.version) ||
                 ((TELEMETRY_WORKER_RESOLVE != request.operation) && (TELEMETRY_WORKER_SEND != request.operation)) ||
                 (0 != request.status) ||
-                (UINT32_MAX == sequence) || (request.sequence != sequence + 1) ||
+                (UINT32_MAX == sequence) || (request.sequence != (sequence + 1)) ||
                 (request.size < 2) ||
                 (request.size > sizeof(payload)) ||
-                ((TELEMETRY_WORKER_RESOLVE == request.operation) && (request.size > TELEMETRY_RESOLVER_HOST_LIMIT + 1)) ||
+                ((TELEMETRY_WORKER_RESOLVE == request.operation) && (request.size > (TELEMETRY_RESOLVER_HOST_LIMIT + 1))) ||
                 (request.deadline <= 0) ||
                 (request.deadline > lifetime))
             {
                 status = EPROTO;
 
-                OsConfigLogError(log, "OSConfigTelemetry: invalid request (operation: %u, sequence: %u)", (unsigned int)request.operation, (unsigned int)request.sequence);
+                OsConfigLogError(log, "main: request validation failed with %d (%s); operation %u, sequence %u",
+                    status, strerror(status), (unsigned int)request.operation, (unsigned int)request.sequence);
                 SendReply(request.operation, request.sequence, status, NULL, 0, log);
                 break;
             }
@@ -475,23 +465,27 @@ int main(int argc, char** argv)
 
             if (0 == (status = TelemetryArmDeadline(timer, request.deadline)))
             {
-                OsConfigLogDebug(log, "OSConfigTelemetry: receiving request (sequence: %u)", (unsigned int)sequence);
                 status = Transfer(payload, request.size, false, log);
+
+                if (0 != status)
+                {
+                    OsConfigLogError(log, "main: Transfer(payload) failed with %d (%s); sequence %u", status, strerror(status), (unsigned int)sequence);
+                }
             }
             else
             {
-                OsConfigLogError(log, "OSConfigTelemetry: arming request deadline failed with %d (%s) (sequence: %u)", status, strerror(status), (unsigned int)sequence);
+                OsConfigLogError(log, "main: TelemetryArmDeadline(request) failed with %d (%s); sequence %u", status, strerror(status), (unsigned int)sequence);
             }
 
-            if ((0 == status) && (TELEMETRY_WORKER_RESOLVE == request.operation) && (strnlen((const char*)payload, request.size) != request.size - 1))
+            if ((0 == status) && (TELEMETRY_WORKER_RESOLVE == request.operation) && (strnlen((const char*)payload, request.size) != (request.size - 1)))
             {
-                OsConfigLogError(log, "OSConfigTelemetry: invalid hostname payload, expected one trailing NUL and no embedded NUL (sequence: %u)", (unsigned int)sequence);
                 status = EINVAL;
+                OsConfigLogError(log, "main: hostname payload validation failed with %d (%s); expected one trailing NUL and no embedded NUL, sequence %u",
+                    status, strerror(status), (unsigned int)sequence);
             }
 
             if (0 != status)
             {
-                OsConfigLogError(log, "OSConfigTelemetry: request deadline/body failed with %d (%s) (sequence: %u)", status, strerror(status), (unsigned int)sequence);
                 SendReply(request.operation, sequence, status, NULL, 0, log);
                 break;
             }
@@ -504,35 +498,30 @@ int main(int argc, char** argv)
 
                 if (sent.status)
                 {
-                    OsConfigLogError(log, "OSConfigTelemetry: SEND failed with %d (%s) (sequence: %u)", sent.status, strerror(sent.status), (unsigned int)sequence);
+                    OsConfigLogError(log, "main: SendEvent failed with %d (%s); sequence %u", sent.status, strerror(sent.status), (unsigned int)sequence);
                 }
 
                 if (0 != (status = SendReply(request.operation, sequence, 0, &sent, sizeof(sent), log)))
                 {
-                    OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+                    OsConfigLogError(log, "main: SendReply failed with %d (%s)", status, strerror(status));
                     break;
                 }
 
                 continue;
             }
 
-            OsConfigLogInfo(log, "OSConfigTelemetry: resolving request (sequence: %u)", (unsigned int)sequence);
             TelemetryLookupHost((const char*)payload, &reply);
 
             if (0 != reply.error)
             {
-                OsConfigLogError(log, "OSConfigTelemetry: lookup failed with %d (%s), resolver: %d (%s), sequence: %u",
+                OsConfigLogError(log, "main: TelemetryLookupHost failed with %d (%s); getaddrinfo returned %d (%s), sequence %u",
                     (int)reply.error, strerror(reply.error), (int)reply.lookupError,
                     (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error", (unsigned int)sequence);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "OSConfigTelemetry: lookup complete (sequence: %u, reply count: %u)", (unsigned int)sequence, (unsigned int)reply.count);
             }
 
             if (0 != (status = SendReply(request.operation, sequence, 0, &reply, sizeof(reply), log)))
             {
-                OsConfigLogError(log, "OSConfigTelemetry: SendReply failed with %d (%s)", status, strerror(status));
+                OsConfigLogError(log, "main: SendReply failed with %d (%s)", status, strerror(status));
                 break;
             }
 
@@ -544,8 +533,6 @@ int main(int argc, char** argv)
     {
         TelemetryTransportDestroy(&transport, log);
     }
-
-    OsConfigLogInfo(log, "OSConfigTelemetry: exiting with status: %d (%s)", status, strerror(status));
 
     CloseLog(&log);
 

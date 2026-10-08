@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_PROXY_H
-#define TELEMETRY_PROXY_H
+#ifndef PROXY_H
+#define PROXY_H
 
 #include <Logging.h>
 #include <stddef.h>
@@ -53,11 +53,10 @@ typedef struct TelemetryHttpProxy
 // Input must not overlap output, which is cleared on failure. Both APIs log
 // status only, not credentials. BuildConnect requires unmodified parser output.
 int TelemetryProxyParseHttp(const char* url, TelemetryHttpProxy* proxy, OsConfigLogHandle log);
-int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, size_t capacity,
-    size_t* size, OsConfigLogHandle log);
+int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, size_t capacity, size_t* size, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TELEMETRY_PROXY_H
+#endif // PROXY_H

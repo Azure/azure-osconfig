@@ -6,9 +6,7 @@
 #include "CommonUtils.h"
 #include "UserUtils.h"
 #include "parson.h"
-#ifdef BUILD_TELEMETRY
-#include "TelemetryEvent.h"
-#endif
+#include "Event.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -957,7 +955,6 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
-#ifdef BUILD_TELEMETRY
 static int TelemetryEncodePayload_target(const char* data, std::size_t size) noexcept
 {
     unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
@@ -968,7 +965,6 @@ static int TelemetryEncodePayload_target(const char* data, std::size_t size) noe
         bytes, &encodedSize, &uploadTime, nullptr);
     return 0;
 }
-#endif
 
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
@@ -1029,9 +1025,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-#ifdef BUILD_TELEMETRY
     { "TelemetryEncodePayload.", TelemetryEncodePayload_target },
-#endif
 };
 
 // libfuzzer entry point

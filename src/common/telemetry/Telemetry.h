@@ -27,10 +27,9 @@ extern "C"
 
 static inline int64_t TsToUs(struct timespec ts)
 {
-    return (int64_t)ts.tv_sec * 1000000LL + ts.tv_nsec / 1000;
+    return (((int64_t)ts.tv_sec * 1000000LL) + (ts.tv_nsec / 1000));
 }
 
-#ifdef BUILD_TELEMETRY
 // Serialized invocation scope. Failures are logged internally; callers retain
 // the initialize/emit/cleanup contract and keep log valid until cleanup.
 void TelemetryInitialize(const OsConfigLogHandle log);
@@ -39,83 +38,15 @@ char* GetModuleDirectory(void);
 char* GetCachedDistroName(void);
 void OSConfigTimeStampSave(void);
 void OSConfigGetElapsedTime(int64_t* microseconds);
-void TelemetryStatusTrace(const char* callingFunction, int status, const char* file,
-    const char* function, int line);
+void OSConfigTelemetryStatusTraceInternal(const char* callingFunction, int status, const char* file, const char* function, int line);
 void OSConfigTelemetryBaselineRun(const char* baseline, const char* mode, double seconds);
 void OSConfigTelemetryRuleComplete(const char* component, const char* object, int result, int64_t microseconds);
 void OSConfigTelemetryCrashDetected(const char* crashInfo);
 
 #define OSConfigTelemetryStatusTrace(callingFunction, status) \
-    TelemetryStatusTrace((callingFunction), (status), __FILE__, __func__, __LINE__)
+    OSConfigTelemetryStatusTraceInternal((callingFunction), (status), __FILE__, __func__, __LINE__)
 #define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
-    TelemetryStatusTrace((callingFunction), (status), __FILE__, __func__, (line))
-#else
-static inline void TelemetryInitialize(const OsConfigLogHandle log)
-{
-    (void)log;
-}
-
-static inline void TelemetryCleanup(OsConfigLogHandle log)
-{
-    (void)log;
-}
-
-static inline char* GetModuleDirectory(void)
-{
-    return NULL;
-}
-
-static inline char* GetCachedDistroName(void)
-{
-    return NULL;
-}
-
-static inline void OSConfigTimeStampSave(void)
-{
-}
-
-static inline void OSConfigGetElapsedTime(int64_t* value)
-{
-    if (value)
-    {
-        *value = 0;
-    }
-}
-
-#define OSConfigTelemetryStatusTrace(callingFunction, status) \
-    do \
-    { \
-        (void)(callingFunction); \
-        (void)(status); \
-    } while (0)
-#define OSConfigTelemetryStatusTraceImpl(callingFunction, status, line) \
-    do \
-    { \
-        (void)(callingFunction); \
-        (void)(status); \
-        (void)(line); \
-    } while (0)
-#define OSConfigTelemetryBaselineRun(baseline, mode, seconds) \
-    do \
-    { \
-        (void)(baseline); \
-        (void)(mode); \
-        (void)(seconds); \
-    } while (0)
-#define OSConfigTelemetryRuleComplete(component, object, result, microseconds) \
-    do \
-    { \
-        (void)(component); \
-        (void)(object); \
-        (void)(result); \
-        (void)(microseconds); \
-    } while (0)
-#define OSConfigTelemetryCrashDetected(crashInfo) \
-    do \
-    { \
-        (void)(crashInfo); \
-    } while (0)
-#endif
+    OSConfigTelemetryStatusTraceInternal((callingFunction), (status), __FILE__, __func__, (line))
 
 #ifdef __cplusplus
 }

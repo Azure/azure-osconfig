@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryHttp.h>
-#include <TelemetryProxy.h>
+#include <Http.h>
+#include <Proxy.h>
 
 #include <cerrno>
 #include <cstdlib>

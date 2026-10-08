@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TELEMETRY_RESOLVER_H
-#define TELEMETRY_RESOLVER_H
+#ifndef RESOLVER_H
+#define RESOLVER_H
 
 #include <Logging.h>
 #include <stddef.h>
@@ -30,11 +30,10 @@ typedef struct TelemetryResolvedHost
 // The deadline covers spawning/resolution. Termination is followed by waitpid:
 // kernel scheduling/reaping cannot be given an unconditional wall-clock bound.
 // Production callers must supply their valid log handle.
-int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMilliseconds,
-    TelemetryResolvedHost* result, OsConfigLogHandle log);
+int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMilliseconds, TelemetryResolvedHost* result, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TELEMETRY_RESOLVER_H
+#endif // RESOLVER_H

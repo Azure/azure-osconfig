@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <TelemetryTls.h>
-#include <TelemetryDeadline.h>
-#include <TelemetryTransport.h>
-#include <TelemetryWorker.h>
+#include <Tls.h>
+#include <Deadline.h>
+#include <Transport.h>
+#include <Worker.h>
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -871,7 +871,7 @@ void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
     }
 
     ASSERT_EQ(0, TelemetryMonotonicTime(&before));
-    status = TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr);
+    status = TelemetryWorkerSendEvent(worker.value, "CrashDetected", properties, 5, nullptr);
     ASSERT_EQ(0, TelemetryMonotonicTime(&after));
 
     if (timeout)
@@ -890,7 +890,7 @@ void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
     {
         properties[4].value.stringValue = "worker-fixture-next";
         EXPECT_EQ(((suppressed) || (timeout)) ? ECANCELED : 0,
-            TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr));
+            TelemetryWorkerSendEvent(worker.value, "CrashDetected", properties, 5, nullptr));
     }
 
     TelemetryWorkerDestroy(&worker.value, nullptr);
@@ -933,13 +933,13 @@ void WorkerRejectsBeforeNetwork()
         properties[i].value.stringValue = "worker-fixture";
     }
 
-    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 5, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerSendEvent(worker.value, "CrashDetected", properties, 5, nullptr));
     TelemetryWorkerDestroy(&worker.value, nullptr);
     ASSERT_EQ(0, setenv("OsConfigTelemetryApiKey", "fixture-token", 1));
     ASSERT_EQ(0, TelemetryWorkerCreate(TELEMETRY_WORKER_PATH, 10000, 5000, 2000, &worker.value, nullptr));
     // Valid token, invalid named schema: must fail before contacting the route.
-    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "CrashDetected", properties, 1, nullptr));
-    EXPECT_EQ(EINVAL, TelemetryWorkerSend(worker.value, "Unknown", properties, 5, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerSendEvent(worker.value, "CrashDetected", properties, 1, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryWorkerSendEvent(worker.value, "Unknown", properties, 5, nullptr));
 }
 
 #ifdef TELEMETRY_PRODUCER_PROBE_PATH
