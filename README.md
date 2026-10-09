@@ -23,12 +23,6 @@ Build environments have many dependencies required, the easiest way to get start
 Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
 
 **Common build dependencies across distributions:**
-- vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
-    - git
-    - curl
-    - autoconf
-    - unzip
-    - zip
 - cmake (>= 3.21)
 - build-essential (gcc >= 4.4.7, g++, make)
 - perl (perl-core, perl-IPC-Cmd)
@@ -41,8 +35,7 @@ Refer to the specific Dockerfile for your distribution under [devops/docker/](de
 Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
 
 ```bash
-sudo apt -y update && sudo apt-get -y install software-properties-common
-sudo apt -y update && sudo apt-get -y install build-essential cmake git curl pkg-config tar unzip wget zip
+sudo apt -y update && sudo apt-get -y install build-essential cmake git python3 openssl
 ```
 
 Verify that CMake is at least version 3.21 and gcc is at least version 4.4.7.
@@ -117,16 +110,13 @@ To replace a service unit while the daemon is running: stop the Agent daemon, di
 OSConfig logs to its own logs at `/var/log/osconfig*.log*`:
 
 ```bash
+sudo cat /var/log/osconfig_nrp.log
 sudo cat /var/log/osconfig_agent.log
 sudo cat /var/log/osconfig_platform.log
-sudo cat /var/log/osconfig_commandrunner.log
-sudo cat /var/log/osconfig_networking.log
-sudo cat /var/log/osconfig_firewall.log
-sudo cat /var/log/osconfig_tpm.log
 ...
 ```
 
-Each of these log files when it reaches maximum size (128 KB) gets rolled over to a file with the same name and a .bak extension (osconfig_agent.bak, for example).
+Each of these log files when it reaches maximum size (1 MB) gets rolled over to a file with the same name and a .bak extension (osconfig_agent.bak, for example).
 
 When OSConfig exists prematurely (crashes) the Agent's log (osconfig_agent.log) at the very end may contain an indication of that. For example:
 

@@ -221,10 +221,6 @@ int main(int argc, char *argv[])
 
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    // Re-open the log
-    CloseLog(&g_agentLog);
-    g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-
     CheckForPreviousCrash(LOG_FILE, GetLog());
     InstallCrashHandler(LOG_FILE);
 

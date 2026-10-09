@@ -1,0 +1,500 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#define _POSIX_C_SOURCE 200809L
+
+#include "Resolver.h"
+#include "ResolverProtocol.h"
+
+#include <errno.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <signal.h>
+#include <spawn.h>
+#include <stdint.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+extern char** environ;
+
+_Static_assert(TELEMETRY_MAX_RESOLVED_ADDRESSES == TELEMETRY_RESOLVER_ADDRESS_LIMIT, "Resolver protocol and public address limits must match");
+
+static int RemainingMilliseconds(const struct timespec* deadline, int* remaining)
+{
+    struct timespec now = {0};
+    int64_t nanoseconds = 0;
+
+    if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
+    {
+        return errno;
+    }
+
+    nanoseconds = ((((int64_t)deadline->tv_sec - (int64_t)now.tv_sec) * INT64_C(1000000000)) + deadline->tv_nsec) - now.tv_nsec;
+
+    if (nanoseconds <= 0)
+    {
+        return ETIMEDOUT;
+    }
+
+    nanoseconds = (nanoseconds + 999999) / 1000000;
+    *remaining = (nanoseconds > INT_MAX) ? INT_MAX : (int)nanoseconds;
+
+    return 0;
+}
+
+static int PreparePipeDescriptor(int* descriptor)
+{
+    int replacement = 0;
+    int status = 0;
+
+    if (*descriptor <= STDERR_FILENO)
+    {
+        replacement = fcntl(*descriptor, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+
+        if (replacement < 0)
+        {
+            return errno;
+        }
+
+        status = (0 == close(*descriptor)) ? 0 : errno;
+        *descriptor = replacement;
+
+        return status;
+    }
+    else if (0 != fcntl(*descriptor, F_SETFD, FD_CLOEXEC))
+    {
+        return errno;
+    }
+
+    return 0;
+}
+
+int TelemetryDecodeResolverReply(const TelemetryResolverReply* reply, TelemetryResolvedHost* result)
+{
+    size_t i = 0;
+    struct sockaddr_in ipv4 = {0};
+    struct sockaddr_in6 ipv6 = {0};
+
+    if ((TELEMETRY_RESOLVER_PROTOCOL_VERSION != reply->version) || (reply->count > TELEMETRY_RESOLVER_ADDRESS_LIMIT) || (reply->error < 0) || ((0 != reply->error) && (0 != reply->count)))
+    {
+        return EPROTO;
+    }
+
+    if (0 != reply->error)
+    {
+        return reply->error;
+    }
+
+    if ((0 == reply->count) || (0 != reply->lookupError))
+    {
+        return EPROTO;
+    }
+
+    for (i = 0; i < reply->count; ++i)
+    {
+        if (AF_INET == reply->addresses[i].family)
+        {
+            ipv4 = (struct sockaddr_in){0};
+            ipv4.sin_family = AF_INET;
+            memcpy(&ipv4.sin_addr, reply->addresses[i].bytes, sizeof(ipv4.sin_addr));
+            memcpy(&result->addresses[i], &ipv4, sizeof(ipv4));
+            result->lengths[i] = sizeof(ipv4);
+        }
+        else if (AF_INET6 == reply->addresses[i].family)
+        {
+            ipv6 = (struct sockaddr_in6){0};
+            ipv6.sin6_family = AF_INET6;
+            ipv6.sin6_scope_id = reply->addresses[i].scopeId;
+            memcpy(&ipv6.sin6_addr, reply->addresses[i].bytes, sizeof(ipv6.sin6_addr));
+            memcpy(&result->addresses[i], &ipv6, sizeof(ipv6));
+            result->lengths[i] = sizeof(ipv6);
+        }
+        else
+        {
+            return EPROTO;
+        }
+    }
+
+    result->count = reply->count;
+
+    return 0;
+}
+
+int TelemetryResolveHost(const char* workerPath, const char* host, int timeoutMilliseconds, TelemetryResolvedHost* result, OsConfigLogHandle log)
+{
+    TelemetryResolverReply reply = {0};
+    TelemetryResolvedHost resolved = {0};
+    struct timespec deadline = {0};
+    struct sigaction childAction = {0};
+    posix_spawn_file_actions_t actions = {0};
+    posix_spawnattr_t attributes = {0};
+    sigset_t defaults = {0};
+    sigset_t mask = {0};
+    int descriptors[2] = {-1, -1};
+    pid_t child = -1;
+    int childStatus = 0;
+    int status = 0;
+    int remaining = 0;
+    bool actionsInitialized = false;
+    bool attributesInitialized = false;
+    bool reaped = false;
+    bool eof = false;
+    unsigned char bytes[sizeof(reply) + 1] = {0};
+    size_t received = 0;
+    char seconds[32] = {0};
+    char nanoseconds[16] = {0};
+    char* arguments[] = {(char*)workerPath, (char*)host, seconds, nanoseconds, NULL};
+    const char* stage = "argument validation";
+    struct pollfd descriptor = {0};
+    ssize_t size = 0;
+    int waitError = 0;
+    size_t i = 0;
+    int closeError = 0;
+    pid_t waited = 0;
+    int destroyError = 0;
+    int killError = 0;
+
+    if (NULL != result)
+    {
+        memset(result, 0, sizeof(*result));
+    }
+
+    if ((NULL == result) || (NULL == workerPath) || ('/' != workerPath[0]) ||
+        (NULL == host) || ('\0' == host[0]) ||
+        (strnlen(host, TELEMETRY_RESOLVER_HOST_LIMIT + 1) > TELEMETRY_RESOLVER_HOST_LIMIT) ||
+        (timeoutMilliseconds <= 0))
+    {
+        status = EINVAL;
+        goto cleanup;
+    }
+
+    stage = "sigaction(SIGCHLD)";
+
+    if (0 != sigaction(SIGCHLD, NULL, &childAction))
+    {
+        status = errno;
+        goto cleanup;
+    }
+
+    if ((SIG_DFL != childAction.sa_handler) || (0 != (childAction.sa_flags & SA_NOCLDWAIT)))
+    {
+        stage = "SIGCHLD ownership validation";
+        status = ENOTSUP;
+        goto cleanup;
+    }
+
+    stage = "clock_gettime(CLOCK_MONOTONIC)";
+
+    if (0 != clock_gettime(CLOCK_MONOTONIC, &deadline))
+    {
+        status = errno;
+        goto cleanup;
+    }
+
+    if ((int64_t)deadline.tv_sec > ((INT32_MAX - (timeoutMilliseconds / 1000)) - 1))
+    {
+        stage = "deadline range check";
+        status = EOVERFLOW;
+        goto cleanup;
+    }
+
+    deadline.tv_sec += timeoutMilliseconds / 1000;
+    deadline.tv_nsec += (long)(timeoutMilliseconds % 1000) * 1000000L;
+
+    if (deadline.tv_nsec >= 1000000000L)
+    {
+        ++deadline.tv_sec;
+        deadline.tv_nsec -= 1000000000L;
+    }
+
+    snprintf(seconds, sizeof(seconds), "%ld", (long)deadline.tv_sec);
+    snprintf(nanoseconds, sizeof(nanoseconds), "%ld", deadline.tv_nsec);
+
+    stage = "pipe";
+
+    if (0 != pipe(descriptors))
+    {
+        status = errno;
+        goto cleanup;
+    }
+
+    stage = "PreparePipeDescriptor";
+    if ((0 != (status = PreparePipeDescriptor(&descriptors[0]))) || (0 != (status = PreparePipeDescriptor(&descriptors[1]))))
+    {
+        goto cleanup;
+    }
+
+    stage = "fcntl(F_SETFL)";
+    if (0 != fcntl(descriptors[0], F_SETFL, O_NONBLOCK))
+    {
+        status = errno;
+        goto cleanup;
+    }
+
+    stage = "posix_spawn_file_actions_init";
+
+    if (0 != (status = posix_spawn_file_actions_init(&actions)))
+    {
+        goto cleanup;
+    }
+
+    actionsInitialized = true;
+
+    stage = "posix_spawn_file_actions_adddup2";
+    if (0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDOUT_FILENO)))
+    {
+        goto cleanup;
+    }
+
+    stage = "posix_spawn_file_actions_addclose";
+    if ((0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[0]))) ||
+        (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[1]))))
+    {
+        goto cleanup;
+    }
+
+    stage = "posix_spawnattr_init";
+    if (0 != (status = posix_spawnattr_init(&attributes)))
+    {
+        goto cleanup;
+    }
+
+    attributesInitialized = true;
+    sigemptyset(&defaults);
+    sigaddset(&defaults, SIGALRM);
+    sigaddset(&defaults, SIGPIPE);
+    sigemptyset(&mask);
+
+    stage = "posix_spawnattr_setsigdefault";
+    if (0 != (status = posix_spawnattr_setsigdefault(&attributes, &defaults)))
+    {
+        goto cleanup;
+    }
+
+    stage = "posix_spawnattr_setsigmask";
+    if (0 != (status = posix_spawnattr_setsigmask(&attributes, &mask)))
+    {
+        goto cleanup;
+    }
+
+    stage = "posix_spawnattr_setflags";
+    if (0 != (status = posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK)))
+    {
+        goto cleanup;
+    }
+
+    stage = "RemainingMilliseconds";
+
+    if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
+    {
+        goto cleanup;
+    }
+
+    stage = "posix_spawn";
+    if (0 != (status = posix_spawn(&child, workerPath, &actions, &attributes, arguments, environ)))
+    {
+        child = -1;
+        goto cleanup;
+    }
+
+    stage = "close(parent pipe writer)";
+
+    if (0 != close(descriptors[1]))
+    {
+        status = errno;
+        descriptors[1] = -1;
+        goto cleanup;
+    }
+
+    descriptors[1] = -1;
+
+    for (;;)
+    {
+        descriptor = (struct pollfd){descriptors[0], POLLIN, 0};
+        size = read(descriptors[0], bytes + received, sizeof(bytes) - received);
+
+        if (size > 0)
+        {
+            received += (size_t)size;
+
+            if (received > sizeof(reply))
+            {
+                stage = "reply size validation";
+                status = EPROTO;
+                goto cleanup;
+            }
+        }
+        else if (0 == size)
+        {
+            eof = true;
+        }
+        else if ((EINTR != errno) && (EAGAIN != errno) && (EWOULDBLOCK != errno))
+        {
+            stage = "read";
+            status = errno;
+            goto cleanup;
+        }
+
+        if (!reaped)
+        {
+            waited = waitpid(child, &childStatus, WNOHANG);
+
+            if (child == waited)
+            {
+                reaped = true;
+            }
+            else if ((waited < 0) && (EINTR != errno))
+            {
+                stage = "waitpid(WNOHANG)";
+                status = errno;
+                // ECHILD means the host reaped it; never signal a potentially reused PID.
+                reaped = (ECHILD == status);
+                goto cleanup;
+            }
+        }
+
+        if (reaped && eof)
+        {
+            break;
+        }
+
+        if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
+        {
+            stage = "RemainingMilliseconds";
+            goto cleanup;
+        }
+
+        if (eof && (remaining > 10))
+        {
+            remaining = 10;
+        }
+
+        if ((poll(eof ? NULL : &descriptor, eof ? 0 : 1, remaining) < 0) && (EINTR != errno))
+        {
+            stage = "poll";
+            status = errno;
+            goto cleanup;
+        }
+    }
+
+    stage = "worker exit validation";
+
+    if ((0 != WIFSIGNALED(childStatus)) && (SIGALRM == WTERMSIG(childStatus)))
+    {
+        status = ETIMEDOUT;
+        goto cleanup;
+    }
+
+    if ((0 == WIFEXITED(childStatus)) || (0 != WEXITSTATUS(childStatus)))
+    {
+        status = EIO;
+        goto cleanup;
+    }
+
+    stage = "RemainingMilliseconds";
+
+    if (0 != (status = RemainingMilliseconds(&deadline, &remaining)))
+    {
+        goto cleanup;
+    }
+
+    stage = "reply size validation";
+
+    if (sizeof(reply) != received)
+    {
+        status = EPROTO;
+        goto cleanup;
+    }
+
+    memcpy(&reply, bytes, sizeof(reply));
+    stage = "TelemetryDecodeResolverReply";
+    status = TelemetryDecodeResolverReply(&reply, &resolved);
+
+cleanup:
+    if ((child > 0) && !reaped)
+    {
+        waited = 0;
+
+        if ((0 != kill(child, SIGKILL)) && (ESRCH != errno))
+        {
+            killError = errno;
+            OsConfigLogError(log, "TelemetryResolveHost: kill(SIGKILL) failed with %d (%s)", killError, strerror(killError));
+        }
+
+        do
+        {
+            waited = waitpid(child, &childStatus, 0);
+        } while ((waited < 0) && (EINTR == errno));
+
+        if (waited < 0)
+        {
+            waitError = errno;
+            OsConfigLogError(log, "TelemetryResolveHost: waitpid failed with %d (%s)", waitError, strerror(waitError));
+
+            if (0 == status)
+            {
+                stage = "waitpid";
+                status = waitError;
+            }
+        }
+    }
+
+    if (actionsInitialized)
+    {
+        if (0 != (destroyError = posix_spawn_file_actions_destroy(&actions)))
+        {
+            OsConfigLogError(log, "TelemetryResolveHost: posix_spawn_file_actions_destroy failed with %d (%s)", destroyError, strerror(destroyError));
+
+            if (0 == status)
+            {
+                stage = "posix_spawn_file_actions_destroy";
+                status = destroyError;
+            }
+        }
+    }
+
+    if (attributesInitialized)
+    {
+        if (0 != (destroyError = posix_spawnattr_destroy(&attributes)))
+        {
+            OsConfigLogError(log, "TelemetryResolveHost: posix_spawnattr_destroy failed with %d (%s)", destroyError, strerror(destroyError));
+
+            if (0 == status)
+            {
+                stage = "posix_spawnattr_destroy";
+                status = destroyError;
+            }
+        }
+    }
+
+    for (i = 0; i < ARRAY_SIZE(descriptors); ++i)
+    {
+        if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
+        {
+            closeError = errno;
+            OsConfigLogError(log, "TelemetryResolveHost: close failed with %d (%s)", closeError, strerror(closeError));
+
+            if (0 == status)
+            {
+                stage = "close";
+                status = closeError;
+            }
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "TelemetryResolveHost: %s failed with %d (%s); getaddrinfo returned %d (%s), wait status %d",
+            stage, status, strerror(status), reply.lookupError, (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error", childStatus);
+    }
+    else
+    {
+        *result = resolved;
+    }
+
+    return status;
+}

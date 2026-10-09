@@ -18,5 +18,5 @@ target_link_libraries(osconfig-fuzzer PRIVATE
     pthread
     securitybaselinelib
     parsonlib
-    $<$<BOOL:${BUILD_TELEMETRY}>:telemetry-interface>
+    telemetry
 )

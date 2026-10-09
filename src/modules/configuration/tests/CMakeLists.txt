@@ -4,7 +4,7 @@
 project(configurationtests)
 
 include(GoogleTest)
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 
 add_executable(configurationtests ConfigurationTests.cpp)
 target_link_libraries(configurationtests GTest::gtest GTest::gtest_main pthread configurationlib logging commonutils)
