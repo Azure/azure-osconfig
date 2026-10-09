@@ -9,10 +9,10 @@ deb http://archive.debian.org/debian/ buster-proposed-updates main contrib non-f
 deb http://archive.debian.org/debian-security buster/updates main contrib non-free
 EOF
 
-RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     bc \
     build-essential \
+    ca-certificates \
     cmake \
     gcovr \
     git \

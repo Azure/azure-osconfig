@@ -10,10 +10,10 @@ deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20
 deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20220622T000000Z stretch-updates main
 EOF
 
-RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     bc \
     build-essential \
+    ca-certificates \
     cmake \
     gcovr \
     git \

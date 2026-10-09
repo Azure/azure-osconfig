@@ -3,10 +3,10 @@ FROM mcr.microsoft.com/mirror/docker/library/debian:bookworm
 ARG CMAKE_VERSION=v3.21.7
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     bc \
     build-essential \
+    ca-certificates \
     cmake \
     file \
     gcovr \

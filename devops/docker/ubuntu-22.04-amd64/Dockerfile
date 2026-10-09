@@ -3,11 +3,11 @@ FROM mcr.microsoft.com/mirror/docker/library/ubuntu:22.04
 ARG CMAKE_VERSION=v3.21.7
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
     bc \
     build-essential \
+    ca-certificates \
     clang \
     clang-tools \
     cmake \
