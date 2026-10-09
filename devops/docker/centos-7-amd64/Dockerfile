@@ -23,11 +23,8 @@ RUN yum install -y \
     perl \
     perl-core \
     perl-devel \
-    perl-IPC-Cmd \
     rpm-build \
     tar \
-    unzip \
-    zip \
     zlib-devel
 
 # Add devtoolset-7 bin to PATH (GCC 7)

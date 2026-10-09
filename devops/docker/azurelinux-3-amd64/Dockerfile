@@ -9,18 +9,12 @@ RUN tdnf install -y \
     file \
     git \
     jq \
-    perl \
-    perl-IPC-Cmd \
     rpm-build \
     shadow-utils \
     tar \
     tmux \
     tree \
-    unzip \
-    util-linux \
-    uuid-devel \
-    wget \
-    zip
+    util-linux
 
 RUN tdnf upgrade -y && \
     tdnf clean all

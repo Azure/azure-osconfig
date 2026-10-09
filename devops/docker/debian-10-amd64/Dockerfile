@@ -14,19 +14,12 @@ RUN apt -y update && apt-get -y install \
     bc \
     build-essential \
     cmake \
-    curl \
     gcovr \
     git \
     jq \
     libssl-dev \
-    ninja-build \
-    pkg-config \
-    python3-jsonschema \
-    tar \
-    unzip \
-    uuid-dev \
-    wget \
-    zip
+    python3 \
+    tar
 
 WORKDIR /git
 
@@ -36,4 +29,4 @@ RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm 
 
 # GTest
 RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
-RUN cd googletest && cmake . -G Ninja && cmake --build . --target install && rm -rf /git/googletest
+RUN cd googletest && cmake . && cmake --build . --target install && rm -rf /git/googletest

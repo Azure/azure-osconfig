@@ -19,7 +19,6 @@ RUN yum install -y \
     openssl-devel \
     perl \
     perl-core \
-    perl-IPC-Cmd \
     rpm-build
 
 # Enable devtoolset-7 by default

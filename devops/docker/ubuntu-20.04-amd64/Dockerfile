@@ -9,22 +9,15 @@ RUN apt -y update && apt-get -y install \
     bc \
     build-essential \
     cmake \
-    curl \
     gcovr\
     git \
     jq \
-    libcurl4-openssl-dev \
     libgmock-dev \
     libgtest-dev \
     libssl-dev \
-    ninja-build \
-    pkg-config \
-    python3-jsonschema \
+    python3 \
     tar \
-    unzip \
-    uuid-dev \
-    wget \
-    zip
+    wget
 
 RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb

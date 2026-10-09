@@ -12,12 +12,8 @@ RUN yum install -y --disableplugin=subscription-manager \
     libtool \
     make \
     openssl-devel \
-    perl \
-    perl-IPC-Cmd \
     rpm-build \
-    tar \
-    unzip \
-    zip
+    tar
 
 WORKDIR /git
 

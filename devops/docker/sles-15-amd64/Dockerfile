@@ -5,7 +5,6 @@ ARG CMAKE_VERSION=v3.21.7
 
 RUN zypper install -y \
     autoconf \
-    curl \
     gcc \
     gcc-c++ \
     git \
@@ -14,9 +13,7 @@ RUN zypper install -y \
     make \
     libopenssl-devel \
     rpm-build \
-    tar \
-    unzip \
-    zip
+    tar
 
 WORKDIR /git
 

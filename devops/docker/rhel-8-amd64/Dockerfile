@@ -5,7 +5,6 @@ ARG CMAKE_VERSION=v3.21.7
 
 RUN yum install -y --disableplugin=subscription-manager \
     autoconf \
-    curl \
     gcc \
     gcc-c++ \
     git \
@@ -13,12 +12,8 @@ RUN yum install -y --disableplugin=subscription-manager \
     libtool \
     make \
     openssl-devel \
-    perl \
-    perl-IPC-Cmd \
     rpm-build \
-    tar \
-    unzip \
-    zip
+    tar
 
 WORKDIR /git
 

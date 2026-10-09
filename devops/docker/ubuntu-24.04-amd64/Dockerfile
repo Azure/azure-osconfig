@@ -11,22 +11,15 @@ RUN apt -y update && apt-get -y install \
     clang \
     clang-tools \
     cmake \
-    curl \
     file \
     gcovr \
     git \
     jq \
     libasan8 \
-    libcurl4-openssl-dev \
     libssl-dev \
     libubsan1 \
-    pkg-config \
-    python3-jsonschema \
-    tar \
-    unzip \
-    uuid-dev \
-    wget \
-    zip
+    python3 \
+    tar
 
 WORKDIR /git
 

@@ -12,13 +12,8 @@ RUN yum install -y \
     libtool \
     openssl-devel \
     make \
-    perl \
-    perl-core \
-    perl-IPC-Cmd \
     rpm-build \
-    tar \
-    unzip \
-    zip
+    tar
 
 WORKDIR /git
 

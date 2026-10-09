@@ -39,10 +39,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     openssl-devel \
     perl \
     perl-core \
-    perl-IPC-Cmd \
-    tar \
-    unzip \
-    zip
+    tar
 
 # Install and enable devtoolset-7
 RUN yum install -y /devtoolset/*.rpm && rm -rf /devtoolset

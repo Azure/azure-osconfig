@@ -11,7 +11,6 @@ RUN apt-get -y update && apt-get -y install \
     automake \
     build-essential \
     cmake3 \
-    curl \
     file \
     g++-5 \
     gcc-5 \
@@ -22,14 +21,8 @@ RUN apt-get -y update && apt-get -y install \
     libgtest-dev \
     libssl-dev \
     libtool \
-    ninja-build \
-    pkg-config \
-    sqlite3 \
     tar \
-    unzip \
-    uuid-dev \
-    wget \
-    zip
+    wget
 
 WORKDIR /tmp
 
@@ -61,4 +54,4 @@ RUN rm -rf /git
 WORKDIR /git
 
 RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
-RUN cd googletest && cmake . -G Ninja && cmake --build . --target install && rm -rf /git/googletest
+RUN cd googletest && cmake . && cmake --build . --target install && rm -rf /git/googletest
