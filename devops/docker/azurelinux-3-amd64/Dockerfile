@@ -24,3 +24,9 @@ RUN tdnf install -y \
 
 RUN tdnf upgrade -y && \
     tdnf clean all
+
+WORKDIR /git
+
+# GTest
+RUN git clone https://github.com/google/googletest --recursive -b release-1.12.0
+RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
