@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 
     if ((2 != argc) || (0 != strcmp(argv[1], "--send-status-trace-10000")))
     {
-        fprintf(stderr, 
+        fprintf(stderr,
             "Explicit live test only: %s --send-status-trace-10000\n"
             "Sends 10000 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
             "OsConfigTelemetryApiKey in the runtime environment overrides that key.\n"
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
         goto cleanup;
     }
 
-    OsConfigLogInfo(NULL, 
+    OsConfigLogInfo(NULL,
         "LIVE StatusTrace test: requested=%d ResultCode=%s\n"
         "ResultString=%s\nCorrelationId=%s\n"
         "TLS mode: system OpenSSL (3, 1.1, then 1.0.2)\n"
@@ -321,7 +321,7 @@ cleanup:
     TelemetryTransportDestroy(&transport, NULL);
 
     // Keep the self-timer armed through log/runtime cleanup; process exit reclaims it.
-    OsConfigLogInfo(NULL, "requested=%d attempted=%u accepted=%u rejected=%u unconfirmed=%u unsent=%u status=%d\nCorrelationId=%s", 
+    OsConfigLogInfo(NULL, "requested=%d attempted=%u accepted=%u rejected=%u unconfirmed=%u unsent=%u status=%d\nCorrelationId=%s",
         TEST_COUNT, attempted, accepted, rejected, unconfirmed, TEST_COUNT - attempted, status, correlation);
 
     return ((0 == status) && (TEST_COUNT == accepted)) ? 0 : 1;
