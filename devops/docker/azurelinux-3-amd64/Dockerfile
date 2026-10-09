@@ -27,7 +27,6 @@ RUN tdnf upgrade -y && \
 
 WORKDIR /git
 
-# GoogleTest and GoogleMock
-RUN git clone --depth 1 --branch release-1.12.0 https://github.com/google/googletest.git
-RUN cmake -S googletest -B googletest/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF && \
-    cmake --build googletest/build --parallel --target install && rm -rf /git/googletest
+# GTest
+RUN git clone https://github.com/google/googletest --recursive -b release-1.12.0
+RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest

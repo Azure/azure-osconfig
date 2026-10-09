@@ -6,7 +6,7 @@ project(commontests)
 cmake_minimum_required(VERSION 3.2.0)
 
 include(GoogleTest)
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
