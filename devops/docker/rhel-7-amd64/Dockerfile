@@ -26,6 +26,11 @@ COPY --from=centos /rpm-build*.rpm /rpm-build.rpm
 COPY --from=centos /elfutils*.rpm /elfutils.rpm
 COPY --from=centos /devtoolset/ /devtoolset/
 
+# UBI 7 omits build tools and transitive development dependencies.
+COPY ./centos.repo /etc/yum.repos.d/centos-build.repo
+COPY --from=centos /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+RUN yum-config-manager --disable centos-sclo-rh centos-sclo-sclo
+
 RUN yum-config-manager --enable ubi-7-server-devtools-rpms
 RUN yum install -y --disableplugin=subscription-manager \
     autoconf \

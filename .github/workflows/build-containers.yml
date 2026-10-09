@@ -70,10 +70,15 @@ jobs:
           echo "image=$image" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
+        if: ${{ !endsWith(matrix.container, '-amd64/Dockerfile') }}
         uses: docker/setup-qemu-action@v3
 
       - name: Setup Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          # Use the runner's built-in BuildKit instead of pulling a builder image.
+          driver: docker
 
       - name: Docker login (ghcr.io)
         uses: docker/login-action@v3
@@ -97,6 +102,7 @@ jobs:
         id: build_and_push
         uses: docker/build-push-action@v3
         with:
+          builder: ${{ steps.buildx.outputs.name }}
           context: ${{ steps.image.outputs.path }}
           # Always push the new image. We use frozen checksums stored in test-matrix.json. A new-test-matrix.json will be dropped in the artifacts which can be used to update the existing file after confirming the CI works.
           push: true
