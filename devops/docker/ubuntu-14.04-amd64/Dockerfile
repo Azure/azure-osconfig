@@ -57,3 +57,8 @@ RUN git clone https://github.com/Kitware/CMake --recursive -b $CMAKE_VERSION
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
 
 RUN rm -rf /git
+
+# GoogleTest 1.10 retains GCC 4.8 compatibility.
+RUN git clone --depth 1 --branch release-1.10.0 https://github.com/google/googletest.git
+RUN cmake -S googletest -B googletest/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF && \
+    cmake --build googletest/build --parallel --target install && rm -rf /tmp/googletest

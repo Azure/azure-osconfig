@@ -16,8 +16,6 @@ Most contributions require you to agree to a Contributor License Agreement (CLA)
 
 ## Submitting a PR
 
-When importing or updating third-party code, record its upstream source and revision, preserve its license and applicable copyright and attribution notices, and update the component-local documentation and applicable redistribution notices. Do not replace upstream notices with Microsoft's MIT header. Modified Apache-2.0 files must carry prominent notices stating that they were changed. A Contributor License Agreement does not replace third-party license obligations.
-
 1. Create a GitHub account if you do not have one yet: [Join GitHub](https://github.com/join).
 2. Fork the public GitHub repo: [https://github.com/Azure/azure-osconfig](https://github.com/Azure/azure-osconfig). [Learn more about forking a repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo).
 3. Clone the forked repo. Optionally create a new branch to keep your changes isolated from the `main` branch. By forking and cloning the public GitHub repo, a copy of repo will be created in your GitHub account and a local copy will be locally created in your clone. Use this local copy to make modifications.
