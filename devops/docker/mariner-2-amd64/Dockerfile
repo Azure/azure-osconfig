@@ -5,19 +5,21 @@ RUN tdnf install -y \
     build-essential \
     ca-certificates \
     cmake \
+    curl \
     file \
     gcovr \
     git \
-    gmock-devel \
-    gtest-devel \
     jq \
     mariner-rpm-macros \
-    openssl \
+    openssl-devel \
     rpm-build \
     tar \
     tmux \
     tree \
-    util-linux
+    unzip \
+    util-linux \
+    wget \
+    zip
 
 RUN tdnf upgrade -y && \
     tdnf clean all

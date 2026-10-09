@@ -11,6 +11,7 @@ RUN apt-get -y update && apt-get -y install \
     automake \
     build-essential \
     cmake3 \
+    curl \
     file \
     g++-5 \
     gcc-5 \
@@ -21,8 +22,14 @@ RUN apt-get -y update && apt-get -y install \
     libgtest-dev \
     libssl-dev \
     libtool \
+    ninja-build \
+    pkg-config \
+    sqlite3 \
     tar \
-    wget
+    unzip \
+    uuid-dev \
+    wget \
+    zip
 
 WORKDIR /tmp
 
@@ -50,8 +57,3 @@ RUN git clone https://github.com/Kitware/CMake --recursive -b $CMAKE_VERSION
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
 
 RUN rm -rf /git
-
-WORKDIR /git
-
-RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
-RUN cd googletest && cmake . && cmake --build . --target install && rm -rf /git/googletest
