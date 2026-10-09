@@ -28,6 +28,8 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     endif()
 endif()
 
+include(cmake/Dependencies.cmake)
+
 # Keep frame pointers (-fno-omit-frame-pointer, set globally above) and export symbols (-rdynamic)
 # so the crash handler's backtrace_symbols_fd() can resolve function names in crash stack traces
 add_link_options(-rdynamic)
@@ -118,6 +120,8 @@ set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 if (BUILD_TESTS)
     message(STATUS "Google Unit Test: Enabled")
     enable_testing()
+    add_test(NAME DependencyAssetSources
+        COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/tests/AssetSources.cmake")
     add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 else()

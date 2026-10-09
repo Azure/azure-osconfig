@@ -9,8 +9,6 @@ RUN tdnf install -y \
     file \
     gcovr \
     git \
-    gmock-devel \
-    gtest-devel \
     jq \
     mariner-rpm-macros \
     openssl-devel \

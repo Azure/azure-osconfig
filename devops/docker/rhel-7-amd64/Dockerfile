@@ -26,11 +26,6 @@ COPY --from=centos /rpm-build*.rpm /rpm-build.rpm
 COPY --from=centos /elfutils*.rpm /elfutils.rpm
 COPY --from=centos /devtoolset/ /devtoolset/
 
-# UBI 7 omits build tools and transitive development dependencies.
-COPY ./centos.repo /etc/yum.repos.d/centos-build.repo
-COPY --from=centos /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-RUN yum-config-manager --disable centos-sclo-rh centos-sclo-sclo
-
 RUN yum-config-manager --enable ubi-7-server-devtools-rpms
 RUN yum install -y --disableplugin=subscription-manager \
     autoconf \
@@ -68,10 +63,6 @@ RUN cd git-${GIT_VERSION} && \
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b ${CMAKE_VERSION}
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
-
-# GTest
-RUN git clone https://github.com/google/googletest --recursive -b release-1.12.0
-RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
 
 # jq
 RUN git clone https://github.com/stedolan/jq.git --recursive

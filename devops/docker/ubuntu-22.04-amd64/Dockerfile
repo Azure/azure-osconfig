@@ -18,8 +18,6 @@ RUN apt -y update && apt-get -y install \
     jq \
     libasan8 \
     libcurl4-openssl-dev \
-    libgmock-dev \
-    libgtest-dev \
     libssl-dev \
     libubsan1 \
     pkg-config \
