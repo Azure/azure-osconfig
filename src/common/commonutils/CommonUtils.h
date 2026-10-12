@@ -80,10 +80,7 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
 int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 
 char* CheckForMountCreds(char* options);
-// Match complete filesystem-type tokens (including nfs4 when requesting nfs).
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log);
-// Skip mount records containing CR/LF in any field and escape fields before writing.
-// Only updates to /etc/fstab trigger mount -a; alternate tables are rewritten without mounting.
 int SetFileSystemMountingOption(const char* mountFileName, const char* mountTableFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
 
 int IsPresent(const char* what, OsConfigLogHandle log);
