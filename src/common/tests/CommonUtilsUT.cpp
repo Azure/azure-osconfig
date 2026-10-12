@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <string>
 #include <list>
+#include <mntent.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -1478,15 +1479,17 @@ TEST_F(CommonUtilsTest, CheckAndSetFileSystemMountingOption)
         "/dev/sda1 / ext4 errors=remount-ro 0 1\n";
 
     EXPECT_TRUE(CreateTestFile(m_path, validFstab));
+    EXPECT_TRUE(CreateTestFile(m_path2, ""));
 
     // A NULL mount file name is rejected, mirroring CheckFileSystemMountingOption
-    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(nullptr, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(nullptr, m_path2, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(m_path, nullptr, nullptr, "nfs", "nosuid", nullptr));
 
     // Before remediation the NFS entry lacks the hardening option
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
 
     // Remediation adds the option to the existing entry, after which the same audit passes
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, nullptr, "nfs", "nosuid", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
@@ -1502,7 +1505,7 @@ TEST_F(CommonUtilsTest, CheckAndSetFileSystemMountingOption)
     EXPECT_TRUE(CreateTestFile(m_path, poisonedFstab));
 
     // Remediating the legitimate NFS entry succeeds and does not abort on the malformed record
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, nullptr, "nfs", "nosuid", nullptr));
 
     // The legitimate entry was still hardened
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
@@ -1512,6 +1515,203 @@ TEST_F(CommonUtilsTest, CheckAndSetFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/pwned", nullptr, "nodev", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "pwnfs", "nodev", nullptr, nullptr));
 
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, MountOptionRejectsRecordSeparatorsInEveryField)
+{
+    const string root = "/dev/root / ext4 defaults 0 1\n";
+    const string valid = "server:/valid /match/valid nfs defaults 0 0\n";
+
+    for (bool fromMountTable : {false, true})
+    {
+        for (bool byType : {false, true})
+        {
+            for (bool matches : {false, true})
+            {
+                for (size_t field = 0; field < 4; field++)
+                {
+                    for (const char* separator : {"\\012", "\r"})
+                    {
+                        SCOPED_TRACE(::testing::Message() << "mtab=" << fromMountTable << " type=" << byType
+                            << " matched=" << matches << " field=" << field << " separator=" << separator);
+                        string fields[] = {"server:/invalid", matches ? "/match/invalid" : "/unrelated",
+                            matches ? "nfs" : "ext4", "defaults"};
+                        fields[field] += string(separator) + "/unexpected\\040/unexpected\\040none\\040defaults\\0400\\0400";
+                        const string poisoned = fields[0] + " " + fields[1] + " " + fields[2] + " " + fields[3] + " 0 0\n";
+                        ASSERT_TRUE(CreateTestFile(m_path, (root + (fromMountTable ? "" : poisoned + valid)).c_str()));
+                        ASSERT_TRUE(CreateTestFile(m_path2, (fromMountTable ? poisoned + valid : "").c_str()));
+
+                        ASSERT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, byType ? nullptr : "/match",
+                            byType ? "nfs" : nullptr, "nosuid", nullptr));
+                        FILE* table = setmntent(m_path, "r");
+                        ASSERT_NE(nullptr, table);
+                        struct mntent* entry = getmntent(table);
+                        EXPECT_NE(nullptr, entry);
+                        if (nullptr != entry)
+                        {
+                            EXPECT_STREQ("/dev/root", entry->mnt_fsname);
+                        }
+                        entry = getmntent(table);
+                        EXPECT_NE(nullptr, entry);
+                        if (nullptr != entry)
+                        {
+                            EXPECT_STREQ("server:/valid", entry->mnt_fsname);
+                            EXPECT_STREQ("/match/valid", entry->mnt_dir);
+                            EXPECT_STREQ("nfs", entry->mnt_type);
+                            EXPECT_STREQ("defaults,nosuid", entry->mnt_opts);
+                        }
+                        EXPECT_EQ(nullptr, getmntent(table));
+                        endmntent(table);
+                    }
+                }
+            }
+        }
+    }
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, MountOptionNfsMatchingExcludesLookalikeTypes)
+{
+    const char* records =
+        "server:/one /mnt/one nfs defaults 0 0\n"
+        "server:/four /mnt/four nfs4 defaults 0 0\n"
+        "device /mnt/fuse fuse.mynfs defaults 0 0\n"
+        "device /mnt/prefix mynfs defaults 0 0\n"
+        "device /mnt/suffix nfs4extra defaults 0 0\n";
+
+    for (bool fromMountTable : {false, true})
+    {
+        ASSERT_TRUE(CreateTestFile(m_path, fromMountTable ? "" : records));
+        ASSERT_TRUE(CreateTestFile(m_path2, fromMountTable ? records : ""));
+        ASSERT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, nullptr, "nfs", "nosuid", nullptr));
+
+        FILE* table = setmntent(m_path, "r");
+        ASSERT_NE(nullptr, table);
+        struct mntent* entry = nullptr;
+        size_t count = 0;
+        while (nullptr != (entry = getmntent(table)))
+        {
+            EXPECT_STREQ(count < 2 ? "defaults,nosuid" : "defaults", entry->mnt_opts);
+            count++;
+        }
+        endmntent(table);
+        EXPECT_EQ(fromMountTable ? 2u : 5u, count);
+        EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+    }
+
+    ASSERT_TRUE(CreateTestFile(m_path, "server:/four /mnt/four nfs4 defaults 0 0\n"));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, MountOptionFallbackDoesNotImportFuseMountpointInjection)
+{
+    const char* original = "/dev/root / ext4 defaults 0 1\n";
+    ASSERT_TRUE(CreateTestFile(m_path, original));
+    ASSERT_TRUE(CreateTestFile(m_path2,
+        "device /mnt/a\\012/unexpected\\040/unexpected\\040none\\040defaults\\0400\\0400 fuse.mynfs defaults 0 0\n"));
+
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, nullptr, "nfs", "nosuid", nullptr));
+    char* contents = LoadStringFromFile(m_path, false, nullptr);
+    EXPECT_STREQ(original, contents);
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, MountOptionEscapedFieldsRoundTrip)
+{
+    const char* records =
+        "server:/a\\040b\\011c\\134012 /match/a\\040b\\011c\\134040 ext4 defaults,value=a\\040b\\011c\\134012 1 2\n"
+        "server:/ready /match/ready ext4 defaults,nosuid,value=a\\040b\\011c\\134012 3 4\n"
+        "server:/other /other\\040path type\\040with\\011tab\\134012 defaults,value=a\\040b\\011c\\134012 5 6\n";
+    const char* expected[][4] = {
+        {"server:/a b\tc\\012", "/match/a b\tc\\040", "ext4", "defaults,value=a b\tc\\012,nosuid"},
+        {"server:/ready", "/match/ready", "ext4", "defaults,nosuid,value=a b\tc\\012"},
+        {"server:/other", "/other path", "type with\ttab\\012", "defaults,value=a b\tc\\012"}
+    };
+
+    for (bool fromMountTable : {false, true})
+    {
+        ASSERT_TRUE(CreateTestFile(m_path, fromMountTable ? "" : records));
+        ASSERT_TRUE(CreateTestFile(m_path2, fromMountTable ? records : ""));
+        for (int pass = 0; pass < 2; pass++)
+        {
+            ASSERT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, "/match", nullptr, "nosuid", nullptr));
+            FILE* table = setmntent(m_path, "r");
+            ASSERT_NE(nullptr, table);
+            struct mntent* entry = nullptr;
+            size_t count = 0;
+            while (nullptr != (entry = getmntent(table)))
+            {
+                EXPECT_LT(count, ARRAY_SIZE(expected));
+                if (count < ARRAY_SIZE(expected))
+                {
+                    EXPECT_STREQ(expected[count][0], entry->mnt_fsname);
+                    EXPECT_STREQ(expected[count][1], entry->mnt_dir);
+                    EXPECT_STREQ(expected[count][2], entry->mnt_type);
+                    EXPECT_STREQ(expected[count][3], entry->mnt_opts);
+                    EXPECT_EQ(static_cast<int>(2 * count + 1), entry->mnt_freq);
+                    EXPECT_EQ(static_cast<int>(2 * count + 2), entry->mnt_passno);
+                }
+                count++;
+            }
+            endmntent(table);
+            EXPECT_EQ(fromMountTable ? 2u : 3u, count);
+        }
+    }
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, MountOptionRejectsInvalidArgumentsWithoutChangingTable)
+{
+    const char* original = "server:/data /mnt/data nfs defaults 0 0\n";
+    const char* options[] = {nullptr, "", "nosuid\nnodev", "nosuid\rnodev"};
+    ASSERT_TRUE(CreateTestFile(m_path, original));
+    ASSERT_TRUE(CreateTestFile(m_path2, ""));
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(m_path, m_path2, nullptr, nullptr, "nosuid", nullptr));
+    for (const char* option : options)
+    {
+        EXPECT_EQ(EINVAL, SetFileSystemMountingOption(m_path, m_path2, nullptr, "nfs", option, nullptr));
+        char* contents = LoadStringFromFile(m_path, false, nullptr);
+        EXPECT_STREQ(original, contents);
+        FREE_MEMORY(contents);
+    }
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
+TEST_F(CommonUtilsTest, BackupSshdSuccess)
+{
+    remove(m_path);
+    EXPECT_EQ(0, BackupSshdConfig(m_path, "success\n", nullptr));
+    char* contents = LoadStringFromFile(m_path, false, nullptr);
+    EXPECT_STREQ("success\n", contents);
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, BackupSshdFail)
+{
+    ASSERT_TRUE(CreateTestFile(m_path, "not a directory"));
+    const string backup = string(m_path) + "/sshd_config.bak";
+    EXPECT_NE(0, BackupSshdConfig(backup.c_str(), "fail", nullptr));
+    EXPECT_EQ(EINVAL, BackupSshdConfig(nullptr, "configuration", nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, BackupSshdPreservesExistingBackup)
+{
+    ASSERT_TRUE(CreateTestFile(m_path, "original\n"));
+    EXPECT_EQ(0, BackupSshdConfig(m_path, "replacement\n", nullptr));
+    char* contents = LoadStringFromFile(m_path, false, nullptr);
+    EXPECT_STREQ("original\n", contents);
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
