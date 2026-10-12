@@ -41,7 +41,8 @@ static bool IsMountEntrySafe(const struct mntent* entry, const char* source, int
 
     for (i = 0; i < ARRAY_SIZE(fields); i++)
     {
-        if ((NULL == fields[i]) || ('\0' == fields[i][0]) || (NULL != strpbrk(fields[i], "\n\r")))
+        // The first three fields are required, but the options field is optional.
+        if ((NULL == fields[i]) || ((i < 3) && ('\0' == fields[i][0])) || (NULL != strpbrk(fields[i], "\n\r")))
         {
             OsConfigLogInfo(log, "SetFileSystemMountingOption: skipping invalid mount entry in '%s' at line %d (field %zu)",
                 source, lineNumber, i);
@@ -107,9 +108,13 @@ static int FormatMountEntry(const struct mntent* entry, const char* desiredOptio
     int status = 0;
 
     *line = NULL;
+    if ('\0' == updated.mnt_opts[0])
+    {
+        updated.mnt_opts = "defaults";
+    }
     if (NULL != desiredOption)
     {
-        if (NULL == (options = FormatAllocateString("%s,%s", entry->mnt_opts, desiredOption)))
+        if (NULL == (options = FormatAllocateString("%s,%s", updated.mnt_opts, desiredOption)))
         {
             OsConfigLogError(log, "FormatMountEntry: out of memory");
             OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);

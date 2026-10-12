@@ -1669,6 +1669,60 @@ TEST_F(CommonUtilsTest, MountOptionEscapedFieldsRoundTrip)
     EXPECT_TRUE(Cleanup(m_path2));
 }
 
+TEST_F(CommonUtilsTest, MountOptionPreservesEntriesWithoutOptions)
+{
+    const char* existing =
+        "UUID=root / ext4\n"
+        "UUID=data /data ext4\n";
+    const char* expected[][4] = {
+        {"UUID=root", "/", "ext4", "defaults"},
+        {"UUID=data", "/data", "ext4", "defaults"},
+        {"server:/export", "/mnt/data", "nfs", "defaults,nosuid"}
+    };
+
+    for (bool fromMountTable : {false, true})
+    {
+        for (bool byType : {false, true})
+        {
+            for (const char* ending : {"\n", " \t\n", ""})
+            {
+                SCOPED_TRACE(::testing::Message() << "mtab=" << fromMountTable << " type=" << byType
+                    << " ending=" << ending);
+                const string record = string("server:/export /mnt/data nfs") + ending;
+                const string original = string(existing) + (fromMountTable ? "" : record);
+                ASSERT_TRUE(CreateTestFile(m_path, original.c_str()));
+                ASSERT_TRUE(CreateTestFile(m_path2, fromMountTable ? record.c_str() : ""));
+
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    ASSERT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, byType ? nullptr : "/mnt/data",
+                        byType ? "nfs" : nullptr, "nosuid", nullptr));
+                    FILE* table = setmntent(m_path, "r");
+                    ASSERT_NE(nullptr, table);
+                    for (size_t i = 0; i < ARRAY_SIZE(expected); i++)
+                    {
+                        struct mntent* entry = getmntent(table);
+                        EXPECT_NE(nullptr, entry);
+                        if (nullptr != entry)
+                        {
+                            EXPECT_STREQ(expected[i][0], entry->mnt_fsname);
+                            EXPECT_STREQ(expected[i][1], entry->mnt_dir);
+                            EXPECT_STREQ(expected[i][2], entry->mnt_type);
+                            EXPECT_STREQ(expected[i][3], entry->mnt_opts);
+                            EXPECT_EQ(0, entry->mnt_freq);
+                            EXPECT_EQ(0, entry->mnt_passno);
+                        }
+                    }
+                    EXPECT_EQ(nullptr, getmntent(table));
+                    endmntent(table);
+                }
+            }
+        }
+    }
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+}
+
 TEST_F(CommonUtilsTest, MountOptionRejectsInvalidArgumentsWithoutChangingTable)
 {
     const char* original = "server:/data /mnt/data nfs defaults 0 0\n";
