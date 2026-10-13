@@ -10,7 +10,6 @@ find_package(GTest REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
-    SshUtilsUT.cpp
     TelemetryEncoderUT.cpp
     TelemetryEventUT.cpp
     TelemetryHttpUT.cpp
@@ -20,7 +19,6 @@ add_executable(commontests
     TelemetryResolverUT.cpp
     TelemetryUT.cpp
     TelemetryWorkerUT.cpp
-    Helper.c
     ../telemetry/Telemetry.c
     ../telemetry/Tls.c
 )

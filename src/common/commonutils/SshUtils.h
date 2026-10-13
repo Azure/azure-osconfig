@@ -13,6 +13,7 @@ int InitializeSshAudit(OsConfigLogHandle log);
 int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log);
 int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigLogHandle log);
 void SshAuditCleanup(OsConfigLogHandle log);
+int BackupSshdConfig(const char* backupFileName, const char* configuration, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }

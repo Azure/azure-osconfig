@@ -3,6 +3,171 @@
 
 #include "Internal.h"
 
+static bool MountTypeMatches(const char* entryType, const char* mountType)
+{
+    const char* token = entryType;
+    size_t length = 0;
+    size_t mountTypeLength = 0;
+    bool matchFound = false;
+
+    if ((NULL == entryType) || (NULL == mountType))
+    {
+        return false;
+    }
+
+    mountTypeLength = strlen(mountType);
+    while ('\0' != *token)
+    {
+        length = strcspn(token, ",");
+        if (((length == mountTypeLength) && (0 == strncmp(token, mountType, length))) ||
+            ((0 == strcmp(mountType, "nfs")) && (4 == length) && (0 == strncmp(token, "nfs4", length))))
+        {
+            matchFound = true;
+            break;
+        }
+
+        token += length;
+        if (',' == *token)
+        {
+            token++;
+        }
+    }
+
+    return matchFound;
+}
+
+static bool IsMountEntrySafe(const struct mntent* entry, const char* source, int lineNumber, OsConfigLogHandle log)
+{
+    const char* fields[] = {entry->mnt_fsname, entry->mnt_dir, entry->mnt_type, entry->mnt_opts};
+    size_t i = 0;
+    bool safe = true;
+
+    for (i = 0; i < ARRAY_SIZE(fields); i++)
+    {
+        // The first three fields are required, but the options field is optional.
+        if ((NULL == fields[i]) || ((i < 3) && ('\0' == fields[i][0])) || (NULL != strpbrk(fields[i], "\n\r")))
+        {
+            OsConfigLogInfo(log, "SetFileSystemMountingOption: skipping invalid mount entry in '%s' at line %d (field %zu)", source, lineNumber, i);
+            safe = false;
+            break;
+        }
+    }
+
+    return safe;
+}
+
+static bool MountDirectoryMatches(const char* entryDirectory, const char* mountDirectory)
+{
+    size_t entryLength = strlen(entryDirectory);
+    size_t directoryLength = 0;
+
+    if (NULL == mountDirectory)
+    {
+        return false;
+    }
+
+    directoryLength = strlen(mountDirectory);
+    while ((1 < entryLength) && ('/' == entryDirectory[entryLength - 1]))
+    {
+        entryLength--;
+    }
+    while ((1 < directoryLength) && ('/' == mountDirectory[directoryLength - 1]))
+    {
+        directoryLength--;
+    }
+
+    return ((entryLength == directoryLength) && (0 == strncmp(entryDirectory, mountDirectory, entryLength)));
+}
+
+static bool CanImportMountEntry(const struct mntent* entry, const char* source, int lineNumber, OsConfigLogHandle log)
+{
+    const char* userOptions[] = {"user", "users", "owner", "group", "user_id", "group_id", "uhelper", "helper"};
+    size_t i = 0;
+    bool canImport = true;
+
+    if (0 == strncmp(entry->mnt_type, "fuse", 4))
+    {
+        OsConfigLogInfo(log, "SetFileSystemMountingOption: not importing FUSE mount from '%s' at line %d", source, lineNumber);
+        canImport = false;
+    }
+    else
+    {
+        for (i = 0; i < ARRAY_SIZE(userOptions); i++)
+        {
+            if (NULL != hasmntopt(entry, userOptions[i]))
+            {
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: not importing user mount from '%s' at line %d", source, lineNumber);
+                canImport = false;
+                break;
+            }
+        }
+    }
+
+    return canImport;
+}
+
+static int FormatMountEntry(const struct mntent* entry, const char* desiredOption, char** line, OsConfigLogHandle log)
+{
+    struct mntent updated = *entry;
+    FILE* stream = NULL;
+    char* options = NULL;
+    size_t length = 0;
+    int status = 0;
+
+    *line = NULL;
+    if ('\0' == updated.mnt_opts[0])
+    {
+        updated.mnt_opts = "defaults";
+    }
+    if (NULL != desiredOption)
+    {
+        if (NULL == (options = FormatAllocateString("%s,%s", updated.mnt_opts, desiredOption)))
+        {
+            OsConfigLogInfo(log, "FormatMountEntry: out of memory");
+            status = ENOMEM;
+        }
+        else
+        {
+            updated.mnt_opts = options;
+        }
+    }
+
+    if (0 == status)
+    {
+        // Escape fields before their first serialization; reparsing raw text later is too late.
+        if (NULL == (stream = open_memstream(line, &length)))
+        {
+            status = (0 == errno) ? ENOMEM : errno;
+            OsConfigLogInfo(log, "FormatMountEntry: open_memstream failed (%d)", status);
+        }
+        else
+        {
+            if (0 != addmntent(stream, &updated))
+            {
+                status = (0 == errno) ? EIO : errno;
+                OsConfigLogInfo(log, "FormatMountEntry: addmntent failed (%d)", status);
+            }
+
+            if (0 != fclose(stream))
+            {
+                int closeStatus = (0 == errno) ? EIO : errno;
+                OsConfigLogInfo(log, "FormatMountEntry: fclose failed (%d)", closeStatus);
+                if (0 == status)
+                {
+                    status = closeStatus;
+                }
+            }
+        }
+    }
+
+    if (0 != status)
+    {
+        FREE_MEMORY(*line);
+    }
+    FREE_MEMORY(options);
+    return status;
+}
+
 // The mntent.mnt_opts field (which corresponds to the mount options in /etc/fstab) can technically contain credentials.
 // For certain network filesystems like CIFS/SMB or NFS, one can specify options such as: 'username', 'password', 'domain'.
 // These options are parsed by the mount helper (e.g., mount.cifs) when mounting the share.
@@ -57,15 +222,13 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         {
             OsConfigCaptureReason(reason, "'%s' is not found", mountFileName);
         }
-        return 0;
     }
-
-    if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
+    else if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
     {
         while (NULL != (mountStruct = getmntent(mountFileHandle)))
         {
             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
-                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
+                MountTypeMatches(mountStruct->mnt_type, mountType))
             {
                 matchFound = true;
 
@@ -159,10 +322,9 @@ int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle
     if (!FileExists(source))
     {
         OsConfigLogInfo(log, "CopyMountTableFile: file '%s' not found", source);
-        return EINVAL;
+        status = EINVAL;
     }
-
-    if (NULL != (targetHandle = setmntent(target, "w")))
+    else if (NULL != (targetHandle = setmntent(target, "w")))
     {
         if (NULL != (sourceHandle = setmntent(source, "r")))
         {
@@ -198,43 +360,138 @@ int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle
 int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log)
 {
     char* contents = NULL;
+    const char* line = NULL;
+    const char* end = NULL;
+    size_t textLength = 0;
+    size_t lineLength = 0;
     int status = 0;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
+        OsConfigLogError(log, "LineAlreadyExistsInFile called with invalid argument(s)");
         return EINVAL;
     }
     else if (false == FileExists(fileName))
     {
-        return ENOENT;
+        OsConfigLogInfo(log, "LineAlreadyExistsInFile: '%s' does not exist", fileName);
+        status = ENOENT;
     }
-
-    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    else if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
         status = EACCES;
+        OsConfigLogInfo(log, "LineAlreadyExistsInFile: cannot read '%s'", fileName);
     }
     else
     {
-        if (NULL == strstr(contents, text))
+        textLength = strlen(text);
+        if ('\n' == text[textLength - 1])
         {
-            status = EEXIST;
+            textLength--;
         }
 
+        status = EEXIST;
+        line = contents;
+        while ('\0' != *line)
+        {
+            end = strchr(line, '\n');
+            lineLength = (NULL == end) ? strlen(line) : (size_t)(end - line);
+            if ((lineLength == textLength) && (0 == strncmp(line, text, textLength)))
+            {
+                status = 0;
+                break;
+            }
+            if (NULL == end)
+            {
+                break;
+            }
+            line = end + 1;
+        }
+
+        if (EEXIST == status)
+        {
+            OsConfigLogInfo(log, "LineAlreadyExistsInFile: entry not found in '%s'", fileName);
+        }
         FREE_MEMORY(contents);
     }
 
     return status;
 }
 
-int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
+static int CopyMountTableComments(const char* source, const char* target, OsConfigLogHandle log)
+{
+    FILE* sourceHandle = NULL;
+    FILE* targetHandle = NULL;
+    char* line = NULL;
+    char* content = NULL;
+    size_t capacity = 0;
+    ssize_t length = 0;
+    int status = 0;
+
+    if (NULL == (sourceHandle = fopen(source, "r")))
+    {
+        status = (0 == errno) ? EIO : errno;
+        OsConfigLogInfo(log, "CopyMountTableComments: cannot open '%s' (%d)", source, status);
+    }
+    else if (NULL == (targetHandle = fopen(target, "w")))
+    {
+        status = (0 == errno) ? EIO : errno;
+        OsConfigLogInfo(log, "CopyMountTableComments: cannot open '%s' (%d)", target, status);
+    }
+    else
+    {
+        while (-1 != (length = getline(&line, &capacity, sourceHandle)))
+        {
+            content = line;
+            while (isspace((unsigned char)*content))
+            {
+                content++;
+            }
+            if (('#' != *content) && ('\0' != *content))
+            {
+                continue;
+            }
+            if (length != (ssize_t)fwrite(line, 1, (size_t)length, targetHandle))
+            {
+                status = (0 == errno) ? EIO : errno;
+                OsConfigLogInfo(log, "CopyMountTableComments: cannot write '%s' (%d)", target, status);
+                break;
+            }
+        }
+        if ((0 == status) && !feof(sourceHandle))
+        {
+            status = (0 == errno) ? EIO : errno;
+            OsConfigLogInfo(log, "CopyMountTableComments: cannot read '%s' (%d)", source, status);
+        }
+    }
+
+    if ((NULL != targetHandle) && (0 != fclose(targetHandle)))
+    {
+        int closeStatus = (0 == errno) ? EIO : errno;
+        OsConfigLogInfo(log, "CopyMountTableComments: cannot close '%s' (%d)", target, closeStatus);
+        if (0 == status)
+        {
+            status = closeStatus;
+        }
+    }
+    if ((NULL != sourceHandle) && (0 != fclose(sourceHandle)))
+    {
+        int closeStatus = (0 == errno) ? EIO : errno;
+        OsConfigLogInfo(log, "CopyMountTableComments: cannot close '%s' (%d)", source, closeStatus);
+        if (0 == status)
+        {
+            status = closeStatus;
+        }
+    }
+    FREE_MEMORY(line);
+    return status;
+}
+
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountTableFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
 {
     const char* fsMountTable = mountFileName;
-    const char* mountTable = "/etc/mtab";
+    const char* mountTable = mountTableFileName;
     const char* tempFileNameTemplate = "%s/~xtab%d";
-    const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
-    const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
     const char* mountAll = "mount -a";
-    const char* unsafe = "\n\r";
 
     FILE* fsMountHandle = NULL;
     FILE* mountHandle = NULL;
@@ -245,39 +502,41 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
     char* fsMountTableCopy = NULL;
     char* fsMountDirectory = NULL;
     struct mntent* mountStruct = NULL;
+    bool mountTableExists = false;
     bool matchFound = false;
     int lineNumber = 1;
     int status = 0;
 
-    if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
+    if ((NULL == mountFileName) || (NULL == mountTableFileName) || ((NULL == mountDirectory) && (NULL == mountType)) ||
+        (NULL == desiredOption) || ('\0' == *desiredOption) || (NULL != strpbrk(desiredOption, "\n\r")))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
         OSConfigTelemetryStatusTrace("mountDirectory", EINVAL);
         return EINVAL;
     }
 
-    if (!FileExists(fsMountTable))
+    if (false == (mountTableExists = FileExists(fsMountTable)))
     {
         OsConfigLogInfo(log, "SetFileSystemMountingOption: '%s' not found, no place to set mounting options", fsMountTable);
-        return 0;
     }
-
-    // Keep the scratch files next to the mount table so the final rename stays on the same filesystem
-    if (NULL != (fsMountTableCopy = DuplicateString(fsMountTable)))
+    else
     {
-        fsMountDirectory = dirname(fsMountTableCopy);
+        // Keep the scratch files next to the mount table so the final rename stays on the same filesystem
+        if (NULL != (fsMountTableCopy = DuplicateString(fsMountTable)))
+        {
+            fsMountDirectory = dirname(fsMountTableCopy);
+        }
+
+        if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 1))) ||
+            (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 2))) ||
+            (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 3))))
+        {
+            OsConfigLogInfo(log, "SetFileSystemMountingOption: out of memory");
+            status = ENOMEM;
+        }
     }
 
-    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 1))) ||
-        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 2))) ||
-        (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, fsMountDirectory ? fsMountDirectory : "/etc", 3))))
-    {
-        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
-        status = ENOMEM;
-    }
-
-    if (0 == status)
+    if (mountTableExists && (0 == status))
     {
         if (NULL != (fsMountHandle = setmntent(fsMountTable, "r")))
         {
@@ -286,12 +545,13 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
-                if ((NULL == mountStruct->mnt_fsname) || (NULL != strpbrk(mountStruct->mnt_fsname, unsafe)))
+                if (!IsMountEntrySafe(mountStruct, fsMountTable, lineNumber, log))
                 {
-                    OsConfigLogInfo(log, "SetFileSystemMountingOption: name for mount directory '%s' or mount type '%s' is not valid", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-");
+                    lineNumber++;
+                    continue;
                 }
-                else if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
-                    ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(mountStruct->mnt_type, unsafe))))
+                if (((NULL != mountDirectory) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
+                    MountTypeMatches(mountStruct->mnt_type, mountType))
                 {
                     matchFound = true;
 
@@ -302,8 +562,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                         // The option is found, copy this mount entry as-is
                         FREE_MEMORY(newLine);
-                        newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                            mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                        status = FormatMountEntry(mountStruct, NULL, &newLine, log);
                     }
                     else
                     {
@@ -312,13 +571,12 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                         // The option is not found and is needed for this entry, add the needed option when copying this mount entry
                         FREE_MEMORY(newLine);
-                        newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                            mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                        status = FormatMountEntry(mountStruct, desiredOption, &newLine, log);
                     }
 
-                    if (NULL != newLine)
+                    if (0 == status)
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if ((ENOENT == (status = LineAlreadyExistsInFile(tempFileNameOne, newLine, log))) || (EEXIST == status))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -326,12 +584,13 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                                 break;
                             }
                         }
+                        else if (0 != status)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
-                        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
-                        status = ENOMEM;
                         break;
                     }
                 }
@@ -339,10 +598,9 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 {
                     // No match for this mount entry, copy the entire entry as-is
                     FREE_MEMORY(newLine);
-                    if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                        mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
+                    if (0 == (status = FormatMountEntry(mountStruct, NULL, &newLine, log)))
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if ((ENOENT == (status = LineAlreadyExistsInFile(tempFileNameOne, newLine, log))) || (EEXIST == status))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -350,12 +608,13 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                                 break;
                             }
                         }
+                        else if (0 != status)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
-                        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
-                        status = ENOMEM;
                         break;
                     }
                 }
@@ -365,12 +624,12 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
             endmntent(fsMountHandle);
 
-            if (false == matchFound)
+            if ((0 == status) && (false == matchFound))
             {
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
 
-                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/mtab if there are any matching
+                // Import only eligible live mounts; directory selectors must match the mount point exactly.
                 if (FileExists(mountTable))
                 {
                     if (NULL != (mountHandle = setmntent(mountTable, "r")))
@@ -381,12 +640,14 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
-                            if ((NULL == mountStruct->mnt_fsname) || (NULL != strpbrk(mountStruct->mnt_fsname, unsafe)))
+                            if (!IsMountEntrySafe(mountStruct, mountTable, lineNumber, log) ||
+                                !CanImportMountEntry(mountStruct, mountTable, lineNumber, log))
                             {
-                                OsConfigLogInfo(log, "SetFileSystemMountingOption: name for mount directory '%s' or mount type '%s' is not valid", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-");
+                                lineNumber++;
+                                continue;
                             }
-                            else if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory)) && (NULL == strpbrk(mountStruct->mnt_dir, unsafe))) ||
-                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType)) && (NULL == strpbrk(mountStruct->mnt_type, unsafe))))
+                            if (MountDirectoryMatches(mountStruct->mnt_dir, mountDirectory) ||
+                                MountTypeMatches(mountStruct->mnt_type, mountType))
                             {
                                 matchFound = true;
 
@@ -397,8 +658,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                                     // Copy this mount entry as-is
                                     FREE_MEMORY(newLine);
-                                    newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                                        mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                                    status = FormatMountEntry(mountStruct, NULL, &newLine, log);
                                 }
                                 else
                                 {
@@ -407,13 +667,12 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                                     // The option is not found and is needed for this entry, add it when copying this entry
                                     FREE_MEMORY(newLine);
-                                    newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                                        mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                                    status = FormatMountEntry(mountStruct, desiredOption, &newLine, log);
                                 }
 
-                                if (NULL != newLine)
+                                if (0 == status)
                                 {
-                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                                    if ((ENOENT == (status = LineAlreadyExistsInFile(tempFileNameOne, newLine, log))) || (EEXIST == status))
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {
@@ -421,12 +680,13 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                                             break;
                                         }
                                     }
+                                    else if (0 != status)
+                                    {
+                                        break;
+                                    }
                                 }
                                 else
                                 {
-                                    OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                                    OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
-                                    status = ENOMEM;
                                     break;
                                 }
                             }
@@ -444,7 +704,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 }
             }
 
-            if (false == matchFound)
+            if ((0 == status) && (false == matchFound))
             {
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in either '%s' or '%s', nothing to remediate",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, mountTable);
@@ -458,32 +718,28 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
         if (matchFound && (0 == status))
         {
-            // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
-            if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
+            // Normalize the collected, already escaped mount entries.
+            if ((0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log))) &&
+                (0 == (status = CopyMountTableComments(fsMountTable, tempFileNameThree, log))))
             {
-                // Optionally, try to preserve the commented out lines from original /etc/fstab
-                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
+                if (!ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
                 {
-                    // Skip all lines containing either paths or 'UUID' entries
-                    if ((0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log)) &&
-                        (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "UUID", NULL, '#', false, log)))
-                    {
-                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
-                        {
-                            RenameFile(tempFileNameThree, tempFileNameTwo, log);
-                        }
-                    }
+                    status = EIO;
+                    OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot combine comments and mount entries");
                 }
-
-                // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
+                // Replace the table only after assembling comments and encoded mount entries.
+                else if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameThree, fsMountTable, log)))
                 {
-                    // Command may fail when one configured mount point is not present, so ignore failures
-                    ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL);
+                    // Only apply the system table; alternate files must not mount the host's filesystems.
+                    if (0 == strcmp(fsMountTable, "/etc/fstab"))
+                    {
+                        // Command may fail when one configured mount point is not present, so ignore failures
+                        ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, log);
+                    }
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileNameTwo, fsMountTable, status);
+                    OsConfigLogInfo(log, "SetFileSystemMountingOption: RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileNameThree, fsMountTable, status);
                 }
             }
         }

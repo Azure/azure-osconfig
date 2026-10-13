@@ -1119,16 +1119,23 @@ int SaveRemediationToConfFile(OsConfigLogHandle log)
     return status;
 }
 
-int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
+int BackupSshdConfig(const char* backupFileName, const char* configuration, OsConfigLogHandle log)
 {
     size_t configurationSize = 0;
     int status = 0;
 
-    if ((false == FileExists(g_sshServerConfigurationBackup)) && (NULL != configuration) && (0 < (configurationSize = strlen(configuration))))
+    if (NULL == backupFileName)
     {
-        if (false == SavePayloadToFile(g_sshServerConfigurationBackup, configuration, configurationSize, log))
+        OsConfigLogError(log, "BackupSshdConfig called with invalid backup filename");
+        return EINVAL;
+    }
+
+    if ((false == FileExists(backupFileName)) && (NULL != configuration) && (0 < (configurationSize = strlen(configuration))))
+    {
+        if (false == SavePayloadToFile(backupFileName, configuration, configurationSize, log))
         {
             status = ENOENT;
+            OsConfigLogInfo(log, "BackupSshdConfig: cannot save backup to '%s'", backupFileName);
         }
     }
 
@@ -1161,7 +1168,7 @@ int SaveRemediationToSshdConfig(OsConfigLogHandle log)
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if (0 != (status = BackupSshdConfig(originalConfiguration, log)))
+    else if (0 != (status = BackupSshdConfig(g_sshServerConfigurationBackup, originalConfiguration, log)))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to make a backup copy of '%s'", g_sshServerConfiguration);
     }
