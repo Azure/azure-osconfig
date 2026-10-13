@@ -79,6 +79,8 @@ public:
         if (!directory.empty())
         {
             unlink((directory + "/root.pem").c_str());
+            unlink((directory + "/idle-ready").c_str());
+            unlink((directory + "/idle-ended").c_str());
             rmdir(directory.c_str());
         }
     }
@@ -591,10 +593,28 @@ void TransportExchange(const char* mode)
 
     for (i = 0; i < count; ++i)
     {
+        if ((1 == i) && (0 == strncmp(mode, "aria-idle-", 10)))
+        {
+            std::ofstream marker(peer.directory + "/idle-ready");
+            marker.close();
+            ASSERT_FALSE(marker.fail());
+            const int64_t deadline = Deadline();
+            int remaining = 0;
+            while (0 != access((peer.directory + "/idle-ended").c_str(), F_OK))
+            {
+                ASSERT_EQ(ENOENT, errno);
+                ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+                poll(nullptr, 0, 1);
+            }
+        }
         ASSERT_EQ(0, transport.Send(&response));
         EXPECT_TRUE(response.complete);
         EXPECT_EQ(TelemetryAccepted, response.acceptance);
         EXPECT_FALSE(TelemetryTransportSuppressed(transport.value));
+        if (0 == strncmp(mode, "aria-idle-", 10))
+        {
+            EXPECT_TRUE(response.reusable);
+        }
     }
 
     ExpectOsTls();
@@ -1121,6 +1141,26 @@ TEST(TelemetryTransportDeathTest, KeepsProxyCredentialsOutOfCollectorRequest)
 TEST(TelemetryTransportDeathTest, ReconnectsAfterConnectionClose)
 {
     TLS_CASE(TransportExchange("aria-close"));
+}
+
+TEST(TelemetryTransportDeathTest, ReconnectsBeforeSendingAfterIdleCloseNotify)
+{
+    TLS_CASE(TransportExchange("aria-idle-close"));
+}
+
+TEST(TelemetryTransportDeathTest, ReconnectsBeforeSendingAfterIdleUncleanEof)
+{
+    TLS_CASE(TransportExchange("aria-idle-eof"));
+}
+
+TEST(TelemetryTransportDeathTest, ReconnectsBeforeSendingAfterIdleReset)
+{
+    TLS_CASE(TransportExchange("aria-idle-reset"));
+}
+
+TEST(TelemetryTransportDeathTest, RetiresUnexpectedIdleApplicationDataWithoutConsumingItAsAnAcknowledgment)
+{
+    TLS_CASE(TransportExchange("aria-idle-data"));
 }
 
 TEST(TelemetryTransportDeathTest, DropsFailedEventAndReconnectsOnlyForNextCall)

@@ -20,8 +20,9 @@ typedef struct TelemetryTransport TelemetryTransport;
 int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle log);
 
 // One encoded record per request. Reuses a verified connection; never retries
-// an event, redirects, or changes route following failure. Only a later call may
-// reconnect. The same absolute deadline covers DNS, TCP, CONNECT, TLS and HTTP.
+// an event, redirects, or changes route following failure. A stale idle session
+// can reconnect before the first request byte; after sending starts only a later
+// call may reconnect. The same deadline covers DNS, TCP, CONNECT, TLS and HTTP.
 // Zero means a complete parsed response: inspect acceptance separately.
 // Retry/kill headers or HTTP429/503 conservatively latch suppression for this
 // context; subsequent calls fail ECANCELED. Cross-process suppression is pending.

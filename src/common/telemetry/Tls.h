@@ -31,6 +31,11 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
 // TLS connection; a later, distinct operation may attach another socket.
 int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, int64_t deadline, OsConfigLogHandle log);
 
+// Checks between complete HTTP exchanges without waiting or sending a request.
+// Processes available TLS control records; retires closed/failed sessions or
+// unexpected application data. reusable=false is not an error or a replay.
+int TelemetryTlsCheckIdle(TelemetryTls* tls, bool* reusable, int64_t deadline, OsConfigLogHandle log);
+
 // Writes the complete buffer, continuing identical TLS writes on WANT_READ/
 // WANT_WRITE, never replaying a request. Any I/O failure discards the connection.
 int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size, int64_t deadline, OsConfigLogHandle log);

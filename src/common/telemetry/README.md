@@ -6,6 +6,16 @@ Reusable code is built into one static library, `telemetry`. Source files are se
 
 Telemetry is always built. The worker is installed with OSConfig and included in both audit and remediation policy packages; there is no telemetry-off build variant. This does not bypass runtime requirements: sending still requires an initialized invocation, an ingestion key, and a supported TLS runtime. Telemetry failures remain isolated from the audited or remediated operation's result. The live Aria test remains explicit-only.
 
+## Failure isolation and connection reuse
+
+Client-side telemetry diagnostics are informational, including producer initialization, event packing and worker IPC/process failures. Failures that prevent delivery inside `OSConfigTelemetry` remain errors. Recoverable connection retirement and unsuccessful address candidates are informational; failure of the overall send is an error in the worker, not in its caller.
+
+Permanent worker startup failures (unsupported child ownership, missing/inaccessible or invalid executable, broken startup protocol or disconnect before READY) disable further startup attempts for that invocation. Subsequent calls retain the failure status and diagnostics; cleanup and a new invocation permit another attempt. Transient resource failures and timeouts may recover on later calls without resetting the budget. Collector suppression remains separate.
+
+TCP connection attempts divide the remaining absolute deadline among the remaining resolved addresses so that one blackholed address cannot consume all fallback time. DNS, connection setup and delivery still share the original deadline; this does not increase the 500 ms cumulative telemetry budget.
+
+Before reusing an idle connection, the worker performs a nonblocking TLS probe. Ready TLS control messages are processed within the original deadline and do not by themselves force reconnection; a closed connection, TLS failure or unexpected application data retires the connection before sending the next request. This is not event replay: after request transmission starts, failure still drops that event. A peer can close immediately after the probe, so best-effort delivery cannot eliminate that race.
+
 ## System TLS requirement
 
 The worker loads system OpenSSL in preference order **3, 1.1, 1.0.2, then 1.0.1**. No OpenSSL headers, downloaded OpenSSL source, or bundled TLS implementation are needed to build this client. Runtime discovery checks both the library version and required APIs; an `openssl` command on PATH alone does not establish support.

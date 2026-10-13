@@ -16,19 +16,36 @@ add_executable(commontests
     TelemetryProxyUT.cpp
     TelemetryTlsProviderUT.cpp
     TelemetryTlsUT.cpp
+    TelemetryTransportUT.cpp
     TelemetryResolverUT.cpp
     TelemetryUT.cpp
     TelemetryWorkerUT.cpp
     ../telemetry/Telemetry.c
     ../telemetry/Tls.c
+    ../telemetry/Transport.c
 )
 
 # Isolate mocked implementations by source file; other tests link the real telemetry library.
+set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/Transport.c
+    APPEND PROPERTY COMPILE_DEFINITIONS
+        TelemetryTransport=TelemetryTestTransport
+        TelemetryTransportCreate=TelemetryTestTransportCreate
+        TelemetryTransportSend=TelemetryTestTransportSend
+        TelemetryTransportSuppressed=TelemetryTestTransportSuppressed
+        TelemetryTransportDestroy=TelemetryTestTransportDestroy
+        TelemetryTlsCreate=TelemetryTransportTestTlsCreate
+        TelemetryLookupHost=TelemetryTransportTestLookupHost
+        clock_gettime=TelemetryTransportTestClockGetTime
+        connect=TelemetryTransportTestConnect
+        poll=TelemetryTransportTestPoll
+        getsockopt=TelemetryTransportTestGetSockOpt)
+
 set_property(SOURCE TelemetryTlsProviderUT.cpp ../telemetry/Tls.c
     APPEND PROPERTY COMPILE_DEFINITIONS
         TelemetryTls=TelemetryTestTls
         TelemetryTlsCreate=TelemetryTestTlsCreate
         TelemetryTlsHandshake=TelemetryTestTlsHandshake
+        TelemetryTlsCheckIdle=TelemetryTestTlsCheckIdle
         TelemetryTlsWrite=TelemetryTestTlsWrite
         TelemetryTlsRead=TelemetryTestTlsRead
         TelemetryTlsDestroy=TelemetryTestTlsDestroy

@@ -10,8 +10,11 @@
 #include <csignal>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
+#include <fstream>
+#include <iterator>
 #include <poll.h>
 #include <spawn.h>
 #include <string>
@@ -280,6 +283,30 @@ TelemetryWorkerFrame Request(const RawWorker& worker, uint32_t size)
 
     return request;
 }
+
+class WorkerPath
+{
+public:
+    char directory[64] = "/tmp/osconfig-worker-path-XXXXXX";
+    std::string path;
+
+    WorkerPath()
+    {
+        if (nullptr != mkdtemp(directory))
+        {
+            path = std::string(directory) + "/worker";
+        }
+    }
+
+    ~WorkerPath()
+    {
+        if (!path.empty())
+        {
+            unlink(path.c_str());
+            rmdir(directory);
+        }
+    }
+};
 }
 
 class TelemetryWorkerTest : public ::testing::Test
@@ -423,6 +450,46 @@ TEST_F(TelemetryWorkerTest, RejectsMismatchedStartupProtocol)
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, NULL));
 }
 
+TEST_F(TelemetryWorkerTest, PermanentStartupFailureIsSharedBySendAndResolveUntilDestroy)
+{
+    WorkerPath executable;
+    TelemetryProperty property = {};
+    const char* initialTargets[] = {nullptr, TELEMETRY_WORKER_BAD_READY_PATH, "/bin/false"};
+
+    ASSERT_FALSE(executable.path.empty());
+    property.name = "CrashInfo";
+    property.type = TelemetryPropertyString;
+    property.value.stringValue = "fixture";
+
+    for (const char* target : initialTargets)
+    {
+        SCOPED_TRACE(target ? target : "missing executable");
+        if (nullptr != target)
+        {
+            ASSERT_EQ(0, symlink(target, executable.path.c_str()));
+        }
+        ASSERT_EQ(0, Create(executable.path.c_str()));
+        const int status = TelemetryWorkerSendEvent(worker, "CrashDetected", &property, 1, nullptr);
+        EXPECT_TRUE(status == ENOENT || status == EPIPE || status == EPROTO) << status;
+
+        if (nullptr != target)
+        {
+            ASSERT_EQ(0, unlink(executable.path.c_str()));
+        }
+        ASSERT_EQ(0, symlink(TELEMETRY_WORKER_LOOKUP_PATH, executable.path.c_str()));
+        EXPECT_EQ(status, TelemetryWorkerResolve(worker, "worker-pid", &result, nullptr));
+        EXPECT_EQ(0U, result.count);
+        EXPECT_EQ(status, TelemetryWorkerSendEvent(worker, "CrashDetected", &property, 1, nullptr));
+        ASSERT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+
+        ASSERT_EQ(0, Create(executable.path.c_str()));
+        ASSERT_EQ(0, TelemetryWorkerResolve(worker, "worker-pid", &result, nullptr));
+        EXPECT_GT(Pid(), 0U);
+        ASSERT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+        ASSERT_EQ(0, unlink(executable.path.c_str()));
+    }
+}
+
 TEST_F(TelemetryWorkerTest, DropsTimedOutOperationAndRestartsOnlyForTheNextCall)
 {
     uint32_t first = 0;
@@ -437,6 +504,33 @@ TEST_F(TelemetryWorkerTest, DropsTimedOutOperationAndRestartsOnlyForTheNextCall)
     EXPECT_EQ(ECHILD, errno);
     ASSERT_EQ(0, TelemetryWorkerResolve(worker, "worker-pid", &result, NULL));
     EXPECT_NE(first, Pid());
+}
+
+TEST_F(TelemetryWorkerTest, TransientStartupFailureCanRecoverWithinOriginalInvocation)
+{
+    const char* previous = getenv("OSCONFIG_TEST_READY_STATUS");
+    const bool hadPrevious = nullptr != previous;
+    const std::string saved = hadPrevious ? previous : "";
+
+    for (const int error : {EAGAIN, ENOMEM, ETIMEDOUT})
+    {
+        SCOPED_TRACE(error);
+        ASSERT_EQ(0, Create(TELEMETRY_WORKER_FAULT_PATH));
+        ASSERT_EQ(0, setenv("OSCONFIG_TEST_READY_STATUS", std::to_string(error).c_str(), 1));
+        const int status = TelemetryWorkerResolve(worker, "split", &result, nullptr);
+        const int cleared = unsetenv("OSCONFIG_TEST_READY_STATUS");
+        EXPECT_EQ(error, status);
+        EXPECT_EQ(0, cleared);
+        EXPECT_EQ(0U, result.count);
+        EXPECT_EQ(0, TelemetryWorkerResolve(worker, "split", &result, nullptr));
+        EXPECT_EQ(1U, result.count);
+        EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+    }
+
+    if (hadPrevious)
+    {
+        EXPECT_EQ(0, setenv("OSCONFIG_TEST_READY_STATUS", saved.c_str(), 1));
+    }
 }
 
 TEST_F(TelemetryWorkerTest, RestartDoesNotResetTelemetryBudget)
@@ -538,9 +632,41 @@ TEST_F(TelemetryWorkerTest, RejectsAutoReapingAndPreservesHostSignalDisposition)
     EXPECT_EQ(0, observeStatus);
     EXPECT_EQ(SIG_IGN, observed.sa_handler);
     ASSERT_EQ(0, restoreStatus);
+    EXPECT_EQ(ENOTSUP, TelemetryWorkerResolve(worker, "worker-pid", &result, NULL));
+    ASSERT_EQ(0, TelemetryWorkerDestroy(&worker, NULL));
+    ASSERT_EQ(0, Create());
     ASSERT_EQ(0, TelemetryWorkerResolve(worker, "worker-pid", &result, NULL));
     ASSERT_EQ(0, sigaction(SIGPIPE, NULL, &pipeAfter));
     EXPECT_EQ(pipeBefore.sa_handler, pipeAfter.sa_handler);
+}
+
+TEST_F(TelemetryWorkerTest, ClientFailureDiagnosticsAreInformational)
+{
+    WorkerPath files;
+    ASSERT_FALSE(files.path.empty());
+    OsConfigLogHandle log = OpenLog(files.path.c_str(), nullptr);
+    ASSERT_NE(nullptr, log);
+    const LoggingLevel original = GetLoggingLevel();
+    SetLoggingLevel(LoggingLevelInformational);
+
+    EXPECT_EQ(EINVAL, TelemetryWorkerCreate(nullptr, 1, 1, 1, &worker, log));
+    EXPECT_EQ(0, TelemetryWorkerCreate((files.path + ".missing").c_str(), 30000, 10000, 5000, &worker, log));
+    if (nullptr != worker)
+    {
+        const int status = TelemetryWorkerSendEvent(worker, "CrashDetected", nullptr, 0, log);
+        EXPECT_EQ(EINVAL, status);
+        EXPECT_NE(0, TelemetryWorkerResolve(worker, "127.0.0.1", &result, log));
+        EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, log));
+    }
+
+    CloseLog(&log);
+    SetLoggingLevel(original);
+    std::ifstream input(files.path);
+    const std::string contents((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+    EXPECT_NE(std::string::npos, contents.find("TelemetryPackEvent"));
+    EXPECT_NE(std::string::npos, contents.find("StartChild"));
+    EXPECT_NE(std::string::npos, contents.find(std::string("[") + GetLoggingLevelName(LoggingLevelInformational) + "]"));
+    EXPECT_EQ(std::string::npos, contents.find(std::string("[") + GetLoggingLevelName(LoggingLevelError) + "]"));
 }
 
 TEST(TelemetryWorkerProtocolTest, ParentDisconnectEndsIdleWorker)

@@ -422,7 +422,7 @@ cleanup:
         if ((0 != kill(child, SIGKILL)) && (ESRCH != errno))
         {
             killError = errno;
-            OsConfigLogError(log, "TelemetryResolveHost: kill(SIGKILL) failed with %d (%s)", killError, strerror(killError));
+            OsConfigLogInfo(log, "TelemetryResolveHost: kill(SIGKILL) failed with %d (%s)", killError, strerror(killError));
         }
 
         do
@@ -433,7 +433,7 @@ cleanup:
         if (waited < 0)
         {
             waitError = errno;
-            OsConfigLogError(log, "TelemetryResolveHost: waitpid failed with %d (%s)", waitError, strerror(waitError));
+            OsConfigLogInfo(log, "TelemetryResolveHost: waitpid failed with %d (%s)", waitError, strerror(waitError));
 
             if (0 == status)
             {
@@ -447,7 +447,7 @@ cleanup:
     {
         if (0 != (destroyError = posix_spawn_file_actions_destroy(&actions)))
         {
-            OsConfigLogError(log, "TelemetryResolveHost: posix_spawn_file_actions_destroy failed with %d (%s)", destroyError, strerror(destroyError));
+            OsConfigLogInfo(log, "TelemetryResolveHost: posix_spawn_file_actions_destroy failed with %d (%s)", destroyError, strerror(destroyError));
 
             if (0 == status)
             {
@@ -461,7 +461,7 @@ cleanup:
     {
         if (0 != (destroyError = posix_spawnattr_destroy(&attributes)))
         {
-            OsConfigLogError(log, "TelemetryResolveHost: posix_spawnattr_destroy failed with %d (%s)", destroyError, strerror(destroyError));
+            OsConfigLogInfo(log, "TelemetryResolveHost: posix_spawnattr_destroy failed with %d (%s)", destroyError, strerror(destroyError));
 
             if (0 == status)
             {
@@ -476,7 +476,7 @@ cleanup:
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
             closeError = errno;
-            OsConfigLogError(log, "TelemetryResolveHost: close failed with %d (%s)", closeError, strerror(closeError));
+            OsConfigLogInfo(log, "TelemetryResolveHost: close failed with %d (%s)", closeError, strerror(closeError));
 
             if (0 == status)
             {
@@ -488,7 +488,7 @@ cleanup:
 
     if (0 != status)
     {
-        OsConfigLogError(log, "TelemetryResolveHost: %s failed with %d (%s); getaddrinfo returned %d (%s), wait status %d",
+        OsConfigLogInfo(log, "TelemetryResolveHost: %s failed with %d (%s); getaddrinfo returned %d (%s), wait status %d",
             stage, status, strerror(status), reply.lookupError, (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error", childStatus);
     }
     else

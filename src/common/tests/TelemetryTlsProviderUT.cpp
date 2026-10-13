@@ -69,6 +69,8 @@ std::string missingSymbol, hostname, ipAddress, serverName, configurationFile;
 int missingProvider = -1;
 int initializeResult = 1, configurationResult = 1, trustResult = 1;
 int connectResult = 1;
+int connectionError = 1, peekResult = -1, peeks = 0;
+int peekDescriptor = -1;
 int initialized = 0, configured = 0, modules = 0, engines = 0, contextCount = 0;
 long minimum = 0, verificationResult = 0;
 unsigned long configurationFlags = 0;
@@ -210,7 +212,7 @@ long ConnectionControl(ssl_st*, int command, long type, void* value)
 }
 
 int Connect(ssl_st*) { return verificationResult ? -1 : connectResult; }
-int ConnectionError(const ssl_st*, int) { return 1; }
+int ConnectionError(const ssl_st*, int) { return connectionError; }
 long VerifyResult(const ssl_st*) { return verificationResult; }
 void GetAlpn(const ssl_st*, const unsigned char** protocol, unsigned int* size)
 {
@@ -223,6 +225,16 @@ x509_st* PeerCertificate(const ssl_st*) { return peerPresent ? &certificate : nu
 void FreeCertificate(x509_st*) {}
 int Write(ssl_st*, const void*, int size) { ++writes; return size; }
 int Read(ssl_st*, void*, int) { return -1; }
+int Peek(ssl_st*, void*, int)
+{
+    ++peeks;
+    if (peekDescriptor >= 0)
+    {
+        char control = 0;
+        EXPECT_EQ(1, recv(peekDescriptor, &control, 1, MSG_DONTWAIT));
+    }
+    return peekResult;
+}
 
 void* GetAlternativeNames(x509_st*, int nid, int* critical, int* index)
 {
@@ -509,6 +521,7 @@ extern "C" void* TelemetryTestDlsym(void* library, const char* name) noexcept
     SYMBOL("X509_free", FreeCertificate);
     SYMBOL("SSL_write", Write);
     SYMBOL("SSL_read", Read);
+    SYMBOL("SSL_peek", Peek);
     SYMBOL("ERR_clear_error", ClearErrors);
     SYMBOL("ERR_get_error", GetError);
 #undef SYMBOL
@@ -723,6 +736,106 @@ TEST(TelemetryTlsProviderDeathTest, DoesNotDowngradeAfterProtocolFailure)
         Prepare(0);
         connectResult = -1;
         ExpectHandshakeFailure(0, EPROTO);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, InvalidPeerIsNotMaskedByClosedDescriptor)
+{
+    PROVIDER_CASE({
+        Prepare(0);
+        TelemetryTls* tls = nullptr;
+        ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
+        const int descriptor = socket(AF_INET, SOCK_STREAM, 0);
+        ASSERT_GE(descriptor, 0);
+        ASSERT_EQ(0, close(descriptor));
+        EXPECT_EQ(EINVAL, TelemetryTlsHandshake(tls, descriptor, "bad\nname", Deadline(), nullptr));
+        EXPECT_EQ(EBADF, TelemetryTlsHandshake(tls, descriptor, "example.test", Deadline(), nullptr));
+        EXPECT_EQ(EINVAL, TelemetryTlsWrite(tls, "x", 1, Deadline(), nullptr));
+        TelemetryTlsDestroy(&tls, nullptr);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, IdleProbeKeepsWantReadButRetiresClosedOrUnexpectedData)
+{
+    PROVIDER_CASE({
+        Prepare101();
+        for (const int error : {2, 3, 5, 6, 1, 0})
+        {
+            TelemetryTls* tls = nullptr;
+            ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
+            int sockets[2] = {-1, -1};
+            ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sockets));
+            const int descriptor = sockets[0];
+            ASSERT_EQ(0, fcntl(descriptor, F_SETFL, O_NONBLOCK));
+            ASSERT_EQ(0, TelemetryTlsHandshake(tls, descriptor, "example.test", Deadline(), nullptr));
+            connectionError = error;
+            peekResult = error ? -1 : 1;
+            peeks = 0;
+            bool reusable = true;
+            EXPECT_EQ(0, TelemetryTlsCheckIdle(tls, &reusable, Deadline(), nullptr));
+            EXPECT_EQ(2 == error, reusable);
+            EXPECT_EQ(1, peeks);
+            EXPECT_EQ(2 == error ? 0 : EINVAL, TelemetryTlsWrite(tls, "x", 1, Deadline(), nullptr));
+            EXPECT_GE(fcntl(descriptor, F_GETFL), 0);
+            TelemetryTlsDestroy(&tls, nullptr);
+            ASSERT_EQ(0, close(descriptor));
+            ASSERT_EQ(0, close(sockets[1]));
+        }
+        EXPECT_EQ(1, initialized);
+        EXPECT_EQ(6U, opened.size());
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, IdleProbeDrainsReadyControlRecordsAndDetectsFollowingClose)
+{
+    PROVIDER_CASE({
+        Prepare101();
+        TelemetryTls* tls = nullptr;
+        int sockets[2] = {-1, -1};
+        ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
+        ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, sockets));
+        ASSERT_EQ(0, fcntl(sockets[0], F_SETFL, O_NONBLOCK));
+        ASSERT_EQ(0, TelemetryTlsHandshake(tls, sockets[0], "example.test", Deadline(), nullptr));
+        connectionError = 2;
+        peekDescriptor = sockets[0];
+        ASSERT_EQ(2, send(sockets[1], "ab", 2, MSG_NOSIGNAL));
+        bool reusable = false;
+        EXPECT_EQ(0, TelemetryTlsCheckIdle(tls, &reusable, Deadline(), nullptr));
+        EXPECT_TRUE(reusable);
+        EXPECT_EQ(2, peeks);
+        EXPECT_EQ(0, writes);
+
+        ASSERT_EQ(1, send(sockets[1], "c", 1, MSG_NOSIGNAL));
+        ASSERT_EQ(0, close(sockets[1]));
+        EXPECT_EQ(0, TelemetryTlsCheckIdle(tls, &reusable, Deadline(), nullptr));
+        EXPECT_FALSE(reusable);
+        EXPECT_EQ(3, peeks);
+        EXPECT_EQ(EINVAL, TelemetryTlsWrite(tls, "x", 1, Deadline(), nullptr));
+        TelemetryTlsDestroy(&tls, nullptr);
+        ASSERT_EQ(0, close(sockets[0]));
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, IdleProbeHonorsDeadlineWithoutTouchingProvider)
+{
+    PROVIDER_CASE({
+        Prepare(0);
+        TelemetryTls* tls = nullptr;
+        bool reusable = true;
+        EXPECT_EQ(EINVAL, TelemetryTlsCheckIdle(nullptr, &reusable, Deadline(), nullptr));
+        EXPECT_FALSE(reusable);
+        ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
+        const int descriptor = socket(AF_INET, SOCK_STREAM, 0);
+        ASSERT_GE(descriptor, 0);
+        ASSERT_EQ(0, fcntl(descriptor, F_SETFL, O_NONBLOCK));
+        ASSERT_EQ(0, TelemetryTlsHandshake(tls, descriptor, "example.test", Deadline(), nullptr));
+        EXPECT_EQ(EINVAL, TelemetryTlsCheckIdle(tls, nullptr, Deadline(), nullptr));
+        EXPECT_EQ(ETIMEDOUT, TelemetryTlsCheckIdle(tls, &reusable, 0, nullptr));
+        EXPECT_FALSE(reusable);
+        EXPECT_EQ(0, peeks);
+        EXPECT_EQ(EINVAL, TelemetryTlsWrite(tls, "x", 1, Deadline(), nullptr));
+        TelemetryTlsDestroy(&tls, nullptr);
+        ASSERT_EQ(0, close(descriptor));
     });
 }
 

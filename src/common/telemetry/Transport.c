@@ -83,6 +83,8 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
     int remaining = 0;
     int status = 0;
     uint16_t port = 0;
+    int64_t now = 0;
+    int64_t addressDeadline = 0;
     size_t i = 0;
     struct sockaddr_storage* address = NULL;
     struct sockaddr_in ipv4 = {0};
@@ -111,12 +113,21 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
 
     for (i = 0; i < addresses.count; ++i)
     {
-        operation = "TelemetryDeadlineRemaining";
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        operation = "TelemetryMonotonicTime";
+        if (0 != (status = TelemetryMonotonicTime(&now)))
         {
             break;
         }
 
+        if (now >= deadline)
+        {
+            operation = "connection deadline check";
+            status = ETIMEDOUT;
+            break;
+        }
+
+        // Leave a share of the unchanged operation deadline for every remaining address.
+        addressDeadline = now + ((deadline - now) / (int64_t)(addresses.count - i));
         address = &addresses.addresses[i];
 
         if (AF_INET == address->ss_family)
@@ -152,7 +163,7 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
         }
         else
         {
-            if (0 == (status = WaitSocket(descriptor, POLLOUT, deadline, &operation)))
+            if (0 == (status = WaitSocket(descriptor, POLLOUT, addressDeadline, &operation)))
             {
                 operation = "getsockopt(SO_ERROR)";
                 error = 0;
@@ -173,9 +184,10 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
         if (0 == status)
         {
             transport->descriptor = descriptor;
-            return 0;
+            break;
         }
 
+        OsConfigLogInfo(log, "Connect: address %zu of %zu failed at %s with %d (%s)", i + 1, addresses.count, operation, status, strerror(status));
         if (0 != close(descriptor))
         {
             error = errno;
@@ -449,6 +461,7 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token, con
     unsigned char bytes[2048] = {0};
     size_t size = 0;
     bool eof = false;
+    bool reusable = false;
 
     if (NULL != response)
     {
@@ -471,6 +484,21 @@ int TelemetryTransportSend(TelemetryTransport* transport, const char* token, con
     if (0 != (status = TelemetryHttpBuildRequest(token, clientVersion, uploadTimeMilliseconds, eventSize, headers, sizeof(headers), &headerSize, log)))
     {
         goto failed;
+    }
+
+    if (transport->descriptor >= 0)
+    {
+        stage = "TelemetryTlsCheckIdle";
+
+        if (0 != (status = TelemetryTlsCheckIdle(transport->tls, &reusable, deadline, log)))
+        {
+            goto failed;
+        }
+
+        if (!reusable)
+        {
+            Disconnect(transport, log);
+        }
     }
 
     if (transport->descriptor < 0)

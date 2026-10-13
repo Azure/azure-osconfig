@@ -94,6 +94,7 @@ typedef struct TlsApi
     void (*X509_free)(Certificate*);
     int (*SSL_write)(Ssl*, const void*, int);
     int (*SSL_read)(Ssl*, void*, int);
+    int (*SSL_peek)(Ssl*, void*, int);
     void (*ERR_clear_error)(void);
     unsigned long (*ERR_get_error)(void);
     void (*ERR_error_string_n)(unsigned long, char*, size_t);
@@ -225,6 +226,7 @@ static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion, uns
     LOAD_TLS_SYMBOL(X509_free);
     LOAD_TLS_SYMBOL(SSL_write);
     LOAD_TLS_SYMBOL(SSL_read);
+    LOAD_TLS_SYMBOL(SSL_peek);
     LOAD_TLS_SYMBOL(ERR_clear_error);
     LOAD_TLS_SYMBOL(ERR_get_error);
     if (0 == status)
@@ -609,11 +611,11 @@ static int Failure(TelemetryTls* tls, const char* function, const char* operatio
 
     if (0 != providerError)
     {
-        OsConfigLogInfo(log, "%s: %s failed with %d (%s); OpenSSL error 0x%lx (%s)", function, operation, status, strerror(status), providerError, providerText);
+        OsConfigLogError(log, "%s: %s failed with %d (%s); OpenSSL error 0x%lx (%s)", function, operation, status, strerror(status), providerError, providerText);
     }
     else
     {
-        OsConfigLogInfo(log, "%s: %s failed with %d (%s)", function, operation, status, strerror(status));
+        OsConfigLogError(log, "%s: %s failed with %d (%s)", function, operation, status, strerror(status));
     }
 
     if (NULL != tls)
@@ -835,7 +837,8 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     else if (NULL != tls->connection)
     {
         // Do not invalidate an existing session on an accidental second attach.
-        return Failure(NULL, __func__, "connection state validation", EALREADY, log);
+        operation = "connection state validation";
+        status = EALREADY;
     }
     else
     {
@@ -850,17 +853,20 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
             }
         }
 
-        flags = fcntl(descriptor, F_GETFL);
+        if (0 == status)
+        {
+            flags = fcntl(descriptor, F_GETFL);
 
-        if (flags < 0)
-        {
-            operation = "fcntl(F_GETFL)";
-            status = (0 != errno) ? errno : EIO;
-        }
-        else if (!(flags & O_NONBLOCK))
-        {
-            operation = "nonblocking descriptor validation";
-            status = EINVAL;
+            if (flags < 0)
+            {
+                operation = "fcntl(F_GETFL)";
+                status = (0 != errno) ? errno : EIO;
+            }
+            else if (!(flags & O_NONBLOCK))
+            {
+                operation = "nonblocking descriptor validation";
+                status = EINVAL;
+            }
         }
 
         if (0 == status)
@@ -999,6 +1005,86 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     {
         tls->connected = true;
     }
+    return status;
+}
+
+int TelemetryTlsCheckIdle(TelemetryTls* tls, bool* reusable, int64_t deadline, OsConfigLogHandle log)
+{
+    int status = 0;
+    int remaining = 0;
+    int done = 0;
+    int sslError = 0;
+    int systemError = 0;
+    int ready = 0;
+    struct pollfd item = {0};
+    unsigned char byte = 0;
+    const char* operation = "TelemetryDeadlineRemaining";
+
+    if (NULL != reusable)
+    {
+        *reusable = false;
+    }
+
+    if ((NULL == tls) || !tls->connected || (NULL == reusable))
+    {
+        return Failure(NULL, __func__, "argument validation", EINVAL, log);
+    }
+
+    while (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    {
+        // A raw socket probe cannot distinguish TLS control records from EOF.
+        // Drain ready control records without waiting or consuming application data.
+        g_api.ERR_clear_error();
+        errno = 0;
+        done = g_api.SSL_peek(tls->connection, &byte, 1);
+        systemError = errno;
+        sslError = (done > 0) ? 0 : g_api.SSL_get_error(tls->connection, done);
+
+        if ((done > 0) || (TlsWantRead != sslError))
+        {
+            OsConfigLogInfo(log, "TelemetryTlsCheckIdle: retiring idle connection before sending; SSL_peek returned %d, SSL error %d, system error %d", done, sslError, systemError);
+            Disconnect(tls);
+            break;
+        }
+
+        // Older providers can report WANT_READ after a control record even when
+        // more records or EOF are already readable. Do not mistake that for idle.
+        item = (struct pollfd){tls->descriptor, POLLIN, 0};
+        ready = poll(&item, 1, 0);
+
+        if (0 == ready)
+        {
+            *reusable = true;
+            break;
+        }
+        else if (ready > 0)
+        {
+            if (0 != (item.revents & (POLLHUP | POLLERR | POLLNVAL)))
+            {
+                OsConfigLogInfo(log, "TelemetryTlsCheckIdle: retiring idle connection before sending; socket events 0x%x", (unsigned int)item.revents);
+                Disconnect(tls);
+                break;
+            }
+        }
+        else if (EINTR != errno)
+        {
+            operation = "poll";
+            status = (0 != errno) ? errno : EIO;
+            break;
+        }
+    }
+
+    if (0 == status)
+    {
+        status = TelemetryDeadlineRemaining(deadline, &remaining);
+    }
+
+    if (0 != status)
+    {
+        *reusable = false;
+        status = Failure(tls, __func__, operation, status, log);
+    }
+
     return status;
 }
 

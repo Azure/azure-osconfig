@@ -52,7 +52,7 @@ int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, si
     if ((NULL == size) || (NULL == payload) || (NULL == properties) || (0 == count) || (count > TELEMETRY_MAX_PROPERTY_COUNT) ||
         (capacity < sizeof(uint32_t)) || (capacity > TELEMETRY_MAX_EVENT_SIZE))
     {
-        OsConfigLogError(log, "TelemetryPackEvent: argument validation failed with %d (%s)", status, strerror(status));
+        OsConfigLogInfo(log, "TelemetryPackEvent: argument validation failed with %d (%s)", status, strerror(status));
         return status;
     }
 
@@ -85,7 +85,7 @@ int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, si
     }
     else
     {
-        OsConfigLogError(log, "TelemetryPackEvent: %s failed with %d (%s)", operation, status, strerror(status));
+        OsConfigLogInfo(log, "TelemetryPackEvent: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
     return status;

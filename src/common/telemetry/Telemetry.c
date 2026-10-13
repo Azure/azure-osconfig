@@ -121,7 +121,7 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
 
     if (0 != status)
     {
-        OsConfigLogError(log, "TelemetryInitializeInternal: %s failed with %d (%s)", operation, status, strerror(status));
+        OsConfigLogInfo(log, "TelemetryInitializeInternal: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
     free(directory);
@@ -141,7 +141,7 @@ void TelemetryCleanup(OsConfigLogHandle log)
 
     if (0 != (status = TelemetryWorkerDestroy(&g_worker, log)))
     {
-        OsConfigLogError(log, "TelemetryCleanup: TelemetryWorkerDestroy failed with %d (%s)", status, strerror(status));
+        OsConfigLogInfo(log, "TelemetryCleanup: TelemetryWorkerDestroy failed with %d (%s)", status, strerror(status));
     }
 
     // Retain ownership if the exact child could not be reaped.
@@ -170,7 +170,7 @@ static bool BeginEvent(int64_t* started)
     {
         if (0 != (status = TelemetryMonotonicTime(started)))
         {
-            OsConfigLogError(g_log, "BeginEvent: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
+            OsConfigLogInfo(g_log, "BeginEvent: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
         }
         else
         {
@@ -213,7 +213,7 @@ void OSConfigTimeStampSave(void)
         status = errno;
         if (g_initialized)
         {
-            OsConfigLogError(g_log, "OSConfigTimeStampSave: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
+            OsConfigLogInfo(g_log, "OSConfigTimeStampSave: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
         }
     }
     else
@@ -223,7 +223,7 @@ void OSConfigTimeStampSave(void)
         if ((0 != setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, value, 1)) && g_initialized)
         {
             status = errno;
-            OsConfigLogError(g_log, "OSConfigTimeStampSave: setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR) failed with %d (%s)", status, strerror(status));
+            OsConfigLogInfo(g_log, "OSConfigTimeStampSave: setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR) failed with %d (%s)", status, strerror(status));
         }
     }
 }
@@ -241,7 +241,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
     {
         if (g_initialized)
         {
-            OsConfigLogError(g_log, "OSConfigGetElapsedTime: output validation failed with %d (%s)", EINVAL, strerror(EINVAL));
+            OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: output validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         }
 
         return;
@@ -260,7 +260,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
             status = (0 != errno) ? errno : EINVAL;
             if (g_initialized)
             {
-                OsConfigLogError(g_log, "OSConfigGetElapsedTime: strtoll/start timestamp validation failed with %d (%s)", status, strerror(status));
+                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: strtoll/start timestamp validation failed with %d (%s)", status, strerror(status));
             }
         }
         else if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
@@ -268,7 +268,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
             status = errno;
             if (g_initialized)
             {
-                OsConfigLogError(g_log, "OSConfigGetElapsedTime: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
+                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
             }
         }
         else
@@ -281,7 +281,7 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
             }
             else if (g_initialized)
             {
-                OsConfigLogError(g_log, "OSConfigGetElapsedTime: elapsed-time validation failed with %d (%s); start timestamp is in the future", EINVAL, strerror(EINVAL));
+                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: elapsed-time validation failed with %d (%s); start timestamp is in the future", EINVAL, strerror(EINVAL));
             }
         }
     }

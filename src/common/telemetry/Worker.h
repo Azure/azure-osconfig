@@ -22,10 +22,12 @@ int TelemetryInitializeInternal(OsConfigLogHandle log);
 // handling while it is owned. workerPath is a trusted absolute executable path.
 // *worker must initially be NULL. Creation does not spawn or perform network I/O.
 // Lifetime includes audit time; the telemetry budget charges only API execution.
+// Permanent startup/READY failures are retained until this invocation is destroyed.
 int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker, OsConfigLogHandle log);
 
 // Starts the worker lazily and reuses it. IPC/process failure drops this operation
-// and reaps the child; a later call may start another within the ORIGINAL budget.
+// and reaps the child; a later call may start another within the ORIGINAL budget
+// unless a permanent startup failure has disabled this invocation.
 // A lookup failure does not require a new worker. Output is cleared on failure.
 int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host, TelemetryResolvedHost* result, OsConfigLogHandle log);
 

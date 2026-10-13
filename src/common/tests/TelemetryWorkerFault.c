@@ -56,10 +56,12 @@ int main(void)
     char host[TELEMETRY_RESOLVER_HOST_LIMIT + 1] = {0};
     unsigned char packet[sizeof(response) + sizeof(reply) + 1] = {0};
     size_t size = 0;
+    const char* startupStatus = getenv("OSCONFIG_TEST_READY_STATUS");
 
     ready.magic = TELEMETRY_WORKER_MAGIC;
     ready.version = TELEMETRY_WORKER_VERSION;
     ready.operation = TELEMETRY_WORKER_READY;
+    ready.status = (NULL != startupStatus) ? atoi(startupStatus) : 0;
 #ifdef TELEMETRY_TEST_BAD_READY
     ++ready.version;
 #endif

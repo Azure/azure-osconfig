@@ -429,7 +429,7 @@ public:
     {
         Require(value >= 0, "Socket creation/accept failed");
     }
-    ~Socket() { close(value); }
+    ~Socket() { if (value >= 0) { close(value); } }
     Socket(const Socket&) = delete;
     Socket& operator=(const Socket&) = delete;
     int value;
@@ -637,9 +637,10 @@ std::set<std::string> Correlations(const std::string& body)
     return result;
 }
 
-void Aria(int listener, SSL_CTX* context, const std::string& mode)
+void Aria(int listener, SSL_CTX* context, const std::string& mode, const std::string& directory)
 {
-    const int connections = OneOf(mode, {"aria-close", "aria-recover", "aria-worker-recover"}) ? 2 : 1;
+    const bool idle = Starts(mode, "aria-idle-");
+    const int connections = idle || OneOf(mode, {"aria-close", "aria-recover", "aria-worker-recover"}) ? 2 : 1;
     std::set<std::string> bodies;
     std::string correlation;
     for (int index = 0; index < connections; ++index)
@@ -780,6 +781,41 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode)
             connection.Send("HTTP/1.1 " + status + "\r\nContent-Length: " + std::to_string(response.size()) +
                 "\r\n" + extra + "\r\n" + response);
         }
+        if (idle && index == 0)
+        {
+            // Wait until the first response has been completely consumed.
+            for (int attempt = 0; access((directory + "/idle-ready").c_str(), F_OK) != 0; ++attempt)
+            {
+                Require(errno == ENOENT && attempt < 5000, "Waiting for idle transition failed");
+                usleep(1000);
+            }
+            if (mode == "aria-idle-data")
+            {
+                connection.Send("unexpected application data");
+            }
+            else
+            {
+                if (mode == "aria-idle-close")
+                {
+                    Require(SSL_shutdown(connection.tls.get()) >= 0, "Sending idle close_notify failed");
+                }
+                else if (mode == "aria-idle-reset")
+                {
+                    const linger reset = {1, 0};
+                    Require(0 == setsockopt(connection.socket.value, SOL_SOCKET, SO_LINGER, &reset, sizeof(reset)),
+                        "Idle reset setup failed");
+                }
+                Require(0 == close(connection.socket.value), "Closing idle socket failed");
+                connection.socket.value = -1;
+            }
+            FILE* marker = fopen((directory + "/idle-ended").c_str(), "w");
+            Require(marker != nullptr, "Opening idle marker failed");
+            Require(0 == fclose(marker), "Closing idle marker failed");
+            if (mode == "aria-idle-data")
+            {
+                connection.ExpectDisconnect();
+            }
+        }
         if (OneOf(mode, {"aria-throttle", "aria-kill", "aria-reject", "aria-empty", "aria-bad-kill",
             "aria-live-throttle", "aria-live-reject", "aria-live-empty", "aria-worker-throttle",
             "aria-worker-kill", "aria-worker-bad-kill", "aria-worker-reject", "aria-worker-empty"}))
@@ -913,7 +949,7 @@ int main(int argc, char** argv)
             "Port output failed");
         if (Starts(mode, "aria-"))
         {
-            Aria(listener.value, context.get(), mode);
+            Aria(listener.value, context.get(), mode, argv[1]);
         }
         else
         {
