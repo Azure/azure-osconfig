@@ -10,9 +10,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
-    SshUtilsUT.cpp
     TelemetryUT.cpp
-    Helper.c
 )
 
 target_link_libraries(commontests
