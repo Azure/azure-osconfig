@@ -6,6 +6,12 @@ Reusable code is built into one static library, `telemetry`. Source files are se
 
 Telemetry is always built. The worker is installed with OSConfig and included in both audit and remediation policy packages; there is no telemetry-off build variant. This does not bypass runtime requirements: sending still requires an initialized invocation, an ingestion key, and a supported TLS runtime. Telemetry failures remain isolated from the audited or remediated operation's result. The live Aria test remains explicit-only.
 
+## Policy correlation
+
+For each event, the producer prefers a nonempty `activityId` environment variable for `CorrelationId`. If it is unset or empty, the producer reads `/var/lib/GuestConfig/Configuration/activityId.txt` using commonutils `LoadStringFromFile`, including its existing file-existence and locking behavior. MC writes the raw activity ID without an added newline; this is not the Aria ingestion key.
+
+The ID is resolved for each event rather than cached across policy jobs. Missing or empty results retain `N/A` with an informational diagnostic; they do not prevent event submission. File-read time is included in metadata preparation accounting, and the allocated contents are released after synchronous submission, including when the budget prevents sending. This reuses the existing reader, not a size- or time-bounded file-read API.
+
 ## Failure isolation and connection reuse
 
 Client-side telemetry diagnostics are informational, including producer initialization, event packing and worker IPC/process failures. Failures that prevent delivery inside `OSConfigTelemetry` remain errors. Recoverable connection retirement and unsuccessful address candidates are informational; failure of the overall send is an error in the worker, not in its caller.

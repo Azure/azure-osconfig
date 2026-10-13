@@ -74,6 +74,11 @@ set_property(SOURCE TelemetryUT.cpp ../telemetry/Telemetry.c
         SetFileAccess=TelemetryTestSetFileAccess
         GetOsPrettyName=TelemetryTestGetOsPrettyName)
 
+# The test wrapper redirects only the path, retaining the real commonutils reader.
+set_property(SOURCE ../telemetry/Telemetry.c
+    APPEND PROPERTY COMPILE_DEFINITIONS
+        LoadStringFromFile=TelemetryTestLoadStringFromFile)
+
 target_link_libraries(commontests
     GTest::gtest
     GTest::gtest_main

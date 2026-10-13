@@ -18,6 +18,7 @@
 #define TELEMETRY_WORK_BUDGET_MS 500
 #define TELEMETRY_OPERATION_MS 500
 #define TELEMETRY_LIFETIME_MS 600000
+#define TELEMETRY_CORRELATIONID_FILE "/var/lib/GuestConfig/Configuration/activityId.txt"
 
 static TelemetryWorker* g_worker = NULL;
 static OsConfigLogHandle g_log = NULL;
@@ -181,11 +182,32 @@ static bool BeginEvent(int64_t* started)
     return ready;
 }
 
+static const char* GetCorrelationId(char** fileContent)
+{
+    const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);
+
+    if ((NULL == correlationId) || ('\0' == correlationId[0]))
+    {
+        *fileContent = LoadStringFromFile(TELEMETRY_CORRELATIONID_FILE, false, g_log);
+        correlationId = *fileContent;
+
+        if ((NULL == correlationId) || ('\0' == correlationId[0]))
+        {
+            OsConfigLogInfo(g_log, "GetCorrelationId: environment variable '%s' is unset or empty and could not load a nonempty value from '%s'; using '%s'",
+                TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, TELEMETRY_CORRELATIONID_FILE, TELEMETRY_NOTFOUND_STRING);
+            correlationId = TELEMETRY_NOTFOUND_STRING;
+        }
+    }
+
+    return correlationId;
+}
+
 static void SubmitEvent(const char* name, const char* const* names, const char* const* values, size_t count, int64_t started)
 {
     const char* timestamp = GetFormattedTime();
+    char* correlationIdFromFile = NULL;
     const char* commonNames[] = {"DistroName", "CorrelationId", "Version", "Timestamp"};
-    const char* commonValues[] = {g_distroName, getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR), OSCONFIG_VERSION, timestamp};
+    const char* commonValues[] = {g_distroName, GetCorrelationId(&correlationIdFromFile), OSCONFIG_VERSION, timestamp};
     TelemetryProperty properties[TELEMETRY_MAX_PROPERTY_COUNT] = {0};
     size_t i = 0;
 
@@ -200,6 +222,8 @@ static void SubmitEvent(const char* name, const char* const* names, const char* 
     {
         TelemetryWorkerSendEvent(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
     }
+
+    free(correlationIdFromFile);
 }
 
 void OSConfigTimeStampSave(void)

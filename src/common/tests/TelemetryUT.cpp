@@ -8,18 +8,30 @@
 #include <CommonUtils.h>
 #include <cerrno>
 #include <cstdlib>
+#include <fstream>
 #include <map>
 #include <string>
+#include <unistd.h>
 
 // This suite uses a separately named copy of the real producer with mocked
 // worker/platform calls. Other commontests suites retain the real functions.
-// No network, chmod, or machine-file writes.
+// No network, chmod, or system-configuration writes. File reads use temporary fixtures.
 struct TelemetryWorker {};
 static TelemetryWorker workerInstance;
 static int creates, destroys, sends, createStatus, preparationStatus;
 static int lifetime, budget, operation;
 static std::string eventName, workerPath;
 static std::map<std::string, std::string> fields;
+static std::string activityFilePath;
+static int activityFileReads, preparationFileReads;
+
+extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEol, OsConfigLogHandle log)
+{
+    EXPECT_STREQ("/var/lib/GuestConfig/Configuration/activityId.txt", path);
+    EXPECT_FALSE(stopAtEol);
+    ++activityFileReads;
+    return LoadStringFromFile(activityFilePath.c_str(), stopAtEol, log);
+}
 
 extern "C" int TelemetryWorkerCreate(const char* path, int lifetimeMs, int budgetMs,
     int operationMs, TelemetryWorker** worker, OsConfigLogHandle)
@@ -80,6 +92,7 @@ extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
 extern "C" int TelemetryWorkerAccountPreparation(TelemetryWorker*, int64_t started, OsConfigLogHandle)
 {
     EXPECT_GT(started, 0);
+    preparationFileReads = activityFileReads;
 
     return preparationStatus;
 }
@@ -96,16 +109,52 @@ extern "C" char* GetOsPrettyName(OsConfigLogHandle)
 
 class TelemetryProducerTest : public ::testing::Test
 {
+protected:
+    std::string directory, savedActivityId;
+    bool hadActivityId = false;
+
     void SetUp() override
     {
+        char temporary[] = "/tmp/osconfig-activity-id-XXXXXX";
+        const char* original = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);
+
+        hadActivityId = nullptr != original;
+        savedActivityId = hadActivityId ? original : "";
+        ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
         TelemetryCleanup(nullptr);
         creates = destroys = sends = createStatus = preparationStatus = 0;
+        activityFileReads = preparationFileReads = 0;
+        activityFilePath.clear();
         fields.clear();
+        ASSERT_NE(nullptr, mkdtemp(temporary));
+        directory = temporary;
+        activityFilePath = directory + "/activityId.txt";
     }
 
     void TearDown() override
     {
         TelemetryCleanup(nullptr);
+        EXPECT_EQ(0, hadActivityId ?
+            setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, savedActivityId.c_str(), 1) :
+            unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
+        if (!directory.empty())
+        {
+            if ((0 != unlink(activityFilePath.c_str())) && (ENOENT != errno))
+            {
+                ADD_FAILURE() << "Cannot remove activity ID fixture: " << strerror(errno);
+            }
+            EXPECT_EQ(0, rmdir(directory.c_str()));
+        }
+        activityFilePath.clear();
+    }
+
+    void WriteActivityId(const std::string& value)
+    {
+        std::ofstream output(activityFilePath, std::ios::binary);
+        ASSERT_TRUE(output.is_open());
+        output << value;
+        output.close();
+        ASSERT_FALSE(output.fail());
     }
 };
 
@@ -144,23 +193,80 @@ TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)
 
 TEST_F(TelemetryProducerTest, PreservesAllFourNamedStringSchemasAndSpecialCharacters)
 {
+    WriteActivityId("file-activity-id");
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryBaselineRun("baseline\"\\\n", "Audit", 1.25);
     EXPECT_EQ("BaselineRun", eventName);
     EXPECT_EQ("baseline\"\\\n", fields["BaselineName"]);
     EXPECT_EQ("1.25", fields["DurationSeconds"]);
     EXPECT_EQ("Synthetic distro", fields["DistroName"]);
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     EXPECT_FALSE(fields["Timestamp"].empty());
     OSConfigTelemetryRuleComplete("component", "object", 5, INT64_C(4294967296));
     EXPECT_EQ("RuleComplete", eventName);
     EXPECT_EQ("4294967296", fields["Microseconds"]);
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     OSConfigTelemetryStatusTrace("function", EIO);
     EXPECT_EQ("StatusTrace", eventName);
     EXPECT_EQ(std::to_string(EIO), fields["ResultCode"]);
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     OSConfigTelemetryCrashDetected("quote\" slash\\ newline\ncrash");
     EXPECT_EQ("CrashDetected", eventName);
     EXPECT_EQ("quote\" slash\\ newline\ncrash", fields["CrashInfo"]);
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     EXPECT_EQ(4, sends);
+    EXPECT_EQ(4, activityFileReads);
+}
+
+TEST_F(TelemetryProducerTest, EnvironmentCorrelationIdTakesPrecedenceWithoutReadingFile)
+{
+    WriteActivityId("file-activity-id");
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-activity-id", 1));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("fixture");
+    EXPECT_EQ("environment-activity-id", fields["CorrelationId"]);
+    EXPECT_EQ(0, activityFileReads);
+}
+
+TEST_F(TelemetryProducerTest, EmptyEnvironmentCorrelationIdFallsBackToFile)
+{
+    WriteActivityId("file-activity-id");
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "", 1));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("fixture");
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
+    EXPECT_EQ(1, activityFileReads);
+}
+
+TEST_F(TelemetryProducerTest, MissingOrEmptyCorrelationIdFileRetainsPlaceholder)
+{
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("missing file");
+    EXPECT_EQ("N/A", fields["CorrelationId"]);
+    WriteActivityId("");
+    OSConfigTelemetryCrashDetected("empty file");
+    EXPECT_EQ("N/A", fields["CorrelationId"]);
+    EXPECT_EQ(2, activityFileReads);
+    EXPECT_EQ(2, sends);
+}
+
+TEST_F(TelemetryProducerTest, CorrelationIdIsResolvedAgainForEachEvent)
+{
+    WriteActivityId("first-file-id");
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("first");
+    EXPECT_EQ("first-file-id", fields["CorrelationId"]);
+    WriteActivityId("second-file-id");
+    OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
+    EXPECT_EQ("second-file-id", fields["CorrelationId"]);
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-id", 1));
+    OSConfigTelemetryRuleComplete("component", "object", 0, 0);
+    EXPECT_EQ("environment-id", fields["CorrelationId"]);
+    EXPECT_EQ(2, activityFileReads);
+    ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
+    OSConfigTelemetryCrashDetected("file again");
+    EXPECT_EQ("second-file-id", fields["CorrelationId"]);
+    EXPECT_EQ(3, activityFileReads);
 }
 
 TEST_F(TelemetryProducerTest, NullOptionalValuesUseExplicitPlaceholder)
@@ -198,12 +304,16 @@ TEST_F(TelemetryProducerTest, CallsOutsideInvocationDoNotStartAWorker)
     OSConfigTelemetryCrashDetected("after cleanup");
     EXPECT_EQ(1, creates);
     EXPECT_EQ(0, sends);
+    EXPECT_EQ(0, activityFileReads);
 }
 
 TEST_F(TelemetryProducerTest, ExhaustedPreparationBudgetDoesNotBeginSend)
 {
+    WriteActivityId("file-activity-id");
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     preparationStatus = ETIMEDOUT;
     OSConfigTelemetryCrashDetected("dropped");
     EXPECT_EQ(0, sends);
+    EXPECT_EQ(1, activityFileReads);
+    EXPECT_EQ(1, preparationFileReads);
 }
