@@ -15,6 +15,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 // Opaque public OpenSSL ABI types; no OpenSSL build-time dependency.
 typedef struct ssl_st Ssl;
@@ -24,6 +25,12 @@ typedef struct x509_st Certificate;
 typedef struct X509_VERIFY_PARAM_st VerifyParameters;
 typedef struct x509_store_ctx_st VerifyContext;
 typedef struct ossl_init_settings_st InitSettings;
+typedef struct stack_st OpenSslStack;
+typedef struct stack_st_GENERAL_NAME GeneralNames;
+typedef struct GENERAL_NAME_st GeneralName;
+typedef struct asn1_string_st Asn1String;
+typedef struct X509_name_st CertificateName;
+typedef struct X509_name_entry_st CertificateNameEntry;
 
 enum
 {
@@ -42,7 +49,13 @@ enum
     TlsIgnoreUnexpectedEof = 0x80,
     TlsNoCompression = 0x20000,
     TlsConfigIgnoreMissingFile = 0x10,
-    TlsConfigDefaultSection = 0x20
+    TlsConfigDefaultSection = 0x20,
+    TlsSubjectAltName = 85,
+    TlsCommonName = 13,
+    TlsDnsName = 2,
+    TlsIpAddress = 7,
+    TlsIa5String = 22,
+    TlsOctetString = 4
 };
 
 typedef struct TlsApi
@@ -84,6 +97,20 @@ typedef struct TlsApi
     void (*ERR_clear_error)(void);
     unsigned long (*ERR_get_error)(void);
     void (*ERR_error_string_n)(unsigned long, char*, size_t);
+    void* (*X509_get_ext_d2i)(Certificate*, int, int*, int*);
+    int (*sk_num)(const OpenSslStack*);
+    void* (*sk_value)(const OpenSslStack*, int);
+    void* (*GENERAL_NAME_get0_value)(GeneralName*, int*);
+    void (*GENERAL_NAMES_free)(GeneralNames*);
+    int (*ASN1_STRING_type)(Asn1String*);
+    int (*ASN1_STRING_length)(const Asn1String*);
+    unsigned char* (*ASN1_STRING_data)(Asn1String*);
+    int (*ASN1_STRING_to_UTF8)(unsigned char**, Asn1String*);
+    CertificateName* (*X509_get_subject_name)(Certificate*);
+    int (*X509_NAME_get_index_by_NID)(CertificateName*, int, int);
+    CertificateNameEntry* (*X509_NAME_get_entry)(CertificateName*, int);
+    Asn1String* (*X509_NAME_ENTRY_get_data)(CertificateNameEntry*);
+    void (*CRYPTO_free)(void*);
 } TlsApi;
 
 struct TelemetryTls
@@ -97,7 +124,7 @@ struct TelemetryTls
 // Private to the exec'd worker. Never unload provider code underneath its
 // registered runtime callbacks; the owned worker's exit reclaims these maps.
 static TlsApi g_api;
-static void* g_libraries[5];
+static void* g_libraries[8];
 static bool g_attempted = false;
 static int g_providerStatus = ENOTSUP;
 
@@ -106,29 +133,36 @@ static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion, uns
     void* symbol = NULL;
     void* peer = NULL;
     unsigned long version = 0;
+    int status = 0;
 
     *missingSymbol = NULL;
 
 #define LOAD_TLS_NAMED(member, name) do \
 { \
-    symbol = dlsym(library, name); \
-    \
-    if (NULL == symbol) \
+    if (0 == status) \
     { \
-        *missingSymbol = name; \
-        return ENOSYS; \
+        symbol = dlsym(library, name); \
+        if (NULL == symbol) \
+        { \
+            *missingSymbol = name; \
+            status = ENOSYS; \
+        } \
+        else \
+        { \
+            _Static_assert(sizeof(symbol) == sizeof(api->member), "Unsupported POSIX function pointer ABI"); \
+            memcpy(&api->member, &symbol, sizeof(symbol)); \
+        } \
     } \
-    \
-    _Static_assert(sizeof(symbol) == sizeof(api->member), "Unsupported POSIX function pointer ABI"); \
-    memcpy(&api->member, &symbol, sizeof(symbol)); \
 } while (0)
 #define LOAD_TLS_SYMBOL(member) LOAD_TLS_NAMED(member, #member)
     LOAD_TLS_NAMED(OpenSSL_version_num, (minimumVersion < 0x10100000UL) ? "SSLeay" : "OpenSSL_version_num");
-    version = api->OpenSSL_version_num();
-
-    if ((version < minimumVersion) || (version >= maximumVersion))
+    if (0 == status)
     {
-        return ENOTSUP;
+        version = api->OpenSSL_version_num();
+        if ((version < minimumVersion) || (version >= maximumVersion))
+        {
+            status = ENOTSUP;
+        }
     }
 
     if (version < 0x10100000UL)
@@ -138,9 +172,11 @@ static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion, uns
         LOAD_TLS_SYMBOL(OPENSSL_load_builtin_modules);
         LOAD_TLS_SYMBOL(CONF_modules_load_file);
         LOAD_TLS_NAMED(TLS_client_method, "TLSv1_2_client_method");
-        symbol = dlsym(library, "ENGINE_load_builtin_engines");
-        memcpy(&api->ENGINE_load_builtin_engines, &symbol, sizeof(symbol));
-
+        if (0 == status)
+        {
+            symbol = dlsym(library, "ENGINE_load_builtin_engines");
+            memcpy(&api->ENGINE_load_builtin_engines, &symbol, sizeof(symbol));
+        }
     }
     else
     {
@@ -153,27 +189,50 @@ static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion, uns
     LOAD_TLS_SYMBOL(SSL_CTX_ctrl);
     LOAD_TLS_SYMBOL(SSL_CTX_set_verify);
     LOAD_TLS_SYMBOL(SSL_CTX_set_default_verify_paths);
-    LOAD_TLS_SYMBOL(SSL_CTX_set_alpn_protos);
     LOAD_TLS_SYMBOL(SSL_new);
     LOAD_TLS_SYMBOL(SSL_free);
     LOAD_TLS_SYMBOL(SSL_set_fd);
-    LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_host);
-    LOAD_TLS_SYMBOL(SSL_get0_param);
-    LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set_hostflags);
-    LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_ip_asc);
+    if (version < 0x10002000UL)
+    {
+        LOAD_TLS_SYMBOL(X509_get_ext_d2i);
+        LOAD_TLS_SYMBOL(sk_num);
+        LOAD_TLS_SYMBOL(sk_value);
+        LOAD_TLS_SYMBOL(GENERAL_NAME_get0_value);
+        LOAD_TLS_SYMBOL(GENERAL_NAMES_free);
+        LOAD_TLS_SYMBOL(ASN1_STRING_type);
+        LOAD_TLS_SYMBOL(ASN1_STRING_length);
+        LOAD_TLS_SYMBOL(ASN1_STRING_data);
+        LOAD_TLS_SYMBOL(ASN1_STRING_to_UTF8);
+        LOAD_TLS_SYMBOL(X509_get_subject_name);
+        LOAD_TLS_SYMBOL(X509_NAME_get_index_by_NID);
+        LOAD_TLS_SYMBOL(X509_NAME_get_entry);
+        LOAD_TLS_SYMBOL(X509_NAME_ENTRY_get_data);
+        LOAD_TLS_SYMBOL(CRYPTO_free);
+    }
+    else
+    {
+        LOAD_TLS_SYMBOL(SSL_CTX_set_alpn_protos);
+        LOAD_TLS_SYMBOL(SSL_get0_alpn_selected);
+        LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_host);
+        LOAD_TLS_SYMBOL(SSL_get0_param);
+        LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set_hostflags);
+        LOAD_TLS_SYMBOL(X509_VERIFY_PARAM_set1_ip_asc);
+    }
     LOAD_TLS_SYMBOL(SSL_ctrl);
     LOAD_TLS_SYMBOL(SSL_connect);
     LOAD_TLS_SYMBOL(SSL_get_error);
     LOAD_TLS_SYMBOL(SSL_get_verify_result);
-    LOAD_TLS_SYMBOL(SSL_get0_alpn_selected);
     LOAD_TLS_SYMBOL(X509_free);
     LOAD_TLS_SYMBOL(SSL_write);
     LOAD_TLS_SYMBOL(SSL_read);
     LOAD_TLS_SYMBOL(ERR_clear_error);
     LOAD_TLS_SYMBOL(ERR_get_error);
-    symbol = dlsym(library, "ERR_error_string_n");
-    _Static_assert(sizeof(symbol) == sizeof(api->ERR_error_string_n), "Unsupported POSIX function pointer ABI");
-    memcpy(&api->ERR_error_string_n, &symbol, sizeof(symbol));
+    if (0 == status)
+    {
+        symbol = dlsym(library, "ERR_error_string_n");
+        _Static_assert(sizeof(symbol) == sizeof(api->ERR_error_string_n), "Unsupported POSIX function pointer ABI");
+        memcpy(&api->ERR_error_string_n, &symbol, sizeof(symbol));
+    }
 
     // The options ABI changed from unsigned long to uint64_t in OpenSSL 3.
     if (version >= 0x30000000UL)
@@ -188,23 +247,28 @@ static int LoadApi(void* library, TlsApi* api, unsigned long minimumVersion, uns
 #undef LOAD_TLS_SYMBOL
 #undef LOAD_TLS_NAMED
 
-    peer = dlsym(library, "SSL_get1_peer_certificate");
-
-    if (NULL == peer)
+    if (0 == status)
     {
-        peer = dlsym(library, "SSL_get_peer_certificate");
+        peer = dlsym(library, "SSL_get1_peer_certificate");
+
+        if (NULL == peer)
+        {
+            peer = dlsym(library, "SSL_get_peer_certificate");
+        }
+
+        if (NULL == peer)
+        {
+            *missingSymbol = "SSL_get1_peer_certificate/SSL_get_peer_certificate";
+            status = ENOSYS;
+        }
+        else
+        {
+            _Static_assert(sizeof(peer) == sizeof(api->GetPeerCertificate), "Unsupported POSIX function pointer ABI");
+            memcpy(&api->GetPeerCertificate, &peer, sizeof(peer));
+        }
     }
 
-    if (NULL == peer)
-    {
-        *missingSymbol = "SSL_get1_peer_certificate/SSL_get_peer_certificate";
-        return ENOSYS;
-    }
-
-    _Static_assert(sizeof(peer) == sizeof(api->GetPeerCertificate), "Unsupported POSIX function pointer ABI");
-    memcpy(&api->GetPeerCertificate, &peer, sizeof(peer));
-
-    return 0;
+    return status;
 }
 
 static int LoadProvider(OsConfigLogHandle log)
@@ -219,7 +283,11 @@ static int LoadProvider(OsConfigLogHandle log)
         {"libssl.so.1.1", 0x10100000UL, 0x10200000UL},
         {"libssl.so.1.0.2", 0x10002000UL, 0x10003000UL},
         {"libssl.so.10", 0x10002000UL, 0x10003000UL},
-        {"libssl.so.1.0.0", 0x10002000UL, 0x10003000UL}
+        {"libssl.so.1.0.0", 0x10002000UL, 0x10003000UL},
+        // Try every 1.0.2 candidate before considering the exceptional 1.0.1 path.
+        {"libssl.so.1.0.1", 0x10001000UL, 0x10002000UL},
+        {"libssl.so.10", 0x10001000UL, 0x10002000UL},
+        {"libssl.so.1.0.0", 0x10001000UL, 0x10002000UL}
     };
     size_t i = 0;
     TlsApi api = {0};
@@ -229,15 +297,13 @@ static int LoadProvider(OsConfigLogHandle log)
     const char* rejectedProvider = NULL;
     const char* missingSymbol = NULL;
     int apiStatus = 0;
+    bool selected = false;
+    bool discover = !g_attempted;
 
-    if (g_attempted)
-    {
-        return g_providerStatus;
-    }
+    _Static_assert(ARRAY_SIZE(providers) == ARRAY_SIZE(g_libraries), "Provider handle storage must match discovery candidates");
 
     g_attempted = true;
-
-    for (i = 0; i < ARRAY_SIZE(providers); ++i)
+    for (i = 0; discover && (i < ARRAY_SIZE(providers)); ++i)
     {
         api = (TlsApi){0};
         g_libraries[i] = dlopen(providers[i].name, RTLD_NOW | RTLD_LOCAL);
@@ -254,6 +320,7 @@ static int LoadProvider(OsConfigLogHandle log)
         }
 
         g_api = api;
+        selected = true;
 
         if (NULL != g_api.OPENSSL_init_ssl)
         {
@@ -290,28 +357,33 @@ static int LoadProvider(OsConfigLogHandle log)
 
         if (0 != g_providerStatus)
         {
-            OsConfigLogError(log, "LoadProvider: %s failed with %d (%s); provider %s", operation, g_providerStatus, strerror(g_providerStatus), providers[i].name);
+            OsConfigLogInfo(log, "LoadProvider: %s failed with %d (%s); provider %s", operation, g_providerStatus, strerror(g_providerStatus), providers[i].name);
         }
-
-        return g_providerStatus;
+        else if (providers[i].minimum == 0x10001000UL)
+        {
+            OsConfigLogInfo(log, "LoadProvider: using last-resort OpenSSL 1.0.1 provider %s", providers[i].name);
+        }
+        break;
     }
 
-    if (NULL != missingSymbol)
+    if (discover && !selected)
     {
-        OsConfigLogError(log, "LoadProvider: dlsym(%s) failed with %d (%s); last rejected provider %s, no usable OpenSSL runtime",
-            missingSymbol, apiStatus, strerror(apiStatus), rejectedProvider);
+        if (NULL != missingSymbol)
+        {
+            OsConfigLogInfo(log, "LoadProvider: dlsym(%s) failed with %d (%s); last rejected provider %s, no usable OpenSSL runtime",
+                missingSymbol, apiStatus, strerror(apiStatus), rejectedProvider);
+        }
+        else if (NULL != rejectedProvider)
+        {
+            OsConfigLogInfo(log, "LoadProvider: OpenSSL version compatibility check failed with %d (%s); last rejected provider %s, no usable OpenSSL runtime",
+                apiStatus, strerror(apiStatus), rejectedProvider);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "LoadProvider: supported OpenSSL runtime discovery failed with %d (%s); no usable OpenSSL 3, 1.1, 1.0.2 or 1.0.1 runtime",
+                g_providerStatus, strerror(g_providerStatus));
+        }
     }
-    else if (NULL != rejectedProvider)
-    {
-        OsConfigLogError(log, "LoadProvider: OpenSSL version compatibility check failed with %d (%s); last rejected provider %s, no usable OpenSSL runtime",
-            apiStatus, strerror(apiStatus), rejectedProvider);
-    }
-    else
-    {
-        OsConfigLogError(log, "LoadProvider: supported OpenSSL runtime discovery failed with %d (%s); no usable OpenSSL 3, 1.1 or 1.0.2 runtime",
-            g_providerStatus, strerror(g_providerStatus));
-    }
-
     return g_providerStatus;
 }
 
@@ -323,15 +395,191 @@ static int WorkerSignals(OsConfigLogHandle log)
     if (0 != sigaction(SIGPIPE, NULL, &action))
     {
         status = (0 != errno) ? errno : EIO;
-        OsConfigLogError(log, "WorkerSignals: sigaction(SIGPIPE) failed with %d (%s)", status, strerror(status));
+        OsConfigLogInfo(log, "WorkerSignals: sigaction(SIGPIPE) failed with %d (%s)", status, strerror(status));
     }
     else
     {
         status = (SIG_IGN == action.sa_handler) ? 0 : ENOTSUP;
         if (0 != status)
         {
-            OsConfigLogError(log, "WorkerSignals: SIGPIPE disposition check failed with %d (%s)", status, strerror(status));
+            OsConfigLogInfo(log, "WorkerSignals: SIGPIPE disposition check failed with %d (%s)", status, strerror(status));
         }
+    }
+
+    return status;
+}
+
+static bool LegacyDnsNameMatches(const unsigned char* name, int length, const char* peer)
+{
+    size_t peerLength = strlen(peer);
+    size_t labelLength = 0;
+    int dots = 0;
+    int i = 0;
+    bool valid = (NULL != name) && (length > 0) && (length <= 254);
+    bool wildcard = false;
+    bool matches = false;
+    const char* suffix = NULL;
+
+    if (valid)
+    {
+        if ('.' == name[length - 1])
+        {
+            length--;
+        }
+        if ((peerLength > 0) && ('.' == peer[peerLength - 1]))
+        {
+            peerLength--;
+        }
+        valid = (length > 0) && (length <= 253) && (peerLength > 0);
+        wildcard = (length > 2) && ('*' == name[0]) && ('.' == name[1]);
+
+        for (i = 0; valid && (i < length); ++i)
+        {
+            if ('.' == name[i])
+            {
+                valid = (labelLength > 0) && (labelLength <= 63);
+                labelLength = 0;
+                dots++;
+            }
+            else
+            {
+                valid = ((name[i] >= 'a') && (name[i] <= 'z')) || ((name[i] >= 'A') && (name[i] <= 'Z')) ||
+                    ((name[i] >= '0') && (name[i] <= '9')) || ('-' == name[i]) || ('_' == name[i]) || (wildcard && (0 == i));
+                labelLength++;
+            }
+        }
+        valid = valid && (labelLength > 0) && (labelLength <= 63);
+
+        if (valid && wildcard)
+        {
+            // A wildcard consumes one non-IDNA label and requires at least two suffix labels.
+            suffix = strchr(peer, '.');
+            matches = (dots >= 2) && (NULL != suffix) && (suffix != peer) && (0 != strncasecmp(peer, "xn--", 4)) &&
+                (peerLength - (size_t)(suffix - peer) == (size_t)length - 1) &&
+                (0 == strncasecmp((const char*)name + 1, suffix, (size_t)length - 1));
+        }
+        else if (valid)
+        {
+            matches = (peerLength == (size_t)length) && (0 == strncasecmp((const char*)name, peer, peerLength));
+        }
+    }
+
+    return matches;
+}
+
+static int VerifyLegacyIdentity(Certificate* certificate, const char* peer, const unsigned char* address, size_t addressSize, OsConfigLogHandle log)
+{
+    GeneralNames* names = NULL;
+    GeneralName* name = NULL;
+    Asn1String* value = NULL;
+    CertificateName* subject = NULL;
+    CertificateNameEntry* entry = NULL;
+    unsigned char* text = NULL;
+    const unsigned char* data = NULL;
+    int critical = -1;
+    int count = 0;
+    int i = 0;
+    int type = 0;
+    int length = 0;
+    int index = -1;
+    int status = 0;
+    bool dnsPresent = false;
+    bool matches = false;
+
+    // OpenSSL 1.0.1 performs chain verification, but has no built-in peer-name check.
+    names = g_api.X509_get_ext_d2i(certificate, TlsSubjectAltName, &critical, NULL);
+    if (NULL == names)
+    {
+        // -1 means absent; decode failures and duplicate SAN extensions must fail closed.
+        if (-1 != critical)
+        {
+            status = EACCES;
+        }
+    }
+    else
+    {
+        count = g_api.sk_num((const OpenSslStack*)names);
+        if (count <= 0)
+        {
+            status = EACCES;
+        }
+        for (i = 0; (0 == status) && (i < count); ++i)
+        {
+            name = g_api.sk_value((const OpenSslStack*)names, i);
+            if (NULL == name)
+            {
+                status = EACCES;
+                break;
+            }
+            value = g_api.GENERAL_NAME_get0_value(name, &type);
+            if ((TlsDnsName != type) && (TlsIpAddress != type))
+            {
+                continue;
+            }
+            if (NULL == value)
+            {
+                status = EACCES;
+                break;
+            }
+            data = g_api.ASN1_STRING_data(value);
+            length = g_api.ASN1_STRING_length(value);
+            if ((NULL == data) || (length <= 0))
+            {
+                status = EACCES;
+            }
+            else if (TlsDnsName == type)
+            {
+                dnsPresent = true;
+                if ((length > 254) || (TlsIa5String != g_api.ASN1_STRING_type(value)) || (NULL != memchr(data, '\0', (size_t)length)))
+                {
+                    status = EACCES;
+                }
+                else if ((0 == addressSize) && LegacyDnsNameMatches(data, length, peer))
+                {
+                    matches = true;
+                }
+            }
+            else if ((TlsOctetString != g_api.ASN1_STRING_type(value)) || ((4 != length) && (16 != length)))
+            {
+                status = EACCES;
+            }
+            else if ((addressSize == (size_t)length) && (0 == memcmp(data, address, addressSize)))
+            {
+                matches = true;
+            }
+        }
+        g_api.GENERAL_NAMES_free(names);
+    }
+
+    // DNS SANs take precedence. IP literals never fall back to DNS SANs or the subject CN.
+    if ((0 == status) && (0 == addressSize) && !dnsPresent)
+    {
+        subject = g_api.X509_get_subject_name(certificate);
+        if (NULL != subject)
+        {
+            index = g_api.X509_NAME_get_index_by_NID(subject, TlsCommonName, -1);
+        }
+        if ((index >= 0) && (-1 == g_api.X509_NAME_get_index_by_NID(subject, TlsCommonName, index)))
+        {
+            entry = g_api.X509_NAME_get_entry(subject, index);
+            value = (NULL != entry) ? g_api.X509_NAME_ENTRY_get_data(entry) : NULL;
+            if (NULL != value)
+            {
+                length = g_api.ASN1_STRING_length(value);
+                // Bound conversion before OpenSSL allocates the UTF-8 representation.
+                if ((length > 0) && (length <= 4 * 254))
+                {
+                    length = g_api.ASN1_STRING_to_UTF8(&text, value);
+                    matches = LegacyDnsNameMatches(text, length, peer);
+                    g_api.CRYPTO_free(text);
+                }
+            }
+        }
+    }
+    if ((0 != status) || !matches)
+    {
+        status = EACCES;
+        OsConfigLogInfo(log, "VerifyLegacyIdentity: certificate identity verification failed (%d)", status);
     }
 
     return status;
@@ -361,11 +609,11 @@ static int Failure(TelemetryTls* tls, const char* function, const char* operatio
 
     if (0 != providerError)
     {
-        OsConfigLogError(log, "%s: %s failed with %d (%s); OpenSSL error 0x%lx (%s)", function, operation, status, strerror(status), providerError, providerText);
+        OsConfigLogInfo(log, "%s: %s failed with %d (%s); OpenSSL error 0x%lx (%s)", function, operation, status, strerror(status), providerError, providerText);
     }
     else
     {
-        OsConfigLogError(log, "%s: %s failed with %d (%s)", function, operation, status, strerror(status));
+        OsConfigLogInfo(log, "%s: %s failed with %d (%s)", function, operation, status, strerror(status));
     }
 
     if (NULL != tls)
@@ -427,7 +675,7 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
 
     if (0 != status)
     {
-        OsConfigLogError(log, "Wait: %s failed with %d (%s); SSL_get_error returned %d", operation, status, strerror(status), sslError);
+        OsConfigLogInfo(log, "Wait: %s failed with %d (%s); SSL_get_error returned %d", operation, status, strerror(status), sslError);
     }
 
     return status;
@@ -458,16 +706,13 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
     {
         operation = "TelemetryDeadlineRemaining";
     }
+    else if (0 != (status = LoadProvider(log)))
+    {
+        // Provider initialization/configuration failures never trigger fallback.
+        operation = "LoadProvider";
+    }
     else
     {
-        status = LoadProvider(log);
-
-        // Provider initialization/configuration failures never trigger fallback.
-        if (0 != status)
-        {
-            return Failure(NULL, __func__, "LoadProvider", status, log);
-        }
-
         g_api.ERR_clear_error();
         created = calloc(1, sizeof(*created));
 
@@ -502,7 +747,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
 
                 g_api.SSL_CTX_set_verify(created->context, TlsVerifyPeer, NULL);
 
-                if (0 != g_api.SSL_CTX_set_alpn_protos(created->context, http11, sizeof(http11)))
+                if ((NULL != g_api.SSL_CTX_set_alpn_protos) && (0 != g_api.SSL_CTX_set_alpn_protos(created->context, http11, sizeof(http11))))
                 {
                     operation = "SSL_CTX_set_alpn_protos";
                     status = EIO;
@@ -568,7 +813,9 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     int status = 0;
     int remaining = 0;
     unsigned char address[16] = {0};
+    size_t addressSize = 0;
     bool ip = false;
+    bool attached = false;
     const char* c = NULL;
     int flags = 0;
     VerifyParameters* parameters = NULL;
@@ -576,7 +823,6 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     int systemError = 0;
     int sslError = 0;
     Certificate* certificate = NULL;
-    bool verified = false;
     const unsigned char* protocol = NULL;
     unsigned int protocolSize = 0;
     unsigned int hostFlags = TlsNoPartialWildcards;
@@ -594,6 +840,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     else
     {
         ip = (1 == inet_pton(AF_INET, peer, address)) || (1 == inet_pton(AF_INET6, peer, address));
+        addressSize = ip ? ((NULL != strchr(peer, ':')) ? 16 : 4) : 0;
 
         for (c = peer; ('\0' != *c) && (0 == status) && !ip; ++c)
         {
@@ -629,63 +876,68 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
         }
     }
 
-    if (0 != status)
+    if (0 == status)
     {
-        return Failure(NULL, __func__, operation, status, log);
+        g_api.ERR_clear_error();
+        tls->descriptor = descriptor;
+        tls->connection = g_api.SSL_new(tls->context);
+        attached = true;
     }
 
-    g_api.ERR_clear_error();
-    tls->descriptor = descriptor;
-    tls->connection = g_api.SSL_new(tls->context);
-
-    if (NULL == tls->connection)
+    if ((0 == status) && (NULL == tls->connection))
     {
-        return Failure(tls, __func__, "SSL_new", EIO, log);
-    }
-
-    parameters = g_api.SSL_get0_param(tls->connection);
-
-    if ((NULL == parameters) || (1 != g_api.SSL_set_fd(tls->connection, descriptor)))
-    {
-        return Failure(tls, __func__, (NULL == parameters) ? "SSL_get0_param" : "SSL_set_fd", EIO, log);
-    }
-
-    if (NULL != g_api.X509_VERIFY_PARAM_get_hostflags)
-    {
-        hostFlags |= g_api.X509_VERIFY_PARAM_get_hostflags(parameters);
-    }
-
-    g_api.X509_VERIFY_PARAM_set_hostflags(parameters, hostFlags);
-
-    if (ip)
-    {
-        if (1 != g_api.X509_VERIFY_PARAM_set1_ip_asc(parameters, peer))
-        {
-            operation = "X509_VERIFY_PARAM_set1_ip_asc";
-            status = EINVAL;
-        }
-    }
-    else if (1 != g_api.X509_VERIFY_PARAM_set1_host(parameters, peer, 0))
-    {
-        operation = "X509_VERIFY_PARAM_set1_host";
+        operation = "SSL_new";
         status = EIO;
     }
-    else if (1 != g_api.SSL_ctrl(tls->connection, TlsSetServerName, 0, (void*)peer))
+    else if ((0 == status) && (1 != g_api.SSL_set_fd(tls->connection, descriptor)))
+    {
+        operation = "SSL_set_fd";
+        status = EIO;
+    }
+    else if ((0 == status) && (NULL != g_api.SSL_get0_param))
+    {
+        parameters = g_api.SSL_get0_param(tls->connection);
+
+        if (NULL == parameters)
+        {
+            operation = "SSL_get0_param";
+            status = EIO;
+        }
+        else
+        {
+            if (NULL != g_api.X509_VERIFY_PARAM_get_hostflags)
+            {
+                hostFlags |= g_api.X509_VERIFY_PARAM_get_hostflags(parameters);
+            }
+            g_api.X509_VERIFY_PARAM_set_hostflags(parameters, hostFlags);
+            if (ip)
+            {
+                if (1 != g_api.X509_VERIFY_PARAM_set1_ip_asc(parameters, peer))
+                {
+                    operation = "X509_VERIFY_PARAM_set1_ip_asc";
+                    status = EINVAL;
+                }
+            }
+            else if (1 != g_api.X509_VERIFY_PARAM_set1_host(parameters, peer, 0))
+            {
+                operation = "X509_VERIFY_PARAM_set1_host";
+                status = EIO;
+            }
+        }
+    }
+
+    if ((0 == status) && !ip && (1 != g_api.SSL_ctrl(tls->connection, TlsSetServerName, 0, (void*)peer)))
     {
         operation = "SSL_ctrl(TlsSetServerName)";
         status = EIO;
     }
 
-    if (0 != status)
+    while (0 == status)
     {
-        return Failure(tls, __func__, operation, status, log);
-    }
-
-    for (;;)
-    {
+        operation = "TelemetryDeadlineRemaining";
         if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
         {
-            return Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log);
+            break;
         }
 
         g_api.ERR_clear_error();
@@ -700,41 +952,54 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
 
         sslError = g_api.SSL_get_error(tls->connection, done);
 
-        if (0 != (status = Wait(tls, sslError, systemError, deadline, log)))
-        {
-            return Failure(tls, __func__, "SSL_connect", status, log);
-        }
+        operation = "SSL_connect";
+        status = Wait(tls, sslError, systemError, deadline, log);
     }
 
-    certificate = g_api.GetPeerCertificate(tls->connection);
-    operation = (NULL == certificate) ? "SSL_get_peer_certificate" : "SSL_get_verify_result";
-    verified = (NULL != certificate) && (0 == g_api.SSL_get_verify_result(tls->connection));
+    if (0 == status)
+    {
+        certificate = g_api.GetPeerCertificate(tls->connection);
+        operation = (NULL == certificate) ? "SSL_get_peer_certificate" : "SSL_get_verify_result";
+        if ((NULL == certificate) || (0 != g_api.SSL_get_verify_result(tls->connection)))
+        {
+            status = EACCES;
+        }
+        else if (NULL == g_api.SSL_get0_param)
+        {
+            operation = "VerifyLegacyIdentity";
+            status = VerifyLegacyIdentity(certificate, peer, address, addressSize, log);
+        }
+    }
 
     if (NULL != certificate)
     {
         g_api.X509_free(certificate);
     }
 
-    if (!verified)
+    if ((0 == status) && (NULL != g_api.SSL_get0_alpn_selected))
     {
-        return Failure(tls, __func__, operation, EACCES, log);
+        g_api.SSL_get0_alpn_selected(tls->connection, &protocol, &protocolSize);
+        if ((0 != protocolSize) && ((8 != protocolSize) || (NULL == protocol) || (0 != memcmp(protocol, "http/1.1", 8))))
+        {
+            operation = "SSL_get0_alpn_selected protocol validation";
+            status = ENOTSUP;
+        }
     }
 
-    g_api.SSL_get0_alpn_selected(tls->connection, &protocol, &protocolSize);
-
-    if ((0 != protocolSize) && ((8 != protocolSize) || (NULL == protocol) || (0 != memcmp(protocol, "http/1.1", 8))))
+    if (0 == status)
     {
-        return Failure(tls, __func__, "SSL_get0_alpn_selected protocol validation", ENOTSUP, log);
+        operation = "TelemetryDeadlineRemaining";
+        status = TelemetryDeadlineRemaining(deadline, &remaining);
     }
-
-    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    if (0 != status)
     {
-        return Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log);
+        Failure(attached ? tls : NULL, __func__, operation, status, log);
     }
-
-    tls->connected = true;
-
-    return 0;
+    else
+    {
+        tls->connected = true;
+    }
+    return status;
 }
 
 int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size, int64_t deadline, OsConfigLogHandle log)

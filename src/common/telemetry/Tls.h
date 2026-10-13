@@ -20,9 +20,9 @@ typedef struct TelemetryTls TelemetryTls;
 // The owned process must ignore SIGPIPE and have its self-exit timer armed.
 // Provider libraries remain mapped until that process exits; objects do not.
 // All deadlines are absolute CLOCK_MONOTONIC nanoseconds, never reset by I/O.
-// Requires system OpenSSL, preferred in order 3, 1.1, then 1.0.2. No bundled TLS.
+// Requires system OpenSSL, preferred in order 3, 1.1, 1.0.2, then 1.0.1. No bundled TLS.
 // An initialization, policy, handshake or verification failure never retries
-// through an older provider. OpenSSL 1.0.1 and earlier are unsupported.
+// through an older provider. 1.0.1 is a last resort, with TLS 1.2 and no ALPN.
 int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle log);
 
 // Borrows an already connected O_NONBLOCK socket (direct or tunneled). Does not

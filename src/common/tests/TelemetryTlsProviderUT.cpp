@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <Tls.h>
 #include <Deadline.h>
+#include <arpa/inet.h>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -21,6 +22,23 @@ struct x509_st {};
 struct X509_VERIFY_PARAM_st {};
 struct x509_store_ctx_st;
 struct ossl_init_settings_st;
+struct asn1_string_st
+{
+    int type;
+    std::string data;
+};
+struct GENERAL_NAME_st
+{
+    int type;
+    asn1_string_st value;
+};
+struct stack_st {};
+struct stack_st_GENERAL_NAME
+{
+    std::vector<GENERAL_NAME_st> values;
+};
+struct X509_name_st {};
+struct X509_name_entry_st {};
 
 namespace
 {
@@ -42,7 +60,8 @@ Provider providers[] = {
     {"libssl.so.1.1", 0x10101000UL, true},
     {"libssl.so.1.0.2", 0x1000215fUL, true},
     {"libssl.so.10", 0x100020bfUL, true},
-    {"libssl.so.1.0.0", 0x1000200fUL, true}
+    {"libssl.so.1.0.0", 0x1000200fUL, true},
+    {"libssl.so.1.0.1", 0x100010ffUL, false}
 };
 Provider* current = nullptr;
 std::vector<std::string> opened;
@@ -62,6 +81,14 @@ ssl_method_st modernMethod, legacyMethod;
 const ssl_method_st* selectedMethod = nullptr;
 X509_VERIFY_PARAM_st parameters;
 x509_st certificate;
+stack_st_GENERAL_NAME alternativeNames = {{{2, {22, "example.test"}}}};
+X509_name_st subject;
+X509_name_entry_st commonNameEntry;
+asn1_string_st commonName = {12, "example.test"};
+int sanCritical = 0, commonNameCount = 1, identityChecks = 0, namesFreed = 0;
+int alpnConfigured = 0, alpnRead = 0, writes = 0;
+bool sanAvailable = true, conversionFails = false;
+bool peerPresent = true;
 
 unsigned long Version() { return current->version; }
 void ClearErrors() {}
@@ -139,6 +166,7 @@ int DefaultTrust(ssl_ctx_st*) { return trustResult; }
 
 int SetAlpn(ssl_ctx_st*, const unsigned char* protocols, unsigned int size)
 {
+    ++alpnConfigured;
     const unsigned char expected[] = {8, 'h', 't', 't', 'p', '/', '1', '.', '1'};
     EXPECT_EQ(sizeof(expected), size);
     EXPECT_EQ(0, memcmp(protocols, expected, sizeof(expected)));
@@ -186,14 +214,62 @@ int ConnectionError(const ssl_st*, int) { return 1; }
 long VerifyResult(const ssl_st*) { return verificationResult; }
 void GetAlpn(const ssl_st*, const unsigned char** protocol, unsigned int* size)
 {
+    ++alpnRead;
     *protocol = reinterpret_cast<const unsigned char*>("http/1.1");
     *size = 8;
 }
 
-x509_st* PeerCertificate(const ssl_st*) { return &certificate; }
+x509_st* PeerCertificate(const ssl_st*) { return peerPresent ? &certificate : nullptr; }
 void FreeCertificate(x509_st*) {}
-int Write(ssl_st*, const void*, int size) { return size; }
+int Write(ssl_st*, const void*, int size) { ++writes; return size; }
 int Read(ssl_st*, void*, int) { return -1; }
+
+void* GetAlternativeNames(x509_st*, int nid, int* critical, int* index)
+{
+    EXPECT_EQ(85, nid);
+    EXPECT_EQ(nullptr, index);
+    ++identityChecks;
+    *critical = sanCritical;
+    return sanAvailable ? &alternativeNames : nullptr;
+}
+
+int StackCount(const stack_st* values)
+{
+    return static_cast<int>(reinterpret_cast<const stack_st_GENERAL_NAME*>(values)->values.size());
+}
+
+void* StackValue(const stack_st*, int index) { return &alternativeNames.values.at(index); }
+void* NameValue(GENERAL_NAME_st* name, int* type) { *type = name->type; return &name->value; }
+void FreeNames(stack_st_GENERAL_NAME*) { ++namesFreed; }
+int StringType(asn1_string_st* value) { return value->type; }
+int StringLength(const asn1_string_st* value) { return static_cast<int>(value->data.size()); }
+unsigned char* StringData(asn1_string_st* value) { return reinterpret_cast<unsigned char*>(&value->data[0]); }
+
+int StringToUtf8(unsigned char** output, asn1_string_st* value)
+{
+    int length = -1;
+    *output = nullptr;
+    if (!conversionFails)
+    {
+        *output = static_cast<unsigned char*>(malloc(value->data.size() + 1));
+        if (nullptr != *output)
+        {
+            memcpy(*output, value->data.c_str(), value->data.size() + 1);
+            length = static_cast<int>(value->data.size());
+        }
+    }
+    return length;
+}
+
+X509_name_st* SubjectName(x509_st*) { return &subject; }
+int CommonNameIndex(X509_name_st*, int nid, int previous)
+{
+    EXPECT_EQ(13, nid);
+    return previous + 1 < commonNameCount ? previous + 1 : -1;
+}
+X509_name_entry_st* NameEntry(X509_name_st*, int) { return &commonNameEntry; }
+asn1_string_st* EntryData(X509_name_entry_st*) { return &commonName; }
+void CryptoFree(void* value) { free(value); }
 
 template<typename Function>
 void* Address(Function function)
@@ -230,12 +306,13 @@ void CreateAndCheck(size_t index, bool exchange = false, bool ip = false)
     TelemetryTls* tls = nullptr;
     int descriptor = -1;
     const bool legacy = index >= 2;
+    const bool oldest = providers[index].version < 0x10002000UL;
 
     ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
     ASSERT_NE(nullptr, tls);
     ASSERT_NE(nullptr, current);
     EXPECT_EQ(&providers[index], current);
-    EXPECT_EQ(index + 1, opened.size());
+    EXPECT_EQ(oldest && index < 5 ? index + 4 : index + 1, opened.size());
     EXPECT_EQ(1, initialized);
     EXPECT_EQ(legacy ? 1 : 0, configured);
     EXPECT_EQ(legacy ? &legacyMethod : &modernMethod, selectedMethod);
@@ -263,12 +340,15 @@ void CreateAndCheck(size_t index, bool exchange = false, bool ip = false)
         ASSERT_EQ(0, fcntl(descriptor, F_SETFL, O_NONBLOCK));
         EXPECT_EQ(0, TelemetryTlsHandshake(tls, descriptor,
             ip ? "127.0.0.1" : "example.test", Deadline(), nullptr));
-        EXPECT_EQ(ip ? "" : "example.test", hostname);
-        EXPECT_EQ(ip ? "127.0.0.1" : "", ipAddress);
+        EXPECT_EQ(oldest || ip ? "" : "example.test", hostname);
+        EXPECT_EQ(!oldest && ip ? "127.0.0.1" : "", ipAddress);
         EXPECT_EQ(ip ? "" : "example.test", serverName);
-        EXPECT_NE(0U, hostFlags & 4U);
+        EXPECT_EQ(oldest ? 0U : 4U, hostFlags & 4U);
+        EXPECT_EQ(oldest ? 1 : 0, identityChecks);
+        EXPECT_EQ(oldest ? 0 : 1, alpnRead);
         EXPECT_EQ(0, TelemetryTlsWrite(tls, "test", 4, Deadline(), nullptr));
     }
+    EXPECT_EQ(oldest ? 0 : 1, alpnConfigured);
 
     TelemetryTlsDestroy(&tls, nullptr);
     EXPECT_EQ(nullptr, tls);
@@ -301,6 +381,30 @@ void ExpectHandshakeFailure(size_t index, int status)
     EXPECT_EQ(status, TelemetryTlsHandshake(tls, descriptor, "example.test", Deadline(), nullptr));
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(tls, "x", 1, Deadline(), nullptr));
     EXPECT_EQ(index + 1, opened.size());
+    TelemetryTlsDestroy(&tls, nullptr);
+    close(descriptor);
+}
+
+void Prepare101()
+{
+    Prepare(5);
+    providers[5].available = true;
+}
+
+void Check101Identity(const char* peer, int expected)
+{
+    TelemetryTls* tls = nullptr;
+    ASSERT_EQ(0, TelemetryTlsCreate(&tls, Deadline(), nullptr));
+    const int descriptor = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GE(descriptor, 0);
+    ASSERT_EQ(0, fcntl(descriptor, F_SETFL, O_NONBLOCK));
+    EXPECT_EQ(expected, TelemetryTlsHandshake(tls, descriptor, peer, Deadline(), nullptr));
+    EXPECT_EQ(expected ? EINVAL : 0, TelemetryTlsWrite(tls, "test", 4, Deadline(), nullptr));
+    EXPECT_EQ(expected ? 0 : 1, writes);
+    EXPECT_EQ(6U, opened.size());
+    EXPECT_EQ(0, alpnConfigured);
+    EXPECT_EQ(0, alpnRead);
+    EXPECT_EQ(sanAvailable ? 1 : 0, namesFreed);
     TelemetryTlsDestroy(&tls, nullptr);
     close(descriptor);
 }
@@ -369,19 +473,39 @@ extern "C" void* TelemetryTestDlsym(void* library, const char* name) noexcept
     SYMBOL("SSL_CTX_ctrl", ContextControl);
     SYMBOL("SSL_CTX_set_verify", SetVerify);
     SYMBOL("SSL_CTX_set_default_verify_paths", DefaultTrust);
-    SYMBOL("SSL_CTX_set_alpn_protos", SetAlpn);
     SYMBOL("SSL_new", CreateConnection);
     SYMBOL("SSL_free", FreeConnection);
     SYMBOL("SSL_set_fd", SetDescriptor);
-    SYMBOL("SSL_get0_param", GetParameters);
-    SYMBOL("X509_VERIFY_PARAM_set1_host", SetHost);
-    SYMBOL("X509_VERIFY_PARAM_set_hostflags", SetHostFlags);
-    SYMBOL("X509_VERIFY_PARAM_set1_ip_asc", SetIp);
+    if (current->version >= 0x10002000UL)
+    {
+        SYMBOL("SSL_CTX_set_alpn_protos", SetAlpn);
+        SYMBOL("SSL_get0_alpn_selected", GetAlpn);
+        SYMBOL("SSL_get0_param", GetParameters);
+        SYMBOL("X509_VERIFY_PARAM_set1_host", SetHost);
+        SYMBOL("X509_VERIFY_PARAM_set_hostflags", SetHostFlags);
+        SYMBOL("X509_VERIFY_PARAM_set1_ip_asc", SetIp);
+    }
+    else
+    {
+        SYMBOL("X509_get_ext_d2i", GetAlternativeNames);
+        SYMBOL("sk_num", StackCount);
+        SYMBOL("sk_value", StackValue);
+        SYMBOL("GENERAL_NAME_get0_value", NameValue);
+        SYMBOL("GENERAL_NAMES_free", FreeNames);
+        SYMBOL("ASN1_STRING_type", StringType);
+        SYMBOL("ASN1_STRING_length", StringLength);
+        SYMBOL("ASN1_STRING_data", StringData);
+        SYMBOL("ASN1_STRING_to_UTF8", StringToUtf8);
+        SYMBOL("X509_get_subject_name", SubjectName);
+        SYMBOL("X509_NAME_get_index_by_NID", CommonNameIndex);
+        SYMBOL("X509_NAME_get_entry", NameEntry);
+        SYMBOL("X509_NAME_ENTRY_get_data", EntryData);
+        SYMBOL("CRYPTO_free", CryptoFree);
+    }
     SYMBOL("SSL_ctrl", ConnectionControl);
     SYMBOL("SSL_connect", Connect);
     SYMBOL("SSL_get_error", ConnectionError);
     SYMBOL("SSL_get_verify_result", VerifyResult);
-    SYMBOL("SSL_get0_alpn_selected", GetAlpn);
     SYMBOL("X509_free", FreeCertificate);
     SYMBOL("SSL_write", Write);
     SYMBOL("SSL_read", Read);
@@ -391,8 +515,8 @@ extern "C" void* TelemetryTestDlsym(void* library, const char* name) noexcept
     return nullptr;
 }
 
-#define PROVIDER_CASE(statement) EXPECT_EXIT( \
-    { statement; _exit(::testing::Test::HasFailure() ? 1 : 0); }, \
+#define PROVIDER_CASE(...) EXPECT_EXIT( \
+    ([&]() { __VA_ARGS__; _exit(::testing::Test::HasFailure() ? 1 : 0); }()), \
     ::testing::ExitedWithCode(0), "")
 
 TEST(TelemetryTlsProviderDeathTest, Prefers3AndPreservesStricterPolicy)
@@ -432,13 +556,12 @@ TEST(TelemetryTlsProviderDeathTest, SupportsDebianUbuntuSoname)
     PROVIDER_CASE({ Prepare(4); CreateAndCheck(4, true); });
 }
 
-TEST(TelemetryTlsProviderDeathTest, Rejects101EvenWithLegacySoname)
+TEST(TelemetryTlsProviderDeathTest, Uses101OnlyAfterAllNewerCandidates)
 {
     PROVIDER_CASE({
         Prepare(4);
         providers[4].version = 0x100010ffUL;
-        ExpectCreateFailure(ENOTSUP);
-        EXPECT_EQ(0, initialized);
+        CreateAndCheck(4, true);
     });
 }
 
@@ -447,7 +570,7 @@ TEST(TelemetryTlsProviderDeathTest, RejectsUnexpectedMajorVersion)
     PROVIDER_CASE({
         Prepare(0);
         providers[0].version = 0x40000000UL;
-        for (size_t i = 1; i < 5; ++i) { providers[i].available = false; }
+        for (size_t i = 1; i < ARRAY_SIZE(providers); ++i) { providers[i].available = false; }
         ExpectCreateFailure(ENOTSUP);
         EXPECT_EQ(0, initialized);
     });
@@ -456,9 +579,9 @@ TEST(TelemetryTlsProviderDeathTest, RejectsUnexpectedMajorVersion)
 TEST(TelemetryTlsProviderDeathTest, ReportsMissingRuntimeWithoutFallback)
 {
     PROVIDER_CASE({
-        Prepare(5);
+        Prepare(ARRAY_SIZE(providers));
         ExpectCreateFailure(ENOTSUP);
-        EXPECT_EQ(5U, opened.size());
+        EXPECT_EQ(8U, opened.size());
         EXPECT_EQ(0, contextCount);
     });
 }
@@ -600,5 +723,243 @@ TEST(TelemetryTlsProviderDeathTest, DoesNotDowngradeAfterProtocolFailure)
         Prepare(0);
         connectResult = -1;
         ExpectHandshakeFailure(0, EPROTO);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, UsesExplicit101Soname)
+{
+    PROVIDER_CASE({ Prepare101(); CreateAndCheck(5, true); });
+}
+
+TEST(TelemetryTlsProviderDeathTest, Prefers102OnAnotherSonameOver101)
+{
+    PROVIDER_CASE({
+        Prepare(3);
+        providers[3].version = 0x1000105fUL;
+        CreateAndCheck(4, true);
+        EXPECT_EQ(0, identityChecks);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, Supports101El7Soname)
+{
+    PROVIDER_CASE({
+        Prepare(3);
+        providers[3].version = 0x1000105fUL;
+        providers[4].available = false;
+        CreateAndCheck(3, true);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, Rejects100AndIncomplete101)
+{
+    PROVIDER_CASE({
+        Prepare101();
+        providers[5].version = 0x100000ffUL;
+        ExpectCreateFailure(ENOTSUP);
+        EXPECT_EQ(0, initialized);
+    });
+    for (const char* symbol : {"X509_get_ext_d2i", "GENERAL_NAME_get0_value", "GENERAL_NAMES_free",
+        "sk_num", "sk_value", "ASN1_STRING_data", "ASN1_STRING_length", "ASN1_STRING_type",
+        "ASN1_STRING_to_UTF8", "X509_get_subject_name", "X509_NAME_get_index_by_NID",
+        "X509_NAME_get_entry", "X509_NAME_ENTRY_get_data", "CRYPTO_free"})
+    {
+        PROVIDER_CASE({
+            Prepare101();
+            missingProvider = 5;
+            missingSymbol = symbol;
+            ExpectCreateFailure(ENOTSUP);
+            EXPECT_EQ(0, initialized);
+        });
+    }
+}
+
+TEST(TelemetryTlsProviderDeathTest, Verifies101DnsNamesAndWildcards)
+{
+    struct Case { const char* name; const char* peer; int status; };
+    const Case cases[] = {
+        {"EXAMPLE.TEST", "example.test", 0},
+        {"example.test.", "example.test", 0},
+        {"example.test", "example.test.", 0},
+        {"*.example.test", "host.example.test", 0},
+        {"wrong.test", "example.test", EACCES},
+        {"example.test.attacker", "example.test", EACCES},
+        {"*.example.test", "example.test", EACCES},
+        {"*.example.test", "a.b.example.test", EACCES},
+        {"*.test", "example.test", EACCES},
+        {"ex*.example.test", "example.example.test", EACCES},
+        {"*.*.test", "a.example.test", EACCES},
+        {"*.example.test", "xn--host.example.test", EACCES},
+        {"example..test", "example..test", EACCES},
+        {"", "example.test", EACCES}
+    };
+    for (const Case& item : cases)
+    {
+        PROVIDER_CASE({
+            Prepare101();
+            alternativeNames.values[0].value.data = item.name;
+            Check101Identity(item.peer, item.status);
+        });
+    }
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values[0].value.data = "wrong.test";
+        alternativeNames.values.push_back({2, {22, "example.test"}});
+        Check101Identity("example.test", 0);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, Verifies101IpSanWithoutDnsOrCommonNameFallback)
+{
+    for (const char* peer : {"127.0.0.1", "::1"})
+    {
+        for (bool match : {false, true})
+        {
+            PROVIDER_CASE({
+                Prepare101();
+                unsigned char address[16] = {};
+                const bool ipv6 = nullptr != strchr(peer, ':');
+                ASSERT_EQ(1, inet_pton(ipv6 ? AF_INET6 : AF_INET, peer, address));
+                if (!match) { address[0] ^= 1; }
+                alternativeNames.values = {{7, {4, std::string(reinterpret_cast<char*>(address), ipv6 ? 16 : 4)}}};
+                Check101Identity(peer, match ? 0 : EACCES);
+                EXPECT_TRUE(serverName.empty());
+            });
+        }
+        PROVIDER_CASE({
+            Prepare101();
+            commonName.data = peer;
+            alternativeNames.values[0].value.data = peer;
+            Check101Identity(peer, EACCES);
+        });
+        PROVIDER_CASE({
+            Prepare101();
+            sanAvailable = false;
+            sanCritical = -1;
+            commonName.data = peer;
+            Check101Identity(peer, EACCES);
+        });
+    }
+}
+
+TEST(TelemetryTlsProviderDeathTest, Uses101CommonNameOnlyWithoutDnsSan)
+{
+    PROVIDER_CASE({
+        Prepare101();
+        sanAvailable = false;
+        sanCritical = -1;
+        Check101Identity("example.test", 0);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values = {{6, {22, "https://example.test"}}};
+        Check101Identity("example.test", 0);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values[0].value.data = "wrong.test";
+        Check101Identity("example.test", EACCES);
+    });
+    for (int count : {0, 2})
+    {
+        PROVIDER_CASE({
+            Prepare101();
+            sanAvailable = false;
+            sanCritical = -1;
+            commonNameCount = count;
+            Check101Identity("example.test", EACCES);
+        });
+    }
+    PROVIDER_CASE({
+        Prepare101();
+        sanAvailable = false;
+        sanCritical = -1;
+        conversionFails = true;
+        Check101Identity("example.test", EACCES);
+    });
+}
+
+TEST(TelemetryTlsProviderDeathTest, RejectsMalformed101Identities)
+{
+    for (int critical : {-2, 0, 1})
+    {
+        PROVIDER_CASE({
+            Prepare101();
+            sanAvailable = false;
+            sanCritical = critical;
+            Check101Identity("example.test", EACCES);
+        });
+    }
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values.clear();
+        Check101Identity("example.test", EACCES);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values[0].value.data = std::string("example.test\0.attacker", 22);
+        Check101Identity("example.test", EACCES);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values[0].value.type = 12;
+        Check101Identity("example.test", EACCES);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        alternativeNames.values.push_back({7, {4, "bad"}});
+        Check101Identity("example.test", EACCES);
+    });
+    for (const std::string& name : {std::string("example.test\0.attacker", 22), std::string(255, 'a')})
+    {
+        PROVIDER_CASE({
+            Prepare101();
+            sanAvailable = false;
+            sanCritical = -1;
+            commonName.data = name;
+            Check101Identity("example.test", EACCES);
+        });
+    }
+}
+
+TEST(TelemetryTlsProviderDeathTest, DoesNotDowngradeAfter101Failures)
+{
+    PROVIDER_CASE({
+        Prepare101();
+        peerPresent = false;
+        ExpectHandshakeFailure(5, EACCES);
+        EXPECT_EQ(0, identityChecks);
+        EXPECT_EQ(0, writes);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        initializeResult = 0;
+        ExpectCreateFailure(EIO);
+        EXPECT_EQ(6U, opened.size());
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        configurationResult = 0;
+        ExpectCreateFailure(EIO);
+        EXPECT_EQ(6U, opened.size());
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        trustResult = 0;
+        ExpectCreateFailure(EIO);
+        EXPECT_EQ(6U, opened.size());
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        verificationResult = 20;
+        ExpectHandshakeFailure(5, EACCES);
+        EXPECT_EQ(0, identityChecks);
+        EXPECT_EQ(0, writes);
+    });
+    PROVIDER_CASE({
+        Prepare101();
+        connectResult = -1;
+        ExpectHandshakeFailure(5, EPROTO);
+        EXPECT_EQ(0, identityChecks);
     });
 }

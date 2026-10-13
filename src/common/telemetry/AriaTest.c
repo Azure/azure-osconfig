@@ -242,7 +242,7 @@ int main(int argc, char** argv)
     OsConfigLogInfo(NULL,
         "LIVE StatusTrace test: requested=%d ResultCode=%s\n"
         "ResultString=%s\nCorrelationId=%s\n"
-        "TLS mode: system OpenSSL (3, 1.1, then 1.0.2)\n"
+        "TLS mode: system OpenSSL (3, 1.1, 1.0.2, then 1.0.1)\n"
         "Acceptance is collector acknowledgment, not proof of downstream Aria visibility.",
         TEST_COUNT, TEST_RESULT, TEST_MARKER, correlation);
 

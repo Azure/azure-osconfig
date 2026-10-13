@@ -42,6 +42,7 @@ typedef struct x509_store_st X509_STORE;
 typedef struct x509_store_ctx_st X509_STORE_CTX;
 typedef struct X509_VERIFY_PARAM_st X509_VERIFY_PARAM;
 typedef struct stack_st_X509 X509Stack;
+typedef struct ec_key_st EC_KEY;
 
 // These are real server APIs, not mocks. Dynamic loading keeps the test peer
 // independent of development headers absent from some pinned CI images.
@@ -66,6 +67,9 @@ long (*SSL_CTX_ctrl)(SSL_CTX*, int, long, void*);
 void (*SSL_CTX_set_security_level)(SSL_CTX*, int);
 void (*ERR_print_errors_fp)(FILE*);
 void (*ERR_clear_error)(void);
+EC_KEY* (*EC_KEY_new_by_curve_name)(int);
+void (*EC_KEY_free)(EC_KEY*);
+bool legacy101 = false;
 
 EVP_PKEY_CTX* (*EVP_PKEY_CTX_new_id)(int, ENGINE*);
 void (*EVP_PKEY_CTX_free)(EVP_PKEY_CTX*);
@@ -131,26 +135,38 @@ void Load(void* library, Function& function, const char* name)
 
 const SSL_METHOD* LoadOpenSsl(const std::string& mode)
 {
-    const char* names[] = {"libssl.so.3", "libssl.so.1.1", "libssl.so.1.0.2", "libssl.so.10", "libssl.so.1.0.0"};
+    const struct { const char* name; unsigned long minimum; unsigned long maximum; } providers[] = {
+        {"libssl.so.3", 0x30000000UL, 0x40000000UL},
+        {"libssl.so.1.1", 0x10100000UL, 0x10200000UL},
+        {"libssl.so.1.0.2", 0x10002000UL, 0x10003000UL},
+        {"libssl.so.10", 0x10002000UL, 0x10003000UL},
+        {"libssl.so.1.0.0", 0x10002000UL, 0x10003000UL},
+        {"libssl.so.1.0.1", 0x10001000UL, 0x10002000UL},
+        {"libssl.so.10", 0x10001000UL, 0x10002000UL},
+        {"libssl.so.1.0.0", 0x10001000UL, 0x10002000UL}
+    };
     void* library = nullptr;
     unsigned long version = 0;
-    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); ++i)
+    for (const auto& provider : providers)
     {
-        library = dlopen(names[i], RTLD_NOW | RTLD_LOCAL);
+        library = dlopen(provider.name, RTLD_NOW | RTLD_LOCAL);
         if (!library)
         {
             continue;
         }
         unsigned long (*getVersion)(void) = nullptr;
-        Load(library, getVersion, i < 2 ? "OpenSSL_version_num" : "SSLeay");
+        Load(library, getVersion, provider.minimum >= 0x10100000UL ? "OpenSSL_version_num" : "SSLeay");
         version = getVersion();
-        Require(i == 0 ? version >= 0x30000000UL && version < 0x40000000UL :
-            i == 1 ? version >= 0x10100000UL && version < 0x10200000UL :
-            version >= 0x10002000UL && version < 0x10003000UL, "Unsupported test OpenSSL server version");
-        fprintf(stderr, "Telemetry TLS test peer: %s version 0x%lx\n", names[i], version);
+        if (version < provider.minimum || version >= provider.maximum)
+        {
+            library = nullptr;
+            continue;
+        }
+        fprintf(stderr, "Telemetry TLS test peer: %s version 0x%lx\n", provider.name, version);
         break;
     }
     Require(library != nullptr, "No system OpenSSL runtime for the test server");
+    legacy101 = version < 0x10002000UL;
 #define LOAD_SERVER_API(name) Load(library, name, #name)
     LOAD_SERVER_API(SSL_CTX_new);
     LOAD_SERVER_API(SSL_CTX_free);
@@ -162,8 +178,17 @@ const SSL_METHOD* LoadOpenSsl(const std::string& mode)
     LOAD_SERVER_API(SSL_write);
     LOAD_SERVER_API(SSL_shutdown);
     LOAD_SERVER_API(SSL_get_servername);
-    LOAD_SERVER_API(SSL_get0_alpn_selected);
-    LOAD_SERVER_API(SSL_CTX_set_alpn_select_cb);
+    if (!legacy101)
+    {
+        LOAD_SERVER_API(SSL_get0_alpn_selected);
+        LOAD_SERVER_API(SSL_CTX_set_alpn_select_cb);
+        LOAD_SERVER_API(X509_VERIFY_PARAM_set1_host);
+    }
+    else
+    {
+        LOAD_SERVER_API(EC_KEY_new_by_curve_name);
+        LOAD_SERVER_API(EC_KEY_free);
+    }
     LOAD_SERVER_API(SSL_CTX_set_cipher_list);
     LOAD_SERVER_API(SSL_CTX_use_certificate);
     LOAD_SERVER_API(SSL_CTX_use_PrivateKey);
@@ -204,7 +229,6 @@ const SSL_METHOD* LoadOpenSsl(const std::string& mode)
     LOAD_SERVER_API(X509_STORE_CTX_init);
     LOAD_SERVER_API(X509_STORE_CTX_set_purpose);
     LOAD_SERVER_API(X509_STORE_CTX_get0_param);
-    LOAD_SERVER_API(X509_VERIFY_PARAM_set1_host);
     LOAD_SERVER_API(X509_verify_cert);
     LOAD_SERVER_API(X509_STORE_CTX_get_error);
     LOAD_SERVER_API(X509_STORE_CTX_get_error_depth);
@@ -248,7 +272,7 @@ Key GenerateKey(bool ecdsa)
         EVP_PKEY_CTX_new_id(algorithm, nullptr), EVP_PKEY_CTX_free);
     Require(context != nullptr, "Key generation context allocation failed");
     Require(1 == EVP_PKEY_keygen_init(context.get()), "Key generation initialization failed");
-    // Public controls shared by 1.0.2/1.1/3: EC_PARAMGEN_CURVE_NID and RSA_KEYGEN_BITS.
+    // Public controls shared by 1.0.1/1.0.2/1.1/3: EC_PARAMGEN_CURVE_NID and RSA_KEYGEN_BITS.
     Require(1 == EVP_PKEY_CTX_ctrl(context.get(), -1, -1, ecdsa ? 0x1001 : 0x1003,
         parameter, nullptr), "Key generation parameters failed");
     if (ecdsa)
@@ -308,7 +332,10 @@ Certificate GenerateCertificate(EVP_PKEY* key, const std::string& name, const st
     Extension(certificate.get(), "keyUsage", issuer ? "critical,digitalSignature,keyEncipherment" :
         "critical,digitalSignature,keyEncipherment,keyCertSign");
     Extension(certificate.get(), "extendedKeyUsage", "serverAuth");
-    Extension(certificate.get(), "subjectAltName", san);
+    if (!san.empty())
+    {
+        Extension(certificate.get(), "subjectAltName", san);
+    }
     Require(X509_sign(certificate.get(), issuerKey ? issuerKey : key, EVP_sha256()) > 0,
         "Signing certificate failed");
     return certificate;
@@ -324,11 +351,14 @@ void VerifyExpiryFixture(X509* certificate, X509* root, const std::string& name,
     Require(context != nullptr, "Certificate verification context allocation failed");
     Require(1 == X509_STORE_CTX_init(context.get(), store.get(), certificate, nullptr),
         "Certificate verification initialization failed");
-    // X509_PURPOSE_SSL_SERVER; verify identity as well as chain, purpose and dates.
+    // X509_PURPOSE_SSL_SERVER; this fixture sanity check verifies chain, purpose and dates.
     Require(1 == X509_STORE_CTX_set_purpose(context.get(), 2), "Setting verification purpose failed");
-    X509_VERIFY_PARAM* parameters = X509_STORE_CTX_get0_param(context.get());
-    Require(parameters != nullptr && 1 == X509_VERIFY_PARAM_set1_host(parameters, name.c_str(), name.size()),
-        "Setting verification hostname failed");
+    if (X509_VERIFY_PARAM_set1_host)
+    {
+        X509_VERIFY_PARAM* parameters = X509_STORE_CTX_get0_param(context.get());
+        Require(parameters != nullptr && 1 == X509_VERIFY_PARAM_set1_host(parameters, name.c_str(), name.size()),
+            "Setting verification hostname failed");
+    }
     const int status = X509_verify_cert(context.get());
     const int error = X509_STORE_CTX_get_error(context.get());
     const int depth = X509_STORE_CTX_get_error_depth(context.get());
@@ -352,6 +382,14 @@ void Certificates(SSL_CTX* context, const std::string& directory, const std::str
     if (mode == "partial-wildcard") { name = "local.example.test"; }
     std::string san = "DNS:" + (mode == "partial-wildcard" ? std::string("loc*.example.test") : name);
     if (mode != "numeric-dns") { san += ",IP:127.0.0.1"; }
+    if (mode == "cn-only") { san.clear(); }
+    if (mode == "san-over-cn") { san = "DNS:wrong.example.test"; }
+    if (mode == "wildcard" || mode == "wildcard-depth") { san = "DNS:*.example.test"; }
+    if (mode == "nul-san")
+    {
+        // DER GeneralNames containing dNSName "localhost<NUL>.attacker".
+        san = "DER:30:15:82:13:6c:6f:63:61:6c:68:6f:73:74:00:2e:61:74:74:61:63:6b:65:72";
+    }
 
     Key key = GenerateKey(mode == "ecdsa");
     Key rootKey(nullptr, EVP_PKEY_free);
@@ -504,9 +542,22 @@ void CheckIdentity(Connection& connection, const std::string& expected)
     Require(expected.empty() ? name == nullptr : name != nullptr && expected == name, "Unexpected TLS SNI");
     const unsigned char* protocol = nullptr;
     unsigned int length = 0;
-    SSL_get0_alpn_selected(connection.tls.get(), &protocol, &length);
-    Require(length == 8 && protocol != nullptr && memcmp(protocol, "http/1.1", 8) == 0,
-        "Client did not negotiate HTTP/1.1");
+    if (!legacy101)
+    {
+        SSL_get0_alpn_selected(connection.tls.get(), &protocol, &length);
+        Require(length == 8 && protocol != nullptr && memcmp(protocol, "http/1.1", 8) == 0,
+            "Client did not negotiate HTTP/1.1");
+    }
+}
+
+void CheckRejectedIdentity(Connection& connection)
+{
+    char byte = 0;
+    Require(legacy101, "Client accepted a rejected TLS fixture");
+    // 1.0.1 verifies identity after SSL_connect, but must disconnect before application data.
+    const int count = connection.Read(&byte, 1);
+    Require(count <= 0 && errno != EAGAIN && errno != EWOULDBLOCK, "Client did not disconnect without sending application data");
+    ERR_clear_error();
 }
 
 struct Headers
@@ -632,7 +683,11 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode)
             Require(mode == "aria-wrong-name", "Collector TLS handshake failed");
             return;
         }
-        Require(mode != "aria-wrong-name", "Client accepted wrong collector identity");
+        if (mode == "aria-wrong-name")
+        {
+            CheckRejectedIdentity(connection);
+            return;
+        }
         CheckIdentity(connection, collector);
         const int count = mode == "aria-live" ? 10000 :
             OneOf(mode, {"aria-reuse", "aria-auth", "aria-worker", "aria-producer"}) ? 2 : 1;
@@ -756,14 +811,20 @@ void Exchange(int listener, SSL_CTX* context, const std::string& mode)
         return;
     }
     const bool rejection = OneOf(mode, {"wrong-name", "wrong-ip", "untrusted", "tls10", "tls11",
-        "expired", "numeric-dns", "partial-wildcard"});
+        "expired", "numeric-dns", "partial-wildcard", "san-over-cn", "wildcard-depth", "nul-san"});
     if (!connection.Handshake(context))
     {
         Require(rejection, "TLS handshake failed");
         return;
     }
-    Require(!rejection, "Client accepted a rejected TLS fixture");
-    CheckIdentity(connection, mode == "ip" ? "" : "localhost");
+    if (rejection)
+    {
+        Require(OneOf(mode, {"wrong-name", "wrong-ip", "numeric-dns", "partial-wildcard", "san-over-cn", "wildcard-depth", "nul-san"}),
+            "Client accepted an invalid certificate or protocol");
+        CheckRejectedIdentity(connection);
+        return;
+    }
+    CheckIdentity(connection, mode == "ip" ? "" : mode == "wildcard" ? "host.example.test" : "localhost");
     if (OneOf(mode, {"silent-read", "silent-write"}))
     {
         sleep(5);
@@ -824,13 +885,21 @@ int main(int argc, char** argv)
                 SSL_CTX_set_security_level(context.get(), 0);
             }
         }
-        else
+        else if (!legacy101)
         {
             // OpenSSL 1.0.2 SSL_CTRL_SET_ECDH_AUTO.
             Require(1 == SSL_CTX_ctrl(context.get(), 94, 1, nullptr), "ECDH setup failed");
         }
+        else
+        {
+            std::unique_ptr<EC_KEY, decltype(EC_KEY_free)> key(EC_KEY_new_by_curve_name(415), EC_KEY_free);
+            Require(key != nullptr && 1 == SSL_CTX_ctrl(context.get(), 4, 0, key.get()), "Legacy ECDH setup failed");
+        }
         Require(1 == SSL_CTX_set_cipher_list(context.get(), "DEFAULT"), "Cipher setup failed");
-        SSL_CTX_set_alpn_select_cb(context.get(), SelectAlpn, nullptr);
+        if (SSL_CTX_set_alpn_select_cb)
+        {
+            SSL_CTX_set_alpn_select_cb(context.get(), SelectAlpn, nullptr);
+        }
         Certificates(context.get(), argv[1], mode);
         Socket listener(socket(AF_INET, SOCK_STREAM, 0));
         sockaddr_in address = {};

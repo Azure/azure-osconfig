@@ -418,6 +418,8 @@ void HandshakeFailure(const char* mode, const char* identity, int expected)
 
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(peer.tls, "x", 1, Deadline(), NULL));
     EXPECT_GE(fcntl(peer.descriptor, F_GETFL), 0);
+    EXPECT_EQ(0, close(peer.descriptor));
+    peer.descriptor = -1;
 
     if (0 != strcmp(mode, "silent-handshake"))
     {
@@ -829,7 +831,7 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
     EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 66 ***"));
-    EXPECT_NE(std::string::npos, text.find("TLS mode: system OpenSSL (3, 1.1, then 1.0.2)"));
+    EXPECT_NE(std::string::npos, text.find("TLS mode: system OpenSSL (3, 1.1, 1.0.2, then 1.0.1)"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));
     EXPECT_EQ(0, peer.Wait());
@@ -994,6 +996,31 @@ TEST(TelemetryTlsDeathTest, VerifiesEcdsaCertificate)
 TEST(TelemetryTlsDeathTest, VerifiesIpWithoutSendingSni)
 {
     TLS_CASE(Exchange("127.0.0.1"));
+}
+
+TEST(TelemetryTlsDeathTest, VerifiesCommonNameWithoutDnsSan)
+{
+    TLS_CASE(Exchange("localhost", "cn-only"));
+}
+
+TEST(TelemetryTlsDeathTest, VerifiesWholeLabelWildcard)
+{
+    TLS_CASE(Exchange("host.example.test", "wildcard"));
+}
+
+TEST(TelemetryTlsDeathTest, RejectsCommonNameWhenDnsSanDoesNotMatch)
+{
+    TLS_CASE(HandshakeFailure("san-over-cn", "localhost", EACCES));
+}
+
+TEST(TelemetryTlsDeathTest, RejectsWildcardAcrossMultipleLabels)
+{
+    TLS_CASE(HandshakeFailure("wildcard-depth", "a.b.example.test", EACCES));
+}
+
+TEST(TelemetryTlsDeathTest, RejectsEmbeddedNulInDnsSan)
+{
+    TLS_CASE(HandshakeFailure("nul-san", "localhost", EACCES));
 }
 
 TEST(TelemetryTlsDeathTest, RejectsWrongDnsIdentity)
