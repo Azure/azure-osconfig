@@ -37,8 +37,11 @@ set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/Transport.c
         TelemetryLookupHost=TelemetryTransportTestLookupHost
         clock_gettime=TelemetryTransportTestClockGetTime
         connect=TelemetryTransportTestConnect
-        poll=TelemetryTransportTestPoll
         getsockopt=TelemetryTransportTestGetSockOpt)
+
+set_property(SOURCE ../telemetry/Transport.c
+    APPEND PROPERTY COMPILE_DEFINITIONS
+        TELEMETRY_TEST_POLL)
 
 set_property(SOURCE TelemetryTlsProviderUT.cpp ../telemetry/Tls.c
     APPEND PROPERTY COMPILE_DEFINITIONS

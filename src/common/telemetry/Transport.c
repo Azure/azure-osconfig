@@ -18,6 +18,12 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef TELEMETRY_TEST_POLL
+// Redirect only after libc headers, so fortified aliases cannot bypass the mock.
+int TelemetryTransportTestPoll(struct pollfd* items, nfds_t count, int milliseconds);
+#define poll TelemetryTransportTestPoll
+#endif
+
 struct TelemetryTransport
 {
     TelemetryHttpProxy proxy;

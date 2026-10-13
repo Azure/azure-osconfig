@@ -65,7 +65,7 @@ extern "C" int connect(int descriptor, const struct sockaddr* address, socklen_t
     return result ? -1 : 0;
 }
 
-extern "C" int poll(struct pollfd* items, nfds_t count, int milliseconds)
+extern "C" int TelemetryTransportTestPoll(struct pollfd* items, nfds_t count, int milliseconds)
 {
     EXPECT_EQ(1U, count);
     EXPECT_EQ(POLLOUT, items[0].events);
