@@ -12,11 +12,13 @@
 #include <ctime>
 #include <dlfcn.h>
 #include <initializer_list>
+#include <linux/sockios.h>
 #include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -792,6 +794,17 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode, const std::st
             if (mode == "aria-idle-data")
             {
                 connection.Send("unexpected application data");
+                // SSL_write may leave data queued in TCP. Wait for acknowledgment
+                // before telling the client that the complete idle record is ready.
+                for (int pending = 1, attempt = 0; pending > 0; ++attempt)
+                {
+                    Require(attempt < 5000, "Idle data was not acknowledged before timeout");
+                    Require(0 == ioctl(connection.socket.value, SIOCOUTQ, &pending), "Reading TCP send queue failed");
+                    if (pending > 0)
+                    {
+                        usleep(1000);
+                    }
+                }
             }
             else
             {
