@@ -18,6 +18,7 @@ Telemetry is always built. The worker is installed with OSConfig and included in
 | `AriaInterface.c/.h` | Proxy configuration, connection establishment, HTTP exchange, and collector acknowledgment interpretation. |
 | `Utils.c/.h` | System hostname lookup, resolver result decoding, and the standalone resolver-process interface and message types. |
 | `OpenSslAdapter.c` | System OpenSSL discovery, TLS configuration, peer verification, and encrypted I/O. |
+| `ExecutionDeadline.h` | Shared monotonic-time calculations and worker deadline timers. |
 
 Production hostname lookup runs inside `OSConfigTelemetry`. The standalone resolver executable is a test fixture defined in `common/tests/TelemetryResolverWorker.c`, not an additional production process.
 

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef DEADLINE_H
-#define DEADLINE_H
+#ifndef EXECUTION_DEADLINE_H
+#define EXECUTION_DEADLINE_H
 
 #include <errno.h>
 #include <limits.h>
@@ -73,4 +73,4 @@ static inline int TelemetryArmDeadline(timer_t timer, int64_t deadline)
     return status;
 }
 
-#endif // DEADLINE_H
+#endif // EXECUTION_DEADLINE_H

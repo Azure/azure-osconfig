@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSslAdapter.h>
-#include <Deadline.h>
+#include <ExecutionDeadline.h>
 #include <arpa/inet.h>
 #include <cerrno>
 #include <csignal>

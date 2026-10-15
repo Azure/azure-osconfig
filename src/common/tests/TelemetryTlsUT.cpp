@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSslAdapter.h>
-#include <Deadline.h>
+#include <ExecutionDeadline.h>
 #include <AriaInterface.h>
 #include <IpcInterface.h>
 

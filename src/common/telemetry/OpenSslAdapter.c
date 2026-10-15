@@ -4,7 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "OpenSslAdapter.h"
-#include "Deadline.h"
+#include "ExecutionDeadline.h"
 
 #include <arpa/inet.h>
 #include <dlfcn.h>
