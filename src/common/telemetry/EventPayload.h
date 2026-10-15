@@ -14,8 +14,7 @@ extern "C"
 {
 #endif
 
-// Private IPC payload: native uint32 count, then NUL-terminated event name and
-// count name/value string pairs. No pointers, JSON escaping, or event storage.
+// Private IPC payload: native uint32 count, then NUL-terminated event name and count name/value string pairs. No pointers, JSON escaping, or event storage
 int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, size_t count, unsigned char* payload, size_t capacity, size_t* size, OsConfigLogHandle log);
 int TelemetryEncodePayload(const unsigned char* payload, size_t size, const char* iKey, const char* epoch, int64_t sequence,
     unsigned char* bytes, size_t* encodedSize, int64_t* uploadTime, OsConfigLogHandle log);

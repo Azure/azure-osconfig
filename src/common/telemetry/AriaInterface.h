@@ -83,8 +83,7 @@ typedef struct TelemetryHttpResponse
 // Formats only the headers for one uncompressed encoded event. The caller
 // writes these bytes followed by exactly eventSize binary bytes. On failure,
 // *headerSize is zero and the header buffer is unchanged. No token is logged.
-int TelemetryHttpBuildRequest(const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds, size_t eventSize,
-    char* headers, size_t capacity, size_t* headerSize, OsConfigLogHandle log);
+int TelemetryHttpBuildRequest(const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds, size_t eventSize, char* headers, size_t capacity, size_t* headerSize, OsConfigLogHandle log);
 
 int TelemetryHttpResponseInitialize(TelemetryHttpResponse* response, OsConfigLogHandle log);
 

@@ -117,8 +117,7 @@ static bool HeaderValue(const char* value, size_t limit)
     return valid;
 }
 
-int TelemetryHttpBuildRequest(const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds, size_t eventSize,
-    char* headers, size_t capacity, size_t* headerSize, OsConfigLogHandle log)
+int TelemetryHttpBuildRequest(const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds, size_t eventSize, char* headers, size_t capacity, size_t* headerSize, OsConfigLogHandle log)
 {
     char formatted[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {0};
     int status = 0;
