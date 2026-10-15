@@ -4,7 +4,7 @@
 #ifndef IPC_INTERFACE_H
 #define IPC_INTERFACE_H
 
-#include "Resolver.h"
+#include "Utils.h"
 #include "SchemaEncoder.h"
 #include <stdint.h>
 

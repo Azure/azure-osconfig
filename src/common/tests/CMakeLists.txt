@@ -22,12 +22,18 @@ add_executable(commontests
     TelemetryWorkerUT.cpp
     ../telemetry/Telemetry.c
     ../telemetry/OpenSslAdapter.c
-    ../telemetry/AriaTransport.c
+    ../telemetry/AriaInterface.c
 )
 
 # Isolate mocked implementations by source file; other tests link the real telemetry library.
-set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/AriaTransport.c
+set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/AriaInterface.c
     APPEND PROPERTY COMPILE_DEFINITIONS
+        TelemetryHttpBuildRequest=TelemetryTestHttpBuildRequest
+        TelemetryHttpResponseInitialize=TelemetryTestHttpResponseInitialize
+        TelemetryHttpResponseFeed=TelemetryTestHttpResponseFeed
+        TelemetryProxyDiscover=TelemetryTestProxyDiscover
+        TelemetryProxyParseHttp=TelemetryTestProxyParseHttp
+        TelemetryProxyBuildConnect=TelemetryTestProxyBuildConnect
         TelemetryTransport=TelemetryTestTransport
         TelemetryTransportCreate=TelemetryTestTransportCreate
         TelemetryTransportSend=TelemetryTestTransportSend
@@ -39,7 +45,7 @@ set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/AriaTransport.c
         connect=TelemetryTransportTestConnect
         getsockopt=TelemetryTransportTestGetSockOpt)
 
-set_property(SOURCE ../telemetry/AriaTransport.c
+set_property(SOURCE ../telemetry/AriaInterface.c
     APPEND PROPERTY COMPILE_DEFINITIONS
         TELEMETRY_TEST_POLL)
 
@@ -96,18 +102,22 @@ target_link_libraries(commontests
     rt
 )
 
+# Offline resolver fixtures; the production worker owns its own DNS.
+add_executable(telemetryresolverworker TelemetryResolverWorker.c)
+target_link_libraries(telemetryresolverworker PRIVATE telemetry rt)
+
 add_executable(telemetryresolverlookupworker
-    ../telemetry/ResolverWorker.c
-    ../telemetry/ResolverLookup.c
+    TelemetryResolverWorker.c
+    ../telemetry/Utils.c
     TelemetryResolverLookupStub.c)
 target_include_directories(telemetryresolverlookupworker PRIVATE ../telemetry)
 target_compile_definitions(telemetryresolverlookupworker PRIVATE
     getaddrinfo=TelemetryTestGetAddrInfo
     freeaddrinfo=TelemetryTestFreeAddrInfo)
-target_link_libraries(telemetryresolverlookupworker PRIVATE rt)
+target_link_libraries(telemetryresolverlookupworker PRIVATE logging rt)
 
 add_executable(telemetryresolverfaultworker TelemetryResolverFaultWorker.c)
-target_include_directories(telemetryresolverfaultworker PRIVATE ../telemetry)
+target_include_directories(telemetryresolverfaultworker PRIVATE ../telemetry ../logging)
 
 add_dependencies(commontests telemetryresolverworker telemetryresolverlookupworker telemetryresolverfaultworker)
 target_compile_definitions(commontests PRIVATE
@@ -117,7 +127,7 @@ target_compile_definitions(commontests PRIVATE
 
 add_executable(telemetryworkerlookup
     ../telemetry/WorkerMain.c
-    ../telemetry/ResolverLookup.c
+    ../telemetry/Utils.c
     TelemetryResolverLookupStub.c)
 target_include_directories(telemetryworkerlookup PRIVATE ../telemetry "${CMAKE_CURRENT_BINARY_DIR}/../telemetry")
 target_compile_definitions(telemetryworkerlookup PRIVATE

@@ -15,9 +15,11 @@ Telemetry is always built. The worker is installed with OSConfig and included in
 | `SchemaEncoder.c` | Common Schema binary encoding. |
 | `IpcInterface.c/.h` | Parent-side worker lifecycle and budget accounting, with shared IPC messages and client declarations in the header. |
 | `WorkerMain.c` | Worker entry point and request processing. |
-| `AriaTransport.c` | Connection establishment and event transmission over the supported routes. |
-| `AriaHttpInterface.c` | HTTP request formatting, response parsing, and collector acknowledgment interpretation. |
+| `AriaInterface.c/.h` | Proxy configuration, connection establishment, HTTP exchange, and collector acknowledgment interpretation. |
+| `Utils.c/.h` | System hostname lookup, resolver result decoding, and the standalone resolver-process interface and message types. |
 | `OpenSslAdapter.c` | System OpenSSL discovery, TLS configuration, peer verification, and encrypted I/O. |
+
+Production hostname lookup runs inside `OSConfigTelemetry`. The standalone resolver executable is a test fixture defined in `common/tests/TelemetryResolverWorker.c`, not an additional production process.
 
 ## Policy correlation
 

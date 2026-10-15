@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <AriaTransport.h>
-#include <ResolverProtocol.h>
+#include <AriaInterface.h>
+#include <Utils.h>
 #include <OpenSslAdapter.h>
 
 #include <cerrno>

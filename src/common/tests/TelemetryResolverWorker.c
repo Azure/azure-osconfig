@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "ResolverProtocol.h"
+#include "Utils.h"
 
 #include <errno.h>
 #include <signal.h>

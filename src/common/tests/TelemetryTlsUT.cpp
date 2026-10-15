@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <OpenSslAdapter.h>
 #include <Deadline.h>
-#include <AriaTransport.h>
+#include <AriaInterface.h>
 #include <IpcInterface.h>
 
 #include <arpa/inet.h>

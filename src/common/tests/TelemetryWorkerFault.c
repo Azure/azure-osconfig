@@ -4,7 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <IpcInterface.h>
-#include <ResolverProtocol.h>
+#include <Utils.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <stdbool.h>

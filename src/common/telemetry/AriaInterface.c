@@ -3,14 +3,24 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "AriaHttpInterface.h"
+#include "AriaInterface.h"
 #include "SchemaEncoder.h"
+#include "OpenSslAdapter.h"
+#include "Deadline.h"
+#include "Utils.h"
 
+#include <arpa/inet.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <parson.h>
+#include <poll.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 enum HttpState
 {
@@ -1116,4 +1126,1110 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
     }
 
     return status;
+}
+
+static const char* Environment(const char* lower, const char* upper)
+{
+    const char* value = getenv(lower);
+
+    if ((NULL == value) || ('\0' == *value))
+    {
+        value = getenv(upper);
+    }
+
+    return ((NULL != value) && ('\0' != *value)) ? value : NULL;
+}
+
+static bool Blank(char value)
+{
+    return (' ' == value) || ('\t' == value);
+}
+
+static bool DomainMatches(const char* token, size_t size)
+{
+    static const char host[] = TELEMETRY_ARIA_HOST;
+    const size_t hostSize = sizeof(host) - 1;
+    size_t offset = 0;
+    size_t i = 0;
+    unsigned char value = '\0';
+
+    if ((0 != size) && ('.' == token[size - 1]))
+    {
+        --size;
+    }
+
+    if ((0 != size) && ('.' == *token))
+    {
+        ++token;
+        --size;
+    }
+
+    if ((0 == size) || (size > hostSize))
+    {
+        return false;
+    }
+
+    offset = hostSize - size;
+
+    if ((0 != offset) && ('.' != host[offset - 1]))
+    {
+        return false;
+    }
+
+    for (i = 0; i < size; ++i)
+    {
+        value = (unsigned char)token[i];
+
+        if ((value >= 'A') && (value <= 'Z'))
+        {
+            value += 'a' - 'A';
+        }
+
+        if (value != (unsigned char)host[offset + i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool BypassesAria(const char* list)
+{
+    const char* token = NULL;
+
+    if (0 == strcmp(list, "*"))
+    {
+        return true;
+    }
+
+    while ('\0' != *list)
+    {
+        while (Blank(*list))
+        {
+            ++list;
+        }
+
+        token = list;
+
+        while (('\0' != *list) && !Blank(*list) && (',' != *list))
+        {
+            ++list;
+        }
+
+        if (DomainMatches(token, (size_t)(list - token)))
+        {
+            return true;
+        }
+
+        while (Blank(*list))
+        {
+            ++list;
+        }
+
+        // curl uses commas, not whitespace, to separate bypass entries.
+        if (',' != *list)
+        {
+            break;
+        }
+
+        while (',' == *list)
+        {
+            ++list;
+        }
+    }
+
+    return false;
+}
+
+int TelemetryProxyDiscover(TelemetryProxySelection* selection, OsConfigLogHandle log)
+{
+    const char* bypass = NULL;
+    const char* proxy = NULL;
+    size_t size = 0;
+
+    if (NULL == selection)
+    {
+        OsConfigLogError(log, "TelemetryProxyDiscover: selection output validation failed with %d (%s)", EINVAL, strerror(EINVAL));
+        return EINVAL;
+    }
+
+    memset(selection, 0, sizeof(*selection));
+
+    bypass = Environment("no_proxy", "NO_PROXY");
+
+    if (NULL != bypass)
+    {
+        if (strnlen(bypass, TELEMETRY_PROXY_BYPASS_LIMIT + 1) > TELEMETRY_PROXY_BYPASS_LIMIT)
+        {
+            OsConfigLogError(log, "TelemetryProxyDiscover: bypass configuration length check failed with %d (%s)", E2BIG, strerror(E2BIG));
+            return E2BIG;
+        }
+
+        if (BypassesAria(bypass))
+        {
+            selection->kind = TelemetryProxyDirect;
+            return 0;
+        }
+    }
+
+    proxy = Environment("https_proxy", "HTTPS_PROXY");
+
+    if (NULL == proxy)
+    {
+        proxy = Environment("all_proxy", "ALL_PROXY");
+    }
+
+    if (NULL == proxy)
+    {
+        selection->kind = TelemetryProxyDirect;
+        return 0;
+    }
+
+    size = strnlen(proxy, TELEMETRY_PROXY_URL_LIMIT + 1);
+
+    if (size > TELEMETRY_PROXY_URL_LIMIT)
+    {
+        OsConfigLogError(log, "TelemetryProxyDiscover: proxy configuration length check failed with %d (%s)", E2BIG, strerror(E2BIG));
+        return E2BIG;
+    }
+
+    memcpy(selection->url, proxy, size + 1);
+    selection->kind = TelemetryProxyConfigured;
+
+    return 0;
+}
+
+static int Hex(unsigned char c)
+{
+    int value = -1;
+
+    if ((c >= '0') && (c <= '9'))
+    {
+        value = c - '0';
+    }
+    else if ((c >= 'a') && (c <= 'f'))
+    {
+        value = (c - 'a') + 10;
+    }
+    else if ((c >= 'A') && (c <= 'F'))
+    {
+        value = (c - 'A') + 10;
+    }
+
+    return value;
+}
+
+static int DecodeCredential(const char* begin, const char* end, bool user, char* output, size_t* size)
+{
+    unsigned char c = '\0';
+
+    *size = 0;
+
+    while (begin < end)
+    {
+        c = (unsigned char)*begin++;
+
+        if ('%' == c)
+        {
+            if (((end - begin) < 2) || (Hex(begin[0]) < 0) || (Hex(begin[1]) < 0))
+            {
+                return EINVAL;
+            }
+
+            c = (unsigned char)((Hex(begin[0]) * 16) + Hex(begin[1]));
+            begin += 2;
+        }
+
+        if ((c < 32) || (127 == c) || (user && (':' == c)))
+        {
+            return EINVAL;
+        }
+
+        if (256 == *size)
+        {
+            return E2BIG;
+        }
+
+        output[(*size)++] = (char)c;
+    }
+
+    return 0;
+}
+
+static int Credentials(const char* begin, const char* end, char* authorization)
+{
+    char credentials[513] = {0};
+    size_t userSize = 0, passwordSize = 0;
+    const char* colon = memchr(begin, ':', (size_t)(end - begin));
+    int status = 0;
+    static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    size_t written = 6;
+    size_t i = 0;
+    unsigned int value = 0;
+
+    if (NULL == colon)
+    {
+        colon = end;
+    }
+
+    if (0 != (status = DecodeCredential(begin, colon, true, credentials, &userSize)))
+    {
+        return status;
+    }
+
+    credentials[userSize] = ':';
+
+    if (0 != (status = DecodeCredential((colon == end) ? end : (colon + 1), end, false, credentials + userSize + 1, &passwordSize)))
+    {
+        return status;
+    }
+
+    const size_t size = userSize + 1 + passwordSize;
+    memcpy(authorization, "Basic ", 6);
+
+    for (i = 0; i < size; i += 3)
+    {
+        value = (unsigned char)credentials[i] << 16;
+
+        if ((i + 1) < size)
+        {
+            value |= (unsigned char)credentials[i + 1] << 8;
+        }
+
+        if ((i + 2) < size)
+        {
+            value |= (unsigned char)credentials[i + 2];
+        }
+
+        authorization[written++] = alphabet[(value >> 18) & 63];
+        authorization[written++] = alphabet[(value >> 12) & 63];
+        authorization[written++] = ((i + 1) < size) ? alphabet[(value >> 6) & 63] : '=';
+        authorization[written++] = ((i + 2) < size) ? alphabet[value & 63] : '=';
+    }
+
+    authorization[written] = '\0';
+
+    return 0;
+}
+
+static int ParseHttp(const char* url, TelemetryHttpProxy* proxy)
+{
+    size_t size = 0;
+    const char* scheme = NULL;
+    const char* end = NULL;
+    const char* at = NULL;
+    int status = 0;
+    const char* hostEnd = NULL;
+    const char* port = NULL;
+    bool ipv6 = false;
+    const char* colon = NULL;
+    size_t hostSize = 0;
+    unsigned char address[16] = {0};
+    char c = '\0';
+    unsigned int number = 1080;
+
+    if ((NULL == url) || ('\0' == *url))
+    {
+        return EINVAL;
+    }
+
+    size = strnlen(url, TELEMETRY_PROXY_URL_LIMIT + 1);
+
+    if (size > TELEMETRY_PROXY_URL_LIMIT)
+    {
+        return E2BIG;
+    }
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (((unsigned char)url[i] <= 32) || ((unsigned char)url[i] >= 127))
+        {
+            return EINVAL;
+        }
+    }
+
+    scheme = strstr(url, "://");
+
+    if (NULL != scheme)
+    {
+        if ((4 != (scheme - url)) || (('h' != url[0]) && ('H' != url[0])) || (('t' != url[1]) && ('T' != url[1])) || (('t' != url[2]) && ('T' != url[2])) || (('p' != url[3]) && ('P' != url[3])))
+        {
+            return ENOTSUP;
+        }
+
+        url = scheme + 3;
+    }
+
+    end = url + strcspn(url, "/?#");
+
+    if (('\0' != *end) && (('/' != end[0]) || ('\0' != end[1])))
+    {
+        return ENOTSUP;
+    }
+
+    at = memchr(url, '@', (size_t)(end - url));
+
+    if (NULL != at)
+    {
+        if (0 != (status = Credentials(url, at, proxy->authorization)))
+        {
+            return status;
+        }
+
+        url = at + 1;
+    }
+
+    if (url >= end)
+    {
+        return EINVAL;
+    }
+
+    hostEnd = end;
+    ipv6 = '[' == *url;
+
+    if (ipv6)
+    {
+        ++url;
+        hostEnd = memchr(url, ']', (size_t)(end - url));
+
+        if (NULL == hostEnd)
+        {
+            return EINVAL;
+        }
+
+        if ((hostEnd + 1) != end)
+        {
+            if (':' != hostEnd[1])
+            {
+                return EINVAL;
+            }
+
+            port = hostEnd + 2;
+        }
+    }
+    else
+    {
+        colon = memchr(url, ':', (size_t)(end - url));
+
+        if (NULL != colon)
+        {
+            hostEnd = colon;
+            port = colon + 1;
+        }
+    }
+
+    hostSize = (size_t)(hostEnd - url);
+
+    if ((0 == hostSize) || (hostSize >= sizeof(proxy->host)))
+    {
+        return EINVAL;
+    }
+
+    memcpy(proxy->host, url, hostSize);
+    proxy->host[hostSize] = '\0';
+
+    if (ipv6)
+    {
+        if (1 != inet_pton(AF_INET6, proxy->host, address))
+        {
+            return EINVAL;
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < hostSize; ++i)
+        {
+            c = proxy->host[i];
+
+            if (!(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || ('-' == c) || ('.' == c) || ('_' == c)))
+            {
+                return EINVAL;
+            }
+        }
+    }
+
+    if (NULL != port)
+    {
+        if (port == end)
+        {
+            return EINVAL;
+        }
+
+        number = 0;
+
+        while (port < end)
+        {
+            if ((*port < '0') || (*port > '9'))
+            {
+                return EINVAL;
+            }
+
+            number = (number * 10) + (unsigned int)(*port++ - '0');
+
+            if (number > 65535)
+            {
+                return EINVAL;
+            }
+        }
+
+        if (0 == number)
+        {
+            return EINVAL;
+        }
+    }
+
+    proxy->port = (uint16_t)number;
+
+    return 0;
+}
+
+int TelemetryProxyParseHttp(const char* url, TelemetryHttpProxy* proxy, OsConfigLogHandle log)
+{
+    int status = EINVAL;
+
+    if (NULL != proxy)
+    {
+        memset(proxy, 0, sizeof(*proxy));
+
+        if (0 != (status = ParseHttp(url, proxy)))
+        {
+            memset(proxy, 0, sizeof(*proxy));
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "TelemetryProxyParseHttp: ParseHttp/endpoint validation failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
+}
+
+int TelemetryProxyBuildConnect(const TelemetryHttpProxy* proxy, char* bytes, size_t capacity, size_t* size, OsConfigLogHandle log)
+{
+    int status = EINVAL;
+    char request[1024] = {0};
+    int count = 0;
+
+    if (NULL != size)
+    {
+        *size = 0;
+    }
+
+    if ((NULL != proxy) && (NULL != bytes) && (NULL != size) && (0 != proxy->port))
+    {
+        // Only the validated parser output is accepted by this internal builder.
+        count = snprintf(request, sizeof(request),
+            "CONNECT " TELEMETRY_ARIA_HOST ":443 HTTP/1.1\r\n"
+            "Host: " TELEMETRY_ARIA_HOST ":443\r\n%s%s%s\r\n",
+            ('\0' != proxy->authorization[0]) ? "Proxy-Authorization: " : "", proxy->authorization, ('\0' != proxy->authorization[0]) ? "\r\n" : "");
+        status = (count < 0) ? EIO : ((((size_t)count >= sizeof(request)) || ((size_t)count >= capacity)) ? EMSGSIZE : 0);
+
+        if (0 == status)
+        {
+            memcpy(bytes, request, (size_t)count + 1);
+            *size = (size_t)count;
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "TelemetryProxyBuildConnect: CONNECT request formatting failed with %d (%s)", status, strerror(status));
+    }
+
+    return status;
+}
+
+#ifdef TELEMETRY_TEST_POLL
+// Redirect only after libc headers, so fortified aliases cannot bypass the mock.
+int TelemetryTransportTestPoll(struct pollfd* items, nfds_t count, int milliseconds);
+#define poll TelemetryTransportTestPoll
+#endif
+
+struct TelemetryTransport
+{
+    TelemetryHttpProxy proxy;
+    bool proxied;
+    bool suppressed;
+    int descriptor;
+    TelemetryTls* tls;
+};
+
+static int WaitSocket(int descriptor, short events, int64_t deadline, const char** operation)
+{
+    int remaining = 0;
+    int status = 0;
+    struct pollfd item = {0};
+    int ready = 0;
+
+    while ((0 == status) && (ready <= 0))
+    {
+        remaining = 0;
+        *operation = "TelemetryDeadlineRemaining";
+
+        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        {
+            item = (struct pollfd){descriptor, events, 0};
+            *operation = "poll";
+            ready = poll(&item, 1, remaining);
+
+            if (ready > 0)
+            {
+                status = (0 != (item.revents & POLLNVAL)) ? EBADF : 0;
+            }
+            else if ((ready < 0) && (EINTR != errno))
+            {
+                status = (0 != errno) ? errno : EIO;
+            }
+        }
+    }
+
+    return status;
+}
+
+static void Disconnect(TelemetryTransport* transport, OsConfigLogHandle log)
+{
+    int status = 0;
+    TelemetryTlsDestroy(&transport->tls, log);
+
+    if (transport->descriptor >= 0)
+    {
+        if (0 != close(transport->descriptor))
+        {
+            status = errno;
+            OsConfigLogError(log, "Disconnect: close failed with %d (%s)", status, strerror(status));
+        }
+
+        transport->descriptor = -1;
+    }
+}
+
+static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogHandle log)
+{
+    TelemetryResolverReply reply = {0};
+    TelemetryResolvedHost addresses = {0};
+    int remaining = 0;
+    int status = 0;
+    uint16_t port = 0;
+    int64_t now = 0;
+    int64_t addressDeadline = 0;
+    size_t i = 0;
+    struct sockaddr_storage* address = NULL;
+    struct sockaddr_in ipv4 = {0};
+    struct sockaddr_in6 ipv6 = {0};
+    int descriptor = 0;
+    int error = 0;
+    socklen_t size = 0;
+    const char* operation = "connect";
+
+    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    {
+        OsConfigLogError(log, "Connect: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
+        return status;
+    }
+
+    TelemetryLookupHost(transport->proxied ? transport->proxy.host : TELEMETRY_ARIA_HOST, &reply);
+
+    if (0 != (status = TelemetryDecodeResolverReply(&reply, &addresses)))
+    {
+        OsConfigLogError(log, "Connect: TelemetryDecodeResolverReply failed with %d (%s); getaddrinfo returned %d (%s)",
+            status, strerror(status), reply.lookupError, (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error");
+        return status;
+    }
+
+    port = htons(transport->proxied ? transport->proxy.port : 443);
+
+    for (i = 0; i < addresses.count; ++i)
+    {
+        operation = "TelemetryMonotonicTime";
+        if (0 != (status = TelemetryMonotonicTime(&now)))
+        {
+            break;
+        }
+
+        if (now >= deadline)
+        {
+            operation = "connection deadline check";
+            status = ETIMEDOUT;
+            break;
+        }
+
+        // Leave a share of the unchanged operation deadline for every remaining address.
+        addressDeadline = now + ((deadline - now) / (int64_t)(addresses.count - i));
+        address = &addresses.addresses[i];
+
+        if (AF_INET == address->ss_family)
+        {
+            memcpy(&ipv4, address, sizeof(ipv4));
+            ipv4.sin_port = port;
+            memcpy(address, &ipv4, sizeof(ipv4));
+        }
+        else
+        {
+            memcpy(&ipv6, address, sizeof(ipv6));
+            ipv6.sin6_port = port;
+            memcpy(address, &ipv6, sizeof(ipv6));
+        }
+
+        operation = "socket";
+        descriptor = socket(address->ss_family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+
+        if (descriptor < 0)
+        {
+            status = (0 != errno) ? errno : EIO;
+            continue;
+        }
+
+        operation = "connect";
+        if (0 == connect(descriptor, (struct sockaddr*)address, addresses.lengths[i]))
+        {
+            status = 0;
+        }
+        else if (EINPROGRESS != errno)
+        {
+            status = (0 != errno) ? errno : EIO;
+        }
+        else
+        {
+            if (0 == (status = WaitSocket(descriptor, POLLOUT, addressDeadline, &operation)))
+            {
+                operation = "getsockopt(SO_ERROR)";
+                error = 0;
+                size = sizeof(error);
+
+                if (0 != getsockopt(descriptor, SOL_SOCKET, SO_ERROR, &error, &size))
+                {
+                    status = (0 != errno) ? errno : EIO;
+                }
+                else
+                {
+                    operation = "connect";
+                    status = error;
+                }
+            }
+        }
+
+        if (0 == status)
+        {
+            transport->descriptor = descriptor;
+            break;
+        }
+
+        OsConfigLogInfo(log, "Connect: address %zu of %zu failed at %s with %d (%s)", i + 1, addresses.count, operation, status, strerror(status));
+        if (0 != close(descriptor))
+        {
+            error = errno;
+            OsConfigLogError(log, "Connect: close failed with %d (%s)", error, strerror(error));
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "Connect: %s failed with %d (%s); resolved addresses=%zu", operation, status, strerror(status), addresses.count);
+    }
+
+    return status;
+}
+
+static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, int64_t deadline, OsConfigLogHandle log)
+{
+    size_t offset = 0;
+    int remaining = 0;
+    int status = 0;
+    ssize_t count = 0;
+    const char* operation = "TelemetryDeadlineRemaining";
+
+    while ((0 == status) && (offset < size))
+    {
+        remaining = 0;
+        operation = "TelemetryDeadlineRemaining";
+
+        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        {
+            operation = writing ? "send" : "recv";
+            count = writing ? send(descriptor, (char*)data + offset, size - offset, MSG_NOSIGNAL) : recv(descriptor, (char*)data + offset, size - offset, 0);
+
+            if (count > 0)
+            {
+                offset += (size_t)count;
+            }
+            else if (0 == count)
+            {
+                status = EPROTO;
+            }
+            else if ((EAGAIN == errno) || (EWOULDBLOCK == errno))
+            {
+                status = WaitSocket(descriptor, writing ? POLLOUT : POLLIN, deadline, &operation);
+            }
+            else if (EINTR != errno)
+            {
+                status = (0 != errno) ? errno : EIO;
+            }
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "PlainTransfer: %s failed with %d (%s)", operation, status, strerror(status));
+    }
+
+    return status;
+}
+
+static bool FieldCharacter(unsigned char c)
+{
+    return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || ((0 != c) && (NULL != strchr("!#$%&'*+-.^_`|~", c)));
+}
+
+static int Tunnel(TelemetryTransport* transport, int64_t deadline, OsConfigLogHandle log)
+{
+    char request[1024] = {0};
+    size_t requestSize = 0;
+    int status = 0;
+    size_t total = 0;
+    size_t headers = 0;
+    unsigned int informational = 0;
+    unsigned int code = 0;
+    bool first = true;
+    char line[TELEMETRY_HTTP_LINE_LIMIT + 1] = {0};
+    size_t length = 0;
+    unsigned char byte = '\0';
+    char* colon = NULL;
+    char* c = NULL;
+
+    if (0 != (status = TelemetryProxyBuildConnect(&transport->proxy, request, sizeof(request), &requestSize, log)))
+    {
+        return status;
+    }
+
+    if (0 != (status = PlainTransfer(transport->descriptor, request, requestSize, true, deadline, log)))
+    {
+        return status;
+    }
+
+    for (;;)
+    {
+        length = 0;
+
+        for (;;)
+        {
+            byte = 0;
+
+            // Do not consume tunneled bytes past the CONNECT header boundary.
+            if (0 != (status = PlainTransfer(transport->descriptor, &byte, 1, false, deadline, log)))
+            {
+                return status;
+            }
+
+            if (++total > TELEMETRY_HTTP_HEADER_LIMIT)
+            {
+                return EMSGSIZE;
+            }
+
+            if ('\n' == byte)
+            {
+                if ((0 == length) || ('\r' != line[length - 1]))
+                {
+                    return EPROTO;
+                }
+
+                line[--length] = '\0';
+                break;
+            }
+
+            if (TELEMETRY_HTTP_LINE_LIMIT == length)
+            {
+                return EMSGSIZE;
+            }
+
+            if (((byte < 32) && ('\t' != byte) && ('\r' != byte)) || (byte >= 127) || ((0 != length) && ('\r' == line[length - 1])))
+            {
+                return EPROTO;
+            }
+
+            line[length++] = (char)byte;
+        }
+
+        if (first)
+        {
+            if ((length < 12) || (0 != memcmp(line, "HTTP/1.", 7)) ||
+                (('0' != line[7]) && ('1' != line[7])) || (' ' != line[8]) ||
+                (line[9] < '1') || (line[9] > '5') || (line[10] < '0') || (line[10] > '9') ||
+                (line[11] < '0') || (line[11] > '9') || ((length > 12) && (' ' != line[12])))
+            {
+                return EPROTO;
+            }
+
+            code = (unsigned int)((((line[9] - '0') * 100) + ((line[10] - '0') * 10) + line[11]) - '0');
+
+            if (101 == code)
+            {
+                return ENOTSUP;
+            }
+
+            first = false;
+        }
+        else if (0 == length)
+        {
+            if (code < 200)
+            {
+                if (++informational > 4)
+                {
+                    return EMSGSIZE;
+                }
+
+                first = true;
+            }
+            else
+            {
+                // Successful CONNECT has no HTTP body, regardless of CL/TE.
+                status = ((code >= 200) && (code < 300)) ? 0 : ((407 == code) ? EACCES : ECONNREFUSED);
+                if (0 != status)
+                {
+                    OsConfigLogError(log, "Tunnel: HTTP CONNECT failed with %d (%s); HTTP status %u", status, strerror(status), code);
+                }
+
+                return status;
+            }
+        }
+        else
+        {
+            if (++headers > 64)
+            {
+                return EMSGSIZE;
+            }
+
+            colon = strchr(line, ':');
+
+            if ((NULL == colon) || (colon == line))
+            {
+                return EPROTO;
+            }
+
+            for (c = line; c < colon; ++c)
+            {
+                if (!FieldCharacter((unsigned char)*c))
+                {
+                    return EPROTO;
+                }
+            }
+        }
+    }
+}
+
+int TelemetryTransportCreate(TelemetryTransport** transport, OsConfigLogHandle log)
+{
+    int status = EINVAL;
+    TelemetryTransport* created = NULL;
+    TelemetryProxySelection selection = {0};
+    const char* operation = "output validation";
+
+    if ((NULL != transport) && (NULL != *transport))
+    {
+        status = EALREADY;
+    }
+    else if (NULL != transport)
+    {
+        operation = "calloc";
+        created = calloc(1, sizeof(*created));
+        status = (NULL != created) ? 0 : ENOMEM;
+
+        if (0 == status)
+        {
+            created->descriptor = -1;
+            operation = "TelemetryProxyDiscover";
+
+            if ((0 == (status = TelemetryProxyDiscover(&selection, log))) && (TelemetryProxyConfigured == selection.kind))
+            {
+                created->proxied = true;
+                operation = "TelemetryProxyParseHttp";
+                status = TelemetryProxyParseHttp(selection.url, &created->proxy, log);
+            }
+        }
+    }
+
+    if (0 != status)
+    {
+        free(created);
+        OsConfigLogError(log, "TelemetryTransportCreate: %s failed with %d (%s)", operation, status, strerror(status));
+    }
+    else
+    {
+        *transport = created;
+    }
+
+    return status;
+}
+
+static void CaptureSuppression(TelemetryTransport* transport, const TelemetryHttpResponse* response)
+{
+    size_t i = 0;
+
+    if ((429 == response->status) || (503 == response->status))
+    {
+        transport->suppressed = true;
+    }
+
+    for (i = 0; i < response->controlCount; ++i)
+    {
+        if (TelemetryTimeDeltaMillis != response->controls[i].kind)
+        {
+            transport->suppressed = true;
+        }
+    }
+}
+
+int TelemetryTransportSend(TelemetryTransport* transport, const char* token, const char* clientVersion, int64_t uploadTimeMilliseconds,
+    const void* event, size_t eventSize, int64_t deadline, TelemetryHttpResponse* response, OsConfigLogHandle log)
+{
+    char headers[TELEMETRY_HTTP_HEADER_LIMIT + 1] = {0};
+    size_t headerSize = 0;
+    const char* stage = "argument validation";
+    int status = EINVAL;
+    unsigned char bytes[2048] = {0};
+    size_t size = 0;
+    bool eof = false;
+    bool reusable = false;
+
+    if (NULL != response)
+    {
+        TelemetryHttpResponseInitialize(response, log);
+    }
+
+    if ((NULL == transport) || (NULL == response) || (NULL == event))
+    {
+        goto failed;
+    }
+
+    if (transport->suppressed)
+    {
+        stage = "collector suppression check";
+        status = ECANCELED;
+        goto failed;
+    }
+
+    stage = "TelemetryHttpBuildRequest";
+    if (0 != (status = TelemetryHttpBuildRequest(token, clientVersion, uploadTimeMilliseconds, eventSize, headers, sizeof(headers), &headerSize, log)))
+    {
+        goto failed;
+    }
+
+    if (transport->descriptor >= 0)
+    {
+        stage = "TelemetryTlsCheckIdle";
+
+        if (0 != (status = TelemetryTlsCheckIdle(transport->tls, &reusable, deadline, log)))
+        {
+            goto failed;
+        }
+
+        if (!reusable)
+        {
+            Disconnect(transport, log);
+        }
+    }
+
+    if (transport->descriptor < 0)
+    {
+        stage = "Connect";
+
+        if (0 != (status = Connect(transport, deadline, log)))
+        {
+            goto failed;
+        }
+
+        if (transport->proxied)
+        {
+            stage = "Tunnel";
+
+            if (0 != (status = Tunnel(transport, deadline, log)))
+            {
+                goto failed;
+            }
+        }
+
+        stage = "TelemetryTlsCreate";
+
+        if (0 == (status = TelemetryTlsCreate(&transport->tls, deadline, log)))
+        {
+            stage = "TelemetryTlsHandshake";
+            status = TelemetryTlsHandshake(transport->tls, transport->descriptor, TELEMETRY_ARIA_HOST, deadline, log);
+        }
+
+        if (0 != status)
+        {
+            goto failed;
+        }
+    }
+
+    stage = "TelemetryTlsWrite(headers)";
+
+    if (0 == (status = TelemetryTlsWrite(transport->tls, headers, headerSize, deadline, log)))
+    {
+        stage = "TelemetryTlsWrite(event)";
+        status = TelemetryTlsWrite(transport->tls, event, eventSize, deadline, log);
+    }
+
+    if (0 != status)
+    {
+        goto failed;
+    }
+
+    while (!response->complete)
+    {
+        size = 0;
+        eof = false;
+        stage = "TelemetryTlsRead";
+
+        if (0 == (status = TelemetryTlsRead(transport->tls, bytes, sizeof(bytes), &size, &eof, deadline, log)))
+        {
+            stage = "TelemetryHttpResponseFeed";
+            status = TelemetryHttpResponseFeed(response, bytes, size, eof, log);
+        }
+
+        if (0 != status)
+        {
+            goto failed;
+        }
+    }
+
+    CaptureSuppression(transport, response);
+
+    if (!response->reusable || transport->suppressed)
+    {
+        Disconnect(transport, log);
+    }
+
+    return 0;
+
+failed:
+    OsConfigLogError(log, "TelemetryTransportSend: %s failed with %d (%s); event not replayed", stage, status, strerror(status));
+
+    if (NULL != transport)
+    {
+        if (NULL != response)
+        {
+            CaptureSuppression(transport, response);
+        }
+
+        Disconnect(transport, log);
+    }
+
+    return status;
+}
+
+bool TelemetryTransportSuppressed(const TelemetryTransport* transport)
+{
+    return (NULL != transport) && transport->suppressed;
+}
+
+void TelemetryTransportDestroy(TelemetryTransport** transport, OsConfigLogHandle log)
+{
+    if ((NULL != transport) && (NULL != *transport))
+    {
+        Disconnect(*transport, log);
+        free(*transport);
+        *transport = NULL;
+    }
 }

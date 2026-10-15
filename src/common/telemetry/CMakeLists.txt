@@ -7,13 +7,10 @@ project(telemetry)
 add_library(telemetry STATIC
     SchemaEncoder.c
     EventPayload.c
-    AriaHttpInterface.c
-    Proxy.c
-    Resolver.c
-    ResolverLookup.c
+    AriaInterface.c
+    Utils.c
     Telemetry.c
     OpenSslAdapter.c
-    AriaTransport.c
     IpcInterface.c)
 target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetry PUBLIC logging
@@ -31,10 +28,6 @@ add_custom_target(telemetrybin DEPENDS telemetryworker)
 add_custom_target(telemetry-worker-package ALL DEPENDS telemetryworker)
 install(TARGETS telemetryworker RUNTIME DESTINATION bin)
 install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
-
-# Offline resolver fixture; the production worker owns its own DNS.
-add_executable(telemetryresolverworker EXCLUDE_FROM_ALL ResolverWorker.c ResolverLookup.c)
-target_link_libraries(telemetryresolverworker PRIVATE rt)
 
 # Explicit live invocation only; not installed or registered with ctest.
 add_executable(telemetryariatest EXCLUDE_FROM_ALL AriaTest.c)

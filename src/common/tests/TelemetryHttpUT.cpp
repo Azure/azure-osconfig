@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <SchemaEncoder.h>
-#include <AriaHttpInterface.h>
+#include <AriaInterface.h>
 
 #include <algorithm>
 #include <array>

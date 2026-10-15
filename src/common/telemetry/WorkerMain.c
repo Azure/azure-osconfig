@@ -4,10 +4,10 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "IpcInterface.h"
-#include "ResolverProtocol.h"
+#include "Utils.h"
 #include "Deadline.h"
 #include "EventPayload.h"
-#include "AriaTransport.h"
+#include "AriaInterface.h"
 #include "Keys.h"
 #include <CommonUtils.h>
 #include <Logging.h>

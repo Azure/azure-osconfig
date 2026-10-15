@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Resolver.h>
+#include <Utils.h>
 
 #include <arpa/inet.h>
 #include <cerrno>
