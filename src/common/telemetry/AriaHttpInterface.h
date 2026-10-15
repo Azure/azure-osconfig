@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef HTTP_H
-#define HTTP_H
+#ifndef ARIA_HTTP_INTERFACE_H
+#define ARIA_HTTP_INTERFACE_H
 
 #include <Logging.h>
 #include <stdbool.h>
@@ -97,4 +97,4 @@ int TelemetryHttpResponseFeed(TelemetryHttpResponse* response, const void* bytes
 }
 #endif
 
-#endif // HTTP_H
+#endif // ARIA_HTTP_INTERFACE_H

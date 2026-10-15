@@ -3,9 +3,9 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "Transport.h"
+#include "AriaTransport.h"
 #include "Proxy.h"
-#include "Tls.h"
+#include "OpenSslAdapter.h"
 #include "Deadline.h"
 #include "Resolver.h"
 #include "ResolverProtocol.h"

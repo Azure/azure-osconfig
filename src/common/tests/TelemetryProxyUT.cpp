@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Http.h>
+#include <AriaHttpInterface.h>
 #include <Proxy.h>
 
 #include <cerrno>

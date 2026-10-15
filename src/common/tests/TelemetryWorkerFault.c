@@ -3,7 +3,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <WorkerProtocol.h>
+#include <IpcInterface.h>
 #include <ResolverProtocol.h>
 #include <errno.h>
 #include <netinet/in.h>

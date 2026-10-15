@@ -6,7 +6,7 @@
 #include "CommonUtils.h"
 #include "UserUtils.h"
 #include "parson.h"
-#include "Event.h"
+#include "EventPayload.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>

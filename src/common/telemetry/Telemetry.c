@@ -4,7 +4,7 @@
 #include <Telemetry.h>
 
 #include <CommonUtils.h>
-#include <Worker.h>
+#include <IpcInterface.h>
 #include <Deadline.h>
 #include <dlfcn.h>
 #include <errno.h>

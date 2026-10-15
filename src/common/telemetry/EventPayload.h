@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef EVENT_PAYLOAD_H
+#define EVENT_PAYLOAD_H
 
-#include "Encoder.h"
+#include "SchemaEncoder.h"
 
 #define TELEMETRY_CLIENT_VERSION "OSConfig-C/0.1"
 #define TELEMETRY_EPOCH_SIZE 37

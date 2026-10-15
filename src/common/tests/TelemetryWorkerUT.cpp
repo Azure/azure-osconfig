@@ -2,8 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Worker.h>
-#include <WorkerProtocol.h>
+#include <IpcInterface.h>
 
 #include <arpa/inet.h>
 #include <cerrno>

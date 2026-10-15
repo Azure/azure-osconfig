@@ -21,12 +21,12 @@ add_executable(commontests
     TelemetryUT.cpp
     TelemetryWorkerUT.cpp
     ../telemetry/Telemetry.c
-    ../telemetry/Tls.c
-    ../telemetry/Transport.c
+    ../telemetry/OpenSslAdapter.c
+    ../telemetry/AriaTransport.c
 )
 
 # Isolate mocked implementations by source file; other tests link the real telemetry library.
-set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/Transport.c
+set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/AriaTransport.c
     APPEND PROPERTY COMPILE_DEFINITIONS
         TelemetryTransport=TelemetryTestTransport
         TelemetryTransportCreate=TelemetryTestTransportCreate
@@ -39,11 +39,11 @@ set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/Transport.c
         connect=TelemetryTransportTestConnect
         getsockopt=TelemetryTransportTestGetSockOpt)
 
-set_property(SOURCE ../telemetry/Transport.c
+set_property(SOURCE ../telemetry/AriaTransport.c
     APPEND PROPERTY COMPILE_DEFINITIONS
         TELEMETRY_TEST_POLL)
 
-set_property(SOURCE TelemetryTlsProviderUT.cpp ../telemetry/Tls.c
+set_property(SOURCE TelemetryTlsProviderUT.cpp ../telemetry/OpenSslAdapter.c
     APPEND PROPERTY COMPILE_DEFINITIONS
         TelemetryTls=TelemetryTestTls
         TelemetryTlsCreate=TelemetryTestTlsCreate
@@ -126,10 +126,10 @@ target_compile_definitions(telemetryworkerlookup PRIVATE
 target_link_libraries(telemetryworkerlookup PRIVATE telemetry commonutils rt)
 
 add_executable(telemetryworkerfault TelemetryWorkerFault.c)
-target_include_directories(telemetryworkerfault PRIVATE ../telemetry)
+target_include_directories(telemetryworkerfault PRIVATE ../telemetry ../logging)
 
 add_executable(telemetryworkerbadready TelemetryWorkerFault.c)
-target_include_directories(telemetryworkerbadready PRIVATE ../telemetry)
+target_include_directories(telemetryworkerbadready PRIVATE ../telemetry ../logging)
 target_compile_definitions(telemetryworkerbadready PRIVATE TELEMETRY_TEST_BAD_READY=1)
 
 add_dependencies(commontests telemetryworker telemetryworkerlookup telemetryworkerfault telemetryworkerbadready)

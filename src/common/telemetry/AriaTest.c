@@ -14,9 +14,9 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "Encoder.h"
-#include "Event.h"
-#include "Transport.h"
+#include "SchemaEncoder.h"
+#include "EventPayload.h"
+#include "AriaTransport.h"
 #include "Deadline.h"
 #include "Keys.h"
 #include <version.h>

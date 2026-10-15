@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <Telemetry.h>
-#include <Worker.h>
+#include <IpcInterface.h>
 #include <stdlib.h>
 #include <string.h>
 

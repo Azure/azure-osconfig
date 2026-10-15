@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Tls.h>
+#include <OpenSslAdapter.h>
 #include <Deadline.h>
-#include <Transport.h>
-#include <Worker.h>
+#include <AriaTransport.h>
+#include <IpcInterface.h>
 
 #include <arpa/inet.h>
 #include <cerrno>

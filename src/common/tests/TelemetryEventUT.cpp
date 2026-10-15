@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Event.h>
+#include <EventPayload.h>
 #include <cerrno>
 #include <cstring>
 #include <string>

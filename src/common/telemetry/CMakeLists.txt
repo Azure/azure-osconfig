@@ -5,16 +5,16 @@ cmake_minimum_required(VERSION 3.21)
 project(telemetry)
 
 add_library(telemetry STATIC
-    Encoder.c
-    Event.c
-    Http.c
+    SchemaEncoder.c
+    EventPayload.c
+    AriaHttpInterface.c
     Proxy.c
     Resolver.c
     ResolverLookup.c
     Telemetry.c
-    Tls.c
-    Transport.c
-    Worker.c)
+    OpenSslAdapter.c
+    AriaTransport.c
+    IpcInterface.c)
 target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetry PUBLIC logging
     PRIVATE commonutils parsonlib ${CMAKE_DL_LIBS} rt)

@@ -6,6 +6,19 @@ Reusable code is built into one static library, `telemetry`. Source files are se
 
 Telemetry is always built. The worker is installed with OSConfig and included in both audit and remediation policy packages; there is no telemetry-off build variant. This does not bypass runtime requirements: sending still requires an initialized invocation, an ingestion key, and a supported TLS runtime. Telemetry failures remain isolated from the audited or remediated operation's result. The live Aria test remains explicit-only.
 
+## Source responsibilities
+
+| Source | Responsibility |
+| --- | --- |
+| `Telemetry.c` | Product-facing event instrumentation and shared metadata. |
+| `EventPayload.c` | IPC event packing, approved schema validation, and preparation for encoding. |
+| `SchemaEncoder.c` | Common Schema binary encoding. |
+| `IpcInterface.c/.h` | Parent-side worker lifecycle and budget accounting, with shared IPC messages and client declarations in the header. |
+| `WorkerMain.c` | Worker entry point and request processing. |
+| `AriaTransport.c` | Connection establishment and event transmission over the supported routes. |
+| `AriaHttpInterface.c` | HTTP request formatting, response parsing, and collector acknowledgment interpretation. |
+| `OpenSslAdapter.c` | System OpenSSL discovery, TLS configuration, peer verification, and encrypted I/O. |
+
 ## Policy correlation
 
 For each event, the producer prefers a nonempty `activityId` environment variable for `CorrelationId`. If it is unset or empty, the producer reads `/var/lib/GuestConfig/Configuration/activityId.txt` using commonutils `LoadStringFromFile`, including its existing file-existence and locking behavior. MC writes the raw activity ID without an added newline; this is not the Aria ingestion key.

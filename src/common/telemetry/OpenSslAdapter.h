@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TLS_H
-#define TLS_H
+#ifndef OPENSSL_ADAPTER_H
+#define OPENSSL_ADAPTER_H
 
 #include <Logging.h>
 #include <stdbool.h>
@@ -52,4 +52,4 @@ void TelemetryTlsDestroy(TelemetryTls** tls, OsConfigLogHandle log);
 }
 #endif
 
-#endif // TLS_H
+#endif // OPENSSL_ADAPTER_H

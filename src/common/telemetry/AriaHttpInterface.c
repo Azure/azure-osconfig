@@ -3,8 +3,8 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "Http.h"
-#include "Encoder.h"
+#include "AriaHttpInterface.h"
+#include "SchemaEncoder.h"
 
 #include <errno.h>
 #include <inttypes.h>

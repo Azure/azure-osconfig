@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Encoder.h>
-#include <Http.h>
+#include <SchemaEncoder.h>
+#include <AriaHttpInterface.h>
 
 #include <algorithm>
 #include <array>

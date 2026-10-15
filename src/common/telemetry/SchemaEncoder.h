@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef ENCODER_H
-#define ENCODER_H
+#ifndef SCHEMA_ENCODER_H
+#define SCHEMA_ENCODER_H
 
 #include <Logging.h>
 #include <stdbool.h>
@@ -68,4 +68,4 @@ int TelemetryEncodeEvent(const TelemetryEvent* event, unsigned char* buffer, siz
 }
 #endif
 
-#endif // ENCODER_H
+#endif // SCHEMA_ENCODER_H

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "Encoder.h"
+#include "SchemaEncoder.h"
 
 #include <errno.h>
 #include <float.h>

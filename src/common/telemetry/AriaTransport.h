@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef TRANSPORT_H
-#define TRANSPORT_H
+#ifndef ARIA_TRANSPORT_H
+#define ARIA_TRANSPORT_H
 
-#include "Http.h"
+#include "AriaHttpInterface.h"
 
 #ifdef __cplusplus
 extern "C"

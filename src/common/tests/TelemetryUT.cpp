@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 #include <Telemetry.h>
-#include <Worker.h>
-#include <Event.h>
+#include <IpcInterface.h>
+#include <EventPayload.h>
 #include <CommonUtils.h>
 #include <cerrno>
 #include <cstdlib>

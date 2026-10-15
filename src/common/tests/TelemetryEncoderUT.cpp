@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Encoder.h>
+#include <SchemaEncoder.h>
 
 #include <array>
 #include <cerrno>

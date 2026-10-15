@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Transport.h>
+#include <AriaTransport.h>
 #include <ResolverProtocol.h>
-#include <Tls.h>
+#include <OpenSslAdapter.h>
 
 #include <cerrno>
 #include <cstdlib>

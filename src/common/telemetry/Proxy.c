@@ -4,7 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "Proxy.h"
-#include "Http.h"
+#include "AriaHttpInterface.h"
 
 #include <errno.h>
 #include <arpa/inet.h>
