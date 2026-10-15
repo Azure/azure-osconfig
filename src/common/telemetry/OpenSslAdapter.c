@@ -4,7 +4,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "OpenSslAdapter.h"
-#include "ExecutionDeadline.h"
+#include "Utils.h"
 
 #include <arpa/inet.h>
 #include <dlfcn.h>
@@ -657,7 +657,8 @@ static int Wait(TelemetryTls* tls, int sslError, int systemError, int64_t deadli
             remaining = 0;
             operation = "TelemetryDeadlineRemaining";
 
-            if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
+            if (0 == status)
             {
                 item = (struct pollfd){tls->descriptor, (short)((TlsWantRead == sslError) ? POLLIN : POLLOUT), 0};
                 operation = "poll";
@@ -704,16 +705,20 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
     {
         operation = "WorkerSignals";
     }
-    else if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    else
     {
         operation = "TelemetryDeadlineRemaining";
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
     }
-    else if (0 != (status = LoadProvider(log)))
+
+    if (0 == status)
     {
         // Provider initialization/configuration failures never trigger fallback.
         operation = "LoadProvider";
+        status = LoadProvider(log);
     }
-    else
+
+    if (0 == status)
     {
         g_api.ERR_clear_error();
         created = calloc(1, sizeof(*created));
@@ -791,7 +796,7 @@ int TelemetryTlsCreate(TelemetryTls** tls, int64_t deadline, OsConfigLogHandle l
                 if (0 == status)
                 {
                     operation = "TelemetryDeadlineRemaining";
-                    status = TelemetryDeadlineRemaining(deadline, &remaining);
+                    TelemetryDeadlineRemaining(deadline, &remaining, status);
                 }
             }
         }
@@ -878,7 +883,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
         if (0 == status)
         {
             operation = "TelemetryDeadlineRemaining";
-            status = TelemetryDeadlineRemaining(deadline, &remaining);
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
         }
     }
 
@@ -941,7 +946,8 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     while (0 == status)
     {
         operation = "TelemetryDeadlineRemaining";
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
         {
             break;
         }
@@ -995,7 +1001,7 @@ int TelemetryTlsHandshake(TelemetryTls* tls, int descriptor, const char* peer, i
     if (0 == status)
     {
         operation = "TelemetryDeadlineRemaining";
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
     }
     if (0 != status)
     {
@@ -1030,8 +1036,14 @@ int TelemetryTlsCheckIdle(TelemetryTls* tls, bool* reusable, int64_t deadline, O
         return Failure(NULL, __func__, "argument validation", EINVAL, log);
     }
 
-    while (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    for (;;)
     {
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
+        {
+            break;
+        }
+
         // A raw socket probe cannot distinguish TLS control records from EOF.
         // Drain ready control records without waiting or consuming application data.
         g_api.ERR_clear_error();
@@ -1076,7 +1088,7 @@ int TelemetryTlsCheckIdle(TelemetryTls* tls, bool* reusable, int64_t deadline, O
 
     if (0 == status)
     {
-        status = TelemetryDeadlineRemaining(deadline, &remaining);
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
     }
 
     if (0 != status)
@@ -1106,7 +1118,8 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size, int64_t
     {
         remaining = 0;
 
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
         {
             return Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log);
         }
@@ -1131,7 +1144,7 @@ int TelemetryTlsWrite(TelemetryTls* tls, const void* bytes, size_t size, int64_t
     }
 
     remaining = 0;
-    status = TelemetryDeadlineRemaining(deadline, &remaining);
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
 
     return (0 != status) ? Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log) : 0;
 }
@@ -1163,7 +1176,8 @@ int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* si
     {
         remaining = 0;
 
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
         {
             return Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log);
         }
@@ -1176,7 +1190,8 @@ int TelemetryTlsRead(TelemetryTls* tls, void* bytes, size_t capacity, size_t* si
 
         if ((done > 0) || (TlsClosed == sslError))
         {
-            if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
+            if (0 != status)
             {
                 return Failure(tls, __func__, "TelemetryDeadlineRemaining", status, log);
             }

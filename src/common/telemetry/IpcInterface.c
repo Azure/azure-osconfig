@@ -5,7 +5,6 @@
 
 #include "IpcInterface.h"
 #include "Utils.h"
-#include "ExecutionDeadline.h"
 #include "EventPayload.h"
 
 #include <errno.h>
@@ -46,7 +45,8 @@ static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* d
     int status = 0;
     int64_t limit = 0;
 
-    if (0 != (status = TelemetryMonotonicTime(start)))
+    TelemetryMonotonicTime(start, status);
+    if (0 != status)
     {
         worker->budget = 0;
         return status;
@@ -75,7 +75,8 @@ static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandl
     int status = 0;
     int64_t elapsed = 0;
 
-    if (0 != (status = TelemetryMonotonicTime(&now)))
+    TelemetryMonotonicTime(&now, status);
+    if (0 != status)
     {
         worker->budget = 0;
         OsConfigLogInfo(log, "ChargeBudget: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
@@ -160,7 +161,8 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
 
         remaining = 0;
 
-        if (0 != (timingStatus = TelemetryDeadlineRemaining(gracefulDeadline, &remaining)))
+        TelemetryDeadlineRemaining(gracefulDeadline, &remaining, timingStatus);
+        if (0 != timingStatus)
         {
             if (ETIMEDOUT != timingStatus)
             {
@@ -230,7 +232,8 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
 
     while (offset < size)
     {
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
         {
             OsConfigLogInfo(log, "Transfer: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
             return status;
@@ -246,7 +249,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
 
         if (0 == count)
         {
-            status = TelemetryDeadlineRemaining(deadline, &remaining);
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
             status = (0 != status) ? status : ((0 == offset) ? EPIPE : EPROTO);
             OsConfigLogInfo(log, "Transfer: %s completion check failed with %d (%s); transferred %zu of %zu bytes",
                 writing ? "send" : "recv", status, strerror(status), offset, size);
@@ -331,7 +334,7 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
         return status;
     }
 
-    status = TelemetryDeadlineRemaining(deadline, &remaining);
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
     if (0 != status)
     {
         OsConfigLogInfo(log, "ReceiveReply: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
@@ -511,7 +514,8 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     }
 
     operation = "TelemetryDeadlineRemaining";
-    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
+    if (0 != status)
     {
         goto cleanup;
     }
@@ -608,11 +612,13 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
         operation = "invocation state validation";
         status = EALREADY;
     }
-    else if (0 != (status = TelemetryMonotonicTime(&now)))
+    else
     {
         operation = "TelemetryMonotonicTime";
+        TelemetryMonotonicTime(&now, status);
     }
-    else
+
+    if (0 == status)
     {
         if (now > (INT64_MAX - ((int64_t)lifetimeMilliseconds * 1000000)))
         {
@@ -728,7 +734,8 @@ int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host, TelemetryR
     if (0 == status)
     {
         operation = "TelemetryDeadlineRemaining";
-        if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 != status)
         {
             goto failed;
         }

@@ -5,7 +5,7 @@
 
 #include <CommonUtils.h>
 #include <IpcInterface.h>
-#include <ExecutionDeadline.h>
+#include <Utils.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -78,7 +78,8 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
     g_initialized = true;
     g_log = log;
 
-    if (0 == (status = TelemetryMonotonicTime(&start)))
+    TelemetryMonotonicTime(&start, status);
+    if (0 == status)
     {
         if (NULL == (directory = GetModuleDirectory()))
         {
@@ -101,7 +102,7 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
     {
         g_distroName = GetOsPrettyName(log);
         operation = "TelemetryMonotonicTime";
-        status = TelemetryMonotonicTime(&now);
+        TelemetryMonotonicTime(&now, status);
     }
 
     if (0 == status)
@@ -169,7 +170,8 @@ static bool BeginEvent(int64_t* started)
     // missing log handle or implicitly start a worker from those call sites.
     if (g_initialized && (NULL != g_worker))
     {
-        if (0 != (status = TelemetryMonotonicTime(started)))
+        TelemetryMonotonicTime(started, status);
+        if (0 != status)
         {
             OsConfigLogInfo(g_log, "BeginEvent: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
         }

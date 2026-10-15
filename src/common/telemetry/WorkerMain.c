@@ -5,7 +5,6 @@
 
 #include "IpcInterface.h"
 #include "Utils.h"
-#include "ExecutionDeadline.h"
 #include "EventPayload.h"
 #include "AriaInterface.h"
 #include "Keys.h"
@@ -289,7 +288,8 @@ static int InitializeTelemetry(int argc, char** argv, timer_t* timer, int64_t* l
         return status;
     }
 
-    if (0 != (status = TelemetryArmDeadline(*timer, startup)))
+    TelemetryArmDeadline(*timer, startup, status);
+    if (0 != status)
     {
         OsConfigLogError(log, "InitializeTelemetry: TelemetryArmDeadline(startup) failed with %d (%s)", status, strerror(status));
         return status;
@@ -422,7 +422,8 @@ int main(int argc, char** argv)
             request = (TelemetryWorkerFrame){0};
             reply = (TelemetryResolverReply){0};
 
-            if (0 != (status = TelemetryArmDeadline(timer, lifetime)))
+            TelemetryArmDeadline(timer, lifetime, status);
+            if (0 != status)
             {
                 OsConfigLogError(log, "main: TelemetryArmDeadline(lifetime) failed with %d (%s)", status, strerror(status));
                 break;
@@ -463,7 +464,8 @@ int main(int argc, char** argv)
 
             sequence = request.sequence;
 
-            if (0 == (status = TelemetryArmDeadline(timer, request.deadline)))
+            TelemetryArmDeadline(timer, request.deadline, status);
+            if (0 == status)
             {
                 status = Transfer(payload, request.size, false, log);
 

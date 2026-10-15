@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSslAdapter.h>
-#include <ExecutionDeadline.h>
+#include <Utils.h>
 #include <arpa/inet.h>
 #include <cerrno>
 #include <csignal>
@@ -295,7 +295,9 @@ void* Address(Function function)
 int64_t Deadline()
 {
     int64_t now = 0;
-    EXPECT_EQ(0, TelemetryMonotonicTime(&now));
+    int status = 0;
+    TelemetryMonotonicTime(&now, status);
+    EXPECT_EQ(0, status);
     return now + INT64_C(5000000000);
 }
 

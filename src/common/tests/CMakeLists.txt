@@ -42,6 +42,7 @@ set_property(SOURCE TelemetryTransportUT.cpp ../telemetry/AriaInterface.c
         TelemetryTlsCreate=TelemetryTransportTestTlsCreate
         TelemetryLookupHost=TelemetryTransportTestLookupHost
         clock_gettime=TelemetryTransportTestClockGetTime
+        timer_settime=TelemetryTransportTestTimerSetTime
         connect=TelemetryTransportTestConnect
         getsockopt=TelemetryTransportTestGetSockOpt)
 

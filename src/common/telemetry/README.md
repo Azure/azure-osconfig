@@ -16,11 +16,12 @@ Telemetry is always built. The worker is installed with OSConfig and included in
 | `IpcInterface.c/.h` | Parent-side worker lifecycle and budget accounting, with shared IPC messages and client declarations in the header. |
 | `WorkerMain.c` | Worker entry point and request processing. |
 | `AriaInterface.c/.h` | Proxy configuration, connection establishment, HTTP exchange, and collector acknowledgment interpretation. |
-| `Utils.c/.h` | System hostname lookup, resolver result decoding, and the standalone resolver-process interface and message types. |
+| `Utils.c/.h` | System hostname lookup, resolver result decoding, resolver-process interfaces, and shared deadline macros. |
 | `OpenSslAdapter.c` | System OpenSSL discovery, TLS configuration, peer verification, and encrypted I/O. |
-| `ExecutionDeadline.h` | Shared monotonic-time calculations and worker deadline timers. |
 
 Production hostname lookup runs inside `OSConfigTelemetry`. The standalone resolver executable is a test fixture defined in `common/tests/TelemetryResolverWorker.c`, not an additional production process.
+
+Deadline helpers in `Utils.h` are C statement macros with an explicit final `int` status lvalue. Arguments are evaluated once; callers retain responsibility for handling and diagnosing nonzero status. Time and remaining-time outputs are unchanged on failure.
 
 ## Policy correlation
 

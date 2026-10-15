@@ -5,14 +5,77 @@
 #define TELEMETRY_UTILS_H
 
 #include <Logging.h>
+#include <errno.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
+#include <time.h>
 
 #define TELEMETRY_MAX_RESOLVED_ADDRESSES 8
 #define TELEMETRY_RESOLVER_PROTOCOL_VERSION 1
 #define TELEMETRY_RESOLVER_ADDRESS_LIMIT 8
 #define TELEMETRY_RESOLVER_HOST_LIMIT 253
+
+// STATUS is an int lvalue. Arguments are evaluated once; callers diagnose failures.
+#define TelemetryMonotonicTime(VALUE, STATUS) do {\
+    int64_t* _telemetryTimeValue = (VALUE);\
+    int* _telemetryTimeStatus = &(STATUS);\
+    struct timespec _telemetryTimeNow = {0, 0};\
+    int _telemetryTimeResult = 0;\
+    if (0 != clock_gettime(CLOCK_MONOTONIC, &_telemetryTimeNow)) {\
+        _telemetryTimeResult = (0 != errno) ? errno : EIO;\
+    }\
+    else if ((_telemetryTimeNow.tv_sec < 0) || ((uint64_t)_telemetryTimeNow.tv_sec > (uint64_t)((INT64_MAX / 1000000000) - 1))) {\
+        _telemetryTimeResult = EOVERFLOW;\
+    }\
+    else {\
+        *_telemetryTimeValue = ((int64_t)_telemetryTimeNow.tv_sec * INT64_C(1000000000)) + _telemetryTimeNow.tv_nsec;\
+    }\
+    *_telemetryTimeStatus = _telemetryTimeResult;\
+} while (0)
+
+#define TelemetryDeadlineRemaining(DEADLINE, MILLISECONDS, STATUS) do {\
+    int64_t _telemetryRemainingDeadline = (DEADLINE);\
+    int* _telemetryRemainingOutput = (MILLISECONDS);\
+    int* _telemetryRemainingStatus = &(STATUS);\
+    int64_t _telemetryRemainingNow = 0;\
+    int64_t _telemetryRemainingValue = 0;\
+    int _telemetryRemainingResult = 0;\
+    TelemetryMonotonicTime(&_telemetryRemainingNow, _telemetryRemainingResult);\
+    if (0 == _telemetryRemainingResult) {\
+        if (_telemetryRemainingNow >= _telemetryRemainingDeadline) {\
+            _telemetryRemainingResult = ETIMEDOUT;\
+        }\
+        else {\
+            _telemetryRemainingValue = ((_telemetryRemainingDeadline - _telemetryRemainingNow) / 1000000) +\
+                (0 != ((_telemetryRemainingDeadline - _telemetryRemainingNow) % 1000000));\
+            *_telemetryRemainingOutput = (_telemetryRemainingValue > INT_MAX) ? INT_MAX : (int)_telemetryRemainingValue;\
+        }\
+    }\
+    *_telemetryRemainingStatus = _telemetryRemainingResult;\
+} while (0)
+
+#define TelemetryArmDeadline(TIMER, DEADLINE, STATUS) do {\
+    timer_t _telemetryArmTimer = (TIMER);\
+    int64_t _telemetryArmDeadline = (DEADLINE);\
+    int* _telemetryArmStatus = &(STATUS);\
+    struct itimerspec _telemetryArmExpiration = {{0, 0}, {0, 0}};\
+    int _telemetryArmRemaining = 0;\
+    int _telemetryArmResult = 0;\
+    if ((_telemetryArmDeadline <= 0) || ((int64_t)(time_t)(_telemetryArmDeadline / 1000000000) != (_telemetryArmDeadline / 1000000000))) {\
+        _telemetryArmResult = EINVAL;\
+    }\
+    else {\
+        TelemetryDeadlineRemaining(_telemetryArmDeadline, &_telemetryArmRemaining, _telemetryArmResult);\
+        if (0 == _telemetryArmResult) {\
+            _telemetryArmExpiration.it_value.tv_sec = (time_t)(_telemetryArmDeadline / 1000000000);\
+            _telemetryArmExpiration.it_value.tv_nsec = (long)(_telemetryArmDeadline % 1000000000);\
+            _telemetryArmResult = (0 != timer_settime(_telemetryArmTimer, TIMER_ABSTIME, &_telemetryArmExpiration, NULL)) ? ((0 != errno) ? errno : EIO) : 0;\
+        }\
+    }\
+    *_telemetryArmStatus = _telemetryArmResult;\
+} while (0)
 
 #ifdef __cplusplus
 extern "C"

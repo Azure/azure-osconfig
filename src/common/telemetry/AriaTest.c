@@ -17,7 +17,7 @@
 #include "SchemaEncoder.h"
 #include "EventPayload.h"
 #include "AriaInterface.h"
-#include "ExecutionDeadline.h"
+#include "Utils.h"
 #include "Keys.h"
 #include <version.h>
 
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
     if (0 == (status = InitializeTimer(&timer)))
     {
         operation = "TelemetryMonotonicTime";
-        status = TelemetryMonotonicTime(&started);
+        TelemetryMonotonicTime(&started, status);
     }
 
     if ((0 == status) && (started > (INT64_MAX - INT64_C(15000000000))))
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
     if (0 == status)
     {
         operation = "TelemetryArmDeadline";
-        status = TelemetryArmDeadline(timer, started + INT64_C(15000000000));
+        TelemetryArmDeadline(timer, started + INT64_C(15000000000), status);
     }
 
     if (0 != status)
@@ -252,7 +252,8 @@ int main(int argc, char** argv)
         uploadTime = 0;
         operation = "TelemetryMonotonicTime";
 
-        if (0 != (status = TelemetryMonotonicTime(&now)))
+        TelemetryMonotonicTime(&now, status);
+        if (0 != status)
         {
             break;
         }
@@ -267,7 +268,8 @@ int main(int argc, char** argv)
         const int64_t deadline = now + INT64_C(15000000000);
 
         operation = "TelemetryArmDeadline";
-        if (0 != (status = TelemetryArmDeadline(timer, deadline)))
+        TelemetryArmDeadline(timer, deadline, status);
+        if (0 != status)
         {
             break;
         }

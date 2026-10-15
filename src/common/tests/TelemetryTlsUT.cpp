@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSslAdapter.h>
-#include <ExecutionDeadline.h>
+#include <Utils.h>
 #include <AriaInterface.h>
 #include <IpcInterface.h>
 
@@ -30,8 +30,10 @@ namespace
 int64_t Deadline(int milliseconds = 5000)
 {
     int64_t now = 0;
+    int status = 0;
 
-    if (0 != TelemetryMonotonicTime(&now))
+    TelemetryMonotonicTime(&now, status);
+    if (0 != status)
     {
         return 0;
     }
@@ -118,7 +120,8 @@ public:
 
             remaining = 0;
 
-            if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
+            if (0 != status)
             {
                 return status;
             }
@@ -195,7 +198,8 @@ public:
         {
             remaining = 0;
 
-            if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+            TelemetryDeadlineRemaining(deadline, &remaining, status);
+            if (0 != status)
             {
                 break;
             }
@@ -536,6 +540,7 @@ void WriteTimeout()
 {
     Peer peer;
     int size = 4096;
+    int status = 0;
     std::vector<unsigned char> bytes = {};
     int64_t start = 0, end = 0;
 
@@ -544,9 +549,11 @@ void WriteTimeout()
     ASSERT_EQ(0, setsockopt(peer.descriptor, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)));
     ASSERT_EQ(0, TelemetryTlsHandshake(peer.tls, peer.descriptor, "localhost", Deadline(), NULL));
     bytes.assign(512 * 1024, 'x');
-    ASSERT_EQ(0, TelemetryMonotonicTime(&start));
+    TelemetryMonotonicTime(&start, status);
+    ASSERT_EQ(0, status);
     EXPECT_EQ(ETIMEDOUT, TelemetryTlsWrite(peer.tls, bytes.data(), bytes.size(), start + 500000000, NULL));
-    ASSERT_EQ(0, TelemetryMonotonicTime(&end));
+    TelemetryMonotonicTime(&end, status);
+    ASSERT_EQ(0, status);
     EXPECT_GE(end - start, 500000000);
     EXPECT_LT(end - start, INT64_C(2000000000));
     EXPECT_EQ(EINVAL, TelemetryTlsWrite(peer.tls, "x", 1, Deadline(), NULL));
@@ -576,6 +583,7 @@ void TransportExchange(const char* mode)
     TelemetryHttpResponse response = {};
     int count = 0;
     int i = 0;
+    int status = 0;
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
@@ -603,7 +611,8 @@ void TransportExchange(const char* mode)
             while (0 != access((peer.directory + "/idle-ended").c_str(), F_OK))
             {
                 ASSERT_EQ(ENOENT, errno);
-                ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+                TelemetryDeadlineRemaining(deadline, &remaining, status);
+                ASSERT_EQ(0, status);
                 poll(nullptr, 0, 1);
             }
         }
@@ -628,13 +637,16 @@ void TransportFailure(const char* mode, int expected, bool slow = false)
     Transport transport;
     TelemetryHttpResponse response = {};
     int64_t begin = 0, end = 0;
+    int status = 0;
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
     ASSERT_EQ(0, TelemetryTransportCreate(&transport.value, NULL));
-    ASSERT_EQ(0, TelemetryMonotonicTime(&begin));
+    TelemetryMonotonicTime(&begin, status);
+    ASSERT_EQ(0, status);
     EXPECT_EQ(expected, transport.Send(&response, slow ? 300 : 5000));
-    ASSERT_EQ(0, TelemetryMonotonicTime(&end));
+    TelemetryMonotonicTime(&end, status);
+    ASSERT_EQ(0, status);
     EXPECT_EQ(TelemetryUnconfirmed, response.acceptance);
     TelemetryTransportDestroy(&transport.value, NULL);
 
@@ -795,7 +807,8 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     for (;;)
     {
         remaining = 0;
-        ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        ASSERT_EQ(0, status);
         item.fd = process.output;
         item.events = POLLIN;
         item.revents = 0;
@@ -842,7 +855,8 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
 
         ASSERT_GE(done, 0);
         remaining = 0;
-        ASSERT_EQ(0, TelemetryDeadlineRemaining(deadline, &remaining));
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        ASSERT_EQ(0, status);
         poll(NULL, 0, 5);
     }
 
@@ -878,6 +892,7 @@ void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
     size_t i = 0;
     int64_t before = 0, after = 0;
     int status = 0;
+    int timingStatus = 0;
 
     IgnorePipe();
     ASSERT_EQ(0, peer.Start(mode, false));
@@ -892,9 +907,11 @@ void WorkerEvents(const char* mode, int expected, bool suppressed, bool second)
         properties[i].value.stringValue = "worker-fixture";
     }
 
-    ASSERT_EQ(0, TelemetryMonotonicTime(&before));
+    TelemetryMonotonicTime(&before, timingStatus);
+    ASSERT_EQ(0, timingStatus);
     status = TelemetryWorkerSendEvent(worker.value, "CrashDetected", properties, 5, nullptr);
-    ASSERT_EQ(0, TelemetryMonotonicTime(&after));
+    TelemetryMonotonicTime(&after, timingStatus);
+    ASSERT_EQ(0, timingStatus);
 
     if (timeout)
     {

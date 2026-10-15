@@ -6,7 +6,6 @@
 #include "AriaInterface.h"
 #include "SchemaEncoder.h"
 #include "OpenSslAdapter.h"
-#include "ExecutionDeadline.h"
 #include "Utils.h"
 
 #include <arpa/inet.h>
@@ -1667,7 +1666,8 @@ static int WaitSocket(int descriptor, short events, int64_t deadline, const char
         remaining = 0;
         *operation = "TelemetryDeadlineRemaining";
 
-        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 == status)
         {
             item = (struct pollfd){descriptor, events, 0};
             *operation = "poll";
@@ -1722,7 +1722,8 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
     socklen_t size = 0;
     const char* operation = "connect";
 
-    if (0 != (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
+    if (0 != status)
     {
         OsConfigLogError(log, "Connect: TelemetryDeadlineRemaining failed with %d (%s)", status, strerror(status));
         return status;
@@ -1742,7 +1743,8 @@ static int Connect(TelemetryTransport* transport, int64_t deadline, OsConfigLogH
     for (i = 0; i < addresses.count; ++i)
     {
         operation = "TelemetryMonotonicTime";
-        if (0 != (status = TelemetryMonotonicTime(&now)))
+        TelemetryMonotonicTime(&now, status);
+        if (0 != status)
         {
             break;
         }
@@ -1844,7 +1846,8 @@ static int PlainTransfer(int descriptor, void* data, size_t size, bool writing, 
         remaining = 0;
         operation = "TelemetryDeadlineRemaining";
 
-        if (0 == (status = TelemetryDeadlineRemaining(deadline, &remaining)))
+        TelemetryDeadlineRemaining(deadline, &remaining, status);
+        if (0 == status)
         {
             operation = writing ? "send" : "recv";
             count = writing ? send(descriptor, (char*)data + offset, size - offset, MSG_NOSIGNAL) : recv(descriptor, (char*)data + offset, size - offset, 0);
