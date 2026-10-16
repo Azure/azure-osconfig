@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "Baseline.h"
+#include <Telemetry.h>
 #include <version.h>
 
 // The log file for the NRP
@@ -56,6 +57,7 @@ OsConfigLogHandle GetLog(void)
 // 65535 means this constructor is to be invoked last when the SO is loaded
 void __attribute__((constructor(65535))) Initialize()
 {
+    TelemetryInitialize(GetLog());
     CheckForPreviousCrash(LOG_FILE, GetLog());
     InstallCrashHandler(LOG_FILE);
 
@@ -118,6 +120,7 @@ void __attribute__((destructor)) Destroy()
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
 
+    TelemetryCleanup(GetLog());
     CloseLog(&g_log);
 }
 

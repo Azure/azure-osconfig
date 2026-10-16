@@ -4,7 +4,7 @@
 project(deviceinfotests)
 
 include(GoogleTest)
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 
 add_executable(deviceinfotests DeviceInfoTests.cpp)
 target_link_libraries(deviceinfotests GTest::gtest GTest::gtest_main pthread deviceinfolib logging commonutils)

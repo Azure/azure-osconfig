@@ -4,7 +4,7 @@
 project(securitybaselinetests)
 
 include(GoogleTest)
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 
 add_executable(securitybaselinetests SecurityBaselineTests.cpp)
 target_link_libraries(securitybaselinetests GTest::gtest GTest::gtest_main pthread securitybaselinelib logging commonutils)
