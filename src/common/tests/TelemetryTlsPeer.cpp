@@ -692,7 +692,7 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode, const std::st
             return;
         }
         CheckIdentity(connection, collector);
-        const int count = mode == "aria-live" ? 10000 :
+        const int count = mode == "aria-live" ? 100 :
             OneOf(mode, {"aria-reuse", "aria-auth", "aria-worker", "aria-producer"}) ? 2 : 1;
         for (int sequence = 0; sequence < count; ++sequence)
         {
@@ -712,7 +712,7 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode, const std::st
             const std::string body = connection.Receive(static_cast<size_t>(size));
             if (Starts(mode, "aria-live"))
             {
-                for (const char* required : {"StatusTrace", "*** Distilled 1DS SDK test No. 67 (new) ***", "731001",
+                for (const char* required : {"StatusTrace", "*** Distilled 1DS SDK test No. 68 (new) ***", "731001",
                     "CorrelationId", "ResultString", "o:fixture"})
                 {
                     Require(body.find(required) != std::string::npos, "Synthetic event missing required field");

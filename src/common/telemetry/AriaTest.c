@@ -6,9 +6,9 @@
 // From ~/azure-osconfig/build on Linux:
 //
 // sudo --preserve-env=OsConfigTelemetryApiKey cmake --build . --target telemetryariatest
-// sudo --preserve-env=https_proxy,HTTPS_PROXY,all_proxy,ALL_PROXY,no_proxy,NO_PROXY ./common/telemetry/telemetryariatest --send-status-trace-10000
+// sudo --preserve-env=https_proxy,HTTPS_PROXY,all_proxy,ALL_PROXY,no_proxy,NO_PROXY ./common/telemetry/telemetryariatest --send-status-trace-100
 //
-// Sends 10,000 synthetic StatusTrace events to Aria using the compiled ingestion key.
+// Sends 100 synthetic StatusTrace events to Aria using the compiled ingestion key.
 // Save the printed correlation ID and final counts to verify the run in Aria.
 // This exercises the encoder/transport directly, not WorkerMain.c or worker IPC.
 
@@ -30,9 +30,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#define TEST_COUNT 10000
+#define TEST_COUNT 100
 #define TEST_RESULT "731001"
-#define TEST_MARKER "*** Distilled 1DS SDK test No. 67 (new) ***"
+#define TEST_MARKER "*** Distilled 1DS SDK test No. 68 (new) ***"
 #define TEST_CLIENT "OSConfig-C/0.1"
 
 static int InitializeTimer(timer_t* timer)
@@ -158,11 +158,11 @@ int main(int argc, char** argv)
     TelemetryHttpResponse response = {0};
     const char* operation = "InitializeTimer";
 
-    if ((2 != argc) || (0 != strcmp(argv[1], "--send-status-trace-10000")))
+    if ((2 != argc) || (0 != strcmp(argv[1], "--send-status-trace-100")))
     {
         fprintf(stderr,
-            "Explicit live test only: %s --send-status-trace-10000\n"
-            "Sends 10000 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
+            "Explicit live test only: %s --send-status-trace-100\n"
+            "Sends 100 synthetic StatusTrace events to Aria using the build-time ingestion key.\n"
             "OsConfigTelemetryApiKey in the runtime environment overrides that key.\n"
             "Honors inherited HTTPS proxy settings. Never scheduled by ctest.\n", argv[0]);
         return 2;

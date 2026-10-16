@@ -757,7 +757,7 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     posix_spawn_file_actions_t actions = {};
     int status = 0;
     char* arguments[] = {const_cast<char*>(TELEMETRY_ARIA_TEST_PATH),
-        const_cast<char*>("--send-status-trace-10000"), NULL};
+        const_cast<char*>("--send-status-trace-100"), NULL};
     std::string text = {};
     int64_t deadline = 0;
     int remaining = 0;
@@ -864,7 +864,7 @@ void LiveEvents(const char* mode, const char* expected, int exitCode)
     EXPECT_EQ(exitCode, WEXITSTATUS(result)) << text;
     EXPECT_NE(std::string::npos, text.find(expected)) << text;
     EXPECT_NE(std::string::npos, text.find("ResultCode=731001"));
-    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 67 (new) ***"));
+    EXPECT_NE(std::string::npos, text.find("*** Distilled 1DS SDK test No. 68 (new) ***"));
     EXPECT_NE(std::string::npos, text.find("TLS mode: system OpenSSL (3, 1.1, 1.0.2, then 1.0.1)"));
     EXPECT_EQ(std::string::npos, text.find("fixture-token"));
     EXPECT_EQ(std::string::npos, text.find("event="));
@@ -1272,22 +1272,22 @@ TEST(TelemetryTransportDeathTest, RejectsInvalidArgumentsAndUnsupportedRoutes)
 
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnThrottling)
 {
-    TLS_CASE(LiveEvents("aria-live-throttle", "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-throttle", "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestStopsOnExplicitRejection)
 {
-    TLS_CASE(LiveEvents("aria-live-reject",  "requested=10000 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-reject",  "requested=100 attempted=1 accepted=0 rejected=1 unconfirmed=0 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotTreatEmpty200AsAcceptance)
 {
-    TLS_CASE(LiveEvents("aria-live-empty", "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-empty", "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
 }
 
 TEST(TelemetryTransportDeathTest, LiveTestDoesNotReplayAmbiguousDelivery)
 {
-    TLS_CASE(LiveEvents("aria-live-drop", "requested=10000 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=9999", 1));
+    TLS_CASE(LiveEvents("aria-live-drop", "requested=100 attempted=1 accepted=0 rejected=0 unconfirmed=1 unsent=99", 1));
 }
 
 TEST(TelemetryWorkerSendDeathTest, SendsAndReusesActualWorker)
