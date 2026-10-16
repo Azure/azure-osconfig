@@ -712,7 +712,7 @@ void Aria(int listener, SSL_CTX* context, const std::string& mode, const std::st
             const std::string body = connection.Receive(static_cast<size_t>(size));
             if (Starts(mode, "aria-live"))
             {
-                for (const char* required : {"StatusTrace", "*** Distilled 1DS SDK test No. 66 ***", "731001",
+                for (const char* required : {"StatusTrace", "*** Distilled 1DS SDK test No. 67 (new) ***", "731001",
                     "CorrelationId", "ResultString", "o:fixture"})
                 {
                     Require(body.find(required) != std::string::npos, "Synthetic event missing required field");
