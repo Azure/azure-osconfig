@@ -85,28 +85,6 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int ProtectDcFile(const char* gitClonedDcFile, OsConfigLogHandle log)
-{
-    int error = 0;
-
-    if (NULL == gitClonedDcFile)
-    {
-        OsConfigLogError(log, "ProtectDcFile: invalid argument");
-        error = EINVAL;
-    }
-    else if (false == FileExists(gitClonedDcFile))
-    {
-        OsConfigLogError(log, "Watcher: bad Git clone, DC file %s not found", gitClonedDcFile);
-        error = EACCES;
-    }
-    else if (0 != (error = RestrictFileAccessToCurrentAccountOnly(gitClonedDcFile)))
-    {
-        OsConfigLogError(log, "Watcher: failed protecting Git DC file %s", gitClonedDcFile);
-    }
-
-    return error;
-}
-
 void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log)
 {
     if (NULL != jsonConfiguration)
