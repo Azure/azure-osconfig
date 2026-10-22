@@ -16,8 +16,8 @@ class ConfigurationTest : public ::testing::Test
             "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
-            "\"VersionMinor\": 4,"
-            "\"VersionInfo\": \"Dilithium\","
+            "\"VersionMinor\": 5,"
+            "\"VersionInfo\": \"2026\","
             "\"Components\": [\"Configuration\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";
