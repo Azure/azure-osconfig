@@ -397,6 +397,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 {
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
+    char* payloadString = NULL;
 
     int status = MMI_OK;
 
