@@ -114,8 +114,6 @@ void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log)
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, log);
     }
 
-    g_gitCloneInitialized = false;
-
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
 }
