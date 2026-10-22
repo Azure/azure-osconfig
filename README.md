@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure Policy, as well as local management.
 
 For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md) and [OSConfig Management Modules](docs/modules.md).
 
@@ -17,25 +17,6 @@ OSConfig's C/C++ code currently targets compliance with C11.
 ## Getting started
 
 ### Prerequisites
-
-Build environments have many dependencies required, the easiest way to get started is to use our pre-defined container environments in [devops/docker](devops/docker/).
-
-Make sure all dependencies are installed for your distribution. All of our supported distributions are documented in the Dockerfiles under [devops/docker](devops/docker/) (additional packages may be present for CI which are not necessary for building). The following packages are typically required however the package names may vary across distributions.
-
-**Common build dependencies across distributions:**
-- vcpkg dependencies - [Supported hosts | Dependencies | Microsoft Learn](https://learn.microsoft.com/vcpkg/concepts/supported-hosts)
-    - git
-    - curl
-    - autoconf
-    - unzip
-    - zip
-- cmake (>= 3.21)
-- build-essential (gcc >= 4.4.7, g++, make)
-- perl (perl-core, perl-IPC-Cmd)
-- tar
-- python3
-
-Refer to the specific Dockerfile for your distribution under [devops/docker/](devops/docker/) for the complete and up-to-date list of dependencies. See the following example. The environments do also contain tools used in our CI which are not required for building (bc, jq, libubsan1, libasan8, clang, clang-tools, file).
 
 #### Example prerequisite install on Ubuntu 24.04
 Using the pre-defined [devops/docker/ubuntu-24.04-amd64/Dockerfile](devops/docker/ubuntu-24.04-amd64/Dockerfile) we can simply use the `RUN` commands to install all needed pre-requisites. We also need to run `sudo -i` since many commands require `root` (some uneeded packages only used by CI were omitted).
@@ -149,7 +130,7 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 }
 ```
 
-This interval is used for RC/DC, GitOps DC, and IoT Hub processing.
+This interval is used for RC/DC processing.
 
 ### Enabling debug logging
 
@@ -189,44 +170,5 @@ To disable local management, edit the OSConfig general configuration file `/etc/
 }
 ```
 To enable local management, set "LocalManagement" to 1.
-
-### Desired Configuration (DC) management over GitOps
-
-OSConfig can apply to the device desired configuration in MIM JSON payload format (same as for RC/DC) read from a Git repository and branch. The DC file must be named `osconfig_desired.json` and be placed in the root of the repository.
-
-By default, desired configuration (DC) over GitOps is disabled and there are no configured Git repository or branch.
-
-To enable GitOps DC management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and there:
-
-1. Set (or add if needed) a string value named "GitRepositoryUrl" to a string value containing the string that can be used to clone a Git repository, for example (this example uses OSConfig's own repository but can be anything):
-
-```json
-{
-    "GitRepositoryUrl": "https://github.com/Azure/azure-osconfig"
-}
-```
-
-For HTTPS cloning of a private Git repository, add necessary credentials to the "GitRepositoryUrl" such as, for example: `https://<username>:<password>@github.com/path/to/repo`. For SSH cloning, configure authetication separately on the device so OSConfig can use it.
-
-2. Set (or add if needed) a string value named "GitBranch" to a string value containing the Git branch name where the DC file is located, for example:
-
-```json
-{
-    "GitBranch": "name/branch"
-}
-```
-
-Set (or add if needed) an integer value named "GitManagement" to a non-zero value to enable GitOps DC management:
-
-```json
-{
-    "GitManagement": 1
-}
-```
-To disable GitOps DC management, set "GitManagement" to 0.
-
-OSConfig clones locally the configured Git DC file and branch to `/etc/osconfig/gitops/osconfig_desired.json`. This Git clone is automatically deleted when the OSConfig Agent (Watcher) terminates. While active, the cloned DC file is protected for root user access only.
-
----
 
 Microsoft may collect performance and usage information which may be used to provide and improve Microsoft products and services and enhance users experience. To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?LinkId=521839&clcid=0x409).

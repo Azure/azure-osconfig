@@ -3,7 +3,7 @@ Azure OSConfig - North Star Architecture
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure Policy, as well as local management.
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -34,7 +34,7 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC) and a Watcher for GitOps.
+The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapter: a Watcher for the Reported Configuration/Desired Configuration (RC/DC).
 
 The OSConfig Agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) REST API.
 
@@ -52,17 +52,7 @@ To protect against unauthorized access, the RC/DC files are restricted to root u
 
 The RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
 
-## 3.3. GitOps Watcher
-
-The GitOps Watcher clones a Git repository and branch containing a Desired Configuration (DC) file, monitors the cloned DC file and when it detects changes it makes MpiSetDesired calls to the OSConfig Management Platform.
-
-The GitOps DC file by default is named `osconfig_desired.json`, is located in the root of the Git repository and is locally cloned at `/etc/osconfig/gitops/osconfig_desired.json`.
-
-The GitOps DC file is written in JSON and follows the [MIM schema](../src/modules/schema/mim.schema.json).
-
-The Git clone is automatically deleted when the GitOps Watcher terminates. While active, the cloned DC file has restricted access for root user only.
-
-## 3.4. MPI Client
+## 3.3. MPI Client
 
 The OSConfig Agent links to the common MPI Client library and it uses it to make Management Platform Interface (MPI) calls to the OSConfig Platform as IPC REST API calls over HTTP and Unix Domain Sockets (UDS).
 
