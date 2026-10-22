@@ -27,7 +27,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "ReportingIntervalSeconds",
+    "ObjectName": "reportingIntervalSeconds",
     "Payload": 5
   },
   {
@@ -39,7 +39,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "ReportingIntervalSeconds",
+    "ObjectName": "reportingIntervalSeconds",
     "Payload": 30
   },
   {
