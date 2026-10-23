@@ -71,7 +71,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             else if (workerProcess < 0)
             {
                 // Intermediate process
-                OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
+                OsConfigLogDebug(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
                 status = -1;
 
                 // Kill the timer process if created and wait on it before exiting otherwise timer becomes a zombie process
@@ -110,7 +110,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             else if (timerProcess < 0)
             {
                 // Intermediate process
-                OsConfigLogError(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
+                OsConfigLogDebug(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
                 status = -1;
 
                 // Kill the worker process if created and wait on it before exiting otherwise worker becomes a zombie process
@@ -149,7 +149,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
         else
         {
             status = -1;
-            OsConfigLogError(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
+            OsConfigLogDebug(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
         }
     }
     else
@@ -169,7 +169,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
         else
         {
             // If our fork fails, try system(), if that also fails then the call fails
-            OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
+            OsConfigLogDebug(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
             status = system(command);
         }
     }
@@ -215,7 +215,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         *textResult = NULL;
         if (0 > (resultsFd = mkstemp(commandTextResultFile)))
         {
-            OsConfigLogError(log, "Cannot run command '%s', cannot create secure temporary file (errno: %d, '%s')", command, errno, strerror(errno));
+            OsConfigLogDebug(log, "Cannot run command '%s', cannot create secure temporary file (errno: %d, '%s')", command, errno, strerror(errno));
             OSConfigTelemetryStatusTrace("mkstemp", errno ? errno : -1);
             return errno ? errno : -1;
 
@@ -225,7 +225,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     if (NULL == (commandLine = FormatAllocateString(wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, redirectTarget, commandTerminator)))
     {
-        OsConfigLogError(log, "Cannot run command '%s', cannot allocate memory for command line, out of memory", command);
+        OsConfigLogDebug(log, "Cannot run command '%s', cannot allocate memory for command line, out of memory", command);
         OSConfigTelemetryStatusTrace("ExecuteCommand", ENOMEM);
         status = ENOMEM;
     }
