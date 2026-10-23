@@ -21,25 +21,25 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredRefreshInterval",
+    "ObjectName": "desiredReportingIntervalSeconds",
     "Payload": 5
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "refreshInterval",
+    "ObjectName": "reportingIntervalSeconds",
     "Payload": 5
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredRefreshInterval",
+    "ObjectName": "desiredReportingIntervalSeconds",
     "Payload": 30
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "refreshInterval",
+    "ObjectName": "reportingIntervalSeconds",
     "Payload": 30
   },
   {
@@ -71,73 +71,6 @@
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
     "ObjectName": "localManagementEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredDebugLoggingEnabled",
-    "Payload": "invalid",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredDebugLoggingEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "debugLoggingEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredDebugLoggingEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "debugLoggingEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredGitManagementEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "gitManagementEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredGitBranch",
-    "Payload": "foo/test"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "gitBranch",
-    "Payload": "foo/test"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredGitManagementEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "gitManagementEnabled",
     "Payload": false
   },
   {

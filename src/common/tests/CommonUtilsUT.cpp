@@ -1342,6 +1342,13 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccessAt)
 TEST_F(CommonUtilsTest, CheckForMountCreds)
 {
     const char* badOptions[] = {
+        "pass=SyntheticMountSecret",
+        "nosuid,pass=SyntheticMountSecret",
+        "nosuid,pass=SyntheticMountSecret,nodev",
+        "pass2=SyntheticMountSecret",
+        "nosuid,pass2=SyntheticMountSecret",
+        "nosuid,pass2=SyntheticMountSecret,nodev",
+        "password2=SyntheticMountSecret",
         "Test domain",
         "password test",
         "domain/username",
@@ -1374,6 +1381,59 @@ TEST_F(CommonUtilsTest, CheckForMountCreds)
     EXPECT_NE(nullptr, test = DuplicateString("umask=0077,nosuid"));
     EXPECT_STREQ(test, CheckForMountCreds(test));
     FREE_MEMORY(test);
+}
+
+TEST_F(CommonUtilsTest, MountPasswordAliasesDoNotReachLogsOrReasons)
+{
+    const char* marker = "SyntheticMountSecret";
+    const LoggingLevel originalLevel = GetLoggingLevel();
+    ASSERT_TRUE(CreateTestFile(m_path2, ""));
+    ASSERT_TRUE(CreateTestFile(m_path3, ""));
+    OsConfigLogHandle log = OpenLog(m_path3, nullptr);
+    ASSERT_NE(nullptr, log);
+    SetLoggingLevel(LoggingLevelDebug);
+
+    for (const char* option : {"pass", "pass2"})
+    {
+        SCOPED_TRACE(option);
+        const string record = string("//server/share /mnt/data cifs rw,") + option + "=" + marker + " 0 0\n";
+        EXPECT_TRUE(CreateTestFile(m_path, record.c_str()));
+        for (int pass = 0; pass < 2; pass++)
+        {
+            char* reason = nullptr;
+            EXPECT_EQ(pass ? 0 : ENOENT,
+                CheckFileSystemMountingOption(m_path, "/mnt/data", "cifs", "nosuid", &reason, log));
+            EXPECT_NE(nullptr, reason);
+            if (nullptr != reason)
+            {
+                EXPECT_EQ(nullptr, strstr(reason, marker));
+            }
+            FREE_MEMORY(reason);
+
+            EXPECT_EQ(0, SetFileSystemMountingOption(m_path, m_path2, "/mnt/data", nullptr, "nosuid", log));
+        }
+
+        char* contents = LoadStringFromFile(m_path, false, log);
+        EXPECT_NE(nullptr, contents);
+        if (nullptr != contents)
+        {
+            // Redaction must not remove the password from the actual mount configuration.
+            EXPECT_NE(nullptr, strstr(contents, marker));
+        }
+        FREE_MEMORY(contents);
+    }
+
+    SetLoggingLevel(originalLevel);
+    CloseLog(&log);
+    char* contents = LoadStringFromFile(m_path3, false, nullptr);
+    ASSERT_NE(nullptr, contents);
+    EXPECT_NE(nullptr, strstr(contents, "CheckFileSystemMountingOption"));
+    EXPECT_NE(nullptr, strstr(contents, "SetFileSystemMountingOption"));
+    EXPECT_EQ(nullptr, strstr(contents, marker));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
+    EXPECT_TRUE(Cleanup(m_path3));
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)

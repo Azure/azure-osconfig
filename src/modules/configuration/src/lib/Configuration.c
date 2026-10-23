@@ -20,17 +20,11 @@ static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "Configuration";
 
 static const char* g_modelVersionObject = "modelVersion";
-static const char* g_refreshIntervalObject = "refreshInterval";
+static const char* g_refreshIntervalObject = "reportingIntervalSeconds";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
-static const char* g_debugLoggingEnabledObject = "debugLoggingEnabled";
-static const char* g_gitManagementEnabledObject = "gitManagementEnabled";
-static const char* g_gitBranchObject = "gitBranch";
 
-static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
+static const char* g_desiredRefreshIntervalObject = "desiredReportingIntervalSeconds";
 static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
-static const char* g_desiredDebugLoggingEnabledObject = "desiredDebugLoggingEnabled";
-static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
-static const char* g_desiredGitBranchObject = "desiredGitBranch";
 
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
@@ -44,8 +38,8 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
-    "\"VersionMinor\": 4,"
-    "\"VersionInfo\": \"Dilithium\","
+    "\"VersionMinor\": 5,"
+    "\"VersionInfo\": \"2026\","
     "\"Components\": [\"Configuration\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
@@ -55,9 +49,6 @@ static OsConfigLogHandle g_log = NULL;
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
 static bool g_localManagementEnabled = false;
-static bool g_debugLoggingEnabled = false;
-static bool g_gitManagementEnabled = false;
-static char* g_gitBranch = NULL;
 
 #if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
@@ -81,11 +72,6 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
-        g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
-        g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
-
-        FREE_MEMORY(g_gitBranch);
-        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
     {
@@ -115,20 +101,14 @@ void ConfigurationInitialize(const char* configurationFile)
 void ConfigurationShutdown(void)
 {
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
-
-    FREE_MEMORY(g_gitBranch);
-
     CloseLog(&g_log);
 }
 
 static int UpdateConfigurationFile(void)
 {
-    const char* debugLoggingEnabledName = "DebugLogging";
     const char* localManagementEnabledName = "LocalManagement";
     const char* modelVersionName = "ModelVersion";
     const char* refreshIntervalName = "ReportingIntervalSeconds";
-    const char* gitManagementEnabledName = "GitManagement";
-    const char* gitBranchName = "GitBranch";
 
     int status = MMI_OK;
 
@@ -138,9 +118,6 @@ static int UpdateConfigurationFile(void)
     int modelVersion = g_modelVersion;
     int refreshInterval = g_refreshInterval;
     bool localManagementEnabled = g_localManagementEnabled;
-    bool debugLoggingEnabled = g_debugLoggingEnabled;
-    bool gitManagementEnabled = g_gitManagementEnabled;
-    char* gitBranch = DuplicateString(g_gitBranch);
 
     char* existingConfiguration = LoadConfigurationFromFile(g_configurationFile);
     char* newConfiguration = NULL;
@@ -152,9 +129,7 @@ static int UpdateConfigurationFile(void)
         return ENOENT;
     }
 
-    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) ||
-        (debugLoggingEnabled != g_debugLoggingEnabled) ||
-        (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
+    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
@@ -200,37 +175,6 @@ static int UpdateConfigurationFile(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
                 OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
             }
-
-            if (JSONSuccess == json_object_set_number(jsonObject, debugLoggingEnabledName, (double)(debugLoggingEnabled ? 1: 0)))
-            {
-                g_debugLoggingEnabled = debugLoggingEnabled;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_debugLoggingEnabledObject, debugLoggingEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
-            }
-
-            if (JSONSuccess == json_object_set_number(jsonObject, gitManagementEnabledName, (double)(gitManagementEnabled ? 1 : 0)))
-            {
-                g_gitManagementEnabled = gitManagementEnabled;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
-                OSConfigTelemetryStatusTrace("json_object_set_boolean", EINVAL);
-            }
-
-            if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
-            {
-                FREE_MEMORY(g_gitBranch);
-                g_gitBranch = DuplicateString(gitBranch);
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_string(%s, %s) failed", g_gitBranchObject, gitBranch);
-                OSConfigTelemetryStatusTrace("json_object_set_string", EINVAL);
-            }
         }
 
         if (MMI_OK == status)
@@ -273,7 +217,6 @@ static int UpdateConfigurationFile(void)
         json_free_serialized_string(newConfiguration);
     }
 
-    FREE_MEMORY(gitBranch);
     FREE_MEMORY(existingConfiguration);
 
     return status;
@@ -384,18 +327,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         {
             jsonValue = json_value_init_boolean(g_localManagementEnabled ? 1 : 0);
         }
-        else if (0 == strcmp(objectName, g_debugLoggingEnabledObject))
-        {
-            jsonValue = json_value_init_boolean(g_debugLoggingEnabled ? 1 : 0);
-        }
-        else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
-        {
-            jsonValue = json_value_init_boolean(g_gitManagementEnabled ? 1 : 0);
-        }
-        else if (0 == strcmp(objectName, g_gitBranchObject))
-        {
-            jsonValue = json_value_init_string(g_gitBranch);
-        }
         else
         {
             status = EINVAL;
@@ -465,7 +396,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     JSON_Value* jsonValue = NULL;
-    const char* jsonString = NULL;
     char* payloadString = NULL;
 
     int status = MMI_OK;
@@ -507,37 +437,6 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
                 {
                     g_localManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
-                }
-                else if (0 == strcmp(objectName, g_desiredDebugLoggingEnabledObject))
-                {
-                    g_debugLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
-                }
-                else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
-                {
-                    g_gitManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
-                }
-                else if (0 == strcmp(objectName, g_desiredGitBranchObject))
-                {
-                    if (NULL != (jsonString = json_value_get_string(jsonValue)))
-                    {
-                        if (jsonString)
-                        {
-                            FREE_MEMORY(g_gitBranch);
-                            g_gitBranch = DuplicateString(jsonString);
-                        }
-                        else
-                        {
-                            status = EINVAL;
-                            OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
-                            OSConfigTelemetryStatusTrace("json_value_get_string", status);
-                        }
-                    }
-                    else
-                    {
-                        status = EINVAL;
-                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string('%s') failed", componentName, objectName, payloadString);
-                        OSConfigTelemetryStatusTrace("json_value_get_string", status);
-                    }
                 }
                 else
                 {

@@ -169,12 +169,12 @@ static int FormatMountEntry(const struct mntent* entry, const char* desiredOptio
 }
 
 // The mntent.mnt_opts field (which corresponds to the mount options in /etc/fstab) can technically contain credentials.
-// For certain network filesystems like CIFS/SMB or NFS, one can specify options such as: 'username', 'password', 'domain'.
+// For certain network filesystems like CIFS/SMB or NFS, one can specify options such as: 'username', 'password', 'pass', 'password2', 'pass2', 'domain'.
 // These options are parsed by the mount helper (e.g., mount.cifs) when mounting the share.
 // When such credentials appear in the mntent.mnt_opts field we do not want to log contents of mntent.mnt_opts.
 char* CheckForMountCreds(char* options)
 {
-    const char* anyOf[] = {"username", "password", "domain"};
+    const char* anyOf[] = {"username", "password", "domain", "pass=", "pass2="};
     size_t size = ARRAY_SIZE(anyOf);
     size_t i = 0;
     char* result = NULL;
