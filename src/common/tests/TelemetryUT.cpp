@@ -10,7 +10,6 @@
 #include <string>
 #include <sys/stat.h>
 
-#ifdef BUILD_TELEMETRY
 class TelemetryTest : public ::testing::Test
 {
 protected:
@@ -63,4 +62,3 @@ TEST_F(TelemetryTest, CleanupResetsTelemetryState)
     EXPECT_EQ(0, stat(TELEMETRY_TMP_FILE_NAME, &fileInfo));
     EXPECT_EQ(0, remove(TELEMETRY_TMP_FILE_NAME));
 }
-#endif

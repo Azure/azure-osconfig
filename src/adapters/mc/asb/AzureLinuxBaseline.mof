@@ -229,7 +229,7 @@ instance of OsConfigResource as $OsConfigResource13ref
     ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
-    DesiredObjectValue = "0";
+    DesiredObjectValue = "3";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "AzureLinuxBaseline";
@@ -246,7 +246,7 @@ instance of OsConfigResource as $OsConfigResource14ref
     ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
-    DesiredObjectValue = "3600";
+    DesiredObjectValue = "300";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "AzureLinuxBaseline";

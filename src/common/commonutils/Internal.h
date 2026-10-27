@@ -18,6 +18,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
@@ -26,6 +27,9 @@
 #include <math.h>
 #include <libgen.h>
 #include <shadow.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdint.h>
 #include <parson.h>
 #include <Logging.h>
 #include <Reasons.h>

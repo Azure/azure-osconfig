@@ -14,7 +14,7 @@ static const char* g_redacted = "***";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
-static void ResetUserEntry(SimplifiedUser* target)
+void ResetUserEntry(SimplifiedUser* target)
 {
     if (NULL != target)
     {
@@ -55,7 +55,7 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size)
     }
 }
 
-static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
+int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
 {
     int status = 0;
     size_t length = 0;
@@ -131,7 +131,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     return status;
 }
 
-static char* EncryptionName(int type)
+char* EncryptionName(int type)
 {
     char* name = NULL;
     switch (type)
@@ -168,7 +168,7 @@ static char* EncryptionName(int type)
     return name;
 }
 
-static bool IsUserNonLogin(SimplifiedUser* user)
+bool IsUserNonLogin(SimplifiedUser* user)
 {
     int index = ARRAY_SIZE(g_noLoginShell);
     bool noLogin = false;
@@ -193,19 +193,19 @@ static bool IsUserNonLogin(SimplifiedUser* user)
 // For logging purposes, we identify an user account as a system account if either has name "root", or has a no-loging shell,
 // or has an UID below 1000. For non-system accounts we redact usernames and home names, for system accounts we log everything.
 // We do this in order to log in full clear deviant accounts (that for example use a no-login shell while having UID above 1000)
-static bool IsSystemAccount(SimplifiedUser* user)
+bool IsSystemAccount(SimplifiedUser* user)
 {
     return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
 // Similar to determining if an user account is system, we identify a group to be system if either
 // has name "root" or has a GID below 1000 (and all such system groups get logged in full)
-static bool IsSystemGroup(SimplifiedGroup* group)
+bool IsSystemGroup(SimplifiedGroup* group)
 {
     return (group && ((group->groupName && (0 == strcmp(group->groupName, g_root))) || (group->groupId < 1000))) ? true : false;
 }
 
-static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
+int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 {
     const char* commandTemplate = "usermod -s %s %s";
     char* command = NULL;
@@ -262,7 +262,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
     return result;
 }
 
-static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
+int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct spwd* shadowEntry = NULL;
     char control = 0;
@@ -1583,6 +1583,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     unsigned int defaultHomeDirAccess = 0750;
+    int homeFd = -1;
     int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
@@ -1596,7 +1597,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
             else if (NULL != userList[i].home)
             {
                 // If the home directory does not exist, create it
-                if (false == DirectoryExists(userList[i].home))
+                if (false == (IsADirectory(userList[i].home, log) && DirectoryExists(userList[i].home)))
                 {
                     OsConfigLogInfo(log, "SetUserHomeDirectories: user %u home directory is not found", userList[i].userId);
 
@@ -1607,18 +1608,23 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                     else
                     {
                         _status = (0 == errno) ? EACCES : errno;
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory for user %u,  %d (%s)", userList[i].userId, _status, strerror(_status));
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory for user %u,  %d (%s)",
+                            userList[i].userId, _status, strerror(_status));
                     }
                 }
 
-                // If the home directory does not have correct ownership and access, correct this
-                if (true == DirectoryExists(userList[i].home))
+                // Open the home directory once without following symlinks and correct ownership and access through that descriptor to avoid a symlink race
+                if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
                 {
-                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
+                    if ((0 != fchown(homeFd, userList[i].userId, userList[i].groupId)) || (0 != fchmod(homeFd, defaultHomeDirAccess)))
                     {
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, errno: %d, %s)",
-                            userList[i].userId, _status, errno, strerror(errno));
+                        _status = errno ? errno : ENOENT;
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, %s)",
+                            userList[i].userId, _status, strerror(_status));
                     }
+
+                    close(homeFd);
+                    homeFd = -1;
                 }
 
                 if (_status && (0 != status))
@@ -1639,7 +1645,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     return status;
 }
 
-static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
+int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int status = 0;
@@ -1656,6 +1662,8 @@ static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle l
         {
             if (((uid_t)user->userId != statStruct.st_uid) || ((gid_t)user->groupId != statStruct.st_gid))
             {
+                OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: ownership of '%s' (%u, %u) does not match expected user %u (%u, %u)",
+                    user->home, statStruct.st_uid, statStruct.st_gid, user->userId, user->userId, user->groupId);
                 status = ENOENT;
             }
         }
@@ -1789,6 +1797,9 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
+    unsigned int mode = 0;
+    int homeFd = -1;
+    struct stat statStruct = {0};
     bool oneGoodMode = false;
     int status = 0, _status = 0;
 
@@ -1807,13 +1818,23 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home))
+            // Open the home directory once without following symlinks and verify and correct it through that same descriptor to avoid a symlink race
+            else if (0 <= (homeFd = OpenTrueFileOrDirectory(true, false, AT_FDCWD, userList[i].home, log)))
             {
+                if (0 != fstat(homeFd, &statStruct))
+                {
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: fstat on '%s' failed with %d (%s) for user %u",
+                        userList[i].home, errno, strerror(errno), userList[i].userId);
+                    close(homeFd);
+                    homeFd = -1;
+                    continue;
+                }
+
                 oneGoodMode = false;
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                    if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) && (modes[j] == (statStruct.st_mode & 07777)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1824,15 +1845,18 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 if (false == oneGoodMode)
                 {
-                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
+                    mode = userList[i].isRoot ? modeForRoot : modeForOthers;
+
+                    if ((0 == fchown(homeFd, userList[i].userId, userList[i].groupId)) && (0 == fchmod(homeFd, mode)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u has now proper restricted access (%03o) for their assigned home directory",
-                            userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers);
+                            userList[i].userId, mode);
                     }
                     else
                     {
+                        _status = errno ? errno : ENOENT;
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%03o) for user %u assigned home directory (%d, %s)",
-                            userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers, _status, strerror(_status));
+                            userList[i].userId, mode, _status, strerror(_status));
 
                         if (0 == status)
                         {
@@ -1840,6 +1864,9 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                         }
                     }
                 }
+
+                close(homeFd);
+                homeFd = -1;
             }
         }
     }
@@ -2931,14 +2958,13 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log)
 {
-    const char* pathTemplate = "%s/%s";
-
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
-    char* path = NULL;
-    size_t length = 0;
+    int homeFd = -1;
+    int dotFd = -1;
+    struct stat statStruct = {0};
     bool oneGoodMode = false;
     int status = 0, _status = 0;
 
@@ -2957,32 +2983,43 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
             {
                 continue;
             }
-            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            // Open the home directory once without following symlinks and operate relative to that descriptor to avoid a symlink race
+            else if (0 <= (homeFd = open(userList[i].home, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)))
             {
+                if (NULL == (home = fdopendir(homeFd)))
+                {
+                    OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fdopendir on '%s' failed with %d (%s), skipping user %u", userList[i].home, errno, strerror(errno), userList[i].userId);
+                    close(homeFd);
+                    homeFd = -1;
+                    continue;
+                }
+
                 while (NULL != (entry = readdir(home)))
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
-                        if (NULL == (path = malloc(length + 1)))
+                        // Open the dot file once relative to the home descriptor without following symlinks, then verify and correct it through that same descriptor to avoid a symlink race
+                        if (0 > (dotFd = OpenTrueFileOrDirectory(false, false, dirfd(home), entry->d_name, log)))
                         {
-                            OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
-                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
-                            status = ENOMEM;
-                            break;
+                            continue;
                         }
 
-                        memset(path, 0, length + 1);
-                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
+                        if (0 != fstat(dotFd, &statStruct))
+                        {
+                            OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: fstat on '%s' failed with %d (%s) for user %u", entry->d_name, errno, strerror(errno), userList[i].userId);
+                            close(dotFd);
+                            dotFd = -1;
+                            continue;
+                        }
 
                         oneGoodMode = false;
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if ((userList[i].userId == statStruct.st_uid) && (userList[i].groupId == statStruct.st_gid) && (modes[j] == (statStruct.st_mode & 07777)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].userId, modes[j], path);
+                                    userList[i].userId, modes[j], entry->d_name);
                                 oneGoodMode = true;
                                 break;
                             }
@@ -2990,15 +3027,16 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (false == oneGoodMode)
                         {
-                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
+                            if ((0 == fchown(dotFd, userList[i].userId, userList[i].groupId)) && (0 == fchmod(dotFd, mode)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].userId, mode, path);
+                                    userList[i].userId, mode, entry->d_name);
                             }
                             else
                             {
+                                _status = errno ? errno : ENOENT;
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user %u dot file '%s'",
-                                    mode, userList[i].userId, path);
+                                    mode, userList[i].userId, entry->d_name);
 
                                 if (0 == status)
                                 {
@@ -3007,11 +3045,14 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                             }
                         }
 
-                        FREE_MEMORY(path);
+                        close(dotFd);
+                        dotFd = -1;
                     }
                 }
 
                 closedir(home);
+                home = NULL;
+                homeFd = -1;
             }
         }
     }

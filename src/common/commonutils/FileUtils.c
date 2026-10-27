@@ -65,7 +65,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle
     return string;
 }
 
-static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     FILE* file = NULL;
     int i = 0;
@@ -166,6 +166,56 @@ bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
     return result;
 }
 
+char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHandle log)
+{
+    unsigned int size = 0;
+    long offset = 0;
+    size_t sizeRead = 0;
+    FILE* file = NULL;
+    char* string = NULL;
+
+    if ((0 == maxSize) || (false == FileExists(logFileName)))
+    {
+        return NULL;
+    }
+
+    if (NULL != (file = fopen(logFileName, "r")))
+    {
+        if (LockFile(file, log))
+        {
+            fseek(file, 0, SEEK_END);
+            size = (unsigned int)ftell(file);
+
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
+
+            offset = (long)(ftell(file) - size);
+            fseek(file, offset, SEEK_SET);
+
+            if (NULL != (string = (char*)malloc(size + 1)))
+            {
+                memset(string, 0, size + 1);
+                sizeRead = fread(string, sizeof(char), size, file);
+                UNUSED(sizeRead);
+            }
+            else
+            {
+                OsConfigLogError(log, "LoadEndOfFile: unable to allocate memory");
+            }
+
+            UnlockFile(file, log);
+        }
+
+        fclose(file);
+    }
+
+    OsConfigLogDebug(log, "LoadEndOfFile: '%s' ends in '%s'", logFileName, string);
+
+    return string;
+}
+
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     bool result = false;
@@ -194,7 +244,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     return result;
 }
 
-static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
@@ -394,7 +444,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-static bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
+bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int format = 0;
@@ -537,7 +587,7 @@ int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log
     return status;
 }
 
-static bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
+bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
 {
     int fileDescriptor = -1;
     int lockResult = -1;
@@ -570,7 +620,7 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -656,7 +706,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
+int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     int result = ENOENT;
 
@@ -726,7 +776,7 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
+unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
 {
     unsigned int numberOf = 0;
     FILE* file = NULL;
@@ -790,7 +840,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfig
     return status;
 }
 
-static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
+int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     struct stat statStruct = { 0 };
     int status = ENOENT;
@@ -837,7 +887,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
     return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
-static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
+int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
 {
     char* restoreCommand = NULL;
     char* textResult = NULL;
@@ -957,7 +1007,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
     return status;
 }
 
-static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
+int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -1527,7 +1577,7 @@ int CheckTextFoundInFolder(const char* directory, const char* text, const char* 
     return result;
 }
 
-static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
+int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -1666,7 +1716,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
     return result;
 }
 
-static int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
+int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
 {
     char* results = NULL;
     int status = 0;
@@ -2062,4 +2112,54 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log)
     }
 
     return status;
+}
+
+// Opens 'name' relative to 'dirFd' and verifies its type. 'followSymlink' selects whether the final
+// component may be a symlink (followed to its target) or is opened with O_NOFOLLOW. Either way the
+// object is opened once and acted upon through the returned fd. Returns fd, or -1 with errno set
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log)
+{
+    struct stat statStruct = {0};
+    int flags = O_RDONLY | O_CLOEXEC | O_NONBLOCK | (followSymlink ? 0 : O_NOFOLLOW) | (directory ? O_DIRECTORY : 0);
+    int err = 0, result = -1;
+    int fd = openat(dirFd, name, flags);
+
+    if (0 > fd)
+    {
+        if (ELOOP == errno)
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is a symbolic link, refusing to use it", name);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: openat for '%s' failed with %d (%s)", name, errno, strerror(errno));
+        }
+    }
+    else
+    {
+        if (0 != fstat(fd, &statStruct))
+        {
+            err = errno ? errno : ENOENT;
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: fstat for '%s' failed with %d (%s)", name, errno, strerror(errno));
+            close(fd);
+            errno = err;
+        }
+        // The directory APIs require an actual directory; the file APIs are historically applied to both regular files
+        // and directories (for example ASB permission checks on /etc/cron.d). Either way, symlinks and special files
+        // (FIFOs, sockets, devices) are refused - the O_NOFOLLOW open already rejected symlinks with ELOOP above
+        else if (directory ? (0 == S_ISDIR(statStruct.st_mode)) : (0 == (S_ISREG(statStruct.st_mode) || S_ISDIR(statStruct.st_mode))))
+        {
+            OsConfigLogInfo(log, "OpenTrueFileOrDirectory: '%s' is not a %s (mode 0x%X)", name,
+                directory ? "directory" : "regular file or directory", statStruct.st_mode & S_IFMT);
+            close(fd);
+            errno = EINVAL;
+        }
+        else
+        {
+            // The object was opened once and verified; hand the still-open descriptor to the caller
+            result = fd;
+        }
+    }
+
+    return result;
 }

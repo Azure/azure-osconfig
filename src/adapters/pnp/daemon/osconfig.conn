@@ -1,1 +1,0 @@
-HostName=<IoT Hub name>.azure-devices.net;DeviceId=<device id>;SharedAccessKey=<access key>

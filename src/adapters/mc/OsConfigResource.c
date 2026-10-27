@@ -53,8 +53,12 @@ OsConfigLogHandle GetLog(void)
     return g_log;
 }
 
-void __attribute__((constructor)) Initialize()
+// 65535 means this constructor is to be invoked last when the SO is loaded
+void __attribute__((constructor(65535))) Initialize()
 {
+    CheckForPreviousCrash(LOG_FILE, GetLog());
+    InstallCrashHandler(LOG_FILE);
+
     g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);
     g_payloadKey = DuplicateString(g_defaultValue);

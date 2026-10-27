@@ -47,7 +47,7 @@ OsConfigLogHandle GetPlatformLog(void)
     return g_platformLog;
 }
 
-static void LoadModules(const char* directory, const char* configJson)
+void LoadModules(const char* directory, const char* configJson)
 {
     MODULE* module = NULL;
     DIR* dir = NULL;
@@ -233,7 +233,7 @@ void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
     }
 }
 
-static void FreeModules(MODULE* modules)
+void FreeModules(MODULE* modules)
 {
     MODULE* curr = modules;
     MODULE* next = NULL;
@@ -248,7 +248,7 @@ static void FreeModules(MODULE* modules)
     modules = NULL;
 }
 
-static void FreeSessions(SESSION* sessions)
+void FreeSessions(SESSION* sessions)
 {
     SESSION* curr = sessions;
     SESSION* next = NULL;
@@ -276,7 +276,7 @@ static void FreeSessions(SESSION* sessions)
     sessions = NULL;
 }
 
-static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
+void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
 {
     int i = 0;
 
@@ -298,7 +298,7 @@ void UnloadModules(void)
     g_reportedTotal = 0;
 }
 
-static char* GenerateUuid(void)
+char* GenerateUuid(void)
 {
     char* uuid = NULL;
     static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
@@ -390,6 +390,9 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
                         {
                             OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for module session");
                         }
+
+                        // Reinstall the crash handler after each modules is loaded, in case any install their own handler to overwrite this:
+                        InstallCrashHandler(LOG_FILE);
 
                         module = module->next;
                     }

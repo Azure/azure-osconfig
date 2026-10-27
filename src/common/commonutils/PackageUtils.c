@@ -76,7 +76,7 @@ int IsPresent(const char* what, OsConfigLogHandle log)
     return status;
 }
 
-static void CheckPackageManagersPresence(OsConfigLogHandle log)
+void CheckPackageManagersPresence(OsConfigLogHandle log)
 {
     if (false == g_checkedPackageManagersPresence)
     {
@@ -91,7 +91,7 @@ static void CheckPackageManagersPresence(OsConfigLogHandle log)
     }
 }
 
-static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log)
+int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -122,7 +122,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log)
+int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -151,7 +151,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     return status;
 }
 
-static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
+int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\\n\"";
@@ -336,7 +336,7 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLog
     return result;
 }
 
-static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log)
+int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -374,7 +374,7 @@ static int ExecuteAptGetUpdate(OsConfigLogHandle log)
     return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log);
 }
 
-static int ExecuteZypperRefresh(OsConfigLogHandle log)
+int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
     const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
@@ -411,17 +411,17 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
     return status;
 }
 
-static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
+int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
+int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
+int ExecuteYumCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log);
 }

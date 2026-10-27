@@ -6,6 +6,7 @@ project(commonutils)
 add_library(commonutils STATIC
     CommandUtils.c
     ConfigUtils.c
+    CrashHandler.c
     DaemonUtils.c
     DeviceInfoUtils.c
     FileUtils.c
@@ -14,7 +15,6 @@ add_library(commonutils STATIC
     PackageUtils.c
     PassUtils.c
     PerfUtils.c
-    ProxyUtils.c
     SocketUtils.c
     SshUtils.c
     UrlUtils.c

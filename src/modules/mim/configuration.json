@@ -25,35 +25,6 @@
           "schema": "boolean"
         },
         {
-          "name": "desiredIotHubManagementEnabled",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "boolean"
-        },
-        {
-          "name": "desiredIotHubProtocol",
-          "type": "mimObject",
-          "desired": true,
-          "schema": {
-            "type": "enum",
-            "valueSchema": "string",
-            "enumValues": [
-              {
-                "name": "auto",
-                "enumValue": "auto"
-              },
-              {
-                "name": "mqtt",
-                "enumValue": "mqtt"
-              },
-              {
-                "name": "mqttWebSocket",
-                "enumValue": "mqttWebSocket"
-              }
-            ]
-          }
-        },
-        {
           "name": "desiredGitManagementEnabled",
           "type": "mimObject",
           "desired": true,
@@ -88,35 +59,6 @@
           "type": "mimObject",
           "desired": false,
           "schema": "boolean"
-        },
-        {
-          "name": "iotHubManagamentEnabled",
-          "type": "mimObject",
-          "desired": false,
-          "schema": "boolean"
-        },
-        {
-          "name": "iotHubProtocol",
-          "type": "mimObject",
-          "desired": false,
-          "schema": {
-            "type": "enum",
-            "valueSchema": "string",
-            "enumValues": [
-              {
-                "name": "auto",
-                "enumValue": "auto"
-              },
-              {
-                "name": "mqtt",
-                "enumValue": "mqtt"
-              },
-              {
-                "name": "mqttWebSocket",
-                "enumValue": "mqttWebSocket"
-              }
-            ]
-          }
         },
         {
           "name": "gitManagementEnabled",

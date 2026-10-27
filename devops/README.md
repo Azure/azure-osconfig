@@ -267,11 +267,6 @@ This folder contains the artifacts and scripts used by our engineering systems (
 - `debian` - Debian packaging scripts
 - `docker/<os>-<arch>` - Build containers for supported operating systems and architectures
   - `amd64`
-  - `arm` (armv7)
-  - `arm64` (aarch64)
-- `e2e`
-  - `cloudtest` - backup of 1ES managed CloudTest image definitions
-  - `terraform` - terraform modules for provisioning Azure resources for E2E tests
 - `rpm` - RPM packaging scripts
 
 ## Updating Build contaienrs used for CI builds

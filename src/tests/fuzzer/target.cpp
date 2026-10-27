@@ -42,7 +42,6 @@ struct Context
     MMI_HANDLE handle;
     std::string tempdir;
 #ifdef BUILD_TELEMETRY
-    std::string telemetryCache;
     std::unique_ptr<Telemetry::TelemetryManager> telemetryManager;
 #endif
 
@@ -63,16 +62,12 @@ struct Context
             throw std::runtime_error("failed to initialized SecurityBaseline library");
         }
 #ifdef BUILD_TELEMETRY
-        telemetryCache = tempdir + "/telemetry_cache_db";
-        telemetryManager.reset(new Telemetry::TelemetryManager(telemetryCache, false, std::chrono::seconds{1}));
+        telemetryManager.reset(new Telemetry::TelemetryManager(false, std::chrono::seconds{1}));
 #endif
     }
 
     ~Context() noexcept
     {
-#ifdef BUILD_TELEMETRY
-        ::remove(telemetryCache.c_str());
-#endif
         ::remove(tempdir.c_str());
         SecurityBaselineMmiClose(handle);
         SecurityBaselineShutdown();
@@ -752,20 +747,6 @@ static int HashString_target(const char* data, std::size_t size) noexcept
     return 0;
 }
 
-static int ParseHttpProxyData_target(const char* data, std::size_t size) noexcept
-{
-    auto source = std::string(data, size);
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-    ParseHttpProxyData(source.c_str(), &hostAddress, &port, &username, &password, nullptr);
-    free(hostAddress);
-    free(username);
-    free(password);
-    return 0;
-}
-
 static int CheckCpuFlagSupported_target(const char* data, std::size_t size) noexcept
 {
     auto cpuFlag = std::string(data, size);
@@ -913,13 +894,6 @@ static int GetMaxLogSizeDebugMultiplierFromJsonConfig_target(const char* data, s
     return 0;
 }
 
-static int IsIotHubManagementEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsIotHubManagementEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
 static int GetReportingIntervalFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
@@ -938,13 +912,6 @@ static int GetLocalManagementFromJsonConfig_target(const char* data, std::size_t
 {
     auto json = std::string(data, size);
     GetLocalManagementFromJsonConfig(json.c_str(), nullptr);
-    return 0;
-}
-
-static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    GetIotHubProtocolFromJsonConfig(json.c_str(), nullptr);
     return 0;
 }
 
@@ -1042,7 +1009,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "RemoveCharacterFromString.", RemoveCharacterFromString_target },
     { "ReplaceEscapeSequencesInString.", ReplaceEscapeSequencesInString_target },
     { "HashString.", HashString_target },
-    { "ParseHttpProxyData.", ParseHttpProxyData_target },
     { "CheckCpuFlagSupported.", CheckCpuFlagSupported_target },
     { "CheckLoginUmask.", CheckLoginUmask_target },
     { "IsCurrentOs.", IsCurrentOs_target },
@@ -1059,11 +1025,9 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
     { "GetMaxLogSizeFromJsonConfig.", GetMaxLogSizeFromJsonConfig_target },
     { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
-    { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },
     { "GetLocalManagementFromJsonConfig.", GetLocalManagementFromJsonConfig_target },
-    { "GetIotHubProtocolFromJsonConfig.", GetIotHubProtocolFromJsonConfig_target },
     { "LoadReportedFromJsonConfig.", LoadReportedFromJsonConfig_target },
     { "GetGitManagementFromJsonConfig.", GetGitManagementFromJsonConfig_target },
     { "GetGitRepositoryUrlFromJsonConfig.", GetGitRepositoryUrlFromJsonConfig_target },

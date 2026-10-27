@@ -39,11 +39,6 @@
 // 30 seconds
 #define DEFAULT_REPORTING_INTERVAL 30
 
-#define PROTOCOL_AUTO 0
-// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
-//#define PROTOCOL_MQTT 1
-#define PROTOCOL_MQTT_WS 2
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -52,6 +47,7 @@ extern "C"
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool FileEndsInEol(const char* fileName, OsConfigLogHandle log);
+char* ReadEndOfFile(const char* logFileName, unsigned int maxSize, OsConfigLogHandle log);
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
@@ -59,13 +55,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
 int RenameFile(const char* original, const char* target, OsConfigLogHandle log);
 
 typedef int(*CommandCallback)(void* context);
-
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log);
-
-#ifdef TEST_CODE
-void AddMockCommand(const char* expectedCommand, bool matchPrefix, const char* output, int returnCode);
-void CleanupMockCommands();
-#endif
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
@@ -78,6 +68,8 @@ int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log
 
 bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OsConfigLogHandle log);
 
+int OpenTrueFileOrDirectory(bool directory, bool followSymlink, int dirFd, const char* name, OsConfigLogHandle log);
+
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
 int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
@@ -89,7 +81,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
 
 char* CheckForMountCreds(char* options);
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log);
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountTableFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log);
 
 int IsPresent(const char* what, OsConfigLogHandle log);
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log);
@@ -152,8 +144,6 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log);
 
 size_t HashString(const char* source);
 char* HashCommand(const char* source, OsConfigLogHandle log);
-
-bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, OsConfigLogHandle log);
 
 char* GetOsPrettyName(OsConfigLogHandle log);
 char* GetOsName(OsConfigLogHandle log);
@@ -240,14 +230,12 @@ typedef struct ReportedProperty
     size_t lastPayloadHash;
 } ReportedProperty;
 
-bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log);
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log);
 
@@ -265,6 +253,9 @@ int StartPerfClock(PerfClock* clock, OsConfigLogHandle log);
 int StopPerfClock(PerfClock* clock, OsConfigLogHandle log);
 long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log);
 void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log);
+
+void InstallCrashHandler(const char* logFileName);
+void CheckForPreviousCrash(const char* logFileName, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }

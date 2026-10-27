@@ -16,8 +16,8 @@ class ConfigurationTest : public ::testing::Test
             "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
-            "\"VersionMinor\": 4,"
-            "\"VersionInfo\": \"Dilithium\","
+            "\"VersionMinor\": 5,"
+            "\"VersionInfo\": \"2026\","
             "\"Components\": [\"Configuration\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";
@@ -26,33 +26,17 @@ class ConfigurationTest : public ::testing::Test
         const char* m_configurationComponentName = "Configuration";
 
         const char* m_modelVersionObject = "modelVersion";
-        const char* m_refreshIntervalObject = "refreshInterval";
+        const char* m_refreshIntervalObject = "reportingIntervalSeconds";
         const char* m_localManagementEnabledObject = "localManagementEnabled";
-        const char* m_debugLoggingEnabledObject = "debugLoggingEnabled";
-        const char* m_iotHubManagementEnabledObject = "iotHubManagementEnabled";
-        const char* m_iotHubProtocolObject = "iotHubProtocol";
-        const char* m_gitManagementEnabledObject = "gitManagementEnabled";
-        const char* m_gitBranchObject = "gitBranch";
 
-        const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
+        const char* m_desiredRefreshIntervalObject = "desiredReportingIntervalSeconds";
         const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
-        const char* m_desiredDebugLoggingEnabledObject = "desiredDebugLoggingEnabled";
-        const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
-        const char* m_desiredIotHubManagementEnabledObject = "desiredIotHubManagementEnabled";
-        const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
-        const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
-        const char* m_desiredGitBranchObject = "desiredGitBranch";
 
         const char* m_testConfiguration =
             "{"
-                "\"DebugLogging\" : 0,"
                 "\"LocalManagement\" : 0,"
                 "\"ModelVersion\" : 15,"
-                "\"IotHubManagement\" : 0,"
-                "\"IotHubProtocol\" : 2,"
-                "\"ReportingIntervalSeconds\": 30,"
-                "\"GitManagement\" : 1,"
-                "\"GitBranch\" : \"Test/Foo\""
+                "\"ReportingIntervalSeconds\": 30"
             "}";
 
         const char* m_testConfigurationFile = "~testConfiguration.json";
@@ -127,12 +111,7 @@ TEST_F(ConfigurationTest, MmiGet)
     const char* mimRequiredObjects[] = {
         m_modelVersionObject,
         m_refreshIntervalObject,
-        m_localManagementEnabledObject,
-        m_debugLoggingEnabledObject,
-        m_iotHubManagementEnabledObject,
-        m_iotHubProtocolObject,
-        m_gitManagementEnabledObject,
-        m_gitBranchObject
+        m_localManagementEnabledObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -163,12 +142,7 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
     const char* mimRequiredObjects[] = {
         m_modelVersionObject,
         m_refreshIntervalObject,
-        m_localManagementEnabledObject,
-        m_debugLoggingEnabledObject,
-        m_iotHubManagementEnabledObject,
-        m_iotHubProtocolObject,
-        m_gitManagementEnabledObject,
-        m_gitBranchObject
+        m_localManagementEnabledObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -258,19 +232,6 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredLocalManagementEnabledObject, "true", 0, m_localManagementEnabledObject, "true" },
         { m_desiredLocalManagementEnabledObject, "false", 0, m_localManagementEnabledObject, "false" },
         { m_desiredLocalManagementEnabledObject, "notImplemented", 22, m_localManagementEnabledObject, "false" },
-        { m_desiredDebugLoggingEnabledObject, "true", 0, m_debugLoggingEnabledObject, "true" },
-        { m_desiredDebugLoggingEnabledObject, "false", 0, m_debugLoggingEnabledObject, "false" },
-        { m_desiredDebugLoggingEnabledObject, "notImplemented", 22, m_debugLoggingEnabledObject, "false" },
-        { m_desiredIotHubManagementEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "true" },
-        { m_desiredIotHubManagementEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "false" },
-        { m_desiredIotHubManagementEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "false" },
-        { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
-        { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
-        { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
-        { m_desiredIotHubProtocolObject, "notImplemented", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
-        { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
-        { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
-        { m_desiredGitBranchObject, "\"Test\\/Foo\"", 0, m_gitBranchObject, "\"Test\\/Foo\"" }
     };
 
     int numTestCombinations = ARRAY_SIZE(testCombinations);

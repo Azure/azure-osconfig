@@ -1,0 +1,7 @@
+{
+  "LocalManagement": 1,
+  "LoggingLevel": 6,
+  "MaxLogSize": 1048576,
+  "MaxLogSizeDebugMultiplier": 5,
+  "ReportingIntervalSeconds": 30
+}
