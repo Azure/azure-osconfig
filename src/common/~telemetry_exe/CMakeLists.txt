@@ -20,8 +20,10 @@ else()
 endif()
 configure_file(Keys.h.in "${CMAKE_CURRENT_BINARY_DIR}/Keys.h" @ONLY)
 
-add_executable(telemetryworker
-    WorkerMain.c
+set(OsConfigVersionStringFull "standalone-telemetry-reference")
+configure_file(../../cmake/templates/version.h.in "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)
+
+set(TELEMETRY_REFERENCE_SOURCES
     SchemaEncoder.c
     EventPayload.c
     AriaInterface.c
@@ -29,14 +31,22 @@ add_executable(telemetryworker
     OpenSslAdapter.c
     ../logging/Logging.c
     ../parson/parson.c)
+
+add_executable(telemetryworker WorkerMain.c ${TELEMETRY_REFERENCE_SOURCES})
 set_target_properties(telemetryworker PROPERTIES OUTPUT_NAME OSConfigTelemetry)
-target_include_directories(telemetryworker PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_BINARY_DIR}"
-    ../commonutils
-    ../logging
-    ../parson)
-target_compile_options(telemetryworker PRIVATE
-    -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-unused-result
-    -Wno-psabi -fno-omit-frame-pointer)
-target_link_libraries(telemetryworker PRIVATE ${CMAKE_DL_LIBS} rt m)
+
+# Explicit live test only; never part of the default build or ctest.
+add_executable(telemetryariatest EXCLUDE_FROM_ALL AriaTest.c ${TELEMETRY_REFERENCE_SOURCES})
+
+foreach(target telemetryworker telemetryariatest)
+    target_include_directories(${target} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        ../commonutils
+        ../logging
+        ../parson)
+    target_compile_options(${target} PRIVATE
+        -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-unused-result
+        -Wno-psabi -fno-omit-frame-pointer)
+    target_link_libraries(${target} PRIVATE ${CMAKE_DL_LIBS} rt m)
+endforeach()
