@@ -955,14 +955,15 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
-static int TelemetryEncodePayload_target(const char* data, std::size_t size) noexcept
+static int TelemetryPackEvent_target(const char* data, std::size_t size) noexcept
 {
+    std::string value(data, size);
+    TelemetryProperty property = {};
     unsigned char bytes[TELEMETRY_MAX_EVENT_SIZE];
-    size_t encodedSize = 0;
-    int64_t uploadTime = 0;
-    TelemetryEncodePayload(reinterpret_cast<const unsigned char*>(data), size,
-        "o:fuzz", "00000000-0000-4000-8000-000000000001", 1,
-        bytes, &encodedSize, &uploadTime, nullptr);
+    size_t payloadSize = 0;
+    property.name = "CrashInfo";
+    property.value.stringValue = value.c_str();
+    TelemetryPackEvent("CrashDetected", &property, 1, bytes, sizeof(bytes), &payloadSize, nullptr);
     return 0;
 }
 
@@ -1025,7 +1026,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-    { "TelemetryEncodePayload.", TelemetryEncodePayload_target },
+    { "TelemetryPackEvent.", TelemetryPackEvent_target },
 };
 
 // libfuzzer entry point

@@ -5,17 +5,18 @@
 #define IPC_INTERFACE_H
 
 #include "Utils.h"
-#include "SchemaEncoder.h"
+#include "EventPayload.h"
 #include <stdint.h>
 
 #define TELEMETRY_WORKER_MAGIC UINT32_C(0x4F534354)
 #define TELEMETRY_WORKER_VERSION 1
 #define TELEMETRY_WORKER_READY 1
-#define TELEMETRY_WORKER_RESOLVE 2
 #define TELEMETRY_WORKER_SEND 3
 #define TELEMETRY_WORKER_ARGUMENT "--ipc-v1"
 
-// Private native-endian protocol: the SO and worker must come from one package.
+// Native-endian Linux protocol v1, retained for the separate C reference worker.
+// The external executable must implement this version and run on the same host.
+// Operation 2 is reserved for the reference worker's resolver diagnostics.
 // One outstanding request, no event queue. Deadlines are absolute monotonic ns.
 // Replies have 0 == deadline; a nonzero status has no body.
 typedef struct TelemetryWorkerFrame
@@ -58,9 +59,6 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
 // Starts the worker lazily and reuses it. IPC/process failure drops this operation
 // and reaps the child; a later call may start another within the ORIGINAL budget
 // unless a permanent startup failure has disabled this invocation.
-// A lookup failure does not require a new worker. Output is cleared on failure.
-int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host, TelemetryResolvedHost* result, OsConfigLogHandle log);
-
 // Synchronously sends one named event. Properties are borrowed strings. Packing,
 // startup, encoding, network, and acknowledgment share the operation budget.
 // Nonzero means dropped/rejected/unconfirmed, never queued or replayed.

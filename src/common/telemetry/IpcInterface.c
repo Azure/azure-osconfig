@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
-#include <netdb.h>
 #include <poll.h>
 #include <signal.h>
 #include <spawn.h>
@@ -19,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -530,7 +530,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     }
 
 cleanup:
-    if (0 != status)
+    if ((0 != status) && (ENOENT != status) && (ENOTDIR != status))
     {
         OsConfigLogInfo(log, "StartChild: %s failed with %d (%s)", operation, status, strerror(status));
     }
@@ -588,7 +588,10 @@ finished:
         (ENOTDIR == status) || (ELOOP == status) || (ENAMETOOLONG == status) || (EPROTO == status) || (EPIPE == status)))
     {
         worker->startupStatus = status;
-        OsConfigLogInfo(log, "StartChild: disabling startup for this invocation after %d (%s)", status, strerror(status));
+        if ((ENOENT != status) && (ENOTDIR != status))
+        {
+            OsConfigLogInfo(log, "StartChild: disabling startup for this invocation after %d (%s)", status, strerror(status));
+        }
     }
 
     return status;
@@ -662,115 +665,6 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
     *worker = created;
 
     return 0;
-}
-
-int TelemetryWorkerResolve(TelemetryWorker* worker, const char* host, TelemetryResolvedHost* result, OsConfigLogHandle log)
-{
-    TelemetryResolverReply reply = {0};
-    TelemetryResolvedHost resolved = {0};
-    TelemetryWorkerFrame request = {0};
-    int64_t start = 0;
-    int64_t deadline = 0;
-    int status = 0;
-    int remaining = 0;
-    int error = 0;
-    const char* operation = "OperationDeadline";
-
-    if (NULL != result)
-    {
-        memset(result, 0, sizeof(*result));
-    }
-
-    if ((NULL == worker) || (NULL == result) || (NULL == host) || ('\0' == host[0]) || (strnlen(host, TELEMETRY_RESOLVER_HOST_LIMIT + 1) > TELEMETRY_RESOLVER_HOST_LIMIT))
-    {
-        OsConfigLogInfo(log, "TelemetryWorkerResolve: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
-        return EINVAL;
-    }
-
-    if (0 != (status = OperationDeadline(worker, &start, &deadline)))
-    {
-        goto failed;
-    }
-
-    operation = "StartChild";
-    if (0 != (status = StartChild(worker, deadline, log)))
-    {
-        goto failed;
-    }
-
-    if (UINT32_MAX == worker->sequence)
-    {
-        operation = "sequence range check";
-        status = EOVERFLOW;
-        goto failed;
-    }
-
-    request.magic = TELEMETRY_WORKER_MAGIC;
-    request.version = TELEMETRY_WORKER_VERSION;
-    request.operation = TELEMETRY_WORKER_RESOLVE;
-    request.size = (uint32_t)strlen(host) + 1;
-    request.sequence = ++worker->sequence;
-    request.deadline = deadline;
-
-    operation = "Transfer";
-    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline, log))) ||
-        (0 != (status = Transfer(worker->descriptor, (void*)host, request.size, true, deadline, log))))
-    {
-        goto failed;
-    }
-
-    operation = "ReceiveReply";
-    if (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline, log)))
-    {
-        goto failed;
-    }
-
-    operation = "TelemetryDecodeResolverReply";
-    if (EPROTO == (status = TelemetryDecodeResolverReply(&reply, &resolved)))
-    {
-        goto failed;
-    }
-
-    if (0 == status)
-    {
-        operation = "TelemetryDeadlineRemaining";
-        TelemetryDeadlineRemaining(deadline, &remaining, status);
-        if (0 != status)
-        {
-            goto failed;
-        }
-    }
-
-    goto finished;
-
-failed:
-    // Never retry this request. Only a later API call may create a new child.
-    ReleaseChild(worker, 0, log);
-
-finished:
-    if (start > 0)
-    {
-        error = ChargeBudget(worker, start, log);
-
-        if ((0 == status) && (0 != error))
-        {
-            operation = "ChargeBudget";
-            status = error;
-            ReleaseChild(worker, 0, log);
-        }
-    }
-
-    if (0 != status)
-    {
-        OsConfigLogInfo(log, "TelemetryWorkerResolve: %s failed with %d (%s); getaddrinfo returned %d (%s)",
-            operation, status, strerror(status), reply.lookupError, (0 != reply.lookupError) ? gai_strerror(reply.lookupError) : "no resolver error");
-    }
-    else
-    {
-        *result = resolved;
-    }
-
-    return status;
 }
 
 int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log)
@@ -898,7 +792,7 @@ finished:
         }
     }
 
-    if (0 != status)
+    if ((0 != status) && (ENOENT != worker->startupStatus) && (ENOTDIR != worker->startupStatus))
     {
         OsConfigLogInfo(log, "TelemetryWorkerSendEvent: %s failed with %d (%s)", operation, status, strerror(status));
     }

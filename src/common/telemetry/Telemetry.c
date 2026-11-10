@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <version.h>
 
 #define TELEMETRY_WORK_BUDGET_MS 500
@@ -68,6 +69,7 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
     char* directory = NULL;
     char* path = NULL;
     int64_t elapsedMs = 0;
+    bool available = false;
     const char* operation = "TelemetryMonotonicTime";
 
     if (g_initialized)
@@ -93,19 +95,29 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
         }
         else
         {
-            operation = "SetFileAccess";
-            status = SetFileAccess(path, 0, 0, 0700, log);
+            operation = "access(OSConfigTelemetry)";
+            if (0 == access(path, F_OK))
+            {
+                available = true;
+                operation = "SetFileAccess";
+                status = SetFileAccess(path, 0, 0, 0700, log);
+            }
+            else if ((ENOENT != errno) && (ENOTDIR != errno))
+            {
+                status = errno;
+            }
+            // An absent optional executable silently disables this invocation.
         }
     }
 
-    if (0 == status)
+    if ((0 == status) && available)
     {
         g_distroName = GetOsPrettyName(log);
         operation = "TelemetryMonotonicTime";
         TelemetryMonotonicTime(&now, status);
     }
 
-    if (0 == status)
+    if ((0 == status) && available)
     {
         elapsedMs = ((now - start) + 999999) / 1000000;
 

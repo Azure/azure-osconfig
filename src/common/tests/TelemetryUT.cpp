@@ -15,7 +15,7 @@
 
 // This suite uses a separately named copy of the real producer with mocked
 // worker/platform calls. Other commontests suites retain the real functions.
-// No network, chmod, or system-configuration writes. File reads use temporary fixtures.
+// No network or system-configuration writes. File reads use temporary fixtures.
 struct TelemetryWorker {};
 static TelemetryWorker workerInstance;
 static int creates, destroys, sends, createStatus, preparationStatus;
@@ -24,6 +24,7 @@ static std::string eventName, workerPath;
 static std::map<std::string, std::string> fields;
 static std::string activityFilePath;
 static int activityFileReads, preparationFileReads;
+static int executableStatus, executableChecks;
 
 extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEol, OsConfigLogHandle log)
 {
@@ -66,9 +67,7 @@ extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
     const TelemetryProperty* properties, size_t count, OsConfigLogHandle)
 {
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
-    unsigned char encoded[TELEMETRY_MAX_EVENT_SIZE] = {};
-    size_t size = 0, encodedSize = 0;
-    int64_t uploadTime = 0;
+    size_t size = 0;
     size_t i = 0;
 
     ++sends;
@@ -82,9 +81,7 @@ extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
     }
 
     EXPECT_EQ(0, TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, nullptr));
-    EXPECT_EQ(0, TelemetryEncodePayload(payload, size, "o:fixture", "test-epoch", sends,
-        encoded, &encodedSize, &uploadTime, nullptr));
-    EXPECT_GT(encodedSize, 0U);
+    EXPECT_GT(size, 0U);
 
     return 0;
 }
@@ -95,6 +92,15 @@ extern "C" int TelemetryWorkerAccountPreparation(TelemetryWorker*, int64_t start
     preparationFileReads = activityFileReads;
 
     return preparationStatus;
+}
+
+extern "C" int TelemetryTestAccess(const char* path, int mode)
+{
+    ++executableChecks;
+    EXPECT_NE(nullptr, strstr(path, "/OSConfigTelemetry"));
+    EXPECT_EQ(F_OK, mode);
+    errno = executableStatus;
+    return executableStatus ? -1 : 0;
 }
 
 extern "C" int SetFileAccess(const char*, unsigned int, unsigned int, unsigned int, OsConfigLogHandle)
@@ -123,6 +129,7 @@ protected:
         ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
         TelemetryCleanup(nullptr);
         creates = destroys = sends = createStatus = preparationStatus = 0;
+        executableStatus = executableChecks = 0;
         activityFileReads = preparationFileReads = 0;
         activityFilePath.clear();
         fields.clear();
@@ -316,4 +323,46 @@ TEST_F(TelemetryProducerTest, ExhaustedPreparationBudgetDoesNotBeginSend)
     EXPECT_EQ(0, sends);
     EXPECT_EQ(1, activityFileReads);
     EXPECT_EQ(1, preparationFileReads);
+}
+
+TEST_F(TelemetryProducerTest, MissingExecutableSilentlyDisablesEventsAcrossInvocations)
+{
+    std::string logPath = directory + "/telemetry.log";
+    std::string backupPath = logPath + ".bak";
+    OsConfigLogHandle log = OpenLog(logPath.c_str(), backupPath.c_str());
+    ASSERT_NE(nullptr, log);
+    executableStatus = ENOENT;
+
+    for (int invocation = 0; invocation < 3; ++invocation)
+    {
+        EXPECT_EQ(0, TelemetryInitializeInternal(log));
+        EXPECT_EQ(0, TelemetryInitializeInternal(log));
+        OSConfigTelemetryCrashDetected("ignored");
+        OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
+        TelemetryCleanup(log);
+    }
+
+    EXPECT_EQ(3, executableChecks);
+    EXPECT_EQ(0, creates);
+    EXPECT_EQ(0, sends);
+    EXPECT_EQ(0, activityFileReads);
+    CloseLog(&log);
+    std::ifstream input(logPath, std::ios::binary);
+    ASSERT_TRUE(input.is_open());
+    EXPECT_EQ(std::ifstream::traits_type::eof(), input.peek());
+    input.close();
+    EXPECT_EQ(0, unlink(logPath.c_str()));
+
+    executableStatus = 0;
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    EXPECT_EQ(1, creates);
+}
+
+TEST_F(TelemetryProducerTest, InaccessibleExecutableDoesNotStartWorker)
+{
+    executableStatus = EACCES;
+    EXPECT_EQ(EACCES, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("ignored");
+    EXPECT_EQ(0, creates);
+    EXPECT_EQ(0, sends);
 }

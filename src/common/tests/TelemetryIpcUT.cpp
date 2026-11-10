@@ -1,0 +1,149 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include <gtest/gtest.h>
+#include <IpcInterface.h>
+#include <cerrno>
+#include <cstdlib>
+#include <fstream>
+#include <string>
+#include <sys/wait.h>
+#include <unistd.h>
+
+class TelemetryIpcTest : public ::testing::Test
+{
+protected:
+    TelemetryWorker* worker = nullptr;
+
+    int Create(const char* path = TELEMETRY_IPC_PEER_PATH, int lifetime = 30000,
+        int budget = 10000, int operation = 5000)
+    {
+        return TelemetryWorkerCreate(path, lifetime, budget, operation, &worker, nullptr);
+    }
+
+    int Send(const char* event, OsConfigLogHandle log = nullptr)
+    {
+        TelemetryProperty property = {};
+        property.name = "CrashInfo";
+        property.value.stringValue = "offline fixture";
+        return TelemetryWorkerSendEvent(worker, event, &property, 1, log);
+    }
+
+    void TearDown() override
+    {
+        EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+        EXPECT_EQ(nullptr, worker);
+    }
+};
+
+TEST_F(TelemetryIpcTest, ReusesExternalPeerAndAcceptsSplitReplies)
+{
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(0, Send("split"));
+    EXPECT_EQ(0, Send("must-reuse"));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+}
+
+TEST_F(TelemetryIpcTest, PreservesWorkerOutcomeAndSuppression)
+{
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(EIO, Send("reject"));
+    EXPECT_EQ(0, Send("must-reuse"));
+    EXPECT_EQ(ECANCELED, Send("suppress"));
+    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+}
+
+TEST_F(TelemetryIpcTest, DropsMalformedRepliesWithoutReplaying)
+{
+    const char* events[] = {"bad-version", "bad-sequence", "negative-status", "bad-suppression"};
+    for (const char* event : events)
+    {
+        ASSERT_EQ(0, Create());
+        EXPECT_EQ(EPROTO, Send(event)) << event;
+        EXPECT_EQ(ECANCELED, Send("must-reuse"));
+        EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+    }
+}
+
+TEST_F(TelemetryIpcTest, ReapsPeerAfterDisconnectOrTimeout)
+{
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(EPIPE, Send("disconnect"));
+    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+
+    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 30000, 10000, 100));
+    EXPECT_EQ(ETIMEDOUT, Send("hang"));
+    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+}
+
+TEST_F(TelemetryIpcTest, RejectsMismatchedStartupVersion)
+{
+    const char* previous = getenv("OSCONFIG_TEST_READY_VERSION");
+    const bool hadPrevious = nullptr != previous;
+    const std::string saved = hadPrevious ? previous : "";
+    ASSERT_EQ(0, Create());
+    ASSERT_EQ(0, setenv("OSCONFIG_TEST_READY_VERSION", "999", 1));
+    EXPECT_EQ(EPROTO, Send("fixture"));
+    EXPECT_EQ(0, hadPrevious ?
+        setenv("OSCONFIG_TEST_READY_VERSION", saved.c_str(), 1) :
+        unsetenv("OSCONFIG_TEST_READY_VERSION"));
+    EXPECT_EQ(EPROTO, Send("fixture"));
+}
+
+TEST_F(TelemetryIpcTest, MissingExecutableIsSilentAndNotRetriedWithinInvocation)
+{
+    char temporary[] = "/tmp/osconfig-ipc-XXXXXX";
+    ASSERT_NE(nullptr, mkdtemp(temporary));
+    const std::string directory = temporary;
+    const std::string executable = directory + "/OSConfigTelemetry";
+    const std::string logPath = directory + "/telemetry.log";
+    const std::string backupPath = logPath + ".bak";
+    OsConfigLogHandle log = OpenLog(logPath.c_str(), backupPath.c_str());
+    ASSERT_NE(nullptr, log);
+
+    EXPECT_EQ(0, Create(executable.c_str()));
+    EXPECT_EQ(ENOENT, Send("fixture", log));
+    EXPECT_EQ(0, symlink(TELEMETRY_IPC_PEER_PATH, executable.c_str()));
+    EXPECT_EQ(ENOENT, Send("fixture", log));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, log));
+    CloseLog(&log);
+    std::ifstream input(logPath, std::ios::binary);
+    ASSERT_TRUE(input.is_open());
+    EXPECT_EQ(std::ifstream::traits_type::eof(), input.peek());
+    input.close();
+
+    EXPECT_EQ(0, Create(executable.c_str()));
+    EXPECT_EQ(0, Send("fixture"));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+    EXPECT_EQ(0, unlink(executable.c_str()));
+    EXPECT_EQ(0, unlink(logPath.c_str()));
+    EXPECT_EQ(0, rmdir(directory.c_str()));
+}
+
+TEST_F(TelemetryIpcTest, LifetimeAndPreparationBudgetRemainBounded)
+{
+    int64_t started = 0;
+    int status = 0;
+    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 10, 10000, 5000));
+    usleep(30000);
+    EXPECT_EQ(ETIMEDOUT, Send("fixture"));
+    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
+
+    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 30000, 10, 5000));
+    TelemetryMonotonicTime(&started, status);
+    ASSERT_EQ(0, status);
+    usleep(30000);
+    EXPECT_EQ(ETIMEDOUT, TelemetryWorkerAccountPreparation(worker, started, nullptr));
+    EXPECT_EQ(ETIMEDOUT, Send("fixture"));
+}
+
+TEST_F(TelemetryIpcTest, InvalidArgumentsDoNotReplaceAnActiveWorker)
+{
+    EXPECT_EQ(EINVAL, Create("relative-path"));
+    EXPECT_EQ(nullptr, worker);
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(EALREADY, Create());
+    EXPECT_EQ(0, Send("fixture"));
+}

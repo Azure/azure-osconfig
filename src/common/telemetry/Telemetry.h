@@ -30,8 +30,8 @@ static inline int64_t TsToUs(struct timespec ts)
     return (((int64_t)ts.tv_sec * 1000000LL) + (ts.tv_nsec / 1000));
 }
 
-// Serialized invocation scope. Failures are logged internally; callers retain
-// the initialize/emit/cleanup contract and keep log valid until cleanup.
+// Serialized invocation scope. A missing external executable silently disables
+// telemetry. Other failures are informational; keep log valid until cleanup.
 void TelemetryInitialize(const OsConfigLogHandle log);
 void TelemetryCleanup(OsConfigLogHandle log);
 char* GetModuleDirectory(void);

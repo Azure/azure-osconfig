@@ -5,31 +5,14 @@ cmake_minimum_required(VERSION 3.21)
 project(telemetry)
 
 add_library(telemetry STATIC
-    SchemaEncoder.c
     EventPayload.c
-    AriaInterface.c
-    Utils.c
     Telemetry.c
-    OpenSslAdapter.c
     IpcInterface.c)
 target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetry PUBLIC logging
-    PRIVATE commonutils parsonlib ${CMAKE_DL_LIBS} rt)
+    PRIVATE commonutils ${CMAKE_DL_LIBS} rt)
 
-include(../../cmake/TelemetryKey.cmake)
-osconfig_configure_telemetry_key("${CMAKE_CURRENT_BINARY_DIR}/Keys.h" "")
-
-# Production TLS and network operations stay in the owned worker, not the policy host.
-add_executable(telemetryworker EXCLUDE_FROM_ALL WorkerMain.c)
-set_target_properties(telemetryworker PROPERTIES OUTPUT_NAME OSConfigTelemetry)
-target_include_directories(telemetryworker PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(telemetryworker PRIVATE telemetry commonutils rt)
-add_custom_target(telemetrybin DEPENDS telemetryworker)
-add_custom_target(telemetry-worker-package ALL DEPENDS telemetryworker)
-install(TARGETS telemetryworker RUNTIME DESTINATION bin)
-install(TARGETS telemetryworker RUNTIME DESTINATION lib/osconfig)
-
-# Explicit live invocation only; not installed or registered with ctest.
-add_executable(telemetryariatest EXCLUDE_FROM_ALL AriaTest.c)
-target_include_directories(telemetryariatest PRIVATE ../commonutils ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(telemetryariatest PRIVATE telemetry rt)
+if(OSCONFIG_TELEMETRY_EXECUTABLE)
+    install(PROGRAMS "${OSCONFIG_TELEMETRY_EXECUTABLE}" DESTINATION bin RENAME OSConfigTelemetry)
+    install(PROGRAMS "${OSCONFIG_TELEMETRY_EXECUTABLE}" DESTINATION lib/osconfig RENAME OSConfigTelemetry)
+endif()

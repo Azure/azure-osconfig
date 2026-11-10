@@ -34,9 +34,15 @@ include(cmake/Dependencies.cmake)
 # so the crash handler's backtrace_symbols_fd() can resolve function names in crash stack traces
 add_link_options(-rdynamic)
 
-message(STATUS "Telemetry: Enabled")
-if(NOT DEFINED ENV{OsConfigTelemetryApiKey} OR "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
-    message(WARNING "Telemetry enabled but missing OsConfigTelemetryApiKey environment variable")
+set(OSCONFIG_TELEMETRY_EXECUTABLE "" CACHE FILEPATH "Optional separately built OSConfigTelemetry executable to package")
+if(OSCONFIG_TELEMETRY_EXECUTABLE)
+    get_filename_component(OSCONFIG_TELEMETRY_EXECUTABLE "${OSCONFIG_TELEMETRY_EXECUTABLE}" ABSOLUTE)
+    if(NOT EXISTS "${OSCONFIG_TELEMETRY_EXECUTABLE}" OR IS_DIRECTORY "${OSCONFIG_TELEMETRY_EXECUTABLE}")
+        message(FATAL_ERROR "OSCONFIG_TELEMETRY_EXECUTABLE must name an existing executable file")
+    endif()
+    message(STATUS "Telemetry: C adapter with external executable ${OSCONFIG_TELEMETRY_EXECUTABLE}")
+else()
+    message(STATUS "Telemetry: C adapter only; no executable will be packaged")
 endif()
 
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)
