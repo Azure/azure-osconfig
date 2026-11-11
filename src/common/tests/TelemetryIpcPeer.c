@@ -4,11 +4,11 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <IpcInterface.h>
+#include <parson.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 // Offline caller-test peer. It never encodes events or opens network connections.
@@ -23,8 +23,8 @@ static int Transfer(void* buffer, size_t size, bool writing, bool split)
     {
         count = split ? 1 : size - offset;
         done = writing ?
-            send(STDIN_FILENO, (char*)buffer + offset, count, MSG_NOSIGNAL) :
-            recv(STDIN_FILENO, (char*)buffer + offset, count, 0);
+            write(STDOUT_FILENO, (char*)buffer + offset, count) :
+            read(STDIN_FILENO, (char*)buffer + offset, count);
         if (done > 0)
         {
             offset += (size_t)done;
@@ -38,26 +38,35 @@ static int Transfer(void* buffer, size_t size, bool writing, bool split)
     return status;
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
     TelemetryWorkerFrame response = {0};
     TelemetryWorkerFrame request = {0};
     TelemetryWorkerSendReply reply = {0};
-    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
-    unsigned char packet[sizeof(response) + sizeof(reply)] = {0};
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE + 1] = {0};
+    unsigned char packet[TELEMETRY_WORKER_HEADER_SIZE + 8] = {0};
+    unsigned char header[TELEMETRY_WORKER_HEADER_SIZE] = {0};
+    JSON_Value* parsed = NULL;
     uint32_t sequence = 0;
     const char* event = NULL;
     const char* readyVersion = getenv("OSCONFIG_TEST_READY_VERSION");
     int status = 0;
 
+    if ((argc != 10) || (0 != strcmp(argv[1], "--pipe-v3")) ||
+        (0 != strcmp(argv[6], "--api-key-env")) || (0 != strcmp(argv[7], "OsConfigTelemetryApiKey")) ||
+        (0 != strcmp(argv[8], "--sdk-version")) || (0 != strcmp(argv[9], "OSConfig-C/0.1")))
+    {
+        return EXIT_FAILURE;
+    }
     response.magic = TELEMETRY_WORKER_MAGIC;
     response.version = (NULL == readyVersion) ? TELEMETRY_WORKER_VERSION : (uint32_t)atoi(readyVersion);
     response.operation = TELEMETRY_WORKER_READY;
-    status = Transfer(&response, sizeof(response), true, false);
+    TelemetryEncodeFrame(&response, header);
+    status = Transfer(header, sizeof(header), true, false);
 
     while (0 == status)
     {
-        status = Transfer(&request, sizeof(request), false, false);
+        status = Transfer(header, sizeof(header), false, false);
         if (0 != status)
         {
             // Closing the parent's connection is normal teardown.
@@ -65,17 +74,22 @@ int main(void)
             break;
         }
 
+        TelemetryDecodeFrame(header, &request);
         if ((TELEMETRY_WORKER_MAGIC != request.magic) || (TELEMETRY_WORKER_VERSION != request.version) ||
             (TELEMETRY_WORKER_SEND != request.operation) || (request.sequence != ++sequence) ||
-            (request.size <= sizeof(uint32_t)) || (request.size > sizeof(payload)) ||
+            (request.size == 0) || (request.size > TELEMETRY_MAX_EVENT_SIZE) ||
+            (request.deadline == 0) || (request.deadline > 500) || (request.status != 0) ||
             (0 != Transfer(payload, request.size, false, false)))
         {
             status = EPROTO;
             break;
         }
 
-        event = (const char*)payload + sizeof(uint32_t);
-        if (NULL == memchr(event, '\0', request.size - sizeof(uint32_t)))
+        payload[request.size] = '\0';
+        json_value_free(parsed);
+        parsed = json_parse_string((const char*)payload);
+        event = json_object_get_string(json_value_get_object(parsed), "EventName");
+        if (NULL == event)
         {
             status = EPROTO;
             break;
@@ -101,40 +115,45 @@ int main(void)
         response.size = sizeof(reply);
         reply = (TelemetryWorkerSendReply){0};
 
-        if ((0 == strcmp(event, "must-reuse")) && (sequence < 2))
+        if ((0 == strcmp(event, "must_reuse")) && (sequence < 2))
         {
-            reply.status = EPROTO;
+            reply.status = 3;
         }
         if (0 == strcmp(event, "reject"))
         {
-            reply.status = EIO;
+            reply.status = 5;
         }
         if (0 == strcmp(event, "suppress"))
         {
-            reply.status = ECANCELED;
+            reply.status = 7;
             reply.suppressed = 1;
         }
-        if (0 == strcmp(event, "bad-version"))
+        if (0 == strcmp(event, "bad_version"))
         {
             ++response.version;
         }
-        if (0 == strcmp(event, "bad-sequence"))
+        if (0 == strcmp(event, "bad_sequence"))
         {
             ++response.sequence;
         }
-        if (0 == strcmp(event, "negative-status"))
+        if (0 == strcmp(event, "negative_status"))
         {
             reply.status = -1;
         }
-        if (0 == strcmp(event, "bad-suppression"))
+        if (0 == strcmp(event, "bad_suppression"))
         {
             reply.suppressed = 2;
         }
 
-        memcpy(packet, &response, sizeof(response));
-        memcpy(packet + sizeof(response), &reply, sizeof(reply));
+        TelemetryEncodeFrame(&response, packet);
+        TelemetryWriteWord(packet + TELEMETRY_WORKER_HEADER_SIZE, reply.status);
+        TelemetryWriteWord(packet + TELEMETRY_WORKER_HEADER_SIZE + 4, reply.suppressed);
+        if (0 == strcmp(event, "close_input")) close(STDIN_FILENO);
         status = Transfer(packet, sizeof(packet), true, 0 == strcmp(event, "split"));
+        if (0 == strcmp(event, "close_input")) for (;;) pause();
+        if (0 == strcmp(event, "accepted_exit")) break;
     }
 
+    json_value_free(parsed);
     return (0 == status) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

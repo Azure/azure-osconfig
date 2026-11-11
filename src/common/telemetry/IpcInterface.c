@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 #define _POSIX_C_SOURCE 200809L
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
 #include "IpcInterface.h"
 #include "Utils.h"
@@ -12,25 +15,24 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <spawn.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
 extern char** environ;
 
-_Static_assert(32 == sizeof(TelemetryWorkerFrame), "Unexpected worker frame layout");
-
 struct TelemetryWorker
 {
     char* path;
-    int descriptor;
+    int readDescriptor;
+    int writeDescriptor;
     pid_t child;
     uint32_t sequence;
     int64_t lifetimeDeadline;
@@ -106,15 +108,24 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
     pid_t waited = 0;
     int error = 0;
 
-    if (worker->descriptor >= 0)
+    if (worker->writeDescriptor >= 0)
     {
-        if (0 != close(worker->descriptor))
+        if (0 != close(worker->writeDescriptor))
         {
             status = errno;
             OsConfigLogInfo(log, "ReleaseChild: close failed with %d (%s)", status, strerror(status));
         }
 
-        worker->descriptor = -1;
+        worker->writeDescriptor = -1;
+    }
+    if (worker->readDescriptor >= 0)
+    {
+        if (0 != close(worker->readDescriptor))
+        {
+            status = errno;
+            OsConfigLogInfo(log, "ReleaseChild: close failed with %d (%s)", status, strerror(status));
+        }
+        worker->readDescriptor = -1;
     }
 
     if (worker->child <= 0)
@@ -221,6 +232,68 @@ static int ReleaseChild(TelemetryWorker* worker, int64_t gracefulDeadline, OsCon
     return (0 != status) ? status : ((gracefulDeadline > 0) ? ETIMEDOUT : 0);
 }
 
+// Block only this thread's SIGPIPE; preserve a signal already pending for it.
+static ssize_t WritePipe(int descriptor, const void* buffer, size_t size)
+{
+    sigset_t blocked;
+    sigset_t previous;
+    sigset_t pending;
+    struct timespec zero = {0};
+    ssize_t count = -1;
+    int status = 0;
+    int saved = 0;
+    int waited = 0;
+    bool wasPending = false;
+    sigemptyset(&blocked);
+    sigaddset(&blocked, SIGPIPE);
+    if (0 != (status = pthread_sigmask(SIG_BLOCK, &blocked, &previous)))
+    {
+        errno = status;
+        return -1;
+    }
+    if (0 == sigpending(&pending))
+    {
+        wasPending = (1 == sigismember(&pending, SIGPIPE));
+        count = write(descriptor, buffer, size);
+        saved = errno;
+        if ((count < 0) && (EPIPE == saved) && !wasPending)
+        {
+            do
+            {
+                waited = sigtimedwait(&blocked, NULL, &zero);
+            } while ((waited < 0) && (EINTR == errno));
+            if ((waited < 0) && (EAGAIN != errno))
+            {
+                saved = errno;
+            }
+        }
+    }
+    else
+    {
+        saved = errno;
+    }
+    if (0 != (status = pthread_sigmask(SIG_SETMASK, &previous, NULL)))
+    {
+        errno = status;
+        return -1;
+    }
+    errno = saved;
+    return count;
+}
+
+static int WorkerStatus(uint32_t status)
+{
+    switch (status)
+    {
+        case 0: return 0;
+        case 1: case 2: return EINVAL;
+        case 3: case 5: case 6: return EIO;
+        case 4: return ETIMEDOUT;
+        case 7: return ECANCELED;
+        default: return EPROTO;
+    }
+}
+
 static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int64_t deadline, OsConfigLogHandle log)
 {
     unsigned char* bytes = buffer;
@@ -239,7 +312,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
             return status;
         }
 
-        count = writing ? send(descriptor, bytes + offset, size - offset, MSG_NOSIGNAL) : recv(descriptor, bytes + offset, size - offset, 0);
+        count = writing ? WritePipe(descriptor, bytes + offset, size - offset) : read(descriptor, bytes + offset, size - offset);
 
         if (count > 0)
         {
@@ -252,7 +325,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
             TelemetryDeadlineRemaining(deadline, &remaining, status);
             status = (0 != status) ? status : ((0 == offset) ? EPIPE : EPROTO);
             OsConfigLogInfo(log, "Transfer: %s completion check failed with %d (%s); transferred %zu of %zu bytes",
-                writing ? "send" : "recv", status, strerror(status), offset, size);
+                writing ? "write" : "read", status, strerror(status), offset, size);
             return status;
         }
 
@@ -264,7 +337,7 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
         if ((EAGAIN != errno) && (EWOULDBLOCK != errno))
         {
             status = errno;
-            OsConfigLogInfo(log, "Transfer: %s failed with %d (%s)", writing ? "send" : "recv", status, strerror(status));
+            OsConfigLogInfo(log, "Transfer: %s failed with %d (%s)", writing ? "write" : "read", status, strerror(status));
             return status;
         }
 
@@ -284,19 +357,21 @@ static int Transfer(int descriptor, void* buffer, size_t size, bool writing, int
 static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t sequence, void* body, size_t size, int64_t deadline, OsConfigLogHandle log)
 {
     TelemetryWorkerFrame reply = {0};
+    unsigned char header[TELEMETRY_WORKER_HEADER_SIZE] = {0};
     int status = 0;
     unsigned char extra = '\0';
     ssize_t count = 0;
     int remaining = 0;
 
-    if (0 != (status = Transfer(worker->descriptor, &reply, sizeof(reply), false, deadline, log)))
+    if (0 != (status = Transfer(worker->readDescriptor, header, sizeof(header), false, deadline, log)))
     {
         return status;
     }
 
+    TelemetryDecodeFrame(header, &reply);
     if ((TELEMETRY_WORKER_MAGIC != reply.magic) || (TELEMETRY_WORKER_VERSION != reply.version) ||
         (reply.operation != operation) || (reply.sequence != sequence) || (0 != reply.deadline) ||
-        (reply.status < 0) || (reply.size != ((0 != reply.status) ? 0 : size)))
+        (reply.status > 7) || (reply.size != ((0 != reply.status) ? 0 : size)))
     {
         OsConfigLogInfo(log, "ReceiveReply: reply header validation failed with %d (%s)", EPROTO, strerror(EPROTO));
         return EPROTO;
@@ -304,16 +379,17 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
 
     if (0 != reply.status)
     {
-        OsConfigLogInfo(log, "ReceiveReply: worker operation %u failed with %d (%s)", operation, reply.status, strerror(reply.status));
-        return reply.status;
+        status = WorkerStatus(reply.status);
+        OsConfigLogInfo(log, "ReceiveReply: worker operation %u failed with %d (%s)", operation, status, strerror(status));
+        return status;
     }
 
-    if (0 != (status = Transfer(worker->descriptor, body, size, false, deadline, log)))
+    if (0 != (status = Transfer(worker->readDescriptor, body, size, false, deadline, log)))
     {
         return status;
     }
 
-    count = recv(worker->descriptor, &extra, 1, MSG_PEEK);
+    count = read(worker->readDescriptor, &extra, 1);
 
     if (count > 0)
     {
@@ -321,16 +397,16 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
         return EPROTO;
     }
 
-    if (0 == count)
+    if ((0 == count) && (TELEMETRY_WORKER_READY == operation))
     {
-        OsConfigLogInfo(log, "ReceiveReply: recv(MSG_PEEK) failed with %d (%s); worker disconnected", EPIPE, strerror(EPIPE));
+        OsConfigLogInfo(log, "ReceiveReply: read failed with %d (%s); worker disconnected before use", EPIPE, strerror(EPIPE));
         return EPIPE;
     }
 
-    if ((EAGAIN != errno) && (EWOULDBLOCK != errno) && (EINTR != errno))
+    if ((count < 0) && (EAGAIN != errno) && (EWOULDBLOCK != errno) && (EINTR != errno))
     {
         status = errno;
-        OsConfigLogInfo(log, "ReceiveReply: recv(MSG_PEEK) failed with %d (%s)", status, strerror(status));
+        OsConfigLogInfo(log, "ReceiveReply: read failed with %d (%s)", status, strerror(status));
         return status;
     }
 
@@ -380,19 +456,21 @@ static int PrepareDescriptor(int* descriptor, OsConfigLogHandle log)
 
 static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHandle log)
 {
-    struct sigaction action = {0};
+    struct sigaction action;
     posix_spawn_file_actions_t actions = {0};
     posix_spawnattr_t attributes = {0};
     bool haveActions = false;
     bool haveAttributes = false;
-    int descriptors[2] = {-1, -1};
+    int descriptors[4] = {-1, -1, -1, -1};
     int status = 0;
     int remaining = 0;
-    sigset_t defaults = {0};
-    sigset_t mask = {0};
+    sigset_t defaults;
+    sigset_t mask;
     char lifetime[32] = {0};
     char startup[32] = {0};
-    char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT, lifetime, startup, NULL};
+    char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT,
+        "--lifetime-ms", lifetime, "--budget-ms", startup,
+        "--api-key-env", "OsConfigTelemetryApiKey", "--sdk-version", "OSConfig-C/0.1", NULL};
     int flags = 0;
     pid_t child = -1;
     size_t i = 0;
@@ -408,7 +486,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
 
     if (worker->child > 0)
     {
-        status = (worker->descriptor >= 0) ? 0 : EBUSY;
+        status = ((worker->readDescriptor >= 0) && (worker->writeDescriptor >= 0)) ? 0 : EBUSY;
         if (0 != status)
         {
             OsConfigLogInfo(log, "StartChild: child IPC state validation failed with %d (%s)", status, strerror(status));
@@ -431,28 +509,43 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
         goto cleanup;
     }
 
-    snprintf(lifetime, sizeof(lifetime), "%" PRId64, worker->lifetimeDeadline);
-    snprintf(startup, sizeof(startup), "%" PRId64, deadline);
-
-    if (0 != socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, descriptors))
-    {
-        status = errno;
-        operation = "socketpair";
-        goto cleanup;
-    }
-
-    if ((0 != (status = PrepareDescriptor(&descriptors[0], log))) || (0 != (status = PrepareDescriptor(&descriptors[1], log))))
+    TelemetryDeadlineRemaining(worker->lifetimeDeadline, &remaining, status);
+    if (0 != status)
     {
         goto cleanup;
     }
+    snprintf(lifetime, sizeof(lifetime), "%d", (remaining > 600000) ? 600000 : remaining);
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
+    if (0 != status)
+    {
+        goto cleanup;
+    }
+    snprintf(startup, sizeof(startup), "%d", (remaining > 500) ? 500 : remaining);
 
-    flags = fcntl(descriptors[0], F_GETFL);
-    operation = (flags < 0) ? "fcntl(F_GETFL)" : "fcntl(F_SETFL)";
-
-    if ((flags < 0) || (0 != fcntl(descriptors[0], F_SETFL, flags | O_NONBLOCK)))
+    if ((0 != pipe2(descriptors, O_CLOEXEC)) || (0 != pipe2(descriptors + 2, O_CLOEXEC)))
     {
         status = errno;
+        operation = "pipe2";
         goto cleanup;
+    }
+
+    for (i = 0; i < 4; ++i)
+    {
+        if (0 != (status = PrepareDescriptor(&descriptors[i], log)))
+        {
+            goto cleanup;
+        }
+    }
+
+    for (i = 1; i <= 2; ++i)
+    {
+        flags = fcntl(descriptors[i], F_GETFL);
+        operation = (flags < 0) ? "fcntl(F_GETFL)" : "fcntl(F_SETFL)";
+        if ((flags < 0) || (0 != fcntl(descriptors[i], F_SETFL, flags | O_NONBLOCK)))
+        {
+            status = errno;
+            goto cleanup;
+        }
     }
 
     operation = "posix_spawn_file_actions_init";
@@ -464,21 +557,23 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     haveActions = true;
 
     operation = "posix_spawn_file_actions_adddup2";
-    if (0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDIN_FILENO)))
+    if ((0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[0], STDIN_FILENO))) ||
+        (0 != (status = posix_spawn_file_actions_adddup2(&actions, descriptors[3], STDOUT_FILENO))))
     {
         goto cleanup;
     }
 
     operation = "posix_spawn_file_actions_addclose";
-    if ((0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[0]))) ||
-        (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[1]))))
+    for (i = 0; i < 4; ++i)
     {
-        goto cleanup;
+        if (0 != (status = posix_spawn_file_actions_addclose(&actions, descriptors[i])))
+        {
+            goto cleanup;
+        }
     }
 
     operation = "posix_spawn_file_actions_addopen";
-    if ((0 != (status = posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, "/dev/null", O_WRONLY, 0))) ||
-        (0 != (status = posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0))))
+    if (0 != (status = posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0)))
     {
         goto cleanup;
     }
@@ -524,9 +619,10 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     if (0 == (status = posix_spawn(&child, worker->path, &actions, &attributes, arguments, environ)))
     {
         worker->child = child;
-        worker->descriptor = descriptors[0];
+        worker->writeDescriptor = descriptors[1];
+        worker->readDescriptor = descriptors[2];
         worker->sequence = 0;
-        descriptors[0] = -1;
+        descriptors[1] = descriptors[2] = -1;
     }
 
 cleanup:
@@ -561,7 +657,7 @@ cleanup:
         }
     }
 
-    for (i = 0; i < 2; ++i)
+    for (i = 0; i < 4; ++i)
     {
         if ((descriptors[i] >= 0) && (0 != close(descriptors[i])))
         {
@@ -584,7 +680,7 @@ finished:
     // Do not repeatedly spawn an unusable executable or negotiate a broken READY.
     // Resource exhaustion and timeouts can still recover on a later operation.
     if ((0 == worker->startupStatus) &&
-        ((ENOTSUP == status) || (ENOENT == status) || (EACCES == status) || (ENOEXEC == status) ||
+        ((EINVAL == status) || (ENOTSUP == status) || (ENOENT == status) || (EACCES == status) || (ENOEXEC == status) ||
         (ENOTDIR == status) || (ELOOP == status) || (ENAMETOOLONG == status) || (EPROTO == status) || (EPIPE == status)))
     {
         worker->startupStatus = status;
@@ -640,7 +736,8 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
         }
         else
         {
-            created->descriptor = -1;
+            created->readDescriptor = -1;
+            created->writeDescriptor = -1;
             created->child = -1;
             created->lifetimeDeadline = now + ((int64_t)lifetimeMilliseconds * 1000000);
             created->budget = (int64_t)budgetMilliseconds * 1000000;
@@ -695,6 +792,9 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
     size_t size = 0;
     TelemetryWorkerSendReply reply = {0};
     TelemetryWorkerFrame request = {0};
+    unsigned char header[TELEMETRY_WORKER_HEADER_SIZE] = {0};
+    unsigned char replyBytes[8] = {0};
+    int remaining = 0;
     bool sendStarted = false;
     int error = 0;
     const char* operation = "OperationDeadline";
@@ -740,23 +840,31 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
     request.operation = TELEMETRY_WORKER_SEND;
     request.size = (uint32_t)size;
     request.sequence = ++worker->sequence;
-    request.deadline = deadline;
+    TelemetryDeadlineRemaining(deadline, &remaining, status);
+    if (0 != status)
+    {
+        goto failed;
+    }
+    request.deadline = (remaining > 500) ? 500 : (uint64_t)remaining;
+    TelemetryEncodeFrame(&request, header);
     sendStarted = true;
 
     operation = "Transfer";
-    if ((0 != (status = Transfer(worker->descriptor, &request, sizeof(request), true, deadline, log))) ||
-        (0 != (status = Transfer(worker->descriptor, payload, size, true, deadline, log))))
+    if ((0 != (status = Transfer(worker->writeDescriptor, header, sizeof(header), true, deadline, log))) ||
+        (0 != (status = Transfer(worker->writeDescriptor, payload, size, true, deadline, log))))
     {
         goto failed;
     }
 
     operation = "ReceiveReply";
-    if (0 != (status = ReceiveReply(worker, request.operation, request.sequence, &reply, sizeof(reply), deadline, log)))
+    if (0 != (status = ReceiveReply(worker, request.operation, request.sequence, replyBytes, sizeof(replyBytes), deadline, log)))
     {
         goto failed;
     }
 
-    if ((reply.status < 0) || (reply.suppressed > 1))
+    reply.status = TelemetryReadWord(replyBytes);
+    reply.suppressed = TelemetryReadWord(replyBytes + 4);
+    if ((reply.status > 7) || (reply.suppressed > 1))
     {
         operation = "reply validation";
         status = EPROTO;
@@ -765,7 +873,7 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
 
     worker->suppressed = 0 != reply.suppressed;
     operation = "SendEvent(worker)";
-    status = reply.status;
+    status = WorkerStatus(reply.status);
     goto finished;
 
 failed:

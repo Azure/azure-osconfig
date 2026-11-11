@@ -61,6 +61,7 @@ target_link_libraries(commontests
 # An offline IPC peer, not the telemetry executable or its implementation.
 add_executable(telemetryipcpeer TelemetryIpcPeer.c)
 target_include_directories(telemetryipcpeer PRIVATE ../telemetry ../logging)
+target_link_libraries(telemetryipcpeer PRIVATE parsonlib)
 add_dependencies(commontests telemetryipcpeer)
 target_compile_definitions(commontests PRIVATE
     TELEMETRY_IPC_PEER_PATH="$<TARGET_FILE:telemetryipcpeer>")

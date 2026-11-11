@@ -2,89 +2,136 @@
 // Licensed under the MIT License.
 
 #define _POSIX_C_SOURCE 200809L
-
 #include "EventPayload.h"
-
+#include <parson.h>
 #include <errno.h>
 #include <string.h>
 
-static int AppendString(const char* value, unsigned char* payload, size_t capacity, size_t* offset)
+static bool ValidName(const char* name, size_t minimum, bool property)
 {
-    size_t length = 0;
-    int status = 0;
-
-    if (NULL == value)
+    size_t i = 0;
+    size_t size = (NULL == name) ? 0 : strnlen(name, 101);
+    if ((size < minimum) || (size > 100) ||
+        (property && (('.' == name[0]) || ('.' == name[size - 1]))))
     {
-        return EINVAL;
+        return false;
     }
-
-    length = strnlen(value, capacity - *offset);
-
-    if (length == (capacity - *offset))
+    for (i = 0; i < size; ++i)
     {
-        status = EMSGSIZE;
+        unsigned char c = (unsigned char)name[i];
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') || ('_' == c) || ('.' == c)))
+        {
+            return false;
+        }
     }
-    else
-    {
-        memcpy(payload + *offset, value, length + 1);
-        *offset += length + 1;
-    }
-
-    return status;
+    return true;
 }
 
 int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, size_t count,
     unsigned char* payload, size_t capacity, size_t* size, OsConfigLogHandle log)
 {
     int status = EINVAL;
-    uint32_t propertyCount = 0;
-    size_t offset = 0;
     size_t i = 0;
-    const char* operation = "AppendString(event name)";
+    size_t j = 0;
+    size_t encoded = 0;
+    size_t total = 0;
+    JSON_Value* event = NULL;
+    JSON_Value* fields = NULL;
+    JSON_Value* field = NULL;
+    JSON_Object* object = NULL;
+    JSON_Array* array = NULL;
+    char* serialized = NULL;
 
     if (NULL != size)
     {
         *size = 0;
     }
-
-    if ((NULL == size) || (NULL == payload) || (NULL == properties) || (0 == count) ||
-        (count > TELEMETRY_MAX_PROPERTY_COUNT) || (capacity < sizeof(uint32_t)) || (capacity > TELEMETRY_MAX_EVENT_SIZE))
+    if ((NULL == size) || (NULL == payload) || ((NULL == properties) && (0 != count)) ||
+        (count > TELEMETRY_MAX_PROPERTY_COUNT) || (0 == capacity) ||
+        (capacity > TELEMETRY_MAX_EVENT_SIZE) || !ValidName(name, 4, false))
     {
-        OsConfigLogInfo(log, "TelemetryPackEvent: argument validation failed with %d (%s)", status, strerror(status));
-        return status;
+        goto cleanup;
     }
-
-    propertyCount = (uint32_t)count;
-    memcpy(payload, &propertyCount, sizeof(propertyCount));
-    offset = sizeof(propertyCount);
-    status = AppendString(name, payload, capacity, &offset);
-
-    for (i = 0; (0 == status) && (i < count); ++i)
+    for (i = 0; i < count; ++i)
     {
-        if (TelemetryPropertyString != properties[i].type)
+        if ((TelemetryPropertyString != properties[i].type) ||
+            !ValidName(properties[i].name, 1, true) || (NULL == properties[i].value.stringValue))
         {
-            operation = "property type validation";
-            status = EINVAL;
+            goto cleanup;
         }
-        else
+        total += strnlen(properties[i].value.stringValue, TELEMETRY_MAX_EVENT_SIZE);
+        if (total >= TELEMETRY_MAX_EVENT_SIZE)
         {
-            operation = "AppendString(property name)";
-            if (0 == (status = AppendString(properties[i].name, payload, capacity, &offset)))
+            status = EMSGSIZE;
+            goto cleanup;
+        }
+        for (j = 0; j < i; ++j)
+        {
+            if (0 == strcmp(properties[j].name, properties[i].name))
             {
-                operation = "AppendString(property value)";
-                status = AppendString(properties[i].value.stringValue, payload, capacity, &offset);
+                goto cleanup;
             }
         }
     }
-
-    if (0 == status)
+    status = ENOMEM;
+    event = json_value_init_object();
+    fields = json_value_init_array();
+    if ((NULL == event) || (NULL == fields))
     {
-        *size = offset;
+        goto cleanup;
     }
-    else
+    object = json_value_get_object(event);
+    array = json_value_get_array(fields);
+    if ((JSONSuccess != json_object_set_string(object, "EventName", name)) ||
+        (JSONSuccess != json_object_set_value(object, "EventFields", fields)))
     {
-        OsConfigLogInfo(log, "TelemetryPackEvent: %s failed with %d (%s)", operation, status, strerror(status));
+        goto cleanup;
     }
-
+    fields = NULL;
+    for (i = 0; i < count; ++i)
+    {
+        field = json_value_init_object();
+        if (NULL == field)
+        {
+            goto cleanup;
+        }
+        object = json_value_get_object(field);
+        if ((JSONSuccess != json_object_set_string(object, "FieldName", properties[i].name)) ||
+            (JSONSuccess != json_object_set_string(object, "FieldType", "string")) ||
+            (JSONSuccess != json_object_set_string(object, "FieldValue", properties[i].value.stringValue)) ||
+            (JSONSuccess != json_array_append_value(array, field)))
+        {
+            goto cleanup;
+        }
+        field = NULL;
+    }
+    encoded = json_serialization_size(event);
+    if (0 == encoded)
+    {
+        goto cleanup;
+    }
+    if ((encoded - 1) > capacity)
+    {
+        status = EMSGSIZE;
+        goto cleanup;
+    }
+    serialized = json_serialize_to_string(event);
+    if (NULL == serialized)
+    {
+        goto cleanup;
+    }
+    memcpy(payload, serialized, encoded - 1);
+    *size = encoded - 1;
+    status = 0;
+cleanup:
+    json_free_serialized_string(serialized);
+    json_value_free(field);
+    json_value_free(fields);
+    json_value_free(event);
+    if (0 != status)
+    {
+        OsConfigLogInfo(log, "TelemetryPackEvent: JSON event packing failed with %d (%s)", status, strerror(status));
+    }
     return status;
 }

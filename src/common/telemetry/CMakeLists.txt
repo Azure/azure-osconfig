@@ -10,7 +10,7 @@ add_library(telemetry STATIC
     IpcInterface.c)
 target_include_directories(telemetry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(telemetry PUBLIC logging
-    PRIVATE commonutils ${CMAKE_DL_LIBS} rt)
+    PRIVATE commonutils parsonlib ${CMAKE_DL_LIBS} rt pthread)
 
 if(OSCONFIG_TELEMETRY_EXECUTABLE)
     install(PROGRAMS "${OSCONFIG_TELEMETRY_EXECUTABLE}" DESTINATION bin RENAME OSConfigTelemetry)

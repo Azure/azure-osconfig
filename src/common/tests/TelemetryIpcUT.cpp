@@ -40,7 +40,7 @@ TEST_F(TelemetryIpcTest, ReusesExternalPeerAndAcceptsSplitReplies)
 {
     ASSERT_EQ(0, Create());
     EXPECT_EQ(0, Send("split"));
-    EXPECT_EQ(0, Send("must-reuse"));
+    EXPECT_EQ(0, Send("must_reuse"));
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
 }
@@ -49,19 +49,48 @@ TEST_F(TelemetryIpcTest, PreservesWorkerOutcomeAndSuppression)
 {
     ASSERT_EQ(0, Create());
     EXPECT_EQ(EIO, Send("reject"));
-    EXPECT_EQ(0, Send("must-reuse"));
+    EXPECT_EQ(0, Send("must_reuse"));
     EXPECT_EQ(ECANCELED, Send("suppress"));
-    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+    EXPECT_EQ(ECANCELED, Send("must_reuse"));
+}
+
+TEST_F(TelemetryIpcTest, CompleteReplyRemainsAcceptedWhenPeerExits)
+{
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(0, Send("accepted_exit"));
+}
+
+TEST_F(TelemetryIpcTest, BrokenPipeDoesNotDeliverSigpipeToTheHost)
+{
+    ASSERT_EQ(0, Create());
+    ASSERT_EQ(0, Send("close_input"));
+    EXPECT_EQ(EPIPE, Send("fixture"));
+    EXPECT_EQ(ECANCELED, Send("fixture"));
+}
+
+TEST_F(TelemetryIpcTest, RustWorkerIntegration)
+{
+    const char* path = getenv("OSCONFIG_TEST_RUST_WORKER");
+    if (nullptr == path) GTEST_SKIP() << "Requires an explicitly configured offline TLS collector fixture";
+    const char* key = getenv("OsConfigTelemetryApiKey");
+    const char* proxy = getenv("https_proxy");
+    ASSERT_TRUE(nullptr != key && 0 == strcmp(key, "offline-test-key"));
+    ASSERT_TRUE(nullptr != proxy && 0 == strncmp(proxy, "http://127.0.0.1:", 17));
+    ASSERT_TRUE(nullptr == getenv("no_proxy") || '\0' == getenv("no_proxy")[0]);
+    ASSERT_TRUE(nullptr == getenv("NO_PROXY") || '\0' == getenv("NO_PROXY")[0]);
+    ASSERT_EQ(0, Create(path, 30000, 500, 500));
+    EXPECT_EQ(0, Send("Fixture.Event"));
+    EXPECT_EQ(0, Send("Fixture.Event"));
 }
 
 TEST_F(TelemetryIpcTest, DropsMalformedRepliesWithoutReplaying)
 {
-    const char* events[] = {"bad-version", "bad-sequence", "negative-status", "bad-suppression"};
+    const char* events[] = {"bad_version", "bad_sequence", "negative_status", "bad_suppression"};
     for (const char* event : events)
     {
         ASSERT_EQ(0, Create());
         EXPECT_EQ(EPROTO, Send(event)) << event;
-        EXPECT_EQ(ECANCELED, Send("must-reuse"));
+        EXPECT_EQ(ECANCELED, Send("must_reuse"));
         EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
     }
 }
@@ -70,12 +99,12 @@ TEST_F(TelemetryIpcTest, ReapsPeerAfterDisconnectOrTimeout)
 {
     ASSERT_EQ(0, Create());
     EXPECT_EQ(EPIPE, Send("disconnect"));
-    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+    EXPECT_EQ(ECANCELED, Send("must_reuse"));
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
 
     ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 30000, 10000, 100));
     EXPECT_EQ(ETIMEDOUT, Send("hang"));
-    EXPECT_EQ(ECANCELED, Send("must-reuse"));
+    EXPECT_EQ(ECANCELED, Send("must_reuse"));
 }
 
 TEST_F(TelemetryIpcTest, RejectsMismatchedStartupVersion)

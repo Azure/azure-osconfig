@@ -3,26 +3,50 @@
 
 #include <gtest/gtest.h>
 #include <EventPayload.h>
+#include <parson.h>
 #include <cerrno>
 #include <cstring>
 #include <string>
 
-TEST(TelemetryPayloadTest, PreservesTheReferenceWorkersNativeStringPayload)
+TEST(TelemetryPayloadTest, EncodesTheGenericJsonEnvelopeWithoutChangingStringValues)
 {
     TelemetryProperty property = {};
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
     size_t size = 0;
-    uint32_t count = 0;
-    const char strings[] = "CrashDetected\0CrashInfo\0quote\" newline\nslash\\";
 
     property.name = "CrashInfo";
     property.type = TelemetryPropertyString;
     property.value.stringValue = "quote\" newline\nslash\\";
     ASSERT_EQ(0, TelemetryPackEvent("CrashDetected", &property, 1, payload, sizeof(payload), &size, nullptr));
-    ASSERT_EQ(sizeof(count) + sizeof(strings), size);
-    memcpy(&count, payload, sizeof(count));
-    EXPECT_EQ(1U, count);
-    EXPECT_EQ(0, memcmp(payload + sizeof(count), strings, sizeof(strings)));
+    ASSERT_GT(size, 0U);
+    EXPECT_EQ('}', payload[size - 1]);
+    std::string text(reinterpret_cast<char*>(payload), size);
+    JSON_Value* parsed = json_parse_string(text.c_str());
+    ASSERT_NE(nullptr, parsed);
+    JSON_Object* event = json_value_get_object(parsed);
+    EXPECT_STREQ("CrashDetected", json_object_get_string(event, "EventName"));
+    JSON_Array* fields = json_object_get_array(event, "EventFields");
+    ASSERT_EQ(1U, json_array_get_count(fields));
+    JSON_Object* field = json_array_get_object(fields, 0);
+    EXPECT_STREQ("CrashInfo", json_object_get_string(field, "FieldName"));
+    EXPECT_STREQ("string", json_object_get_string(field, "FieldType"));
+    EXPECT_STREQ(property.value.stringValue, json_object_get_string(field, "FieldValue"));
+    json_value_free(parsed);
+}
+
+TEST(TelemetryPayloadTest, RejectsDuplicateFieldsAndInvalidNames)
+{
+    TelemetryProperty properties[2] = {};
+    for (auto& property : properties)
+    {
+        property.name = "Census";
+        property.value.stringValue = "example";
+    }
+    unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
+    size_t size = 0;
+    EXPECT_EQ(EINVAL, TelemetryPackEvent("Test", properties, 2, payload, sizeof(payload), &size, nullptr));
+    EXPECT_EQ(EINVAL, TelemetryPackEvent("Bad name", properties, 1, payload, sizeof(payload), &size, nullptr));
+    EXPECT_EQ(0U, size);
 }
 
 TEST(TelemetryPayloadTest, RejectsTruncatedOutputAndInvalidProperties)
