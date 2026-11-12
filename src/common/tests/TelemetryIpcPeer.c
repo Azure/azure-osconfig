@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 // Offline caller-test peer. It never encodes events or opens network connections.
@@ -52,9 +53,9 @@ int main(int argc, char** argv)
     const char* readyVersion = getenv("OSCONFIG_TEST_READY_VERSION");
     int status = 0;
 
-    if ((argc != 10) || (0 != strcmp(argv[1], "--pipe-v3")) ||
-        (0 != strcmp(argv[6], "--api-key-env")) || (0 != strcmp(argv[7], "OsConfigTelemetryApiKey")) ||
-        (0 != strcmp(argv[8], "--sdk-version")) || (0 != strcmp(argv[9], "OSConfig-C/0.1")))
+    if ((argc != 6) || (0 != strcmp(argv[1], "--pipe-v4")) ||
+        (0 != strcmp(argv[2], "--api-key-env")) || (0 != strcmp(argv[3], "OsConfigTelemetryApiKey")) ||
+        (0 != strcmp(argv[4], "--sdk-version")) || (0 != strcmp(argv[5], "OSConfig-C/0.1")))
     {
         return EXIT_FAILURE;
     }
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
         if ((TELEMETRY_WORKER_MAGIC != request.magic) || (TELEMETRY_WORKER_VERSION != request.version) ||
             (TELEMETRY_WORKER_SEND != request.operation) || (request.sequence != ++sequence) ||
             (request.size == 0) || (request.size > TELEMETRY_MAX_EVENT_SIZE) ||
-            (request.deadline == 0) || (request.deadline > 500) || (request.status != 0) ||
+            (request.reserved != 0) || (request.status != 0) ||
             (0 != Transfer(payload, request.size, false, false)))
         {
             status = EPROTO;
@@ -105,6 +106,11 @@ int main(int argc, char** argv)
         if (0 == strcmp(event, "disconnect"))
         {
             break;
+        }
+        if (0 == strcmp(event, "delayed"))
+        {
+            struct timespec delay = {0, 600000000};
+            while ((0 != nanosleep(&delay, &delay)) && (EINTR == errno)) {}
         }
 
         response = (TelemetryWorkerFrame){0};

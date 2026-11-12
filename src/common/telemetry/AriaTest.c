@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// Explicit live test only: telemetryariatest --send-status-trace /path/to/OSConfigTelemetry
-// Uses the real C adapter and pipe v3 worker with unchanged production time limits.
+// Sends 100 events sequentially through one real C adapter and pipe v4 worker.
+// Manually build with: cmake --build . --target telemetryariatest
+// Run as: sudo --preserve-env=OsConfigTelemetryApiKey ./common/telemetry/telemetryariatest --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
 
 #define _GNU_SOURCE
 
@@ -14,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TEST_MARKER "*** OSConfig C adapter test No. 73 (IPC to Ubuntu 14 Rust worker) ***"
+#define TEST_MARKER "*** OSConfig Aria test No. 73 (IPC to Ubuntu 14 Rust worker) ***"
 
 int main(int argc, char** argv)
 {
@@ -34,7 +35,6 @@ int main(int argc, char** argv)
     TelemetryProperty properties[ARRAY_SIZE(names)];
     int status = 0;
     int cleanupStatus = 0;
-    int64_t started = 0;
     unsigned int attempted = 0;
     unsigned int accepted = 0;
     size_t i = 0;
@@ -42,8 +42,8 @@ int main(int argc, char** argv)
     if ((3 != argc) || (0 != strcmp(argv[1], "--send-status-trace")))
     {
         fprintf(stderr, "Explicit live test: %s --send-status-trace /path/to/OSConfigTelemetry\n"
-            "Sends one synthetic StatusTrace event over IPC using OsConfigTelemetryApiKey.\n"
-            "The production 500 ms cumulative work budget is unchanged. No retries.\n", argv[0]);
+            "Sends 100 synthetic StatusTrace events over one worker's IPC using OsConfigTelemetryApiKey.\n"
+            "No invocation budget, batching, delays, or retries.\n", argv[0]);
         return 2;
     }
 
@@ -65,12 +65,7 @@ int main(int argc, char** argv)
     if (0 == status)
     {
         operation = "TelemetryWorkerCreate";
-        status = TelemetryWorkerCreate(path, 600000, 500, 500, &worker, NULL);
-    }
-    if (0 == status)
-    {
-        operation = "preparation start time";
-        TelemetryMonotonicTime(&started, status);
+        status = TelemetryWorkerCreate(path, &worker, NULL);
     }
     if (0 == status)
     {
@@ -127,15 +122,16 @@ int main(int argc, char** argv)
         }
         printf("%s\nCorrelationId=%s\n", TEST_MARKER, correlation);
         fflush(stdout);
-        operation = "TelemetryWorkerAccountPreparation";
-        status = TelemetryWorkerAccountPreparation(worker, started, NULL);
     }
-    if (0 == status)
+    while ((0 == status) && (attempted < 100))
     {
         operation = "TelemetryWorkerSendEvent";
-        attempted = 1;
+        ++attempted;
         status = TelemetryWorkerSendEvent(worker, "StatusTrace", properties, ARRAY_SIZE(properties), NULL);
-        accepted = (0 == status) ? 1 : 0;
+        if (0 == status)
+        {
+            ++accepted;
+        }
     }
     if (0 != status)
     {
@@ -153,6 +149,6 @@ int main(int argc, char** argv)
     }
     free(distro);
     free(path);
-    printf("Attempted: %u; accepted: %u; planned: 1\n", attempted, accepted);
+    printf("Attempted: %u; accepted: %u; planned: 100\n", attempted, accepted);
     return (0 == status) ? 0 : 1;
 }

@@ -18,12 +18,11 @@
 // No network or system-configuration writes. File reads use temporary fixtures.
 struct TelemetryWorker {};
 static TelemetryWorker workerInstance;
-static int creates, destroys, sends, createStatus, preparationStatus;
-static int lifetime, budget, operation;
+static int creates, destroys, sends, createStatus;
 static std::string eventName, workerPath;
 static std::map<std::string, std::string> fields;
 static std::string activityFilePath;
-static int activityFileReads, preparationFileReads;
+static int activityFileReads;
 static int executableStatus, executableChecks;
 
 extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEol, OsConfigLogHandle log)
@@ -34,14 +33,10 @@ extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEo
     return LoadStringFromFile(activityFilePath.c_str(), stopAtEol, log);
 }
 
-extern "C" int TelemetryWorkerCreate(const char* path, int lifetimeMs, int budgetMs,
-    int operationMs, TelemetryWorker** worker, OsConfigLogHandle)
+extern "C" int TelemetryWorkerCreate(const char* path, TelemetryWorker** worker, OsConfigLogHandle)
 {
     ++creates;
     workerPath = path;
-    lifetime = lifetimeMs;
-    budget = budgetMs;
-    operation = operationMs;
 
     if (!createStatus)
     {
@@ -86,14 +81,6 @@ extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
     return 0;
 }
 
-extern "C" int TelemetryWorkerAccountPreparation(TelemetryWorker*, int64_t started, OsConfigLogHandle)
-{
-    EXPECT_GT(started, 0);
-    preparationFileReads = activityFileReads;
-
-    return preparationStatus;
-}
-
 extern "C" int TelemetryTestAccess(const char* path, int mode)
 {
     ++executableChecks;
@@ -128,9 +115,9 @@ protected:
         savedActivityId = hadActivityId ? original : "";
         ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
         TelemetryCleanup(nullptr);
-        creates = destroys = sends = createStatus = preparationStatus = 0;
+        creates = destroys = sends = createStatus = 0;
         executableStatus = executableChecks = 0;
-        activityFileReads = preparationFileReads = 0;
+        activityFileReads = 0;
         activityFilePath.clear();
         fields.clear();
         ASSERT_NE(nullptr, mkdtemp(temporary));
@@ -178,13 +165,9 @@ TEST_F(TelemetryProducerTest, PreservesLegacyInitializeEmitCleanupCalls)
     EXPECT_EQ(1, destroys);
 }
 
-TEST_F(TelemetryProducerTest, UsesApprovedLimitsAndDoesNotResetActiveInvocation)
+TEST_F(TelemetryProducerTest, DoesNotResetActiveInvocation)
 {
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
-    EXPECT_EQ(600000, lifetime);
-    EXPECT_GT(budget, 0);
-    EXPECT_LE(budget, 500);
-    EXPECT_EQ(500, operation);
     EXPECT_EQ('/', workerPath[0]);
     EXPECT_NE(std::string::npos, workerPath.find("/OSConfigTelemetry"));
     EXPECT_EQ(0, TelemetryInitializeInternal(nullptr));
@@ -314,15 +297,17 @@ TEST_F(TelemetryProducerTest, CallsOutsideInvocationDoNotStartAWorker)
     EXPECT_EQ(0, activityFileReads);
 }
 
-TEST_F(TelemetryProducerTest, ExhaustedPreparationBudgetDoesNotBeginSend)
+TEST_F(TelemetryProducerTest, SendsAll100EventsThroughOneInvocation)
 {
     WriteActivityId("file-activity-id");
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
-    preparationStatus = ETIMEDOUT;
-    OSConfigTelemetryCrashDetected("dropped");
-    EXPECT_EQ(0, sends);
-    EXPECT_EQ(1, activityFileReads);
-    EXPECT_EQ(1, preparationFileReads);
+    for (int event = 0; event < 100; ++event)
+    {
+        OSConfigTelemetryCrashDetected("fixture");
+    }
+    EXPECT_EQ(100, sends);
+    EXPECT_EQ(100, activityFileReads);
+    EXPECT_EQ(1, creates);
 }
 
 TEST_F(TelemetryProducerTest, MissingExecutableSilentlyDisablesEventsAcrossInvocations)

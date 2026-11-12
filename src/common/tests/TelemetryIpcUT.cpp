@@ -15,10 +15,9 @@ class TelemetryIpcTest : public ::testing::Test
 protected:
     TelemetryWorker* worker = nullptr;
 
-    int Create(const char* path = TELEMETRY_IPC_PEER_PATH, int lifetime = 30000,
-        int budget = 10000, int operation = 5000)
+    int Create(const char* path = TELEMETRY_IPC_PEER_PATH)
     {
-        return TelemetryWorkerCreate(path, lifetime, budget, operation, &worker, nullptr);
+        return TelemetryWorkerCreate(path, &worker, nullptr);
     }
 
     int Send(const char* event, OsConfigLogHandle log = nullptr)
@@ -78,7 +77,7 @@ TEST_F(TelemetryIpcTest, RustWorkerIntegration)
     ASSERT_TRUE(nullptr != proxy && 0 == strncmp(proxy, "http://127.0.0.1:", 17));
     ASSERT_TRUE(nullptr == getenv("no_proxy") || '\0' == getenv("no_proxy")[0]);
     ASSERT_TRUE(nullptr == getenv("NO_PROXY") || '\0' == getenv("NO_PROXY")[0]);
-    ASSERT_EQ(0, Create(path, 30000, 500, 500));
+    ASSERT_EQ(0, Create(path));
     EXPECT_EQ(0, Send("Fixture.Event"));
     EXPECT_EQ(0, Send("Fixture.Event"));
 }
@@ -102,7 +101,7 @@ TEST_F(TelemetryIpcTest, ReapsPeerAfterDisconnectOrTimeout)
     EXPECT_EQ(ECANCELED, Send("must_reuse"));
     EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
 
-    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 30000, 10000, 100));
+    ASSERT_EQ(0, Create());
     EXPECT_EQ(ETIMEDOUT, Send("hang"));
     EXPECT_EQ(ECANCELED, Send("must_reuse"));
 }
@@ -151,21 +150,15 @@ TEST_F(TelemetryIpcTest, MissingExecutableIsSilentAndNotRetriedWithinInvocation)
     EXPECT_EQ(0, rmdir(directory.c_str()));
 }
 
-TEST_F(TelemetryIpcTest, LifetimeAndPreparationBudgetRemainBounded)
+TEST_F(TelemetryIpcTest, Sends100EventsThroughOnePeerBeyondFormerBudget)
 {
-    int64_t started = 0;
-    int status = 0;
-    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 10, 10000, 5000));
-    usleep(30000);
-    EXPECT_EQ(ETIMEDOUT, Send("fixture"));
-    EXPECT_EQ(0, TelemetryWorkerDestroy(&worker, nullptr));
-
-    ASSERT_EQ(0, Create(TELEMETRY_IPC_PEER_PATH, 30000, 10, 5000));
-    TelemetryMonotonicTime(&started, status);
-    ASSERT_EQ(0, status);
-    usleep(30000);
-    EXPECT_EQ(ETIMEDOUT, TelemetryWorkerAccountPreparation(worker, started, nullptr));
-    EXPECT_EQ(ETIMEDOUT, Send("fixture"));
+    ASSERT_EQ(0, Create());
+    EXPECT_EQ(0, Send("delayed"));
+    usleep(600000);
+    for (int event = 1; event < 100; ++event)
+    {
+        ASSERT_EQ(0, Send("must_reuse"));
+    }
 }
 
 TEST_F(TelemetryIpcTest, InvalidArgumentsDoNotReplaceAnActiveWorker)

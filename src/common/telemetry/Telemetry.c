@@ -16,9 +16,6 @@
 #include <unistd.h>
 #include <version.h>
 
-#define TELEMETRY_WORK_BUDGET_MS 500
-#define TELEMETRY_OPERATION_MS 500
-#define TELEMETRY_LIFETIME_MS 600000
 #define TELEMETRY_CORRELATIONID_FILE "/var/lib/GuestConfig/Configuration/activityId.txt"
 
 static TelemetryWorker* g_worker = NULL;
@@ -63,14 +60,11 @@ char* GetCachedDistroName(void)
 
 int TelemetryInitializeInternal(OsConfigLogHandle log)
 {
-    int64_t start = 0;
-    int64_t now = 0;
     int status = 0;
     char* directory = NULL;
     char* path = NULL;
-    int64_t elapsedMs = 0;
     bool available = false;
-    const char* operation = "TelemetryMonotonicTime";
+    const char* operation = "GetModuleDirectory";
 
     if (g_initialized)
     {
@@ -80,57 +74,36 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
     g_initialized = true;
     g_log = log;
 
-    TelemetryMonotonicTime(&start, status);
-    if (0 == status)
+    if (NULL == (directory = GetModuleDirectory()))
     {
-        if (NULL == (directory = GetModuleDirectory()))
+        status = (0 != errno) ? errno : ENOENT;
+    }
+    else if (NULL == (path = FormatAllocateString("%s/%s", directory, TELEMETRY_BINARY_NAME)))
+    {
+        operation = "FormatAllocateString";
+        status = ENOMEM;
+    }
+    else
+    {
+        operation = "access(OSConfigTelemetry)";
+        if (0 == access(path, F_OK))
         {
-            operation = "GetModuleDirectory";
-            status = (0 != errno) ? errno : ENOENT;
+            available = true;
+            operation = "SetFileAccess";
+            status = SetFileAccess(path, 0, 0, 0700, log);
         }
-        else if (NULL == (path = FormatAllocateString("%s/%s", directory, TELEMETRY_BINARY_NAME)))
+        else if ((ENOENT != errno) && (ENOTDIR != errno))
         {
-            operation = "FormatAllocateString";
-            status = ENOMEM;
+            status = errno;
         }
-        else
-        {
-            operation = "access(OSConfigTelemetry)";
-            if (0 == access(path, F_OK))
-            {
-                available = true;
-                operation = "SetFileAccess";
-                status = SetFileAccess(path, 0, 0, 0700, log);
-            }
-            else if ((ENOENT != errno) && (ENOTDIR != errno))
-            {
-                status = errno;
-            }
-            // An absent optional executable silently disables this invocation.
-        }
+        // An absent optional executable silently disables this invocation.
     }
 
     if ((0 == status) && available)
     {
         g_distroName = GetOsPrettyName(log);
-        operation = "TelemetryMonotonicTime";
-        TelemetryMonotonicTime(&now, status);
-    }
-
-    if ((0 == status) && available)
-    {
-        elapsedMs = ((now - start) + 999999) / 1000000;
-
-        if (elapsedMs >= TELEMETRY_WORK_BUDGET_MS)
-        {
-            operation = "initialization budget check";
-            status = ETIMEDOUT;
-        }
-        else
-        {
-            operation = "TelemetryWorkerCreate";
-            status = TelemetryWorkerCreate(path, TELEMETRY_LIFETIME_MS, TELEMETRY_WORK_BUDGET_MS - (int)elapsedMs, TELEMETRY_OPERATION_MS, &g_worker, log);
-        }
+        operation = "TelemetryWorkerCreate";
+        status = TelemetryWorkerCreate(path, &g_worker, log);
     }
 
     if (0 != status)
@@ -173,27 +146,11 @@ static const char* Value(const char* value)
     return (NULL != value) ? value : TELEMETRY_NOTFOUND_STRING;
 }
 
-static bool BeginEvent(int64_t* started)
+static bool BeginEvent(void)
 {
-    int status = 0;
-    bool ready = false;
-
     // Some library callers emit outside a telemetry invocation. Never use a
     // missing log handle or implicitly start a worker from those call sites.
-    if (g_initialized && (NULL != g_worker))
-    {
-        TelemetryMonotonicTime(started, status);
-        if (0 != status)
-        {
-            OsConfigLogInfo(g_log, "BeginEvent: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
-        }
-        else
-        {
-            ready = true;
-        }
-    }
-
-    return ready;
+    return g_initialized && (NULL != g_worker);
 }
 
 static const char* GetCorrelationId(char** fileContent)
@@ -216,7 +173,7 @@ static const char* GetCorrelationId(char** fileContent)
     return correlationId;
 }
 
-static void SubmitEvent(const char* name, const char* const* names, const char* const* values, size_t count, int64_t started)
+static void SubmitEvent(const char* name, const char* const* names, const char* const* values, size_t count)
 {
     const char* timestamp = GetFormattedTime();
     char* correlationIdFromFile = NULL;
@@ -232,10 +189,7 @@ static void SubmitEvent(const char* name, const char* const* names, const char* 
         properties[i].value.stringValue = Value((i < ARRAY_SIZE(commonNames)) ? commonValues[i] : values[i - ARRAY_SIZE(commonNames)]);
     }
 
-    if (0 == TelemetryWorkerAccountPreparation(g_worker, started, g_log))
-    {
-        TelemetryWorkerSendEvent(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
-    }
+    TelemetryWorkerSendEvent(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
 
     free(correlationIdFromFile);
 }
@@ -327,7 +281,6 @@ void OSConfigGetElapsedTime(int64_t* microseconds)
 
 void OSConfigTelemetryStatusTraceInternal(const char* callingFunction, int status, const char* file, const char* function, int line)
 {
-    int64_t started = 0;
     int64_t elapsed = 0;
     char lineText[32] = {0};
     char result[32] = {0};
@@ -335,7 +288,7 @@ void OSConfigTelemetryStatusTraceInternal(const char* callingFunction, int statu
     const char* names[] = {"FileName", "LineNumber", "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
     const char* values[ARRAY_SIZE(names)] = {0};
 
-    if (BeginEvent(&started))
+    if (BeginEvent())
     {
         OSConfigGetElapsedTime(&elapsed);
         snprintf(lineText, sizeof(lineText), "%d", line);
@@ -350,48 +303,45 @@ void OSConfigTelemetryStatusTraceInternal(const char* callingFunction, int statu
         values[6] = duration;
         values[7] = result;
         values[8] = strerror(status);
-        SubmitEvent("StatusTrace", names, values, ARRAY_SIZE(names), started);
+        SubmitEvent("StatusTrace", names, values, ARRAY_SIZE(names));
     }
 }
 
 void OSConfigTelemetryBaselineRun(const char* baseline, const char* mode, double seconds)
 {
-    int64_t started = 0;
     char duration[384] = {0};
     const char* names[] = {"BaselineName", "Mode", "DurationSeconds"};
     const char* values[] = {baseline, mode, duration};
 
-    if (BeginEvent(&started))
+    if (BeginEvent())
     {
         snprintf(duration, sizeof(duration), "%.2f", seconds);
-        SubmitEvent("BaselineRun", names, values, ARRAY_SIZE(names), started);
+        SubmitEvent("BaselineRun", names, values, ARRAY_SIZE(names));
     }
 }
 
 void OSConfigTelemetryRuleComplete(const char* component, const char* object, int result, int64_t microseconds)
 {
-    int64_t started = 0;
     char resultText[32] = {0};
     char duration[32] = {0};
     const char* names[] = {"ComponentName", "ObjectName", "ObjectResult", "Microseconds"};
     const char* values[] = {component, object, resultText, duration};
 
-    if (BeginEvent(&started))
+    if (BeginEvent())
     {
         snprintf(resultText, sizeof(resultText), "%d", result);
         snprintf(duration, sizeof(duration), "%" PRId64, microseconds);
-        SubmitEvent("RuleComplete", names, values, ARRAY_SIZE(names), started);
+        SubmitEvent("RuleComplete", names, values, ARRAY_SIZE(names));
     }
 }
 
 void OSConfigTelemetryCrashDetected(const char* crashInfo)
 {
-    int64_t started = 0;
     const char* names[] = {"CrashInfo"};
     const char* values[] = {crashInfo};
 
-    if (BeginEvent(&started))
+    if (BeginEvent())
     {
-        SubmitEvent("CrashDetected", names, values, ARRAY_SIZE(names), started);
+        SubmitEvent("CrashDetected", names, values, ARRAY_SIZE(names));
     }
 }

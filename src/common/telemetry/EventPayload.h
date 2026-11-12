@@ -38,7 +38,7 @@ typedef struct TelemetryProperty
     } value;
 } TelemetryProperty;
 
-// Pipe v3 JSON envelope: EventName and EventFields (FieldName/FieldType/FieldValue).
+// Pipe v4 JSON envelope: EventName and EventFields (FieldName/FieldType/FieldValue).
 // OSConfig keeps its existing properties string-valued. No trailing NUL is sent.
 // Product event definitions and common census data belong to this adapter.
 int TelemetryPackEvent(const char* name, const TelemetryProperty* properties, size_t count,

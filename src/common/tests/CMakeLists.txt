@@ -33,7 +33,6 @@ set_property(SOURCE TelemetryUT.cpp ../telemetry/Telemetry.c
         TelemetryWorker=TelemetryTestWorker
         TelemetryWorkerCreate=TelemetryTestWorkerCreate
         TelemetryWorkerSendEvent=TelemetryTestWorkerSendEvent
-        TelemetryWorkerAccountPreparation=TelemetryTestWorkerAccountPreparation
         TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
         SetFileAccess=TelemetryTestSetFileAccess
         GetOsPrettyName=TelemetryTestGetOsPrettyName)

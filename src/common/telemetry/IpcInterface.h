@@ -9,14 +9,14 @@
 #include <stdint.h>
 
 #define TELEMETRY_WORKER_MAGIC UINT32_C(0x4F534354)
-#define TELEMETRY_WORKER_VERSION 3
+#define TELEMETRY_WORKER_VERSION 4
 #define TELEMETRY_WORKER_READY 1
 #define TELEMETRY_WORKER_SEND 3
-#define TELEMETRY_WORKER_ARGUMENT "--pipe-v3"
+#define TELEMETRY_WORKER_ARGUMENT "--pipe-v4"
 #define TELEMETRY_WORKER_HEADER_SIZE 32
 
-// Pipe v3: explicit little-endian header, UTF-8 JSON SEND payload.
-// deadline is a relative timeout in milliseconds (1..500), zero in replies.
+// Pipe v4: explicit little-endian header, UTF-8 JSON SEND payload.
+// reserved must be zero in requests and replies; no caller-supplied deadlines.
 // One outstanding request, no replay. Status values are portable, not errno.
 typedef struct TelemetryWorkerFrame
 {
@@ -26,7 +26,7 @@ typedef struct TelemetryWorkerFrame
     uint32_t size;
     uint32_t sequence;
     uint32_t status;
-    uint64_t deadline;
+    uint64_t reserved;
 } TelemetryWorkerFrame;
 
 // SEND reports event outcome separately from IPC failure. Suppression is latched
@@ -60,8 +60,8 @@ static inline void TelemetryEncodeFrame(const TelemetryWorkerFrame* frame, unsig
     TelemetryWriteWord(bytes + 12, frame->size);
     TelemetryWriteWord(bytes + 16, frame->sequence);
     TelemetryWriteWord(bytes + 20, frame->status);
-    TelemetryWriteWord(bytes + 24, (uint32_t)frame->deadline);
-    TelemetryWriteWord(bytes + 28, (uint32_t)(frame->deadline >> 32));
+    TelemetryWriteWord(bytes + 24, (uint32_t)frame->reserved);
+    TelemetryWriteWord(bytes + 28, (uint32_t)(frame->reserved >> 32));
 }
 
 static inline void TelemetryDecodeFrame(const unsigned char* bytes, TelemetryWorkerFrame* frame)
@@ -72,7 +72,7 @@ static inline void TelemetryDecodeFrame(const unsigned char* bytes, TelemetryWor
     frame->size = TelemetryReadWord(bytes + 12);
     frame->sequence = TelemetryReadWord(bytes + 16);
     frame->status = TelemetryReadWord(bytes + 20);
-    frame->deadline = TelemetryReadWord(bytes + 24) | ((uint64_t)TelemetryReadWord(bytes + 28) << 32);
+    frame->reserved = TelemetryReadWord(bytes + 24) | ((uint64_t)TelemetryReadWord(bytes + 28) << 32);
 }
 
 #ifdef __cplusplus
@@ -89,21 +89,16 @@ int TelemetryInitializeInternal(OsConfigLogHandle log);
 // All calls are serialized. The host must not reap our child or change SIGCHLD
 // handling while it is owned. workerPath is a trusted absolute executable path.
 // *worker must initially be NULL. Creation does not spawn or perform network I/O.
-// Lifetime includes audit time; the telemetry budget charges only API execution.
+// No invocation budget or worker expiry. Internal IPC operations wait up to 30s.
 // Permanent startup/READY failures are retained until this invocation is destroyed.
-int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker, OsConfigLogHandle log);
+int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log);
 
 // Starts the worker lazily and reuses it. IPC/process failure drops this operation
-// and reaps the child; a later call may start another within the ORIGINAL budget
-// unless a permanent startup failure has disabled this invocation.
-// Synchronously sends one named event. Properties are borrowed strings. Packing,
-// startup, encoding, network, and acknowledgment share the operation budget.
+// and reaps the child. An ambiguous SEND failure suppresses subsequent sends;
+// a pre-SEND failure may be retried unless startup is permanently disabled.
+// Synchronously sends one named event. Properties are borrowed strings.
 // Nonzero means dropped/rejected/unconfirmed, never queued or replayed.
 int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log);
-
-// Charge producer-side metadata preparation before beginning the SEND deadline.
-// started is a monotonic nanosecond timestamp from immediately before that work.
-int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log);
 
 // Idempotent for NULL == *worker. Always closes IPC and handles the exact child.
 // If child ownership cannot be discharged, retains *worker for cleanup retry.

@@ -28,6 +28,8 @@
 
 extern char** environ;
 
+#define TELEMETRY_IO_TIMEOUT_NS INT64_C(30000000000)
+
 struct TelemetryWorker
 {
     char* path;
@@ -35,66 +37,27 @@ struct TelemetryWorker
     int writeDescriptor;
     pid_t child;
     uint32_t sequence;
-    int64_t lifetimeDeadline;
-    int64_t budget;
-    int64_t operationLimit;
     bool suppressed;
     int startupStatus;
 };
 
-static int OperationDeadline(TelemetryWorker* worker, int64_t* start, int64_t* deadline)
+static int OperationDeadline(int64_t* deadline)
 {
     int status = 0;
-    int64_t limit = 0;
-
-    TelemetryMonotonicTime(start, status);
-    if (0 != status)
-    {
-        worker->budget = 0;
-        return status;
-    }
-
-    if ((worker->budget <= 0) || (*start >= worker->lifetimeDeadline))
-    {
-        return ETIMEDOUT;
-    }
-
-    limit = (worker->budget < worker->operationLimit) ? worker->budget : worker->operationLimit;
-
-    if (limit > (worker->lifetimeDeadline - *start))
-    {
-        limit = worker->lifetimeDeadline - *start;
-    }
-
-    *deadline = *start + limit;
-
-    return 0;
-}
-
-static int ChargeBudget(TelemetryWorker* worker, int64_t start, OsConfigLogHandle log)
-{
     int64_t now = 0;
-    int status = 0;
-    int64_t elapsed = 0;
 
     TelemetryMonotonicTime(&now, status);
     if (0 != status)
     {
-        worker->budget = 0;
-        OsConfigLogInfo(log, "ChargeBudget: TelemetryMonotonicTime failed with %d (%s)", status, strerror(status));
         return status;
     }
 
-    elapsed = now - start;
-
-    if (elapsed < 0)
+    if (now > INT64_MAX - TELEMETRY_IO_TIMEOUT_NS)
     {
-        worker->budget = 0;
-        OsConfigLogInfo(log, "ChargeBudget: elapsed-time validation failed with %d (%s)", EINVAL, strerror(EINVAL));
-        return EINVAL;
+        return EOVERFLOW;
     }
 
-    worker->budget = (elapsed >= worker->budget) ? 0 : (worker->budget - elapsed);
+    *deadline = now + TELEMETRY_IO_TIMEOUT_NS;
 
     return 0;
 }
@@ -370,7 +333,7 @@ static int ReceiveReply(TelemetryWorker* worker, uint32_t operation, uint32_t se
 
     TelemetryDecodeFrame(header, &reply);
     if ((TELEMETRY_WORKER_MAGIC != reply.magic) || (TELEMETRY_WORKER_VERSION != reply.version) ||
-        (reply.operation != operation) || (reply.sequence != sequence) || (0 != reply.deadline) ||
+        (reply.operation != operation) || (reply.sequence != sequence) || (0 != reply.reserved) ||
         (reply.status > 7) || (reply.size != ((0 != reply.status) ? 0 : size)))
     {
         OsConfigLogInfo(log, "ReceiveReply: reply header validation failed with %d (%s)", EPROTO, strerror(EPROTO));
@@ -466,10 +429,7 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
     int remaining = 0;
     sigset_t defaults;
     sigset_t mask;
-    char lifetime[32] = {0};
-    char startup[32] = {0};
     char* arguments[] = {worker->path, TELEMETRY_WORKER_ARGUMENT,
-        "--lifetime-ms", lifetime, "--budget-ms", startup,
         "--api-key-env", "OsConfigTelemetryApiKey", "--sdk-version", "OSConfig-C/0.1", NULL};
     int flags = 0;
     pid_t child = -1;
@@ -508,19 +468,6 @@ static int StartChild(TelemetryWorker* worker, int64_t deadline, OsConfigLogHand
         status = ENOTSUP;
         goto cleanup;
     }
-
-    TelemetryDeadlineRemaining(worker->lifetimeDeadline, &remaining, status);
-    if (0 != status)
-    {
-        goto cleanup;
-    }
-    snprintf(lifetime, sizeof(lifetime), "%d", (remaining > 600000) ? 600000 : remaining);
-    TelemetryDeadlineRemaining(deadline, &remaining, status);
-    if (0 != status)
-    {
-        goto cleanup;
-    }
-    snprintf(startup, sizeof(startup), "%d", (remaining > 500) ? 500 : remaining);
 
     if ((0 != pipe2(descriptors, O_CLOEXEC)) || (0 != pipe2(descriptors + 2, O_CLOEXEC)))
     {
@@ -693,16 +640,14 @@ finished:
     return status;
 }
 
-int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int budgetMilliseconds, int operationMilliseconds, TelemetryWorker** worker, OsConfigLogHandle log)
+int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log)
 {
     int status = 0;
-    int64_t now = 0;
     TelemetryWorker* created = NULL;
     const char* operation = "argument validation";
 
     if ((NULL == worker) || (NULL == workerPath) || ('/' != workerPath[0]) ||
-        (strnlen(workerPath, PATH_MAX) >= PATH_MAX) || (lifetimeMilliseconds <= 0) ||
-        (budgetMilliseconds <= 0) || (operationMilliseconds <= 0))
+        (strnlen(workerPath, PATH_MAX) >= PATH_MAX))
     {
         status = EINVAL;
     }
@@ -711,20 +656,9 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
         operation = "invocation state validation";
         status = EALREADY;
     }
-    else
-    {
-        operation = "TelemetryMonotonicTime";
-        TelemetryMonotonicTime(&now, status);
-    }
-
     if (0 == status)
     {
-        if (now > (INT64_MAX - ((int64_t)lifetimeMilliseconds * 1000000)))
-        {
-            operation = "lifetime range check";
-            status = EOVERFLOW;
-        }
-        else if (NULL == (created = calloc(1, sizeof(*created))))
+        if (NULL == (created = calloc(1, sizeof(*created))))
         {
             operation = "calloc";
             status = ENOMEM;
@@ -739,11 +673,6 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
             created->readDescriptor = -1;
             created->writeDescriptor = -1;
             created->child = -1;
-            created->lifetimeDeadline = now + ((int64_t)lifetimeMilliseconds * 1000000);
-            created->budget = (int64_t)budgetMilliseconds * 1000000;
-            created->operationLimit = (int64_t)operationMilliseconds * 1000000;
-            operation = "ChargeBudget";
-            status = ChargeBudget(created, now, log);
         }
     }
 
@@ -764,28 +693,8 @@ int TelemetryWorkerCreate(const char* workerPath, int lifetimeMilliseconds, int 
     return 0;
 }
 
-int TelemetryWorkerAccountPreparation(TelemetryWorker* worker, int64_t started, OsConfigLogHandle log)
-{
-    int status = 0;
-
-    if ((NULL == worker) || (started <= 0))
-    {
-        OsConfigLogInfo(log, "TelemetryWorkerAccountPreparation: argument validation failed with %d (%s)", EINVAL, strerror(EINVAL));
-        return EINVAL;
-    }
-
-    if ((0 == (status = ChargeBudget(worker, started, log))) && (worker->budget <= 0))
-    {
-        status = ETIMEDOUT;
-        OsConfigLogInfo(log, "TelemetryWorkerAccountPreparation: remaining budget check failed with %d (%s)", status, strerror(status));
-    }
-
-    return status;
-}
-
 int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
 {
-    int64_t start = 0;
     int64_t deadline = 0;
     int status = 0;
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {0};
@@ -794,10 +703,8 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
     TelemetryWorkerFrame request = {0};
     unsigned char header[TELEMETRY_WORKER_HEADER_SIZE] = {0};
     unsigned char replyBytes[8] = {0};
-    int remaining = 0;
     bool sendStarted = false;
-    int error = 0;
-    const char* operation = "OperationDeadline";
+    const char* operation = "TelemetryPackEvent";
 
     if (NULL == worker)
     {
@@ -811,13 +718,13 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
         return ECANCELED;
     }
 
-    if (0 != (status = OperationDeadline(worker, &start, &deadline)))
+    if (0 != (status = TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, log)))
     {
         goto finished;
     }
 
-    operation = "TelemetryPackEvent";
-    if (0 != (status = TelemetryPackEvent(name, properties, count, payload, sizeof(payload), &size, log)))
+    operation = "OperationDeadline";
+    if (0 != (status = OperationDeadline(&deadline)))
     {
         goto finished;
     }
@@ -840,18 +747,23 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
     request.operation = TELEMETRY_WORKER_SEND;
     request.size = (uint32_t)size;
     request.sequence = ++worker->sequence;
-    TelemetryDeadlineRemaining(deadline, &remaining, status);
-    if (0 != status)
+    operation = "OperationDeadline";
+    if (0 != (status = OperationDeadline(&deadline)))
     {
         goto failed;
     }
-    request.deadline = (remaining > 500) ? 500 : (uint64_t)remaining;
     TelemetryEncodeFrame(&request, header);
     sendStarted = true;
 
     operation = "Transfer";
     if ((0 != (status = Transfer(worker->writeDescriptor, header, sizeof(header), true, deadline, log))) ||
         (0 != (status = Transfer(worker->writeDescriptor, payload, size, true, deadline, log))))
+    {
+        goto failed;
+    }
+
+    operation = "OperationDeadline";
+    if (0 != (status = OperationDeadline(&deadline)))
     {
         goto failed;
     }
@@ -887,19 +799,6 @@ failed:
     ReleaseChild(worker, 0, log);
 
 finished:
-    if (start > 0)
-    {
-        error = ChargeBudget(worker, start, log);
-
-        if ((0 == status) && (0 != error))
-        {
-            operation = "ChargeBudget";
-            status = error;
-            worker->suppressed = true;
-            ReleaseChild(worker, 0, log);
-        }
-    }
-
     if ((0 != status) && (ENOENT != worker->startupStatus) && (ENOTDIR != worker->startupStatus))
     {
         OsConfigLogInfo(log, "TelemetryWorkerSendEvent: %s failed with %d (%s)", operation, status, strerror(status));
@@ -910,7 +809,6 @@ finished:
 
 int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 {
-    int64_t start = 0;
     int64_t deadline = 0;
     int timingStatus = 0;
     int status = 0;
@@ -926,7 +824,7 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
         return 0;
     }
 
-    timingStatus = OperationDeadline(*worker, &start, &deadline);
+    timingStatus = OperationDeadline(&deadline);
     status = ReleaseChild(*worker, (0 == timingStatus) ? deadline : 0, log);
 
     if ((0 != timingStatus) && (ETIMEDOUT != timingStatus))
