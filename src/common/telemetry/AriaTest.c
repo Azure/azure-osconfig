@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 // Sends 100 events sequentially through one real C adapter and pipe v4 worker.
-// Manually build with: cmake --build . --target telemetryariatest
-// Run as: sudo --preserve-env=OsConfigTelemetryApiKey ./common/telemetry/telemetryariatest --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
+// Manually build with: cmake --build . --target telemetryipctest
+// Run as: sudo --preserve-env=OsConfigTelemetryApiKey ./common/telemetry/telemetryipctest --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
 
 #define _GNU_SOURCE
 

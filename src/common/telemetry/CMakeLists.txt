@@ -13,8 +13,8 @@ target_link_libraries(telemetry PUBLIC logging
     PRIVATE commonutils parsonlib ${CMAKE_DL_LIBS} rt pthread)
 
 # Explicit live test only; not part of the default build, installation, or ctest.
-add_executable(telemetryariatest EXCLUDE_FROM_ALL AriaTest.c)
-target_link_libraries(telemetryariatest PRIVATE telemetry commonutils)
+add_executable(telemetryipctest EXCLUDE_FROM_ALL AriaTest.c)
+target_link_libraries(telemetryipctest PRIVATE telemetry commonutils)
 
 if(OSCONFIG_TELEMETRY_EXECUTABLE)
     install(PROGRAMS "${OSCONFIG_TELEMETRY_EXECUTABLE}" DESTINATION bin RENAME OSConfigTelemetry)
