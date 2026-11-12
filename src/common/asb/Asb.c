@@ -1112,11 +1112,14 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-
-        // For telemetry:
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
         OSConfigTelemetryBaselineRun(g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+    }
+    else
+    {
+        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s'", g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+        OSConfigTelemetryBaselineRun(g_asbName, g_auditOnly ? auditOnly : automaticRemediation, -1);
     }
 
     FREE_MEMORY(g_prettyName);
@@ -5039,6 +5042,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
     }
+    else
+    {
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s'",
+            g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload);
+    }
 
     return status;
 }
@@ -5049,7 +5057,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
-    PerfClock perfClock = {{0, 0}, {0, 0}};
+    PerfClock perfClock = { { 0, 0 }, { 0, 0 } };
+    bool initCall = false;
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
@@ -6014,17 +6023,25 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     FREE_MEMORY(payloadString);
 
+    if (false == (initCall = (0 == strncmp(objectName, init, strlen(init)) ? true : false)))
+    {
+        g_auditOnly = false;
+    }
+
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         // Ignore the successful init* objects and focus on remediate* ones
-        if (0 != strncmp(objectName, init, strlen(init)))
+        if (false == initCall)
         {
-            g_auditOnly = false;
-
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
         }
+    }
+    else if (false == initCall)
+    {
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)'",
+            g_prettyName, componentName, objectName, strerror(status), status);
     }
 
     return status;
