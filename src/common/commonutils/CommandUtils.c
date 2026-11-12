@@ -203,7 +203,6 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if ((NULL == command) || (0 == system(NULL)))
     {
         OsConfigLogDebug(log, "Cannot run command '%s'", command);
-        OSConfigTelemetryStatusTrace("ExecuteCommand", -1);
         return -1;
     }
 
@@ -216,7 +215,6 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         if (0 > (resultsFd = mkstemp(commandTextResultFile)))
         {
             OsConfigLogError(log, "Cannot run command '%s', cannot create secure temporary file (errno: %d, '%s')", command, errno, strerror(errno));
-            OSConfigTelemetryStatusTrace("mkstemp", errno ? errno : -1);
             return errno ? errno : -1;
 
         }
@@ -226,13 +224,11 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     if (NULL == (commandLine = FormatAllocateString(wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, redirectTarget, commandTerminator)))
     {
         OsConfigLogError(log, "Cannot run command '%s', cannot allocate memory for command line, out of memory", command);
-        OSConfigTelemetryStatusTrace("ExecuteCommand", ENOMEM);
         status = ENOMEM;
     }
     else if (strlen(commandLine) > maximumCommandLine)
     {
         OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)strlen(commandLine), (unsigned)maximumCommandLine);
-        OSConfigTelemetryStatusTrace("ExecuteCommand", E2BIG);
         status = E2BIG;
     }
     else
@@ -340,7 +336,6 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
     else
     {
         OsConfigLogError(log, "HashCommand: out of memory");
-        OSConfigTelemetryStatusTrace("HashCommand", ENOMEM);
     }
 
     FREE_MEMORY(command);

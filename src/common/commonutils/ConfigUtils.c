@@ -149,7 +149,6 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
     if (NULL == reportedProperties)
     {
         OsConfigLogError(log, "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
-        OSConfigTelemetryStatusTrace("reportedProperties", EINVAL);
         return 0;
     }
 
@@ -196,14 +195,12 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                                     {
                                         OsConfigLogError(log, "LoadReportedFromJsonConfig: %s or %s missing at position %d of %d, no property to report",
                                             REPORTED_COMPONENT_NAME, REPORTED_SETTING_NAME, (int)(i + 1), (int)numReported);
-                                        OSConfigTelemetryStatusTrace("json_object_get_string", EINVAL);
                                     }
                                 }
                                 else
                                 {
                                     OsConfigLogError(log, "LoadReportedFromJsonConfig: json_array_get_object failed at position %d of %d, no reported property",
                                         (int)(i + 1), (int)numReported);
-                                    OSConfigTelemetryStatusTrace("json_array_get_object", EINVAL);
                                 }
                             }
                         }
@@ -211,20 +208,17 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                         {
                             OsConfigLogError(log, "LoadReportedFromJsonConfig: out of memory, cannot allocate %d bytes for %d reported properties",
                                 (int)bufferSize, (int)numReported);
-                            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
                         }
                     }
                 }
                 else
                 {
                     OsConfigLogError(log, "LoadReportedFromJsonConfig: no valid %s array in configuration, no properties to report", REPORTED_NAME);
-                    OSConfigTelemetryStatusTrace("json_array_get_object", ENOENT);
                 }
             }
             else
             {
                 OsConfigLogError(log, "LoadReportedFromJsonConfig: json_value_get_object(root) failed, no properties to report");
-                OSConfigTelemetryStatusTrace("json_value_get_object", ENOENT);
             }
 
             json_value_free(rootValue);
@@ -232,13 +226,11 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
         else
         {
             OsConfigLogError(log, "LoadReportedFromJsonConfig: json_parse_string failed, no properties to report");
-            OSConfigTelemetryStatusTrace("json_parse_string", ENOENT);
         }
     }
     else
     {
         OsConfigLogError(log, "LoadReportedFromJsonConfig: no configuration data, no properties to report");
-        OSConfigTelemetryStatusTrace("jsonString", ENOENT);
     }
 
     return numReportedProperties;
@@ -281,7 +273,6 @@ char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsC
                     else
                     {
                         OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
-                        OSConfigTelemetryStatusTrace("GetStringFromJsonConfig", ENOMEM);
                     }
                 }
             }
@@ -336,7 +327,6 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     if (false == IsLoggingLevelSupported(level))
     {
         OsConfigLogError(log, "SetLoggingLevelPersistently: requested logging level %u is not supported", level);
-        OSConfigTelemetryStatusTrace("SetLoggingLevelPersistently", EINVAL);
         result = EINVAL;
     }
     else
@@ -350,20 +340,17 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                     if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
                     {
                         OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
-                        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                         result = ENOMEM;
                     }
                     else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
                     {
                         OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
-                        OSConfigTelemetryStatusTrace("ReplaceMarkedLinesInFile", result);
                     }
                 }
             }
             else
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: cannot read from '%s' (%d, %s)", configurationFile, errno, strerror(errno));
-                OSConfigTelemetryStatusTrace("LoadStringFromFile", errno);
                 result = errno ? errno : ENOENT;
             }
         }
@@ -372,19 +359,16 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
             if (NULL == (buffer = FormatAllocateString(configurationTemplate, level)))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
-                OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                 result = ENOMEM;
             }
             else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
-                OSConfigTelemetryStatusTrace("Failed to create directory for the configuration file", errno);
                 result = result ? result : (errno ? errno : ENOENT);
             }
             else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'  (%d, %s)", level, configurationFile, errno, strerror(errno));
-                OSConfigTelemetryStatusTrace("SavePayloadToFile", errno);
                 result = errno ? errno : ENOENT;
             }
 

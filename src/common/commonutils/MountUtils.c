@@ -207,7 +207,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
         OsConfigLogError(log, "CheckFileSystemMountingOption called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("mountFileName", EINVAL);
         return EINVAL;
     }
 
@@ -315,7 +314,6 @@ int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle
     if ((NULL == source) || (NULL == target))
     {
         OsConfigLogError(log, "CopyMountTableFile called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("source", EINVAL);
         return EINVAL;
     }
 
@@ -511,7 +509,6 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountTabl
         (NULL == desiredOption) || ('\0' == *desiredOption) || (NULL != strpbrk(desiredOption, "\n\r")))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
-        OSConfigTelemetryStatusTrace("mountDirectory", EINVAL);
         return EINVAL;
     }
 

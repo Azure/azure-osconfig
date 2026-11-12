@@ -57,9 +57,9 @@ OsConfigLogHandle GetLog(void)
 // 65535 means this constructor is to be invoked last when the SO is loaded
 void __attribute__((constructor(65535))) Initialize()
 {
-    TelemetryInitialize(GetLog());
     CheckForPreviousCrash(LOG_FILE, GetLog());
     InstallCrashHandler(LOG_FILE);
+    TelemetryInitialize(GetLog());
 
     g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);

@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <Telemetry.h>
 
 #include <CommonUtils.h>
@@ -8,14 +12,16 @@
 #include <Utils.h>
 #include <dlfcn.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <version.h>
 
+#define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
+#define TELEMETRY_NOTFOUND_STRING "N/A"
 #define TELEMETRY_CORRELATIONID_FILE "/var/lib/GuestConfig/Configuration/activityId.txt"
 
 static TelemetryWorker* g_worker = NULL;
@@ -23,7 +29,7 @@ static OsConfigLogHandle g_log = NULL;
 static char* g_distroName = NULL;
 static bool g_initialized = false;
 
-char* GetModuleDirectory(void)
+static char* GetModuleDirectory(void)
 {
     Dl_info info = {0};
     char* path = NULL;
@@ -51,11 +57,6 @@ char* GetModuleDirectory(void)
     }
 
     return path;
-}
-
-char* GetCachedDistroName(void)
-{
-    return g_distroName;
 }
 
 int TelemetryInitializeInternal(OsConfigLogHandle log)
@@ -194,119 +195,6 @@ static void SubmitEvent(const char* name, const char* const* names, const char* 
     free(correlationIdFromFile);
 }
 
-void OSConfigTimeStampSave(void)
-{
-    struct timespec now = {0};
-    char value[32] = {0};
-    int status = 0;
-
-    if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
-    {
-        status = errno;
-        if (g_initialized)
-        {
-            OsConfigLogInfo(g_log, "OSConfigTimeStampSave: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
-        }
-    }
-    else
-    {
-        snprintf(value, sizeof(value), "%" PRId64, TsToUs(now));
-
-        if ((0 != setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR, value, 1)) && g_initialized)
-        {
-            status = errno;
-            OsConfigLogInfo(g_log, "OSConfigTimeStampSave: setenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR) failed with %d (%s)", status, strerror(status));
-        }
-    }
-}
-
-void OSConfigGetElapsedTime(int64_t* microseconds)
-{
-    const char* value = NULL;
-    char* end = NULL;
-    int64_t start = 0;
-    struct timespec now = {0};
-    int64_t elapsed = 0;
-    int status = 0;
-
-    if (NULL == microseconds)
-    {
-        if (g_initialized)
-        {
-            OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: output validation failed with %d (%s)", EINVAL, strerror(EINVAL));
-        }
-
-        return;
-    }
-
-    *microseconds = 0;
-    value = getenv(TELEMETRY_MICROSECONDS_ENVIRONMENT_VAR);
-
-    if (NULL != value)
-    {
-        errno = 0;
-        start = strtoll(value, &end, 10);
-
-        if ((0 != errno) || (end == value) || ('\0' != *end) || (start <= 0))
-        {
-            status = (0 != errno) ? errno : EINVAL;
-            if (g_initialized)
-            {
-                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: strtoll/start timestamp validation failed with %d (%s)", status, strerror(status));
-            }
-        }
-        else if (0 != clock_gettime(CLOCK_MONOTONIC, &now))
-        {
-            status = errno;
-            if (g_initialized)
-            {
-                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: clock_gettime(CLOCK_MONOTONIC) failed with %d (%s)", status, strerror(status));
-            }
-        }
-        else
-        {
-            elapsed = TsToUs(now) - start;
-
-            if (elapsed >= 0)
-            {
-                *microseconds = elapsed;
-            }
-            else if (g_initialized)
-            {
-                OsConfigLogInfo(g_log, "OSConfigGetElapsedTime: elapsed-time validation failed with %d (%s); start timestamp is in the future", EINVAL, strerror(EINVAL));
-            }
-        }
-    }
-}
-
-void OSConfigTelemetryStatusTraceInternal(const char* callingFunction, int status, const char* file, const char* function, int line)
-{
-    int64_t elapsed = 0;
-    char lineText[32] = {0};
-    char result[32] = {0};
-    char duration[32] = {0};
-    const char* names[] = {"FileName", "LineNumber", "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
-    const char* values[ARRAY_SIZE(names)] = {0};
-
-    if (BeginEvent())
-    {
-        OSConfigGetElapsedTime(&elapsed);
-        snprintf(lineText, sizeof(lineText), "%d", line);
-        snprintf(result, sizeof(result), "%d", status);
-        snprintf(duration, sizeof(duration), "%" PRId64, elapsed);
-        values[0] = file;
-        values[1] = lineText;
-        values[2] = getenv(TELEMETRY_SCENARIONAME_ENVIRONMENT_VAR);
-        values[3] = function;
-        values[4] = getenv(TELEMETRY_RULECODENAME_ENVIRONMENT_VAR);
-        values[5] = callingFunction;
-        values[6] = duration;
-        values[7] = result;
-        values[8] = strerror(status);
-        SubmitEvent("StatusTrace", names, values, ARRAY_SIZE(names));
-    }
-}
-
 void OSConfigTelemetryBaselineRun(const char* baseline, const char* mode, double seconds)
 {
     char duration[384] = {0};
@@ -317,21 +205,6 @@ void OSConfigTelemetryBaselineRun(const char* baseline, const char* mode, double
     {
         snprintf(duration, sizeof(duration), "%.2f", seconds);
         SubmitEvent("BaselineRun", names, values, ARRAY_SIZE(names));
-    }
-}
-
-void OSConfigTelemetryRuleComplete(const char* component, const char* object, int result, int64_t microseconds)
-{
-    char resultText[32] = {0};
-    char duration[32] = {0};
-    const char* names[] = {"ComponentName", "ObjectName", "ObjectResult", "Microseconds"};
-    const char* values[] = {component, object, resultText, duration};
-
-    if (BeginEvent())
-    {
-        snprintf(resultText, sizeof(resultText), "%d", result);
-        snprintf(duration, sizeof(duration), "%" PRId64, microseconds);
-        SubmitEvent("RuleComplete", names, values, ARRAY_SIZE(names));
     }
 }
 

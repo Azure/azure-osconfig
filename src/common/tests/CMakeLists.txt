@@ -22,13 +22,7 @@ set_property(SOURCE TelemetryUT.cpp ../telemetry/Telemetry.c
         TelemetryInitialize=TelemetryTestInitialize
         TelemetryInitializeInternal=TelemetryTestInitializeInternal
         TelemetryCleanup=TelemetryTestCleanup
-        GetModuleDirectory=TelemetryTestGetModuleDirectory
-        GetCachedDistroName=TelemetryTestGetCachedDistroName
-        OSConfigTimeStampSave=TelemetryTestTimeStampSave
-        OSConfigGetElapsedTime=TelemetryTestGetElapsedTime
-        OSConfigTelemetryStatusTraceInternal=TelemetryTestStatusTraceInternal
         OSConfigTelemetryBaselineRun=TelemetryTestBaselineRun
-        OSConfigTelemetryRuleComplete=TelemetryTestRuleComplete
         OSConfigTelemetryCrashDetected=TelemetryTestCrashDetected
         TelemetryWorker=TelemetryTestWorker
         TelemetryWorkerCreate=TelemetryTestWorkerCreate

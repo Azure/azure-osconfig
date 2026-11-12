@@ -181,7 +181,7 @@ TEST_F(TelemetryProducerTest, DoesNotResetActiveInvocation)
     EXPECT_EQ(1, destroys);
 }
 
-TEST_F(TelemetryProducerTest, PreservesAllFourNamedStringSchemasAndSpecialCharacters)
+TEST_F(TelemetryProducerTest, PreservesNamedStringSchemasAndSpecialCharacters)
 {
     WriteActivityId("file-activity-id");
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
@@ -192,20 +192,12 @@ TEST_F(TelemetryProducerTest, PreservesAllFourNamedStringSchemasAndSpecialCharac
     EXPECT_EQ("Synthetic distro", fields["DistroName"]);
     EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     EXPECT_FALSE(fields["Timestamp"].empty());
-    OSConfigTelemetryRuleComplete("component", "object", 5, INT64_C(4294967296));
-    EXPECT_EQ("RuleComplete", eventName);
-    EXPECT_EQ("4294967296", fields["Microseconds"]);
-    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
-    OSConfigTelemetryStatusTrace("function", EIO);
-    EXPECT_EQ("StatusTrace", eventName);
-    EXPECT_EQ(std::to_string(EIO), fields["ResultCode"]);
-    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     OSConfigTelemetryCrashDetected("quote\" slash\\ newline\ncrash");
     EXPECT_EQ("CrashDetected", eventName);
     EXPECT_EQ("quote\" slash\\ newline\ncrash", fields["CrashInfo"]);
     EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
-    EXPECT_EQ(4, sends);
-    EXPECT_EQ(4, activityFileReads);
+    EXPECT_EQ(2, sends);
+    EXPECT_EQ(2, activityFileReads);
 }
 
 TEST_F(TelemetryProducerTest, EnvironmentCorrelationIdTakesPrecedenceWithoutReadingFile)
@@ -250,7 +242,7 @@ TEST_F(TelemetryProducerTest, CorrelationIdIsResolvedAgainForEachEvent)
     OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
     EXPECT_EQ("second-file-id", fields["CorrelationId"]);
     ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-id", 1));
-    OSConfigTelemetryRuleComplete("component", "object", 0, 0);
+    OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
     EXPECT_EQ("environment-id", fields["CorrelationId"]);
     EXPECT_EQ(2, activityFileReads);
     ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
