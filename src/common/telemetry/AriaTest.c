@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// Sends 100 events sequentially through one real C adapter and pipe v4 worker.
-// Manually build with: cmake --build . --target telemetryipctest
-// Run as: sudo --preserve-env=OsConfigTelemetryApiKey ./common/telemetry/telemetryipctest --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
+// Sends 100 events sequentially over IPC through one Rust worker; no retries.
+// Build from azure-osconfig/build: cmake --build . --target AriaTestC
+// Set OsConfigTelemetryApiKey securely in the invoking environment.
+// Run from that directory: ./common/telemetry/AriaTestC --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
+// Both samples share an ESAriaTest number; increment TEST_MARKER for the next test.
 
 #define _GNU_SOURCE
 
@@ -15,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TEST_MARKER "*** OSConfig Aria test No. 73 (IPC to Ubuntu 14 Rust worker) ***"
+#define TEST_MARKER "*** Sent over IPC from C via the Rust Universal Telemetry Client ESAriaTest #1 ***"
 
 int main(int argc, char** argv)
 {
