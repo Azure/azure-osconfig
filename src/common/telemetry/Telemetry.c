@@ -103,8 +103,8 @@ int TelemetryInitializeInternal(OsConfigLogHandle log)
     if ((0 == status) && available)
     {
         g_distroName = GetOsPrettyName(log);
-        operation = "TelemetryWorkerCreate";
-        status = TelemetryWorkerCreate(path, &g_worker, log);
+        operation = "Initialize";
+        status = Initialize(path, &g_worker, log);
     }
 
     if (0 != status)
@@ -127,9 +127,9 @@ void TelemetryCleanup(OsConfigLogHandle log)
 {
     int status = 0;
 
-    if (0 != (status = TelemetryWorkerDestroy(&g_worker, log)))
+    if (0 != (status = Shutdown(&g_worker, log)))
     {
-        OsConfigLogInfo(log, "TelemetryCleanup: TelemetryWorkerDestroy failed with %d (%s)", status, strerror(status));
+        OsConfigLogInfo(log, "TelemetryCleanup: Shutdown failed with %d (%s)", status, strerror(status));
     }
 
     // Retain ownership if the exact child could not be reaped.
@@ -156,22 +156,40 @@ static bool BeginEvent(void)
 
 static const char* GetCorrelationId(char** fileContent)
 {
-    const char* correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);
+    const char* correlationId = NULL;
+    int error = 0;
 
-    if ((NULL == correlationId) || ('\0' == correlationId[0]))
+    if (0 == access(TELEMETRY_CORRELATIONID_FILE, F_OK))
     {
         *fileContent = LoadStringFromFile(TELEMETRY_CORRELATIONID_FILE, false, g_log);
         correlationId = *fileContent;
 
         if ((NULL == correlationId) || ('\0' == correlationId[0]))
         {
-            OsConfigLogInfo(g_log, "GetCorrelationId: environment variable '%s' is unset or empty and could not load a nonempty value from '%s'; using '%s'",
-                TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, TELEMETRY_CORRELATIONID_FILE, TELEMETRY_NOTFOUND_STRING);
-            correlationId = TELEMETRY_NOTFOUND_STRING;
+            OsConfigLogInfo(g_log, "GetCorrelationId: could not load a nonempty value from '%s'; using '%s'",
+                TELEMETRY_CORRELATIONID_FILE, TELEMETRY_NOTFOUND_STRING);
+        }
+    }
+    else
+    {
+        error = errno;
+        if (ENOENT == error)
+        {
+            correlationId = getenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR);
+            if ((NULL == correlationId) || ('\0' == correlationId[0]))
+            {
+                OsConfigLogInfo(g_log, "GetCorrelationId: file '%s' is absent and environment variable '%s' is unset or empty; using '%s'",
+                    TELEMETRY_CORRELATIONID_FILE, TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, TELEMETRY_NOTFOUND_STRING);
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(g_log, "GetCorrelationId: access('%s') failed with %d (%s); using '%s'",
+                TELEMETRY_CORRELATIONID_FILE, error, strerror(error), TELEMETRY_NOTFOUND_STRING);
         }
     }
 
-    return correlationId;
+    return ((NULL != correlationId) && ('\0' != correlationId[0])) ? correlationId : TELEMETRY_NOTFOUND_STRING;
 }
 
 static void SubmitEvent(const char* name, const char* const* names, const char* const* values, size_t count)
@@ -190,7 +208,7 @@ static void SubmitEvent(const char* name, const char* const* names, const char* 
         properties[i].value.stringValue = Value((i < ARRAY_SIZE(commonNames)) ? commonValues[i] : values[i - ARRAY_SIZE(commonNames)]);
     }
 
-    TelemetryWorkerSendEvent(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
+    SendEvent(g_worker, name, properties, ARRAY_SIZE(commonNames) + count, g_log);
 
     free(correlationIdFromFile);
 }

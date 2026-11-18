@@ -23,6 +23,7 @@ static std::string eventName, workerPath;
 static std::map<std::string, std::string> fields;
 static std::string activityFilePath;
 static int activityFileReads;
+static int activityFileAccessStatus, activityFileReadStatus;
 static int executableStatus, executableChecks;
 
 extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEol, OsConfigLogHandle log)
@@ -30,10 +31,15 @@ extern "C" char* TelemetryTestLoadStringFromFile(const char* path, bool stopAtEo
     EXPECT_STREQ("/var/lib/GuestConfig/Configuration/activityId.txt", path);
     EXPECT_FALSE(stopAtEol);
     ++activityFileReads;
+    if (activityFileReadStatus)
+    {
+        errno = activityFileReadStatus;
+        return nullptr;
+    }
     return LoadStringFromFile(activityFilePath.c_str(), stopAtEol, log);
 }
 
-extern "C" int TelemetryWorkerCreate(const char* path, TelemetryWorker** worker, OsConfigLogHandle)
+extern "C" int Initialize(const char* path, TelemetryWorker** worker, OsConfigLogHandle)
 {
     ++creates;
     workerPath = path;
@@ -46,7 +52,7 @@ extern "C" int TelemetryWorkerCreate(const char* path, TelemetryWorker** worker,
     return createStatus;
 }
 
-extern "C" int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle)
+extern "C" int Shutdown(TelemetryWorker** worker, OsConfigLogHandle)
 {
     if (*worker)
     {
@@ -58,7 +64,7 @@ extern "C" int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandl
     return 0;
 }
 
-extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
+extern "C" int SendEvent(TelemetryWorker*, const char* name,
     const TelemetryProperty* properties, size_t count, OsConfigLogHandle)
 {
     unsigned char payload[TELEMETRY_MAX_EVENT_SIZE] = {};
@@ -83,6 +89,16 @@ extern "C" int TelemetryWorkerSendEvent(TelemetryWorker*, const char* name,
 
 extern "C" int TelemetryTestAccess(const char* path, int mode)
 {
+    if (0 == strcmp(path, "/var/lib/GuestConfig/Configuration/activityId.txt"))
+    {
+        EXPECT_EQ(F_OK, mode);
+        if (activityFileAccessStatus)
+        {
+            errno = activityFileAccessStatus;
+            return -1;
+        }
+        return access(activityFilePath.c_str(), mode);
+    }
     ++executableChecks;
     EXPECT_NE(nullptr, strstr(path, "/OSConfigTelemetry"));
     EXPECT_EQ(F_OK, mode);
@@ -118,6 +134,7 @@ protected:
         creates = destroys = sends = createStatus = 0;
         executableStatus = executableChecks = 0;
         activityFileReads = 0;
+        activityFileAccessStatus = activityFileReadStatus = 0;
         activityFilePath.clear();
         fields.clear();
         ASSERT_NE(nullptr, mkdtemp(temporary));
@@ -200,17 +217,17 @@ TEST_F(TelemetryProducerTest, PreservesNamedStringSchemasAndSpecialCharacters)
     EXPECT_EQ(2, activityFileReads);
 }
 
-TEST_F(TelemetryProducerTest, EnvironmentCorrelationIdTakesPrecedenceWithoutReadingFile)
+TEST_F(TelemetryProducerTest, FileCorrelationIdTakesPrecedenceOverEnvironment)
 {
     WriteActivityId("file-activity-id");
     ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-activity-id", 1));
     ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
     OSConfigTelemetryCrashDetected("fixture");
-    EXPECT_EQ("environment-activity-id", fields["CorrelationId"]);
-    EXPECT_EQ(0, activityFileReads);
+    EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
+    EXPECT_EQ(1, activityFileReads);
 }
 
-TEST_F(TelemetryProducerTest, EmptyEnvironmentCorrelationIdFallsBackToFile)
+TEST_F(TelemetryProducerTest, FileCorrelationIdIsUsedWithEmptyEnvironment)
 {
     WriteActivityId("file-activity-id");
     ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "", 1));
@@ -218,6 +235,45 @@ TEST_F(TelemetryProducerTest, EmptyEnvironmentCorrelationIdFallsBackToFile)
     OSConfigTelemetryCrashDetected("fixture");
     EXPECT_EQ("file-activity-id", fields["CorrelationId"]);
     EXPECT_EQ(1, activityFileReads);
+}
+
+TEST_F(TelemetryProducerTest, MissingCorrelationIdFileFallsBackToEnvironment)
+{
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-activity-id", 1));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    OSConfigTelemetryCrashDetected("missing file");
+    EXPECT_EQ("environment-activity-id", fields["CorrelationId"]);
+    EXPECT_EQ(0, activityFileReads);
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "", 1));
+    OSConfigTelemetryCrashDetected("missing file and empty environment");
+    EXPECT_EQ("N/A", fields["CorrelationId"]);
+}
+
+TEST_F(TelemetryProducerTest, EmptyOrUnreadableCorrelationIdFileDoesNotFallBackToEnvironment)
+{
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-activity-id", 1));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    WriteActivityId("");
+    OSConfigTelemetryCrashDetected("empty file");
+    EXPECT_EQ("N/A", fields["CorrelationId"]);
+    WriteActivityId("file-activity-id");
+    activityFileReadStatus = EACCES;
+    OSConfigTelemetryCrashDetected("unreadable file");
+    EXPECT_EQ("N/A", fields["CorrelationId"]);
+    EXPECT_EQ(2, activityFileReads);
+}
+
+TEST_F(TelemetryProducerTest, CorrelationIdFileAccessErrorDoesNotFallBackToEnvironment)
+{
+    ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-activity-id", 1));
+    ASSERT_EQ(0, TelemetryInitializeInternal(nullptr));
+    for (int error : {EACCES, EIO, ENOTDIR})
+    {
+        activityFileAccessStatus = error;
+        OSConfigTelemetryCrashDetected("file access failed");
+        EXPECT_EQ("N/A", fields["CorrelationId"]);
+    }
+    EXPECT_EQ(0, activityFileReads);
 }
 
 TEST_F(TelemetryProducerTest, MissingOrEmptyCorrelationIdFileRetainsPlaceholder)
@@ -228,7 +284,7 @@ TEST_F(TelemetryProducerTest, MissingOrEmptyCorrelationIdFileRetainsPlaceholder)
     WriteActivityId("");
     OSConfigTelemetryCrashDetected("empty file");
     EXPECT_EQ("N/A", fields["CorrelationId"]);
-    EXPECT_EQ(2, activityFileReads);
+    EXPECT_EQ(1, activityFileReads);
     EXPECT_EQ(2, sends);
 }
 
@@ -243,12 +299,16 @@ TEST_F(TelemetryProducerTest, CorrelationIdIsResolvedAgainForEachEvent)
     EXPECT_EQ("second-file-id", fields["CorrelationId"]);
     ASSERT_EQ(0, setenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR, "environment-id", 1));
     OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
-    EXPECT_EQ("environment-id", fields["CorrelationId"]);
-    EXPECT_EQ(2, activityFileReads);
-    ASSERT_EQ(0, unsetenv(TELEMETRY_CORRELATIONID_ENVIRONMENT_VAR));
-    OSConfigTelemetryCrashDetected("file again");
     EXPECT_EQ("second-file-id", fields["CorrelationId"]);
     EXPECT_EQ(3, activityFileReads);
+    ASSERT_EQ(0, unlink(activityFilePath.c_str()));
+    OSConfigTelemetryBaselineRun("baseline", "Audit", 0);
+    EXPECT_EQ("environment-id", fields["CorrelationId"]);
+    EXPECT_EQ(3, activityFileReads);
+    WriteActivityId("third-file-id");
+    OSConfigTelemetryCrashDetected("file again");
+    EXPECT_EQ("third-file-id", fields["CorrelationId"]);
+    EXPECT_EQ(4, activityFileReads);
 }
 
 TEST_F(TelemetryProducerTest, NullOptionalValuesUseExplicitPlaceholder)

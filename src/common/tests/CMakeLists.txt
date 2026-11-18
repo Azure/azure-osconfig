@@ -25,9 +25,9 @@ set_property(SOURCE TelemetryUT.cpp ../telemetry/Telemetry.c
         OSConfigTelemetryBaselineRun=TelemetryTestBaselineRun
         OSConfigTelemetryCrashDetected=TelemetryTestCrashDetected
         TelemetryWorker=TelemetryTestWorker
-        TelemetryWorkerCreate=TelemetryTestWorkerCreate
-        TelemetryWorkerSendEvent=TelemetryTestWorkerSendEvent
-        TelemetryWorkerDestroy=TelemetryTestWorkerDestroy
+        Initialize=TelemetryTestWorkerCreate
+        SendEvent=TelemetryTestWorkerSendEvent
+        Shutdown=TelemetryTestWorkerDestroy
         SetFileAccess=TelemetryTestSetFileAccess
         GetOsPrettyName=TelemetryTestGetOsPrettyName)
 

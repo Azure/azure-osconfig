@@ -640,9 +640,11 @@ finished:
     return status;
 }
 
-int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log)
+int Initialize(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log)
 {
     int status = 0;
+    int cleanupStatus = 0;
+    int64_t deadline = 0;
     TelemetryWorker* created = NULL;
     const char* operation = "argument validation";
 
@@ -676,15 +678,42 @@ int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsCo
         }
     }
 
+    if (0 == status)
+    {
+        operation = "OperationDeadline";
+        status = OperationDeadline(&deadline);
+        if (0 == status)
+        {
+            operation = "StartChild/READY";
+            status = StartChild(created, deadline, log);
+        }
+    }
+
     if (0 != status)
     {
         if (NULL != created)
         {
-            free(created->path);
-            free(created);
+            if (NULL != created->path)
+            {
+                cleanupStatus = ReleaseChild(created, 0, log);
+                if (0 != cleanupStatus)
+                {
+                    OsConfigLogInfo(log, "Initialize: child cleanup failed with %d (%s)", cleanupStatus, strerror(cleanupStatus));
+                }
+            }
+            if (created->child > 0)
+            {
+                created->suppressed = true;
+                *worker = created;
+            }
+            else
+            {
+                free(created->path);
+                free(created);
+            }
         }
 
-        OsConfigLogInfo(log, "TelemetryWorkerCreate: %s failed with %d (%s)", operation, status, strerror(status));
+        OsConfigLogInfo(log, "Initialize: %s failed with %d (%s)", operation, status, strerror(status));
         return status;
     }
 
@@ -693,7 +722,7 @@ int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsCo
     return 0;
 }
 
-int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
+int SendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log)
 {
     int64_t deadline = 0;
     int status = 0;
@@ -708,13 +737,13 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
 
     if (NULL == worker)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerSendEvent: invocation pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
+        OsConfigLogInfo(log, "SendEvent: invocation pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
     if (worker->suppressed)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerSendEvent: invocation suppression check failed with %d (%s)", ECANCELED, strerror(ECANCELED));
+        OsConfigLogInfo(log, "SendEvent: invocation suppression check failed with %d (%s)", ECANCELED, strerror(ECANCELED));
         return ECANCELED;
     }
 
@@ -723,15 +752,10 @@ int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const Te
         goto finished;
     }
 
-    operation = "OperationDeadline";
-    if (0 != (status = OperationDeadline(&deadline)))
+    operation = "initialized session";
+    if ((worker->child <= 0) || (worker->readDescriptor < 0) || (worker->writeDescriptor < 0))
     {
-        goto finished;
-    }
-
-    operation = "StartChild";
-    if (0 != (status = StartChild(worker, deadline, log)))
-    {
+        status = EPIPE;
         goto failed;
     }
 
@@ -801,13 +825,13 @@ failed:
 finished:
     if ((0 != status) && (ENOENT != worker->startupStatus) && (ENOTDIR != worker->startupStatus))
     {
-        OsConfigLogInfo(log, "TelemetryWorkerSendEvent: %s failed with %d (%s)", operation, status, strerror(status));
+        OsConfigLogInfo(log, "SendEvent: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
     return status;
 }
 
-int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
+int Shutdown(TelemetryWorker** worker, OsConfigLogHandle log)
 {
     int64_t deadline = 0;
     int timingStatus = 0;
@@ -815,7 +839,7 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 
     if (NULL == worker)
     {
-        OsConfigLogInfo(log, "TelemetryWorkerDestroy: context pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
+        OsConfigLogInfo(log, "Shutdown: context pointer validation failed with %d (%s)", EINVAL, strerror(EINVAL));
         return EINVAL;
     }
 
@@ -829,7 +853,7 @@ int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log)
 
     if ((0 != timingStatus) && (ETIMEDOUT != timingStatus))
     {
-        OsConfigLogInfo(log, "TelemetryWorkerDestroy: OperationDeadline failed with %d (%s)", timingStatus, strerror(timingStatus));
+        OsConfigLogInfo(log, "Shutdown: OperationDeadline failed with %d (%s)", timingStatus, strerror(timingStatus));
 
         if (0 == status)
         {

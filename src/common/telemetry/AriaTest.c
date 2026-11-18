@@ -3,9 +3,9 @@
 
 // Sends 100 events sequentially over IPC through one Rust worker; no retries.
 // Build from azure-osconfig/build: cmake --build . --target AriaTestC
-// Set OsConfigTelemetryApiKey securely in the invoking environment.
+// Use a worker with a compiled key, or set OsConfigTelemetryApiKey securely.
 // Run from that directory: ./common/telemetry/AriaTestC --send-status-trace "$PWD/../src/common/telemetry/OSConfigTelemetry"
-// Both samples share an ESAriaTest number; increment TEST_MARKER for the next test.
+// Both samples share a test number; increment TEST_MARKER for the next test.
 
 #define _GNU_SOURCE
 
@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TEST_MARKER "*** Sent over IPC from C via the Rust Universal Telemetry Client ESAriaTest #1 ***"
+#define TEST_MARKER "***Universal Rust Telemetry Client test (C adapter) #2***"
 
 int main(int argc, char** argv)
 {
@@ -27,12 +27,11 @@ int main(int argc, char** argv)
     FILE* uuidFile = NULL;
     char correlation[38] = {0};
     char timestamp[40] = {0};
-    const char* key = getenv("OsConfigTelemetryApiKey");
-    const char* operation = "API key environment check";
+    const char* operation = "resolve worker path";
     const char* names[] = {"DistroName", "CorrelationId", "Version", "Timestamp", "FileName", "LineNumber",
         "ScenarioName", "FunctionName", "RuleCodename", "CallingFunctionName", "Microseconds", "ResultCode", "ResultString"};
     const char* values[] = {NULL, correlation, OSCONFIG_VERSION, timestamp, "AriaTest.c", "0",
-        "DistilledTelemetryTest", "TelemetryAriaTest", "DistilledTelemetryTest", "TelemetryWorkerSendEvent",
+        "DistilledTelemetryTest", "TelemetryAriaTest", "DistilledTelemetryTest", "SendEvent",
         "0", "731001", TEST_MARKER};
     TelemetryProperty properties[ARRAY_SIZE(names)];
     int status = 0;
@@ -50,24 +49,16 @@ int main(int argc, char** argv)
     }
 
     SetConsoleLoggingEnabled(true);
-    if ((NULL == key) || ('\0' == key[0]))
+    path = realpath(argv[2], NULL);
+    if (NULL == path)
     {
-        status = EINVAL;
-    }
-    else
-    {
-        operation = "resolve worker path";
-        path = realpath(argv[2], NULL);
-        if (NULL == path)
-        {
-            status = (0 != errno) ? errno : ENOENT;
-        }
+        status = (0 != errno) ? errno : ENOENT;
     }
 
     if (0 == status)
     {
-        operation = "TelemetryWorkerCreate";
-        status = TelemetryWorkerCreate(path, &worker, NULL);
+        operation = "Initialize";
+        status = Initialize(path, &worker, NULL);
     }
     if (0 == status)
     {
@@ -127,9 +118,9 @@ int main(int argc, char** argv)
     }
     while ((0 == status) && (attempted < 100))
     {
-        operation = "TelemetryWorkerSendEvent";
+        operation = "SendEvent";
         ++attempted;
-        status = TelemetryWorkerSendEvent(worker, "StatusTrace", properties, ARRAY_SIZE(properties), NULL);
+        status = SendEvent(worker, "StatusTrace", properties, ARRAY_SIZE(properties), NULL);
         if (0 == status)
         {
             ++accepted;
@@ -140,10 +131,10 @@ int main(int argc, char** argv)
         OsConfigLogInfo(NULL, "AriaTest: %s failed with %d (%s)", operation, status, strerror(status));
     }
 
-    cleanupStatus = TelemetryWorkerDestroy(&worker, NULL);
+    cleanupStatus = Shutdown(&worker, NULL);
     if (0 != cleanupStatus)
     {
-        OsConfigLogInfo(NULL, "AriaTest: TelemetryWorkerDestroy failed with %d (%s)", cleanupStatus, strerror(cleanupStatus));
+        OsConfigLogInfo(NULL, "AriaTest: Shutdown failed with %d (%s)", cleanupStatus, strerror(cleanupStatus));
         if (0 == status)
         {
             status = cleanupStatus;

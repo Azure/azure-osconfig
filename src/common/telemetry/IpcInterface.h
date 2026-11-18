@@ -88,22 +88,23 @@ int TelemetryInitializeInternal(OsConfigLogHandle log);
 
 // All calls are serialized. The host must not reap our child or change SIGCHLD
 // handling while it is owned. workerPath is a trusted absolute executable path.
-// *worker must initially be NULL. Creation does not spawn or perform network I/O.
-// No invocation budget or worker expiry. Internal IPC operations wait up to 30s.
-// Permanent startup/READY failures are retained until this invocation is destroyed.
-int TelemetryWorkerCreate(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log);
+// *worker must initially be NULL. Starts the worker and waits for READY.
+// Success means credentials/TLS/proxy configuration are initialized, not that
+// the collector is reachable. A failed initialization may retain a handle only
+// if child cleanup needs a Shutdown retry. Internal IPC operations wait up to 30s.
+int Initialize(const char* workerPath, TelemetryWorker** worker, OsConfigLogHandle log);
 
-// Starts the worker lazily and reuses it. IPC/process failure drops this operation
-// and reaps the child. An ambiguous SEND failure suppresses subsequent sends;
-// a pre-SEND failure may be retried unless startup is permanently disabled.
+// Reuses the initialized worker; never starts or replaces a worker.
+// IPC/process failure drops this operation and reaps the child.
+// An ambiguous SEND failure suppresses subsequent sends.
 // Synchronously sends one named event. Properties are borrowed strings.
 // Nonzero means dropped/rejected/unconfirmed, never queued or replayed.
-int TelemetryWorkerSendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log);
+int SendEvent(TelemetryWorker* worker, const char* name, const TelemetryProperty* properties, size_t count, OsConfigLogHandle log);
 
 // Idempotent for NULL == *worker. Always closes IPC and handles the exact child.
 // If child ownership cannot be discharged, retains *worker for cleanup retry.
 // Termination/reaping can exceed deadlines if the kernel cannot make progress.
-int TelemetryWorkerDestroy(TelemetryWorker** worker, OsConfigLogHandle log);
+int Shutdown(TelemetryWorker** worker, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
