@@ -42,13 +42,12 @@ int main(int argc, char** argv)
 
     if ((3 != argc) || (0 != strcmp(argv[1], "--send-status-trace")))
     {
-        fprintf(stderr, "Explicit live test: %s --send-status-trace /path/to/OSConfigTelemetry\n"
-            "Sends 100 synthetic StatusTrace events over one worker's IPC using OsConfigTelemetryApiKey.\n"
-            "No invocation budget, batching, delays, or retries.\n", argv[0]);
+        OsConfigLogError(NULL, "Explicit live test: %s --send-status-trace /path/to/OSConfigTelemetry", argv[0]);
+        OsConfigLogInfo(NULL, "Sends 100 synthetic StatusTrace events over one worker's IPC using a compiled key or OsConfigTelemetryApiKey.");
+        OsConfigLogInfo(NULL, "No invocation budget, batching, delays, or retries.");
         return 2;
     }
 
-    SetConsoleLoggingEnabled(true);
     path = realpath(argv[2], NULL);
     if (NULL == path)
     {
@@ -113,7 +112,8 @@ int main(int argc, char** argv)
             properties[i].type = TelemetryPropertyString;
             properties[i].value.stringValue = values[i];
         }
-        printf("%s\nCorrelationId=%s\n", TEST_MARKER, correlation);
+        OsConfigLogInfo(NULL, "%s", TEST_MARKER);
+        OsConfigLogInfo(NULL, "CorrelationId=%s", correlation);
         fflush(stdout);
     }
     while ((0 == status) && (attempted < 100))
@@ -142,6 +142,6 @@ int main(int argc, char** argv)
     }
     free(distro);
     free(path);
-    printf("Attempted: %u; accepted: %u; planned: 100\n", attempted, accepted);
+    OsConfigLogInfo(NULL, "Attempted: %u; accepted: %u; planned: 100", attempted, accepted);
     return (0 == status) ? 0 : 1;
 }
